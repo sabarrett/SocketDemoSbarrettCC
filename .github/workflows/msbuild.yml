@@ -32,4 +32,4 @@ jobs:
       
     - name: Test
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: Bin\Debug\SocketDemo.exe
+      run: tree
