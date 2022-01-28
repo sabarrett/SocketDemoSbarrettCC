@@ -1,6 +1,6 @@
 enum class SocketAddressFamily
 {
-	INET = AF_INET,
+	INET = AF_INET, //IPV4 - 192.108.0.1
 	INET6 = AF_INET6
 };
 
