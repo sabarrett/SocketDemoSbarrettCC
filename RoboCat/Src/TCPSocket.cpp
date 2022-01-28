@@ -34,7 +34,7 @@ TCPSocketPtr TCPSocket::Accept( SocketAddress& inFromAddress )
 	}
 	else
 	{
-		SocketUtil::ReportError( "TCPSocket::Accept" );
+		// SocketUtil::ReportError( "TCPSocket::Accept" );
 		return nullptr;
 	}
 }
