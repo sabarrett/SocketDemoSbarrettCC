@@ -153,7 +153,14 @@ void DoTCPClient()
 	connSocket->Send(msg.c_str(), msg.length());
 }
 
+#include <thread>
+#include <iostream>
+#include <string>
+#include <sstream>
+
 #if _WIN32
+
+
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -189,9 +196,32 @@ int main(int argc, const char** argv)
 	{
 		DoTCPClient();
 	}
+	
+	OutputWindow win;
+
+	std::thread t([&win]()
+				  {
+					  int msgNo = 1;
+					  while (true)
+					  {
+						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
+						  std::string msgIn("~~~auto message~~~");
+						  std::stringstream ss(msgIn);
+						  ss << msgNo;
+						  win.Write(ss.str());
+						  msgNo++;
+					  }
+				  });
+
+	while (true)
+	{
+		std::string input;
+		std::getline(std::cin, input);
+		win.WriteFromStdin(input);
+>>>>>>> e1b88f2e50a3473f035784b054e0163ffc218a1e
+	}
 
 	SocketUtil::CleanUp();
 
 	return 0;
 }
-
