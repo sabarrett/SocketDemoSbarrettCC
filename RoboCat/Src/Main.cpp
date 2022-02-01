@@ -218,7 +218,6 @@ int main(int argc, const char** argv)
 		std::string input;
 		std::getline(std::cin, input);
 		win.WriteFromStdin(input);
->>>>>>> e1b88f2e50a3473f035784b054e0163ffc218a1e
 	}
 
 	SocketUtil::CleanUp();
