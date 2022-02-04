@@ -1,5 +1,7 @@
 #include "RoboCatPCH.h"
 #include <iostream>
+#include <thread>
+#include <mutex>
 
 // Problem: Game Loop
 //
@@ -22,7 +24,7 @@ void DoTcpServer()
 		ExitProcess(1);
 	}
 
-	listenSocket->SetNonBlockingMode(true);
+	//listenSocket->SetNonBlockingMode(true);
 
 	LOG("%s", "Listening socket created");
 
@@ -70,14 +72,32 @@ void DoTcpServer()
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
-	char buffer[4096];
-	int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-	while (bytesReceived < 0)
-	{
-		bytesReceived = connSocket->Receive(buffer, 4096);
-	}
-	std::string receivedMsg(buffer, bytesReceived);
-	LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+	bool quit = false;
+	std::thread receiveThread([&]() { // don't use [&] :)
+		while (!quit) // Need to add a quit here to have it really exit!
+		{
+			char buffer[4096];
+			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+			if (bytesReceived == 0)
+			{
+				// handle disconnect
+			}
+			if (bytesReceived < 0)
+			{
+				SocketUtil::ReportError("Receiving");
+				return;
+			}
+
+			std::string receivedMsg(buffer, bytesReceived);
+			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+		}
+		});
+
+	std::cout << "Press enter to exit at any time!\n";
+	std::cin.get();
+	quit = true;
+	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	receiveThread.join();
 }
 
 void DoTcpClient(std::string port)
@@ -128,8 +148,113 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
-	std::string msg("Hello server! How are you?");
-	clientSocket->Send(msg.c_str(), msg.length());
+	while (true)
+	{
+		std::string msg("Hello server! How are you?");
+		clientSocket->Send(msg.c_str(), msg.length());
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+}
+
+std::mutex coutMutex;
+
+void DoCout(std::string msg)
+{
+	for (int i = 0; i < 5; i++)
+	{
+		coutMutex.lock();  // can block!
+		std::cout << msg << std::endl;
+		coutMutex.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+
+	std::cout << "Exiting loop gracefully\n";
+}
+
+bool gQuit;
+
+void DoCoutLoop(std::string msg)
+{
+	while (!gQuit)
+	{
+		coutMutex.lock();  // can block!
+		std::cout << msg << std::endl;
+		coutMutex.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+
+	std::cout << "Exiting loop gracfully\n";
+}
+
+void DoCoutLoopLocal(std::string msg, const bool& quit)
+{
+	while (!quit)
+	{
+		coutMutex.lock();  // can block!
+		std::cout << msg << std::endl;
+		coutMutex.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+
+	std::cout << "Exiting loop gracfully\n";
+}
+
+void DoCoutAndExit(std::string msg)
+{
+	std::cout << msg << std::endl;
+
+	std::cout << "Exiting 'loop' gracefully\n";
+}
+
+void DoThreadExample()
+{
+	// Thread Example
+
+	// Ex. 1: Two cout's at once
+
+	//DoCout();
+	gQuit = false;
+	bool quit = false;
+
+	// Lambdas = anonymous functions = Functions with no name.
+	//		max(5, 7) <- two 'anonymous' ints
+	//			int five = 5, seven = 7; max(five, seven);
+	//
+	//	Lambda syntax: [](args) {body} <- a lambda!
+	//		[] -> captures (can use variables from outside scope of function
+
+	//  TcpSocketPtr s;
+	//	std::thread receiveThread([&s]() {
+	//			s->Receive(...);
+	//		});
+	//
+	//  ReceiveOnSocket() {
+	//		s->Receive		// Not global! What are we referencing here?
+	//	}
+
+	std::thread t1(DoCoutLoopLocal, "Hello from thread 1!", std::ref(quit));
+	std::thread t2(DoCoutLoopLocal, "Thread 2 reporting in!", std::ref(quit));
+	std::thread t3([&quit] (std::string msg)
+	{
+			while (!quit)
+			{
+				std::cout << msg << std::endl;
+
+				std::cout << "Exiting 'loop' gracefully\n";
+			}
+	}, "Thread 3 here!");
+
+	std::cout << "Hello from the main thread!\n";
+
+	std::cout << "Press enter to exit at any time.\n\n";
+	std::cin.get();
+
+	gQuit = true;
+	quit = true;
+
+	t1.join();
+	t2.join();
+	t3.join();
 }
 
 #if _WIN32
@@ -151,6 +276,10 @@ int main(int argc, const char** argv)
 
 
 	SocketUtil::StaticInit();
+
+	//DoThreadExample();
+
+	
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
 	if (isServer)
@@ -164,6 +293,7 @@ int main(int argc, const char** argv)
 		// Client code ----------------
 		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
+	
 
 	SocketUtil::CleanUp();
 
