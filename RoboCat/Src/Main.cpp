@@ -25,6 +25,8 @@ int main(int argc, const char** argv)
 	SocketUtil::StaticInit();
 
 	OutputWindow win;
+	
+	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 
 	std::thread t([&win]()
 				  {
