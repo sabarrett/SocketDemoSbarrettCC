@@ -79,7 +79,9 @@ void DoTcpServer()
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
+			std::cout << "Received a message" << std::endl;
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+			std::cout << "Received a message" << std::endl;
 			if (bytesReceived == 0)
 			{
 				// handle disconnect
@@ -89,14 +91,23 @@ void DoTcpServer()
 				SocketUtil::ReportError("Receiving");
 				return;
 			}
-
 			std::string receivedMsg(buffer, bytesReceived);
 			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 		}
 		});
 
-	std::cout << "Press enter to exit at any time!\n";
-	std::cin.get();
+	std::string msg;
+	getline(std::cin, msg);
+	while (msg != EXIT_CODE)
+	{
+		if (connSocket->Send(msg.c_str(), msg.length()) < 0)
+		{
+			SocketUtil::ReportError("Problem with sending message");
+			ExitProcess(1);
+		}
+		getline(std::cin, msg);
+	}
+
 	quit = true;
 	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveThread.join();
@@ -150,13 +161,44 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
-	while (true)
+	bool quit = false;
+	std::thread receiveThread([&]() { // don't use [&] :)
+		while (!quit) // Need to add a quit here to have it really exit!
+		{
+			char buffer[4096];
+			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+			if (bytesReceived == 0)
+			{
+				// handle disconnect
+			}
+			if (bytesReceived < 0)
+			{
+				SocketUtil::ReportError("Receiving");
+				return;
+			}
+
+			std::string receivedMsg(buffer, bytesReceived);
+			LOG("Received message from %s: %s", servAddress->ToString().c_str(), receivedMsg.c_str());
+		}
+		});
+
+	std::string msg;
+	getline(std::cin, msg);
+	while (msg != EXIT_CODE)
 	{
-		std::string msg;
-		getline(std::cin, msg);
-		clientSocket->Send(msg.c_str(), msg.length());
+		if (clientSocket->Send(msg.c_str(), msg.length()) < 0)
+		{
+			SocketUtil::ReportError("Problem with sending message");
+			ExitProcess(1);
+		}
+		std::cout << "Sending a message" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
+		getline(std::cin, msg);
 	}
+
+	quit = true;
+	clientSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	receiveThread.join();
 }
 
 std::mutex coutMutex;
