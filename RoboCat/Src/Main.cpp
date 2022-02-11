@@ -6,6 +6,8 @@
 #include <string>
 #include <sstream>
 
+void CreateTCPSocketandAddress();
+
 #if _WIN32
 
 
@@ -23,8 +25,8 @@ int main(int argc, const char** argv)
 #endif
 
 	SocketUtil::StaticInit();
-
 	OutputWindow win;
+
 
 	std::thread t([&win]()
 				  {
@@ -50,4 +52,25 @@ int main(int argc, const char** argv)
 	SocketUtil::CleanUp();
 
 	return 0;
+}
+
+void initTCP()
+{
+	// Create socket
+	TCPSocketPtr socketPTR = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	if (!socketPTR)
+	{
+		SocketUtil::ReportError("Error: No socket was created!");
+		ExitProcess(1);
+	}
+	LOG("%s", "Socket was succesfully created");
+
+	// Create Address
+	SocketAddressPtr addressPTR = SocketAddressFactory::CreateIPv4FromString("0.0.0.0");
+	if (!addressPTR)
+	{
+		SocketUtil::ReportError("Error: No address was created!");
+		ExitProcess(1);
+	}
+	LOG("%s", "Address was successfully created")
 }
