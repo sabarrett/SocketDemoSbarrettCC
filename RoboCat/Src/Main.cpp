@@ -27,6 +27,7 @@ int main(int argc, const char** argv)
 	OutputWindow win;
 	
 	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	sock->SetNonBlockingMode(true);
 
 	std::thread t([&win]()
 				  {
