@@ -83,6 +83,8 @@ void DoTCPServer()
 	SocketAddress connAddr;
 	TCPSocketPtr conn;
 	
+	conn = listenSocket->Accept(connAddr);
+
 	while (conn = nullptr)
 	{
 		conn = listenSocket->Accept(connAddr);
