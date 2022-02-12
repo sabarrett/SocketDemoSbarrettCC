@@ -117,9 +117,12 @@ void DoTCPClient()
 
 	LOG("%s", "Connected to server!");
 
+	char message[4096];
 	//change this here to be typed in and then sent
-	std::string msg("Hello, server! How are you today?");
-	connSocket->Send(msg.c_str(), msg.length());
+	printf("%s", "Enter your message!");
+	scanf("%s", message);
+	//std::string msg("Hello, server! How are you today?");
+	connSocket->Send(message, 4096);
 
 	LOG("%s", "Sent message to server");
 }
