@@ -61,9 +61,9 @@ void DoTcpServer()
 	LOG("%s", "Listening on socket");
 
 	// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
-
-	LOG("%s", "Waiting to accept connections...");
 	SocketAddress incomingAddress;
+	//TCPSocketPtr connSocket = listenForConnection(incomingAddress, listenSocket);
+	LOG("%s", "Waiting to accept connections...");
 	TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
 	while (connSocket == nullptr)
 	{
@@ -79,18 +79,27 @@ void DoTcpServer()
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
-			std::cout << "Received a message" << std::endl;
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-			std::cout << "Received a message" << std::endl;
-			if (bytesReceived == 0)
+			if (bytesReceived <= 0)
 			{
-				// handle disconnect
+				LOG("%s has disconnected", incomingAddress.ToString().c_str());
+				//TCPSocketPtr connSocket = listenForConnection(incomingAddress, listenSocket);
+				LOG("%s", "Waiting to accept connections...");
+				TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
+				while (connSocket == nullptr)
+				{
+					connSocket = listenSocket->Accept(incomingAddress);
+					// SocketUtil::ReportError("Accepting connection");
+					// ExitProcess(1);
+				}
+
+				LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 			}
-			if (bytesReceived < 0)
+			/*if (bytesReceived < 0)
 			{
 				SocketUtil::ReportError("Receiving");
 				return;
-			}
+			}*/
 			std::string receivedMsg(buffer, bytesReceived);
 			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 		}
@@ -109,7 +118,7 @@ void DoTcpServer()
 	}
 
 	quit = true;
-	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	listenSocket->CloseSocket();
 	receiveThread.join();
 }
 
@@ -167,15 +176,17 @@ void DoTcpClient(std::string port)
 		{
 			char buffer[4096];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
-			if (bytesReceived == 0)
+			if (bytesReceived <= 0)
 			{
-				// handle disconnect
+				std::cout << "Server has disconnected, shutting down";
+				clientSocket->CloseSocket();
+				ExitProcess(1);
 			}
-			if (bytesReceived < 0)
+			/*/if (bytesReceived < 0)
 			{
 				SocketUtil::ReportError("Receiving");
 				return;
-			}
+			}*/
 
 			std::string receivedMsg(buffer, bytesReceived);
 			LOG("Received message from %s: %s", servAddress->ToString().c_str(), receivedMsg.c_str());
@@ -191,13 +202,12 @@ void DoTcpClient(std::string port)
 			SocketUtil::ReportError("Problem with sending message");
 			ExitProcess(1);
 		}
-		std::cout << "Sending a message" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		getline(std::cin, msg);
 	}
 
 	quit = true;
-	clientSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	clientSocket->CloseSocket();
 	receiveThread.join();
 }
 
@@ -300,6 +310,21 @@ void DoThreadExample()
 	t1.join();
 	t2.join();
 	t3.join();
+}
+
+TCPSocketPtr listenForConnection(SocketAddress incomingAddress, TCPSocketPtr listenSocket)
+{
+	LOG("%s", "Waiting to accept connections...");
+	TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
+	while (connSocket == nullptr)
+	{
+		connSocket = listenSocket->Accept(incomingAddress);
+		// SocketUtil::ReportError("Accepting connection");
+		// ExitProcess(1);
+	}
+
+	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+	return connSocket;
 }
 
 #if _WIN32
