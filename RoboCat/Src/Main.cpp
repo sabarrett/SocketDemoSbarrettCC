@@ -75,17 +75,25 @@ void DoTcpServer()
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
 	bool quit = false;
+	std::string msg;
+
 	std::thread receiveThread([&]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
+			std::cout << "waiting to receive a message" << std::endl;
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-			if (bytesReceived <= 0)
+			if (bytesReceived == 0)
 			{
+				if (msg == EXIT_CODE)
+				{
+					std::cout << "server terminating on server's behalf" << std::endl;
+					ExitProcess(1);
+				}
 				LOG("%s has disconnected", incomingAddress.ToString().c_str());
 				//TCPSocketPtr connSocket = listenForConnection(incomingAddress, listenSocket);
 				LOG("%s", "Waiting to accept connections...");
-				TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
+				connSocket = listenSocket->Accept(incomingAddress);
 				while (connSocket == nullptr)
 				{
 					connSocket = listenSocket->Accept(incomingAddress);
@@ -94,21 +102,25 @@ void DoTcpServer()
 				}
 
 				LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+				quit = false;
 			}
-			/*if (bytesReceived < 0)
+			else
 			{
-				SocketUtil::ReportError("Receiving");
-				return;
-			}*/
-			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+				if (bytesReceived < 0)
+				{
+					SocketUtil::ReportError("Receiving");
+					return;
+				}
+				std::string receivedMsg(buffer, bytesReceived);
+				LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			}
 		}
 		});
 
-	std::string msg;
 	getline(std::cin, msg);
 	while (msg != EXIT_CODE)
 	{
+		std::cout << "sending a message" << std::endl;
 		if (connSocket->Send(msg.c_str(), msg.length()) < 0)
 		{
 			SocketUtil::ReportError("Problem with sending message");
@@ -117,8 +129,10 @@ void DoTcpServer()
 		getline(std::cin, msg);
 	}
 
+	std::cout << "exit code entered, quit is true" << std::endl;
 	quit = true;
-	listenSocket->CloseSocket();
+	std::cout << "closing socket" << std::endl;
+	connSocket->CloseSocket();
 	receiveThread.join();
 }
 
@@ -171,32 +185,39 @@ void DoTcpClient(std::string port)
 	LOG("%s", "Connected to server!");
 
 	bool quit = false;
+	std::string msg;
 	std::thread receiveThread([&]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
+			std::cout << "waiting for a message" << std::endl;
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
-			if (bytesReceived <= 0)
+			if (bytesReceived == 0)
 			{
+				if (msg == EXIT_CODE)
+				{
+					std::cout << "client terminating on client's behalf" << std::endl;
+					ExitProcess(1);
+				}
 				std::cout << "Server has disconnected, shutting down";
 				clientSocket->CloseSocket();
 				ExitProcess(1);
 			}
-			/*/if (bytesReceived < 0)
+			if (bytesReceived < 0)
 			{
 				SocketUtil::ReportError("Receiving");
 				return;
-			}*/
+			}
 
 			std::string receivedMsg(buffer, bytesReceived);
 			LOG("Received message from %s: %s", servAddress->ToString().c_str(), receivedMsg.c_str());
 		}
 		});
 
-	std::string msg;
 	getline(std::cin, msg);
 	while (msg != EXIT_CODE)
 	{
+		std::cout << "sending a message" << std::endl;
 		if (clientSocket->Send(msg.c_str(), msg.length()) < 0)
 		{
 			SocketUtil::ReportError("Problem with sending message");
@@ -206,7 +227,9 @@ void DoTcpClient(std::string port)
 		getline(std::cin, msg);
 	}
 
+	std::cout << "exit code entered, quitting" << std::endl;
 	quit = true;
+	std::cout << "closing socket" << std::endl;
 	clientSocket->CloseSocket();
 	receiveThread.join();
 }
