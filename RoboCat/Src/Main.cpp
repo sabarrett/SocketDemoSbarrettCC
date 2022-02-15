@@ -6,8 +6,29 @@
 #include <string>
 #include <sstream>
 
-void DoTcpServer()
+//Global quit variable
+bool gQuit = false;
+
+void displayWelcomeMessage()
 {
+	std::cout << "\n\n\t\tWelcome to the chat room! Type your message and press Enter to send a message.\n\n";
+}
+
+//void displayDisconnectMessage(bool isMe, string userName = "")
+//{
+//	if (isMe)
+//	{
+//		std::cout << "You have disconnected from the chat room.\n";
+//	}
+//	else
+//	{
+//		std::cout << "User " << userName << " has disconnected from the chat room.\n";
+//	}
+//}
+
+void setupTcpServer()
+{
+	//--------------------Setup Server--------------------
 	// Create socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (listenSocket == nullptr)
@@ -64,16 +85,22 @@ void DoTcpServer()
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
-	bool quit = false;
-	std::thread receiveThread([&]() { //TO-DO: COME BACK - don't use [&] :)
-		while (!quit) // Need to add a quit here to have it really exit!
+	//--------------------Chat Room--------------------
+	
+	//Welcome users
+	displayWelcomeMessage();
+
+	std::thread receiveThread([&]()	//TO-DO: COME BACK - don't use [&] :)
+	{
+		while (!gQuit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
 				//TO-DO: handle disconnect
-				quit = true;
+				gQuit = true;
+				
 			}
 			if (bytesReceived < 0)
 			{
@@ -86,8 +113,9 @@ void DoTcpServer()
 		}
 	});
 
-	std::thread sendThread([&]() { //TO-DO: COME BACK - don't use [&] :)
-		while (!quit) // Need to add a quit here to have it really exit!
+	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
+	{
+		while (!gQuit) // Need to add a quit here to have it really exit!
 		{
 			std::string msgToSend = "Oi there mate, 'bit rude to put my knoife in me chest, innit?";
 			connSocket->Send(msgToSend.c_str(), msgToSend.length());
@@ -98,13 +126,13 @@ void DoTcpServer()
 
 	std::cout << "Press enter to exit at any time!\n";
 	std::cin.get();
-	quit = true;
+	gQuit = true;
 	connSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveThread.join();
 	sendThread.join();
 }
 
-void DoTcpClient(std::string port)
+void setupTcpClient(std::string port)
 {
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -152,9 +180,12 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
+	//Welcome users
+	displayWelcomeMessage();
+
 	//We bound the client socket to the client address, but we have the client socket connected to the server address
 
-	////Client socket, connected to server address, is now listening on it
+	////Client socket, connected to server address, is now listening on it -----------------------------------------WHY DO WE NOT NEED THIS?-------------------------------------------------------------
 	//if (clientSocket->Listen() != NO_ERROR)
 	//{
 	//	SocketUtil::ReportError("Listening on listening socket");
@@ -241,15 +272,20 @@ int main(int argc, const char** argv)
 
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
+	//TO-DO: Custom usernames (add after welcome message and to disconnect message)
+	//std::string userName;
+	//std::getline(std::cin, userName);
+
+	//Setup server and client
 	if (isServer)
 	{
 		//Server code
-		DoTcpServer();
+		setupTcpServer();
 	}
 	else
 	{
 		//Client codes
-		DoTcpClient(StringUtils::GetCommandLineArg(2));
+		setupTcpClient(StringUtils::GetCommandLineArg(2));
 	}
 
 	SocketUtil::CleanUp();
