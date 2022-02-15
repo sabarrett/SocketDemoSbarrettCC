@@ -14,4 +14,8 @@ private:
 	TCPSocket( SOCKET inSocket ) : mSocket( inSocket ) {}
 	SOCKET		mSocket;
 };
+// typedef TCPSocket* TCPSocketPtr
+// TCPSocketPtr socketPtr2 = sockPtr; // inc ref count
+// goes out of scope -> ref count decrement
+// ref count == 0 -> delete ptr
 typedef shared_ptr< TCPSocket > TCPSocketPtr;
