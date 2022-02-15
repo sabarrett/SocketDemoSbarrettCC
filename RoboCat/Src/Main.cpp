@@ -100,6 +100,17 @@ void DoTcpServer()
 	receiveThread.join();
 }
 
+std::mutex cinMutex;
+void UserInput(TCPSocketPtr cSocket)
+{
+	std::string msg;
+	//cinMutex.lock();
+	//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	std::getline(std::cin,msg);
+	//cinMutex.unlock();
+	cSocket->Send(msg.c_str(), msg.length());
+}
+
 void DoTcpClient(std::string port)
 {
 	// Create socket
@@ -147,16 +158,34 @@ void DoTcpClient(std::string port)
 	}
 
 	LOG("%s", "Connected to server!");
-
+	
+	
+	std::string msg("Hello server! How are you?");
+	//std::string msg;
+	//std::cin >> msg;
+	clientSocket->Send(msg.c_str(), msg.length());
+	//std::this_thread::sleep_for(std::chrono::seconds(1));
+	
 	while (true)
 	{
-		std::string msg("Hello server! How are you?");
+		//std::thread t1(UserInput, clientSocket);
+		//t1.join();
+		std::string msg;
+		//cinMutex.lock();
+		//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		std::getline(std::cin, msg);
+		//cinMutex.unlock();
 		clientSocket->Send(msg.c_str(), msg.length());
-		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 }
 
 std::mutex coutMutex;
+
+
+
+
+
+
 
 void DoCout(std::string msg)
 {
