@@ -65,14 +65,15 @@ void DoTcpServer()
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
 	bool quit = false;
-	std::thread receiveThread([&]() { // don't use [&] :)
+	std::thread receiveThread([&]() { //TO-DO: COME BACK - don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
-				// handle disconnect
+				//TO-DO: handle disconnect
+				quit = true;
 			}
 			if (bytesReceived < 0)
 			{
@@ -83,13 +84,23 @@ void DoTcpServer()
 			std::string receivedMsg(buffer, bytesReceived);
 			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 		}
+	});
+
+	std::thread sendThread([&]() { //TO-DO: COME BACK - don't use [&] :)
+		while (!quit) // Need to add a quit here to have it really exit!
+		{
+			std::string msgToSend = "Oi there mate, 'bit rude to put my knoife in me chest, innit?";
+			connSocket->Send(msgToSend.c_str(), msgToSend.length());
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
 		});
 
 	std::cout << "Press enter to exit at any time!\n";
 	std::cin.get();
 	quit = true;
-	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	connSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveThread.join();
+	sendThread.join();
 }
 
 void DoTcpClient(std::string port)
@@ -140,12 +151,45 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
+	//We bound the client socket to the client address, but we have the client socket connected to the server address
+
+	//Client socket, connected to server address, is now listening on it
+	if (clientSocket->Listen() != NO_ERROR)
+	{
+		SocketUtil::ReportError("Listening on listening socket");
+		ExitProcess(1);
+	}
+
 	while (true)
 	{
 		std::string msg("Hello server! How are you?");
 		clientSocket->Send(msg.c_str(), msg.length());
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
+
+	bool quit = false;
+	std::thread receiveThreadClient([&]() { //TO-DO: COME BACK - don't use [&] :)
+		while (!quit) // Need to add a quit here to have it really exit!
+		{
+			char buffer[4096];
+			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+			if (bytesReceived == 0)
+			{
+				//TO-DO: handle disconnect
+				quit = true;
+			}
+			if (bytesReceived < 0)
+			{
+				SocketUtil::ReportError("Receiving");
+				return;
+			}
+
+			std::string receivedMsg(buffer, bytesReceived);
+			std::cout << "Received message from %s: %s" << servAddress->ToString() << receivedMsg << std::endl;
+		}
+	});
+
+	receiveThreadClient.join();
 }
 
 #if _WIN32
