@@ -91,6 +91,7 @@ void DoTcpServer()
 		{
 			std::string msgToSend = "Oi there mate, 'bit rude to put my knoife in me chest, innit?";
 			connSocket->Send(msgToSend.c_str(), msgToSend.length());
+			std::cout << "Server sending message. \n";
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
 		});
@@ -153,12 +154,12 @@ void DoTcpClient(std::string port)
 
 	//We bound the client socket to the client address, but we have the client socket connected to the server address
 
-	//Client socket, connected to server address, is now listening on it
-	if (clientSocket->Listen() != NO_ERROR)
-	{
-		SocketUtil::ReportError("Listening on listening socket");
-		ExitProcess(1);
-	}
+	////Client socket, connected to server address, is now listening on it
+	//if (clientSocket->Listen() != NO_ERROR)
+	//{
+	//	SocketUtil::ReportError("Listening on listening socket");
+	//	ExitProcess(1);
+	//}
 
 	while (true)
 	{
@@ -169,6 +170,7 @@ void DoTcpClient(std::string port)
 
 	bool quit = false;
 	std::thread receiveThreadClient([&]() { //TO-DO: COME BACK - don't use [&] :)
+		std::cout << "receiveThreadClient running.\n";
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
@@ -189,6 +191,10 @@ void DoTcpClient(std::string port)
 		}
 	});
 
+	std::cout << "Press enter to exit at any time!\n";
+	std::cin.get();
+	quit = true;
+	clientSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveThreadClient.join();
 }
 
