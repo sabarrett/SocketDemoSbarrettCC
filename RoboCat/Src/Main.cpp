@@ -6,53 +6,6 @@
 #include <string>
 #include <sstream>
 
-#if _WIN32
-
-
-int main(int argc, const char** argv)
-{
-	UNREFERENCED_PARAMETER(argc);
-	UNREFERENCED_PARAMETER(argv);
-#else
-const char** __argv;
-int __argc;
-int main(int argc, const char** argv)
-{
-	__argc = argc;
-	__argv = argv;
-#endif
-
-	SocketUtil::StaticInit();
-
-	DoTcpServer();
-
-	OutputWindow win;
-	std::thread t([&win]()
-				  {
-					  int msgNo = 1;
-					  while (true)
-					  {
-						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-						  std::string msgIn("~~~auto message~~~");
-						  std::stringstream ss(msgIn);
-						  ss << msgNo;
-						  win.Write(ss.str());
-						  msgNo++;
-					  }
-				  });
-
-	while (true)
-	{
-		std::string input;
-		std::getline(std::cin, input);
-		win.WriteFromStdin(input);
-	}
-
-	SocketUtil::CleanUp();
-
-	return 0;
-}
-
 void DoTcpServer()
 {
 	// Create socket
@@ -172,3 +125,80 @@ void DoTcpClient(std::string port)
 	std::string msg("Hello server! How are you?");
 	clientSocket->Send(msg.c_str(), msg.length());
 }
+
+void OpenConnection(std::string address, std::string port)
+{
+
+}
+
+
+#if _WIN32
+
+
+int main(int argc, const char** argv)
+{
+	UNREFERENCED_PARAMETER(argc);
+	UNREFERENCED_PARAMETER(argv);
+#else
+const char** __argv;
+int __argc;
+int main(int argc, const char** argv)
+{
+	__argc = argc;
+	__argv = argv;
+#endif
+
+	SocketUtil::StaticInit();
+
+	DoTcpServer();
+
+	OutputWindow win;
+	std::thread t([&win]()
+				  {
+					  int msgNo = 1;
+					  while (true)
+					  {
+						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
+						  std::string msgIn("~~~auto message~~~");
+						  std::stringstream ss(msgIn);
+						  ss << msgNo;
+						  win.Write(ss.str());
+						  msgNo++;
+					  }
+				  });
+
+	while (true)
+	{
+		std::string input;
+		std::getline(std::cin, input);
+		//win.WriteFromStdin(input);
+		win.Write(input);
+		char* inputC = new char[input.length() + 1];
+		strcpy(inputC, input.c_str());
+		char delim[] = " ";
+
+		char* ptr = strtok(inputC, delim);
+
+		while (ptr != NULL)
+		{
+			if (strcmp(ptr, "/connect") == 0)
+			{
+				ptr = strtok(NULL, delim);
+				std::string newAddress(ptr);
+
+				ptr = strtok(NULL, delim);
+				std::string newPort(ptr);
+
+
+
+				ptr = NULL;
+			}
+			ptr = NULL;
+		}
+	}
+
+	SocketUtil::CleanUp();
+
+	return 0;
+}
+
