@@ -101,7 +101,7 @@ void DoTCPServer()
 
 void DoTCPClient()
 {
-	std::thread t(DoTCPServer);
+	//std::thread t(DoTCPServer);
 	//t.join();
 
 	// Open a TCP Socket
