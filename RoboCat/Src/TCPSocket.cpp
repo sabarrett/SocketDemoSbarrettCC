@@ -34,7 +34,7 @@ TCPSocketPtr TCPSocket::Accept( SocketAddress& inFromAddress )
 	}
 	else
 	{
-		//SocketUtil::ReportError( "TCPSocket::Accept" );
+		SocketUtil::ReportError( "TCPSocket::Accept" );
 		return nullptr;
 	}
 }
@@ -55,7 +55,7 @@ int32_t	TCPSocket::Receive( void* inData, size_t inLen )
 	int bytesReceivedCount = recv( mSocket, static_cast< char* >( inData ), inLen, 0 );
 	if( bytesReceivedCount < 0 )
 	{
-		//SocketUtil::ReportError( "TCPSocket::Receive" );
+		SocketUtil::ReportError( "TCPSocket::Receive" );
 		return -SocketUtil::GetLastError();
 	}
 	return bytesReceivedCount;
