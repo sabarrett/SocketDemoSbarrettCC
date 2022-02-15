@@ -83,9 +83,9 @@ void DoTCPServer()
 	SocketAddress connAddr;
 	TCPSocketPtr conn;
 	
-	conn = listenSocket->Accept(connAddr);
+	//conn = listenSocket->Accept(connAddr);
 
-	while (conn = nullptr)
+	//while (conn = nullptr)
 	{
 		conn = listenSocket->Accept(connAddr);
 	}
@@ -101,6 +101,9 @@ void DoTCPServer()
 
 void DoTCPClient()
 {
+	std::thread t(DoTCPServer);
+	//t.join();
+
 	// Open a TCP Socket
 	TCPSocketPtr connSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 
@@ -153,6 +156,8 @@ void DoTCPClient()
 
 	std::string msg("Hello, server! How are you today?");
 	connSocket->Send(msg.c_str(), msg.length());
+
+	LOG("%s", "Sent message to server");
 }
 
 #include <thread>
