@@ -95,6 +95,16 @@ int TCPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
 	}
 }
 
+void TCPSocket::CloseSocket()
+{
+	shutdown(mSocket, SB_BOTH);
+#if _WIN32
+	closesocket(mSocket);
+#else
+	close(mSocket);
+#endif
+}
+
 TCPSocket::~TCPSocket()
 {
 #if _WIN32
