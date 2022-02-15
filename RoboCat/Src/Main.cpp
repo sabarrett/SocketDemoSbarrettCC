@@ -1,173 +1,286 @@
-
 #include "RoboCatPCH.h"
 #include <iostream>
 #include <thread>
+#include <mutex>
 
-// getInput() (but don't block)
-//     check sockets -- did anyone say anything?
-//         conn->Receive(); !!!!!! <- blocks!!!
-//     Solution: non-blocking mode
-//         if (conn.Receive() == -10035)
-//             skip this frame; Receive would block
+// Problem: Game Loop
 //
-// main
-// |    spawnThread() --------> netThread
-// |    getInput();             | block on Accept(); ....
-// |    update();               | spawnThread() ----------->    connThread
-// |    goto beginning;         | loop();                       |  conn->Receive(); (blocks)
-// |                            |                               |
-// |
-// v
-// 
-// Select();
-// 
+// updateInput(); (make sure to not block here!)
+//		conn->Receive(); !!! This blocks !!!
+//			Two solutions:
+//				- Non-Blocking Mode
+//					On Receive(), check for -10035; that means "nothings wrong, but I didn't receive any data either"
 // update();
-// renderer();
-// repeat();
+// render();
+// goto beginning;
 
-void DoTCPServer()
+void DoTcpServer()
 {
-	// Open a TCP Socket
+	// Create socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-
 	if (listenSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating listening socket");
 		ExitProcess(1);
 	}
-	listenSocket->SetNonBlockingMode(false);
 
-	LOG("%s", "Created listen socket");
+	//listenSocket->SetNonBlockingMode(true);
 
-	// SocketAddress a2(INADDR_LOOPBACK, 8080);
+	LOG("%s", "Listening socket created");
 
-	// Listen only for connections on this machine
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	if (a == nullptr)
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	if (listenAddress == nullptr)
 	{
-		SocketUtil::ReportError("Creating server address");
+		SocketUtil::ReportError("Creating listen address");
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Created server address");
-
-	// "Bind" that socket to the address we want to listen on
-
-	if (listenSocket->Bind(*a) != NO_ERROR)
+	if (listenSocket->Bind(*listenAddress) != NO_ERROR)
 	{
-		SocketUtil::ReportError("Binding Socket");
+		SocketUtil::ReportError("Binding listening socket");
+		// This doesn't block!
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Bound socket");
+	LOG("%s", "Bound listening socket");
 
-	// Call "Listen" to have the OS listen for connections on that socket
+	// Blocking function call -> Waits for some input; halts the program until something "interesting" happens
+	// Non-Blocking function call -> Returns right away, as soon as the action is completed
 
+	// Listen() - Listen on socket -> Non-blocking; tells OS we care about incoming connections on this socket
 	if (listenSocket->Listen() != NO_ERROR)
 	{
-		SocketUtil::ReportError("Listening");
+		SocketUtil::ReportError("Listening on listening socket");
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Socket listening");
+	LOG("%s", "Listening on socket");
 
-	// Call "Accept" which *blocks* until we get a request to connect,
-	// and then it accepts the connection
+	// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
 
-	// listenSocket <----- packets from other hosts wanting to connect
-	// listenSocket -----> accpets connections, spawns:
-	//     connectionSocket <-----> otherHost1
-	//     connectionSock2 <-----> otherHost2
-
-	SocketAddress connAddr;
-	TCPSocketPtr conn;
-	
-	//conn = listenSocket->Accept(connAddr);
-
-	//while (conn = nullptr)
+	LOG("%s", "Waiting to accept connections...");
+	SocketAddress incomingAddress;
+	TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
+	while (connSocket == nullptr)
 	{
-		conn = listenSocket->Accept(connAddr);
+		connSocket = listenSocket->Accept(incomingAddress);
+		// SocketUtil::ReportError("Accepting connection");
+		// ExitProcess(1);
 	}
 
-	// This code isn't blocking anymore -- it'll run to the end of the program
-	
-	char buffer[4096];
-	int32_t bytesRead = conn->Receive(buffer, 4096);
+	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
-	std::string msgReceived(buffer, bytesRead);
-	LOG("Received message: %s", msgReceived.c_str());
+	bool quit = false;
+	std::thread receiveThread([&]() { // don't use [&] :)
+		while (!quit) // Need to add a quit here to have it really exit!
+		{
+			char buffer[4096];
+			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+			if (bytesReceived == 0)
+			{
+				// handle disconnect
+			}
+			if (bytesReceived < 0)
+			{
+				SocketUtil::ReportError("Receiving");
+				return;
+			}
+
+			std::string receivedMsg(buffer, bytesReceived);
+			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+		}
+		});
+
+	std::cout << "Press enter to exit at any time!\n";
+	std::cin.get();
+	quit = true;
+	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	receiveThread.join();
 }
 
-void DoTCPClient()
+void DoTcpClient(std::string port)
 {
-	//std::thread t(DoTCPServer);
-	//t.join();
-
-	// Open a TCP Socket
-	TCPSocketPtr connSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-
-	if (connSocket == nullptr)
+	// Create socket
+	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	if (clientSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating client socket");
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Created client socket");
+	LOG("%s", "Client socket created");
 
-	// SocketAddress a2(INADDR_LOOPBACK, 8080);
+	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	// Listen only for connections on this machine
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8081");
-
-	if (a == nullptr)
+	std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
+	if (clientAddress == nullptr)
 	{
-		SocketUtil::ReportError("Creating socket address");
+		SocketUtil::ReportError("Creating client address");
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Created socket address");
-
-	// "Bind" that socket to the address we want to listen on
-
-	if (connSocket->Bind(*a) != NO_ERROR)
+	if (clientSocket->Bind(*clientAddress) != NO_ERROR)
 	{
-		SocketUtil::ReportError("Binding Socket");
+		SocketUtil::ReportError("Binding client socket");
+		// This doesn't block!
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Bound socket");
+	LOG("%s", "Bound client socket");
+
+	// Connect() -> Connect socket to remote host
 
 	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
-
 	if (servAddress == nullptr)
 	{
-		SocketUtil::ReportError("Create server address");
+		SocketUtil::ReportError("Creating server address");
 		ExitProcess(1);
 	}
-	
-	if (connSocket->Connect(*servAddress) != NO_ERROR)
+
+	if (clientSocket->Connect(*servAddress) != NO_ERROR)
 	{
-		SocketUtil::ReportError("Conencting to server");
+		SocketUtil::ReportError("Connecting to server");
 		ExitProcess(1);
 	}
 
 	LOG("%s", "Connected to server!");
 
-	std::string msg("Hello, server! How are you today?");
-	connSocket->Send(msg.c_str(), msg.length());
+	std::cout << "Commands: \n EXIT - quits program \n Pressing Enter Sends Message \n";
 
-	LOG("%s", "Sent message to server");
+	// Send messages
+	bool stayInClient = true;
+	while (stayInClient)
+	{
+		std::string msg;
+		msg = std::cin.get();
+
+		if (msg == " exit")
+		{
+			stayInClient = false;
+			clientSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+			LOG("%s", "Command exit has been typed");
+			//receiveThread.join();
+		}
+		else
+		{
+			clientSocket->Send(msg.c_str(), msg.length());
+		}
+	}
+
+	// Sends message every second (never quits, infinite loop)
+	/*while (true)
+	{
+		std::string msg("Hello server! How are you?");
+		clientSocket->Send(msg.c_str(), msg.length());
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}*/
 }
 
-#include <thread>
-#include <iostream>
-#include <string>
-#include <sstream>
+std::mutex coutMutex;
+
+void DoCout(std::string msg)
+{
+	for (int i = 0; i < 5; i++)
+	{
+		coutMutex.lock();  // can block!
+		std::cout << msg << std::endl;
+		coutMutex.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+
+	std::cout << "Exiting loop gracefully\n";
+}
+
+bool gQuit;
+
+void DoCoutLoop(std::string msg)
+{
+	while (!gQuit)
+	{
+		coutMutex.lock();  // can block!
+		std::cout << msg << std::endl;
+		coutMutex.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+
+	std::cout << "Exiting loop gracfully\n";
+}
+
+void DoCoutLoopLocal(std::string msg, const bool& quit)
+{
+	while (!quit)
+	{
+		coutMutex.lock();  // can block!
+		std::cout << msg << std::endl;
+		coutMutex.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+
+	std::cout << "Exiting loop gracfully\n";
+}
+
+void DoCoutAndExit(std::string msg)
+{
+	std::cout << msg << std::endl;
+
+	std::cout << "Exiting 'loop' gracefully\n";
+}
+
+void DoThreadExample()
+{
+	// Thread Example
+
+	// Ex. 1: Two cout's at once
+
+	//DoCout();
+	gQuit = false;
+	bool quit = false;
+
+	// Lambdas = anonymous functions = Functions with no name.
+	//		max(5, 7) <- two 'anonymous' ints
+	//			int five = 5, seven = 7; max(five, seven);
+	//
+	//	Lambda syntax: [](args) {body} <- a lambda!
+	//		[] -> captures (can use variables from outside scope of function
+
+	//  TcpSocketPtr s;
+	//	std::thread receiveThread([&s]() {
+	//			s->Receive(...);
+	//		});
+	//
+	//  ReceiveOnSocket() {
+	//		s->Receive		// Not global! What are we referencing here?
+	//	}
+
+	std::thread t1(DoCoutLoopLocal, "Hello from thread 1!", std::ref(quit));
+	std::thread t2(DoCoutLoopLocal, "Thread 2 reporting in!", std::ref(quit));
+	std::thread t3([&quit](std::string msg)
+		{
+			while (!quit)
+			{
+				std::cout << msg << std::endl;
+
+				std::cout << "Exiting 'loop' gracefully\n";
+			}
+		}, "Thread 3 here!");
+
+	std::cout << "Hello from the main thread!\n";
+
+	std::cout << "Press enter to exit at any time.\n\n";
+	std::cin.get();
+
+	gQuit = true;
+	quit = true;
+
+	t1.join();
+	t2.join();
+	t3.join();
+}
 
 #if _WIN32
-
-
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -182,50 +295,28 @@ int main(int argc, const char** argv)
 #endif
 
 	// WinSock2.h
+	//    https://docs.microsoft.com/en-us/windows/win32/api/winsock/
+
 
 	SocketUtil::StaticInit();
 
-	// Server/Client
-	// We want peer-to-peer, but we'll get there!
+	//DoThreadExample();
 
-	// Server Code ----------------
-	
-	//bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
-	if (StringUtils::GetCommandLineArg(1) == "server")
+	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
+
+	if (isServer)
 	{
-		DoTCPServer();
+		// Server code ----------------
+		//		Want P2P -- we'll get to that :)
+		DoTcpServer();
+	}
+	else
+	{
+		// Client code ----------------
+		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
 
-	// Client Code ----------------
-
-	if (StringUtils::GetCommandLineArg(1) == "client")
-	{
-		DoTCPClient();
-	}
-	
-	OutputWindow win;
-
-	std::thread t([&win]()
-				  {
-					  int msgNo = 1;
-					  while (true)
-					  {
-						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-						  std::string msgIn("~~~auto message~~~");
-						  std::stringstream ss(msgIn);
-						  ss << msgNo;
-						  win.Write(ss.str());
-						  msgNo++;
-					  }
-				  });
-
-	while (true)
-	{
-		std::string input;
-		std::getline(std::cin, input);
-		win.WriteFromStdin(input);
-	}
 
 	SocketUtil::CleanUp();
 
