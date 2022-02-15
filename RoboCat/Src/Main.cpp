@@ -94,7 +94,7 @@ void DoTcpServer()
 			std::cout << "Server sending message. \n";
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
-		});
+	});
 
 	std::cout << "Press enter to exit at any time!\n";
 	std::cin.get();
@@ -161,24 +161,24 @@ void DoTcpClient(std::string port)
 	//	ExitProcess(1);
 	//}
 
-	while (true)
-	{
+	//while (true)
+	//{
 		std::string msg("Hello server! How are you?");
 		clientSocket->Send(msg.c_str(), msg.length());
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
+		//std::this_thread::sleep_for(std::chrono::seconds(1));
+	//}
 
-	bool quit = false;
+	bool bQuit = false;
 	std::thread receiveThreadClient([&]() { //TO-DO: COME BACK - don't use [&] :)
 		std::cout << "receiveThreadClient running.\n";
-		while (!quit) // Need to add a quit here to have it really exit!
+		while (!bQuit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
 				//TO-DO: handle disconnect
-				quit = true;
+				bQuit = true;
 			}
 			if (bytesReceived < 0)
 			{
@@ -193,7 +193,7 @@ void DoTcpClient(std::string port)
 
 	std::cout << "Press enter to exit at any time!\n";
 	std::cin.get();
-	quit = true;
+	bQuit = true;
 	clientSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveThreadClient.join();
 }
