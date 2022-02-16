@@ -73,11 +73,21 @@ void DoTcpServer()
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
+	// Enter chat text
+	std::cout << "\n\n\n---------------CHAT ROOM---------------\n\n\n" << std::endl;
+
+	// Get username
 	std::string username;
 
 	std::cout << "Enter username: ";
 	std::getline(std::cin, username);
 
+	std::cout << "USERNAME SET TO: " << username << std::endl;
+
+	std::cout << "\nCommands: \n /exit - quits program \n Pressing Enter Sends Message\n";
+	std::cout << std::endl;
+
+	// Send & Receive Messages
 	bool quit = false;
 	bool sendQuit = false;
 
@@ -94,6 +104,7 @@ void DoTcpServer()
 			{
 				sendQuit = true;
 				//connSocket->~TCPSocket();
+				connSocket->Send(msg.c_str(), msg.length());
 				std::cout << "User has disconnected.";
 				ExitProcess(1);
 				break;
@@ -102,6 +113,8 @@ void DoTcpServer()
 			{
 				msg = username + ": " + msg;
 				connSocket->Send(msg.c_str(), msg.length());
+				std::cout << std::endl;
+				std::cout << "Message: ";
 			}
 		}
 	});
@@ -131,7 +144,10 @@ void DoTcpServer()
 			}
 			else
 			{
+				std::cout << std::endl;
 				std::cout << "\n[" << incomingAddress.ToString().c_str() << "] " << receivedMsg << std::endl;
+				std::cout << std::endl;
+				std::cout << "Message: ";
 			}
 		}
 	});
@@ -192,12 +208,19 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
+	// Enter chat text
+	std::cout << "\n\n\n--------------- CHAT ROOM --------------- \n\n\n" << std::endl;
+
+	// Get username
 	std::string username;
 
 	std::cout << "Enter username: ";
 	std::getline(std::cin, username);
 
-	std::cout << "\nCommands: \n /exit - quits program \n Pressing Enter Sends Message \n";
+	std::cout << "USERNAME SET TO: " << username << std::endl;
+
+	std::cout << "\nCommands: \n /exit - quits program \n Pressing Enter Sends Message\n";
+	std::cout << std::endl;
 
 	bool quit = false;
 	bool sendQuit = false;
@@ -214,6 +237,7 @@ void DoTcpClient(std::string port)
 			{
 				sendQuit = true;
 				//clientSocket->~TCPSocket();
+				clientSocket->Send(msg.c_str(), msg.length());
 				std::cout << "User has disconnected.";
 				ExitProcess(1);
 				break;
@@ -222,6 +246,8 @@ void DoTcpClient(std::string port)
 			{
 				msg = username + ": " + msg;
 				clientSocket->Send(msg.c_str(), msg.length());
+				std::cout << std::endl;
+				std::cout << "Message: ";
 			}
 		}
 		});
@@ -251,7 +277,10 @@ void DoTcpClient(std::string port)
 			}
 			else
 			{
+				std::cout << std::endl;
 				std::cout << "\n[" << servAddress->ToString() << "] " << receivedMsg << std::endl;
+				std::cout << std::endl;
+				std::cout << "Message: ";
 			}
 		}
 	});
