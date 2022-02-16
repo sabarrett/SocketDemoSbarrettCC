@@ -169,45 +169,45 @@ void DoTcpPeer()
 	receiveThread.join();
 }
 
-void DoTcpServer()
+void DoTcpServer(OutputWindow& win)
 {
 	// Create listening socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (listenSocket == nullptr)
 	{
-		SocketUtil::ReportError("Unable to create a listening socket");
+		SocketUtil::ReportError(" Unable to create a listening socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "Listening socket created");
+	LOG("%s", " Listening socket created");
 
 	// Create listening address
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
 	if (listenAddress == nullptr)
 	{
-		SocketUtil::ReportError("Unable to create a listen address");
+		SocketUtil::ReportError(" Unable to create a listen address");
 		ExitProcess(1);
 	}
 
 	// Bind address to socket
 	if (listenSocket->Bind(*listenAddress) != NO_ERROR)
 	{
-		SocketUtil::ReportError("Unable to bind listening socket");
+		SocketUtil::ReportError(" Unable to bind listening socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "Bound listening socket");
+	LOG("%s", " Bound listening socket");
 
 	// Start listening for incoming connections
 	if (listenSocket->Listen() != NO_ERROR)
 	{
-		SocketUtil::ReportError("Unable to start listening on a listening socket");
+		SocketUtil::ReportError(" Unable to start listening on a listening socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "Listening on socket");
+	LOG("%s", " Listening on socket");
 
 	// Wait for incoming connection
 	SocketAddress incomingAddress;
 	TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
-	LOG("%s", "Waiting for connections...");
+	LOG("%s", " Waiting for connections...");
 
 	while (connSocket == nullptr)
 	{
@@ -216,88 +216,155 @@ void DoTcpServer()
 		// SocketUtil::ReportError("No incoming connection");
 		// ExitProcess(1);
 	}
-	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+	LOG(" Accepted connection from %s", incomingAddress.ToString().c_str());
 
 	bool quit = false;
-	std::thread receiveThread([&]() { // don't use [&] :) //!!!
-		while (!quit) // Need to add a quit here to have it really exit! //!!!
+	std::thread receiveThread([&quit, &connSocket, &incomingAddress]() {
+		while (!quit)
 		{
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
-				SocketUtil::ReportError("Connection gracefully closed");
+				SocketUtil::ReportError(" Connection gracefully closed");
 				return;
 			}
 			if (bytesReceived < 0)
 			{
-				SocketUtil::ReportError("Connection forcefully closed");
+				SocketUtil::ReportError(" Connection forcefully closed");
 				return;
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			LOG(" Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			std::cout << " WERT" << std::endl;
 		}
 		});
 
-	std::cout << "Press enter to exit at any time!\n";
-	std::cin.get();
+	std::thread sendThread([&quit, &connSocket, &win]()
+		{
+			while (!quit)
+			{
+				std::string input;
+				std::getline(std::cin, input);
+				win.WriteFromStdin(input);
 
-	quit = true;
-	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it! //!!!
+				if (input != "/exit")
+				{
+					connSocket->Send(input.c_str(), input.length());
+				}
+				else
+				{
+					quit = true;
+				}
+			}
+		});
+
+	std::cout << " Type '/exit' and press Enter to exit!\n";
+
+	while (!quit)
+	{
+
+	}
+
+	connSocket->Close(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it! //!!!
+	sendThread.join();
 	receiveThread.join();
 }
 
-void DoTcpClient(std::string port)
+void DoTcpClient(std::string port, OutputWindow& win)
 {
 	// Create socket for client
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (clientSocket == nullptr)
 	{
-		SocketUtil::ReportError("Unable to create a client socket");
+		SocketUtil::ReportError(" Unable to create a client socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "Client socket created");
+	LOG("%s", " Client socket created");
 
 	// Create address for client
 	std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
 	{
-		SocketUtil::ReportError("Unable to create client address");
+		SocketUtil::ReportError(" Unable to create client address");
 		ExitProcess(1);
 	}
 
 	// Bind address to socket
 	if (clientSocket->Bind(*clientAddress) != NO_ERROR)
 	{
-		SocketUtil::ReportError("Unable to bind client socket");
+		SocketUtil::ReportError(" Unable to bind client socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "Bound client socket");
+	LOG("%s", " Bound client socket");
 
 	// Create address for server
 	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 	if (servAddress == nullptr)
 	{
-		SocketUtil::ReportError("Unable to create server address");
+		SocketUtil::ReportError(" Unable to create server address");
 		ExitProcess(1);
 	}
 
 	// Connect socket to remote host
 	if (clientSocket->Connect(*servAddress) != NO_ERROR)
 	{
-		SocketUtil::ReportError("No connection to server");
+		SocketUtil::ReportError(" No connection to server");
 		ExitProcess(1);
 	}
-	LOG("%s", "Connected to server!");
+	LOG("%s", " Connected to server!");
 
-	while (true)
+	bool quit = false;
+	std::thread receiveThread([&quit, &clientSocket, &servAddress]() {
+		while (!quit)
+		{
+			char buffer[4096];
+			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+			if (bytesReceived == 0)
+			{
+				SocketUtil::ReportError(" Connection gracefully closed");
+				return;
+			}
+			if (bytesReceived < 0)
+			{
+				SocketUtil::ReportError(" Connection forcefully closed");
+				return;
+			}
+			std::string receivedMsg(buffer, bytesReceived);
+			LOG(" Received message from %s: %s", servAddress->ToString().c_str(), receivedMsg.c_str());
+		}
+		});
+
+	std::thread sendThread([&quit, &clientSocket, &win]()
+		{
+			while (!quit)
+			{
+				std::string input;
+				std::getline(std::cin, input);
+				win.WriteFromStdin(input);
+
+				if (input != "/exit")
+				{
+					clientSocket->Send(input.c_str(), input.length());
+				}
+				else
+				{
+					quit = true;
+				}
+			}
+		});
+
+	std::cout << " Type '/exit' and press Enter to exit!\n";
+
+	while (!quit)
 	{
-		std::string msg("Hello server! How are you?");
-		clientSocket->Send(msg.c_str(), msg.length());
-		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
+
+	clientSocket->Close();
+	sendThread.join();
+	receiveThread.join();
 }
 
 /*
@@ -417,20 +484,7 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-
-
-	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
-	if (isServer)
-	{
-		DoTcpServer();
-	}
-	else // then client
-	{
-		DoTcpPeer();
-		//DoTcpClient(StringUtils::GetCommandLineArg(2));
-	}
-
-	/*OutputWindow win;
+	OutputWindow win;
 
 	std::thread t([&win]()
 				  {
@@ -438,22 +492,26 @@ int main(int argc, const char** argv)
 					  while (true)
 					  {
 						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-						  std::string msgIn("~~~auto message~~~");
+						  std::string msgIn("~");
 						  std::stringstream ss(msgIn);
-						  ss << msgNo;
 						  win.Write(ss.str());
 						  msgNo++;
 					  }
 				  });
 
-	while (true)
+	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
+	if (isServer)
 	{
-		std::string input;
-		std::getline(std::cin, input);
-		win.WriteFromStdin(input);
-	}*/
-
+		DoTcpServer(win);
+	}
+	else // then client
+	{
+		//DoTcpPeer();
+		DoTcpClient(StringUtils::GetCommandLineArg(2), win);
+	}
+	std::cout << " 3333333\n";
 	SocketUtil::CleanUp();
+	std::cout << " 4444444\n";
 
 	return 0;
 }
