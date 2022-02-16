@@ -1,5 +1,6 @@
 #include "RoboCatPCH.h"
 #include <iostream>
+#include <istream>
 #include <thread>
 #include <mutex>
 
@@ -30,7 +31,7 @@ void DoTcpServer()
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -72,15 +73,48 @@ void DoTcpServer()
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
+	std::string username;
+
+	std::cout << "Enter username: ";
+	std::getline(std::cin, username);
+
 	bool quit = false;
-	std::thread receiveThread([&]() { // don't use [&] :)
+	bool sendQuit = false;
+
+	std::thread sendThreadServer([&]() { // don't use [&] :)
+		std::cout << "Message: ";
+
+		while (!sendQuit) // Need to add a quit here to have it really exit!
+		{
+			std::string msg;
+
+			std::getline(std::cin, msg);
+
+			if (msg == "/exit")
+			{
+				sendQuit = true;
+				//connSocket->~TCPSocket();
+				std::cout << "User has disconnected.";
+				ExitProcess(1);
+				break;
+			}
+			else
+			{
+				msg = username + ": " + msg;
+				connSocket->Send(msg.c_str(), msg.length());
+			}
+		}
+	});
+
+	std::thread receiveThreadServer([&]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
-				// handle disconnect
+				std::cout << "User has disconnected.";
+				ExitProcess(1);
 			}
 			if (bytesReceived < 0)
 			{
@@ -89,15 +123,25 @@ void DoTcpServer()
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			
+			if (receivedMsg == "/exit")
+			{
+				std::cout << "User has disconnected.";
+				ExitProcess(1);
+			}
+			else
+			{
+				std::cout << "\n[" << incomingAddress.ToString().c_str() << "] " << receivedMsg << std::endl;
+			}
 		}
-		});
+	});
 
-	std::cout << "Press enter to exit at any time!\n";
+	/*std::cout << "Press enter to exit at any time!\n";
 	std::cin.get();
 	quit = true;
-	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
-	receiveThread.join();
+	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!*/
+	receiveThreadServer.join();
+	sendThreadServer.join();
 }
 
 void DoTcpClient(std::string port)
@@ -148,35 +192,72 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
-	std::cout << "Commands: \n EXIT - quits program \n Pressing Enter Sends Message \n";
+	std::string username;
 
-	// Send messages
-	bool stayInClient = true;
-	while (stayInClient)
-	{
-		std::string msg;
-		msg = std::cin.get();
+	std::cout << "Enter username: ";
+	std::getline(std::cin, username);
 
-		if (msg == " exit")
+	std::cout << "\nCommands: \n /exit - quits program \n Pressing Enter Sends Message \n";
+
+	bool quit = false;
+	bool sendQuit = false;
+
+	std::thread sendThreadClient([&]() { // don't use [&] :)
+		std::cout << "Message: ";
+
+		while (!sendQuit) // Need to add a quit here to have it really exit!
 		{
-			stayInClient = false;
-			clientSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
-			LOG("%s", "Command exit has been typed");
-			//receiveThread.join();
-		}
-		else
-		{
-			clientSocket->Send(msg.c_str(), msg.length());
-		}
-	}
+			std::string msg;
+			std::getline(std::cin, msg);
 
-	// Sends message every second (never quits, infinite loop)
-	/*while (true)
-	{
-		std::string msg("Hello server! How are you?");
-		clientSocket->Send(msg.c_str(), msg.length());
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}*/
+			if (msg == "/exit")
+			{
+				sendQuit = true;
+				//clientSocket->~TCPSocket();
+				std::cout << "User has disconnected.";
+				ExitProcess(1);
+				break;
+			}
+			else
+			{
+				msg = username + ": " + msg;
+				clientSocket->Send(msg.c_str(), msg.length());
+			}
+		}
+		});
+
+	std::thread receiveThreadClient([&]() { // don't use [&] :)
+		while (!quit) // Need to add a quit here to have it really exit!
+		{
+			char buffer[4096];
+			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+			if (bytesReceived == 0)
+			{
+				std::cout << "User has disconnected.";
+				ExitProcess(1);
+			}
+			if (bytesReceived < 0)
+			{
+				SocketUtil::ReportError("Receiving");
+				return;
+			}
+
+			std::string receivedMsg(buffer, bytesReceived);
+
+			if (receivedMsg == "/exit")
+			{
+				std::cout << "User has disconnected.";
+				ExitProcess(1);
+			}
+			else
+			{
+				std::cout << "\n[" << servAddress->ToString() << "] " << receivedMsg << std::endl;
+			}
+		}
+	});
+
+	receiveThreadClient.join();
+	sendThreadClient.join();
 }
 
 std::mutex coutMutex;
