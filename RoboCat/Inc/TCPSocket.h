@@ -9,9 +9,11 @@ public:
 	int32_t							Send( const void* inData, size_t inLen );
 	int32_t							Receive( void* inBuffer, size_t inLen );
 	int								SetNonBlockingMode(bool inShouldBeNonBlocking);
+
 private:
 	friend class SocketUtil;
 	TCPSocket( SOCKET inSocket ) : mSocket( inSocket ) {}
 	SOCKET		mSocket;
+	bool isDead = false;
 };
 typedef shared_ptr< TCPSocket > TCPSocketPtr;

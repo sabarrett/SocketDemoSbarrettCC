@@ -69,10 +69,10 @@ void Connect(string inputAddress, std::vector<TCPSocketPtr> &outgoingClientSocke
 }
 
 
-void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incommingClientSockets)
+void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incomingClientSockets, TCPSocketPtr &listenSocket)
 {
 	// Create socket
-	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (listenSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating listening socket");
@@ -116,20 +116,38 @@ void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incommingClientS
 	// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
 
 	LOG("%s", "Waiting to accept connections...");
-	SocketAddress incomingAddress;
-	TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
-	while (connSocket == nullptr)
+	
+
+	std::thread listenThread([&listenStatus, &incomingClientSockets, &listenSocket]()
 	{
-		connSocket = listenSocket->Accept(incomingAddress);
-		// SocketUtil::ReportError("Accepting connection");
-		// ExitProcess(1);
+		
+		
+		
+		while (listenStatus)
+		{
+			listenSocket->SetNonBlockingMode(true);
+			SocketAddress incomingAddress;
+			TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
+			connSocket = listenSocket->Accept(incomingAddress);
+			// SocketUtil::ReportError("Accepting connection");
+			// ExitProcess(1);
 
+			if (connSocket != nullptr) 
+			{
+				incomingClientSockets.push_back(connSocket);
+				LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+				
+			}
+		}
 
+		listenSocket->~TCPSocket();
+		LOG("Terminating listen thread %s", " ");
 	}
+	);
 
-	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
-	incommingClientSockets.push_back(connSocket);
-	connSocket->SetNonBlockingMode(true);
+	listenThread.detach();
+	
+	
 }
 
 
@@ -160,11 +178,13 @@ int main(int argc, const char** argv)
 	std::vector<TCPSocketPtr> incomingClientSockets;
 	std::vector<TCPSocketPtr> outgoingClientSockets;
 
+	TCPSocketPtr listenSocket;
 
 	std::thread receiveThread([&running, &incomingClientSockets, &outgoingClientSockets]()
 	{
 		while (running)
 		{
+
 			std::vector<TCPSocketPtr> deadSockets;
 
 			for (TCPSocketPtr socket : incomingClientSockets)
@@ -178,26 +198,38 @@ int main(int argc, const char** argv)
 					LOG("Received message: %s", receivedMsg.c_str());
 					//socket->SetNonBlockingMode(true);
 				}
-				else
+				else  if (bytesReceived < 0)
 				{
-					deadSockets.push_back(socket);
+					if (bytesReceived == -10035) {
+
+					}
+					else if (bytesReceived == -10054)
+					{
+						deadSockets.push_back(socket);
+					}
+
 				}
+				
 			}
 
-			
-			for (TCPSocketPtr socket : deadSockets)
-			{
-				for(std::vector<TCPSocketPtr>::iterator it = incomingClientSockets.begin(); it != incomingClientSockets.end(); it++)
+			while(deadSockets.size() > 0){
+				TCPSocketPtr socket = deadSockets[deadSockets.size() - 1];
+
+
+				for (std::vector<TCPSocketPtr>::iterator it = incomingClientSockets.begin(); it != incomingClientSockets.end(); it++)
 				{
 					if (*it == socket)
 					{
-						
+
 						incomingClientSockets.erase(it);
+						socket->~TCPSocket();
 						break;
 					}
 				}
 			}
-			deadSockets.clear();
+			
+			
+		
 
 			for (TCPSocketPtr socket : outgoingClientSockets)
 			{
@@ -210,27 +242,40 @@ int main(int argc, const char** argv)
 					LOG("Received message: %s", receivedMsg.c_str());
 					//socket->SetNonBlockingMode(true);
 				}
-				else
+				else  if (bytesReceived < 0)
 				{
-					deadSockets.push_back(socket);
+					if (bytesReceived == -10035) {
+
+					}
+					else if (bytesReceived == -10054) 
+					{
+						deadSockets.push_back(socket);
+					}
+					
 				}
+				
 			}
 
-			for (TCPSocketPtr socket : deadSockets)
+			while (deadSockets.size() > 0) 
 			{
+
+				TCPSocketPtr socket = deadSockets[deadSockets.size() - 1];
+
 				for (std::vector<TCPSocketPtr>::iterator it = outgoingClientSockets.begin(); it != outgoingClientSockets.end(); it++)
 				{
 					if (*it == socket)
 					{
+						
 
 						outgoingClientSockets.erase(it);
+						socket->~TCPSocket();
 						break;
 					}
 				}
 			}
-			deadSockets.clear();
 
-			LOG("Connections: %d", incomingClientSockets.size() + outgoingClientSockets.size());
+
+			//LOG("Connections: %d", incomingClientSockets.size() + outgoingClientSockets.size());
 
 		}	
 
@@ -277,10 +322,10 @@ int main(int argc, const char** argv)
 					if (!listenStatus)
 					{
 						listenStatus = true;
-						StartServer(listenStatus, incomingClientSockets);
+						StartServer(listenStatus, incomingClientSockets, listenSocket);
 					}
 				}
-				print("Listening...");
+				
 			}
 			else
 			{
