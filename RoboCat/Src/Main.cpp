@@ -80,14 +80,14 @@ void DoTcpServer()
 	std::string msgReceived(buffer, bytesRead);
 	LOG("Received message from %s: %s", connAddr.ToString().c_str(), msgReceived.c_str());
 
-	std::string msg("Hello, client! I am well.");
-	listenSocket->Send(msg.c_str(), msg.length());
+
+	std::string sentMsg("Hello, client! I am well.");
+	conn->Send(sentMsg.c_str(), sentMsg.length());
+	LOG("Attempt to send: %s", sentMsg.c_str());
 }
 
 void DoTcpClient()
 {
-	std::thread t(DoTcpServer);
-	//t.join();
 	// Open a TCP socket
 	TCPSocketPtr connSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (connSocket == nullptr)
@@ -98,6 +98,11 @@ void DoTcpClient()
 
 	LOG("%s", "Created client socket");
 
+	char buffer[4096];
+	
+
+	//std::thread t(connSocket->Receive(buffer, 4096));
+	//t.join();
 	//SocketAddress a2(INADDR_LOOPBACK, 8080);
 	// Listen only for connections on this machine
 	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8081");
@@ -138,12 +143,12 @@ void DoTcpClient()
 
 	LOG("%s", "Sent message to server");
 
-	char buffer[4096];
+
 	int32_t bytesRead = connSocket->Receive(buffer, 4096);
-
 	std::string msgReceived(buffer, bytesRead);
-	LOG("Received message from %s: %s",  msgReceived.c_str());
+	LOG("Received message: %s",  msgReceived.c_str());
 
+	//LOG("Thread: %s", t.get_id());
 }
 
 #if _WIN32
@@ -183,5 +188,7 @@ int main(int argc, const char** argv)
 
 	SocketUtil::CleanUp();
 
+
+	system("pause");
 	return 0;
 }
