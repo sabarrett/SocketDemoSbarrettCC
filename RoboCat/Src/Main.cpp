@@ -134,7 +134,10 @@ void DoTCPClient()
 
 	LOG("%s", "Connected to server!");
 
-	std::string msg("Hello, friend! How are you today?");
+	std::string msg("Help this is weird");
+
+	std::cout << "Please enter a message to send: " << std::endl;
+	std::cin >> msg;
 	connSocket->Send(msg.c_str(), msg.length());
 
 	LOG("%s", "Sent message to peer");
