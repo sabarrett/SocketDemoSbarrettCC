@@ -10,7 +10,7 @@ void print(string str)
 	std::cout << str << std::endl;
 }
 
-void Connect(string inputAddress, std::vector<TCPSocketPtr> &clientSockets)
+void Connect(string inputAddress, std::vector<TCPSocketPtr> &outgoingClientSockets)
 {
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -41,7 +41,7 @@ void Connect(string inputAddress, std::vector<TCPSocketPtr> &clientSockets)
 
 	// Connect() -> Connect socket to remote host
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -55,13 +55,21 @@ void Connect(string inputAddress, std::vector<TCPSocketPtr> &clientSockets)
 	}
 	else
 	{
-		clientSockets.push_back(clientSocket);
+		outgoingClientSockets.push_back(clientSocket);
 		print("Yay");
 	}
 
+
+	LOG("%s", "Connected to server!");
+
+	std::string msg("Hello server! How are you?");
+	clientSocket->Send(msg.c_str(), msg.length());
+	clientSocket->SetNonBlockingMode(true);
+
 }
 
-void StartServer( bool &listenStatus)
+
+void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incommingClientSockets)
 {
 	// Create socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -115,32 +123,15 @@ void StartServer( bool &listenStatus)
 		connSocket = listenSocket->Accept(incomingAddress);
 		// SocketUtil::ReportError("Accepting connection");
 		// ExitProcess(1);
+
+
 	}
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
-
-	
-	std::thread receiveThread([&]()
-		{ // don't use [&] :)
-			while (!listenStatus) // Need to add a quit here to have it really exit!
-			{
-				char buffer[4096];
-				int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-				if (bytesReceived == 0)
-				{
-					// handle disconnect
-				}
-				if (bytesReceived < 0)
-				{
-					SocketUtil::ReportError("Receiving");
-					return;
-				}
-
-				std::string receivedMsg(buffer, bytesReceived);
-				LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
-			}
-		});
+	incommingClientSockets.push_back(connSocket);
+	connSocket->SetNonBlockingMode(true);
 }
+
 
 
 
@@ -166,11 +157,94 @@ int main(int argc, const char** argv)
 
 	bool running = true;
 	bool listenStatus = false;
-	std::vector<TCPSocketPtr> clientSockets;
+	std::vector<TCPSocketPtr> incomingClientSockets;
+	std::vector<TCPSocketPtr> outgoingClientSockets;
+
+
+	std::thread receiveThread([&running, &incomingClientSockets, &outgoingClientSockets]()
+	{
+		while (running)
+		{
+			std::vector<TCPSocketPtr> deadSockets;
+
+			for (TCPSocketPtr socket : incomingClientSockets)
+			{
+				//socket->SetNonBlockingMode(false);
+				char buffer[4096];
+				int32_t bytesReceived = socket->Receive(buffer, 4096);
+				if (bytesReceived > 0)
+				{
+					std::string receivedMsg(buffer, bytesReceived);
+					LOG("Received message: %s", receivedMsg.c_str());
+					//socket->SetNonBlockingMode(true);
+				}
+				else
+				{
+					deadSockets.push_back(socket);
+				}
+			}
+
+			
+			for (TCPSocketPtr socket : deadSockets)
+			{
+				for(std::vector<TCPSocketPtr>::iterator it = incomingClientSockets.begin(); it != incomingClientSockets.end(); it++)
+				{
+					if (*it == socket)
+					{
+						
+						incomingClientSockets.erase(it);
+						break;
+					}
+				}
+			}
+			deadSockets.clear();
+
+			for (TCPSocketPtr socket : outgoingClientSockets)
+			{
+				//socket->SetNonBlockingMode(false);
+				char buffer[4096];
+				int32_t bytesReceived = socket->Receive(buffer, 4096);
+				if (bytesReceived > 0)
+				{
+					std::string receivedMsg(buffer, bytesReceived);
+					LOG("Received message: %s", receivedMsg.c_str());
+					//socket->SetNonBlockingMode(true);
+				}
+				else
+				{
+					deadSockets.push_back(socket);
+				}
+			}
+
+			for (TCPSocketPtr socket : deadSockets)
+			{
+				for (std::vector<TCPSocketPtr>::iterator it = outgoingClientSockets.begin(); it != outgoingClientSockets.end(); it++)
+				{
+					if (*it == socket)
+					{
+
+						outgoingClientSockets.erase(it);
+						break;
+					}
+				}
+			}
+			deadSockets.clear();
+
+			LOG("Connections: %d", incomingClientSockets.size() + outgoingClientSockets.size());
+
+		}	
+
+
+		
+	}
+	);
+
 
 	string input = "";
 	while (running)
 	{
+
+		
 		std::cin >> input;
 
 		if (input[0] == '/')
@@ -189,7 +263,7 @@ int main(int argc, const char** argv)
 				string address;
 				std::cin >> address;
 
-				Connect(address, clientSockets);
+				Connect(address, outgoingClientSockets);
 			}
 			else if (input == listen)
 			{
@@ -203,7 +277,7 @@ int main(int argc, const char** argv)
 					if (!listenStatus)
 					{
 						listenStatus = true;
-						StartServer(listenStatus);
+						StartServer(listenStatus, incomingClientSockets);
 					}
 				}
 				print("Listening...");
@@ -216,18 +290,26 @@ int main(int argc, const char** argv)
 		}
 		else
 		{
-			for (TCPSocketPtr socket : clientSockets)
+			for (TCPSocketPtr socket : incomingClientSockets)
 			{
+				
 				socket->Send(input.c_str(), input.length());
+				
+			}
+
+			for (TCPSocketPtr socket : outgoingClientSockets)
+			{
+				
+				socket->Send(input.c_str(), input.length());
+				
 			}
 		}
-
 		
 	}
 
 
+	receiveThread.join();
 	
-
 	SocketUtil::CleanUp();
 
 	return 0;
