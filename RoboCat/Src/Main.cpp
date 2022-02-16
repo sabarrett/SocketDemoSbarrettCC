@@ -5,13 +5,14 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <istream>
 
 //Global quit variable
 bool gQuit = false;
 
 void displayWelcomeMessage()
 {
-	std::cout << "\n\n\t\tWelcome to the chat room! Type your message and press Enter to send a message.\n\n";
+	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\t\tWelcome to the chat room! Type your message and press Enter to send a message.\n\n\n\n\n";
 }
 
 //void displayDisconnectMessage(bool isMe, string userName = "")
@@ -97,7 +98,7 @@ void setupTcpServer()
 		{
 			//Get input
 			std::string msgToSend;
-			std::cin >> msgToSend;
+			std::getline(std::cin, msgToSend);
 
 			//Special case - exit message
 			if (msgToSend == "/exit")
@@ -209,7 +210,7 @@ void setupTcpClient(std::string port)
 		{
 			//Get input
 			std::string msgToSend;
-			std::cin >> msgToSend;
+			std::getline(std::cin, msgToSend);
 
 			//Special case - exit message
 			if (msgToSend == "/exit")
