@@ -23,6 +23,7 @@ void DoTCPServer()
 	//SocketAddress a2(INADDR_LOOPBACK, 8080);
 	// Listen only for connections on this machine
 	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+
 	if (a == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -73,6 +74,11 @@ void DoTCPServer()
 
 	std::string msgReceived(buffer, bytesRead);
 	LOG("Received message: %s", msgReceived.c_str());
+
+	std::string msg("I am good! How about you?");
+	conn->Send(msg.c_str(), msg.length());
+
+	LOG("%s", "Sent message to peer");
 }
 
 void DoTCPClient()
@@ -93,7 +99,7 @@ void DoTCPClient()
 
 	//SocketAddress a2(INADDR_LOOPBACK, 8080);
 	// Listen only for connections on this machine
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8081");
+	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8081");
 
 	if (a == nullptr)
 	{
@@ -112,7 +118,7 @@ void DoTCPClient()
 
 	LOG("%s", "Bound socket");
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 
 	if (servAddress == nullptr)
 	{
@@ -128,10 +134,16 @@ void DoTCPClient()
 
 	LOG("%s", "Connected to server!");
 
-	std::string msg("Hello, server! How are you today?");
+	std::string msg("Hello, friend! How are you today?");
 	connSocket->Send(msg.c_str(), msg.length());
 
-	LOG("%s", "Sent message to server");
+	LOG("%s", "Sent message to peer");
+
+	char buffer[4096];
+	int32_t bytesRead = connSocket->Receive(buffer, 4096);
+
+	std::string msgReceived(buffer, bytesRead);
+	LOG("Received message: %s", msgReceived.c_str());
 }
 
 int main(int argc, const char** argv)
@@ -151,29 +163,41 @@ int main(int argc, const char** argv)
 
 	OutputWindow win;
 
-	std::thread t([&win]()
-				  {
-					  int msgNo = 1;
-					  /*while (true)
-					  {
-						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-						  std::string msgIn("~~~auto message~~~");
-						  std::stringstream ss(msgIn);
-						  ss << msgNo;
-						  win.Write(ss.str());
-						  msgNo++;
-					  }*/
-					  
-					  DoTCPServer();
-					  DoTCPClient();
-				  });
+	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
-	while (true)
+	if (isServer)
 	{
-		std::string input;
-		std::getline(std::cin, input);
-		win.WriteFromStdin(input);
+		DoTCPServer();
 	}
+
+	if (!isServer)
+	{
+		DoTCPClient();
+	}
+	
+
+	//std::thread t([&win]()
+	//			  {
+	//				  int msgNo = 1;
+	//				  /*while (true)
+	//				  {
+	//					  std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	//					  std::string msgIn("~~~auto message~~~");
+	//					  std::stringstream ss(msgIn);
+	//					  ss << msgNo;
+	//					  win.Write(ss.str());
+	//					  msgNo++;
+	//				  }*/
+	//				  
+	//				  
+	//			  });
+
+	//while (true)
+	//{
+	//	std::string input;
+	//	std::getline(std::cin, input);
+	//	win.WriteFromStdin(input);
+	//}
 
 	SocketUtil::CleanUp();
 
