@@ -12,6 +12,7 @@ void DoTCPServer()
 {
 	// Open a TCP socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+
 	if (listenSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen socket");
@@ -99,7 +100,7 @@ void DoTCPClient()
 
 	//SocketAddress a2(INADDR_LOOPBACK, 8080);
 	// Listen only for connections on this machine
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8081");
+	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8081");
 
 	if (a == nullptr)
 	{
@@ -118,7 +119,7 @@ void DoTCPClient()
 
 	LOG("%s", "Bound socket");
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
 
 	if (servAddress == nullptr)
 	{
@@ -134,11 +135,11 @@ void DoTCPClient()
 
 	LOG("%s", "Connected to server!");
 
-	std::string msg("Help this is weird");
+	char message[4096];
 
-	std::cout << "Please enter a message to send: " << std::endl;
-	std::cin >> msg;
-	connSocket->Send(msg.c_str(), msg.length());
+	printf("%s", "Please enter a message to send:");
+	scanf("%s", &message);
+	connSocket->Send(message, 4096);
 
 	LOG("%s", "Sent message to peer");
 
