@@ -298,6 +298,7 @@ int main(int argc, const char** argv)
 			if (input == exit)
 			{
 				running = false;
+				listenStatus = false;
 			}
 			else if (input == help)
 			{
