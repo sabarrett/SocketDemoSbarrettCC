@@ -45,6 +45,7 @@ void setupTcpServer()
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
+	//Ensure that your listening code can receive connections from any computer
 	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
 	if (listenAddress == nullptr)
 	{
