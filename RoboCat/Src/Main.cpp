@@ -15,6 +15,7 @@ void displayWelcomeMessage()
 	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\t\tWelcome to the chat room! Type your message and press Enter to send a message.\n\n\n\n\n";
 }
 
+//TO-DO: Come back and implement this
 //void displayDisconnectMessage(bool isMe, string userName = "")
 //{
 //	if (isMe)
@@ -44,7 +45,7 @@ void setupTcpServer()
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
