@@ -90,46 +90,54 @@ void setupTcpServer()
 	//Welcome users
 	displayWelcomeMessage();
 
-	std::thread receiveThread([&]()	//TO-DO: COME BACK - don't use [&] :)
+	//Send
+	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
 	{
 		while (!gQuit) // Need to add a quit here to have it really exit!
 		{
+			//Get input
+			std::string msgToSend;
+			std::cin >> msgToSend;
+
+			//Special case - exit message
+			if (msgToSend == "/exit")
+			{
+				gQuit = true;
+				connSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+				break;
+			}
+
+			//Send message through the socket
+			connSocket->Send(msgToSend.c_str(), msgToSend.length());
+		}
+	});
+
+	//Receive
+	std::thread receiveThread([&]()	//TO-DO: COME BACK - don't use [&] :)
+	{
+		//TO-DO: Re-evaluate if you need the same gQuit here
+		while (!gQuit)
+		{
+			//Buffer to receive strings
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-			if (bytesReceived == 0)
-			{
-				//TO-DO: handle disconnect
-				gQuit = true;
-				
-			}
+			
+			//Error check
 			if (bytesReceived < 0)
 			{
 				SocketUtil::ReportError("Receiving");
 				return;
 			}
 
+			//Unpack and display message
 			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			std::cout << "Received message from " << incomingAddress.ToString() << ": " << receivedMsg << std::endl;
 		}
 	});
 
-	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
-	{
-		while (!gQuit) // Need to add a quit here to have it really exit!
-		{
-			std::string msgToSend = "Oi there mate, 'bit rude to put my knoife in me chest, innit?";
-			connSocket->Send(msgToSend.c_str(), msgToSend.length());
-			std::cout << "Server sending message. \n";
-			std::this_thread::sleep_for(std::chrono::seconds(1));
-		}
-	});
-
-	std::cout << "Press enter to exit at any time!\n";
-	std::cin.get();
-	gQuit = true;
-	connSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
-	receiveThread.join();
+	//Join threads
 	sendThread.join();
+	receiveThread.join();
 }
 
 void setupTcpClient(std::string port)
@@ -180,9 +188,6 @@ void setupTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
-	//Welcome users
-	displayWelcomeMessage();
-
 	//We bound the client socket to the client address, but we have the client socket connected to the server address
 
 	////Client socket, connected to server address, is now listening on it -----------------------------------------WHY DO WE NOT NEED THIS?-------------------------------------------------------------
@@ -192,40 +197,58 @@ void setupTcpClient(std::string port)
 	//	ExitProcess(1);
 	//}
 
-	//while (true)
-	//{
-		std::string msg("Hello server! How are you?");
-		clientSocket->Send(msg.c_str(), msg.length());
-		//std::this_thread::sleep_for(std::chrono::seconds(1));
-	//}
+	//--------------------Chat Room--------------------
 
-	bool bQuit = false;
-	std::thread receiveThreadClient([&]() { //TO-DO: COME BACK - don't use [&] :)
-		std::cout << "receiveThreadClient running.\n";
-		while (!bQuit) // Need to add a quit here to have it really exit!
+	//Welcome users
+	displayWelcomeMessage();
+
+	//Send
+	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
+	{
+		while (!gQuit) // Need to add a quit here to have it really exit!
 		{
+			//Get input
+			std::string msgToSend;
+			std::cin >> msgToSend;
+
+			//Special case - exit message
+			if (msgToSend == "/exit")
+			{
+				gQuit = true;
+				clientSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+				break;
+			}
+
+			//Send message through the socket
+			clientSocket->Send(msgToSend.c_str(), msgToSend.length());
+		}
+	});
+
+	//Receive
+	std::thread receiveThreadClient([&]()	//TO-DO: COME BACK - don't use [&] :)
+	{
+		//TO-DO: Re-evaluate if you need the same gQuit here
+		while (!gQuit)
+		{
+			//Buffer to receive strings
 			char buffer[4096];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
-			if (bytesReceived == 0)
-			{
-				//TO-DO: handle disconnect
-				bQuit = true;
-			}
+			
+			//Error check
 			if (bytesReceived < 0)
 			{
 				SocketUtil::ReportError("Receiving");
 				return;
 			}
 
+			//Unpack and display message
 			std::string receivedMsg(buffer, bytesReceived);
-			std::cout << "Received message from %s: %s" << servAddress->ToString() << receivedMsg << std::endl;
+			std::cout << "Received message from " << servAddress->ToString() << ": " << receivedMsg << std::endl;
 		}
 	});
 
-	std::cout << "Press enter to exit at any time!\n";
-	std::cin.get();
-	bQuit = true;
-	clientSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	//Join threads
+	sendThread.join();
 	receiveThreadClient.join();
 }
 
