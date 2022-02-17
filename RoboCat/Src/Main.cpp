@@ -22,11 +22,8 @@ std::string requestMyUsername()
 {
 	//Prompt for username
 	std::string myUsername;
-	std::cout << "Enter your username, then press Enter: ";
+	std::cout << "\n\n\nEnter your username, then press Enter: ";
 	std::getline(std::cin, myUsername);
-
-	//Formatting
-	std::cout << "\n\n\nSend a message to start chatting!\n\n";
 
 	return myUsername;
 }
@@ -124,11 +121,12 @@ void setupTcpServer()
 		otherUsername.second = receivedMsg;
 	}
 
-	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+	//Display who you connected to
+	std::cout << "Connected to chat room with " << otherUsername.second << "!\n\n\n";
 
 	//--------------------Chat Room--------------------
 	
-	//Welcome users and get usernames
+	//Welcome users
 	displayWelcomeMessage();
 
 	//Send
@@ -140,9 +138,6 @@ void setupTcpServer()
 			std::string input;
 			std::getline(std::cin, input);
 
-			////Add username
-			//std::string msgToSend = otherUsername + ": " + input;
-
 			//Special case - exit message
 			if (input == "/exit")
 			{
@@ -153,10 +148,11 @@ void setupTcpServer()
 
 			//Send message through the socket
 			connSocket->Send(input.c_str(), input.length());
+			std::cout << std::endl;
 		}
 	});
 
-	//Receive
+	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
 	std::thread receiveThread([&]()	//TO-DO: COME BACK - don't use [&] :)
 	{
 		//TO-DO: Re-evaluate if you need the same gQuit here
@@ -175,9 +171,7 @@ void setupTcpServer()
 
 			//Unpack and display message
 			std::string receivedMsg(buffer, bytesReceived);
-			//std::cout << "Received message from " << incomingAddress.ToString() << ": " << receivedMsg << std::endl;
-			std::cout << "Received message from " << otherUsername.second << ": " << receivedMsg << std::endl;
-			//std::cout << "Received message from " << receivedMsg << std::endl;		//This contains the username! Yeah, it's jank, but it works
+			std::cout << "Received message from " << otherUsername.second << ": " << receivedMsg << std::endl << std::endl;
 		}
 	});
 
@@ -254,7 +248,8 @@ void setupTcpClient(std::string port)
 		otherUsername.second = receivedMsg;
 	}
 
-	LOG("%s", "Connected to server!");
+	//Display who you connected to
+	std::cout << "Connected to chat room with " << otherUsername.second << "!\n\n\n";
 
 	//We bound the client socket to the client address, but we have the client socket connected to the server address
 
@@ -267,9 +262,8 @@ void setupTcpClient(std::string port)
 
 	//--------------------Chat Room--------------------
 
-	//Welcome users and get usernames
+	//Welcome users
 	displayWelcomeMessage();
-	//requestUsername();
 
 	//Send
 	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
@@ -279,9 +273,6 @@ void setupTcpClient(std::string port)
 			//Get input
 			std::string input;
 			std::getline(std::cin, input);
-
-			////Add username
-			//std::string msgToSend = username + ": " + input;
 
 			//Special case - exit message
 			if (input == "/exit")
@@ -293,10 +284,11 @@ void setupTcpClient(std::string port)
 
 			//Send message through the socket
 			clientSocket->Send(input.c_str(), input.length());
+			std::cout << std::endl;
 		}
 	});
 
-	//Receive
+	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
 	std::thread receiveThreadClient([&]()	//TO-DO: COME BACK - don't use [&] :)
 	{
 		//TO-DO: Re-evaluate if you need the same gQuit here
@@ -315,9 +307,7 @@ void setupTcpClient(std::string port)
 
 			//Unpack and display message
 			std::string receivedMsg(buffer, bytesReceived);
-			//std::cout << "Received message from " << servAddress->ToString() << ": " << receivedMsg << std::endl;
-			std::cout << "Received message from " << otherUsername.second << ": " << receivedMsg << std::endl;
-			//std::cout << "Received message from " << receivedMsg << std::endl;	//This contains the username! Yeah, it's jank, but it works
+			std::cout << "Received message from " << otherUsername.second << ": " << receivedMsg << std::endl << std::endl;
 		}
 	});
 
@@ -344,34 +334,7 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-	//OutputWindow win;
-
-	//std::thread t([&win]()
-	//			  {
-	//				  int msgNo = 1;
-	//				  while (true)
-	//				  {
-	//					  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-	//					  std::string msgIn("~~~auto message~~~");
-	//					  std::stringstream ss(msgIn);
-	//					  ss << msgNo;
-	//					  win.Write(ss.str());
-	//					  msgNo++;
-	//				  }
-	//			  });
-
-	//while (true)
-	//{
-	//	std::string input;
-	//	std::getline(std::cin, input);
-	//	win.WriteFromStdin(input);
-	//}
-
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
-
-	//TO-DO: Custom usernames (add after welcome message and to disconnect message)
-	//std::string userName;
-	//std::getline(std::cin, userName);
 
 	//Setup server and client
 	if (isServer)
@@ -381,7 +344,7 @@ int main(int argc, const char** argv)
 	}
 	else
 	{
-		//Client codes
+		//Client code
 		setupTcpClient(StringUtils::GetCommandLineArg(2));
 	}
 
