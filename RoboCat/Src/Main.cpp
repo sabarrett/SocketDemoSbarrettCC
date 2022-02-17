@@ -147,7 +147,8 @@ void setupTcpServer()
 			if (input == "/exit")
 			{
 				gQuit = true;
-				connSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+				//connSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+				connSocket->CleanupSocket();
 				break;
 			}
 
@@ -291,7 +292,8 @@ void setupTcpClient(std::string port)
 			if (input == "/exit")
 			{
 				gQuit = true;
-				clientSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+				//clientSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+				clientSocket->CleanupSocket();
 				break;
 			}
 
