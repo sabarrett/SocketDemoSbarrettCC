@@ -43,7 +43,7 @@ void setupTcpServer(std::string port)
 
 	LOG("%s", "Listening socket created");
 
-	//Ensure that your listening code can receive connections from any computer
+	//Ensure that your listening code can receive connections from any computer (hence the 0.0.0.0)
 	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);	//Have the client enter the EXACT SAME port number as the server
 	if (listenAddress == nullptr)
 	{
@@ -167,6 +167,7 @@ void setupTcpServer(std::string port)
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 
+			//TO-DO:
 			//Send first byte as bool for user disconnect
 			//Check it with an array access [0]
 			//Exit if it says it should
