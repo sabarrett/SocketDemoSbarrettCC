@@ -78,24 +78,28 @@ void BradsTotallyOriginalServer()
 	//send data
 	std::thread t1([&]()
 		{
-			std::string msg("");
-			while (msg != "/exit")
+			//receive data
+			char buffer[4096];
+			int32_t bytesReceived = incomingSocket->Receive(buffer, 4096);
+			while (bytesReceived < 4096)
 			{
-				std::getline(std::cin, msg);
-				incomingSocket->Send(msg.c_str(), msg.length());
+				bytesReceived = incomingSocket->Receive(buffer, 4096);
+				std::string receivedMsg(buffer, bytesReceived);
+				std::cout << receivedMsg << std::endl;
+				//LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());		
 			}
 		});
-
-	//receive data
-	char buffer[4096];
-	int32_t bytesReceived = incomingSocket->Receive(buffer, 4096);
-	while (bytesReceived < 4096)
+	//t1.join();
+	
+	//send message
+	std::string msg("");
+	while (msg != "/exit")
 	{
-		bytesReceived = incomingSocket->Receive(buffer, 4096);
-		std::string receivedMsg(buffer, bytesReceived);
-		std::cout << receivedMsg << std::endl;
-		//LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());		
+		std::getline(std::cin, msg);
+		incomingSocket->Send(msg.c_str(), msg.length());
+		//LOG("%s : %s", "sent thing", msg.c_str());
 	}
+	
 }
 
 void BradsLessOriginalClient()
@@ -150,10 +154,11 @@ void BradsLessOriginalClient()
 	std::string msg("Hello You are connected!");
 	clientSocket->Send(msg.c_str(), msg.length());
 
-	std::thread t([&]()
+	std::thread ReceiveThread([&]()
 		{
 			char buffer[4096];
-			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+			int32_t bytesReceived = int32_t();
+
 			while (bytesReceived < 4096)
 			{
 				bytesReceived = clientSocket->Receive(buffer, 4096);
@@ -161,10 +166,10 @@ void BradsLessOriginalClient()
 				std::cout << receivedMsg << std::endl;
 			}
 		});
+	//ReceiveThread.join();
 
 	//OutputWindow win;
-
-	msg = "";
+	//msg = "";
 	while (msg != "/exit")
 	{
 		std::getline(std::cin, msg);
