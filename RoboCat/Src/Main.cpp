@@ -30,7 +30,7 @@ std::string requestMyUsername()
 	return myUsername;
 }
 
-void setupTcpServer()
+void setupTcpServer(std::string port)
 {
 	//--------------------Setup Server--------------------
 	// Create socket
@@ -44,7 +44,7 @@ void setupTcpServer()
 	LOG("%s", "Listening socket created");
 
 	//Ensure that your listening code can receive connections from any computer
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");	//TO-DO: Delete :8080, take as input, have the client enter the EXACT SAME port number.
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);	//Have the client enter the EXACT SAME port number as the server
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -167,7 +167,7 @@ void setupTcpServer()
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 
-			//Send first btye as bool for user disconnect
+			//Send first byte as bool for user disconnect
 			//Check it with an array access [0]
 			//Exit if it says it should
 			//Read message as remaining (cast to pointer and add 1 to the buffer so it reads starting at the firwst address)
@@ -201,7 +201,7 @@ void setupTcpServer()
 	receiveThread.join();
 }
 
-void setupTcpClient(std::string port)
+void setupTcpClient(std::string ipAddress, std::string port)
 {
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -213,7 +213,7 @@ void setupTcpClient(std::string port)
 
 	LOG("%s", "Client socket created");
 
-	std::string address = StringUtils::Sprintf("127.0.0.1:%s", "0");
+	std::string address = ipAddress + ":0";
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
 	{
@@ -231,7 +231,9 @@ void setupTcpClient(std::string port)
 
 	LOG("%s", "Bound client socket");
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");//TO-DO: Enter port that gets passed in, also input their IP address. MAKE SURE port number is the same as the server
+	std::string ip_port = ipAddress + ":" + port;
+	//SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(StringUtils::Sprintf("%s:%s", ipAddress, port));	//Use IP address and port passed into the function ip:port
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(ip_port);	//Use IP address and port passed into the function ip:port
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -385,12 +387,12 @@ int main(int argc, const char** argv)
 	if (isServer)
 	{
 		//Server code
-		setupTcpServer();	//TO-DO: mpodify to pass in string (commandLineArg(2) for port)
+		setupTcpServer(StringUtils::GetCommandLineArg(2));	//CommandLineArg(2) for port
 	}
 	else
 	{
 		//Client code
-		setupTcpClient(StringUtils::GetCommandLineArg(2));	//TO-DO: mpodify to pass in 2 strings (commandLineArg(2) for IP, commandLineArg(3) for port)
+		setupTcpClient(StringUtils::GetCommandLineArg(2), StringUtils::GetCommandLineArg(3));	//CommandLineArg(2) for IP address, CommandLineArg(3) for port
 	}
 
 	SocketUtil::CleanUp();
