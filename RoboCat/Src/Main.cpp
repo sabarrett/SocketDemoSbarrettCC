@@ -23,9 +23,10 @@ void DoTCPServer()
 
 	//SocketAddress a2(INADDR_LOOPBACK, 8080);
 	// Listen only for connections on this machine
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+	//SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+	SocketAddress a(INADDR_LOOPBACK, 8080);
 
-	if (a == nullptr)
+	if (&a == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
 		ExitProcess(1);
@@ -34,7 +35,7 @@ void DoTCPServer()
 	LOG("%s", "Create socket address");
 
 	// "Bind" that socket to the address we want to listen on
-	if (listenSocket->Bind(*a) != NO_ERROR)
+	if (listenSocket->Bind(a) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding socket");
 		ExitProcess(1);
@@ -60,7 +61,7 @@ void DoTCPServer()
 	///   connectionSocket <----> otherHost1
 	///   connectionSock2  <----> otherHost2
 
-	SocketAddress connAddr;
+	SocketAddress connAddr(INADDR_LOOPBACK, 8081);
 	TCPSocketPtr conn;
 
 	//while (conn == nullptr)
@@ -69,22 +70,30 @@ void DoTCPServer()
 	}
 
 	// This code isn't blocking anymore -- it'll run to the end of the program.
-
+	char message[4096];	
 	char buffer[4096];
-	int32_t bytesRead = conn->Receive(buffer, 4096);
 
+	int32_t bytesRead = conn->Receive(buffer, 4096);
+	
 	std::string msgReceived(buffer, bytesRead);
 	LOG("Received message: %s", msgReceived.c_str());
 
-	std::string msg("I am good! How about you?");
-	conn->Send(msg.c_str(), msg.length());
+	printf("%s", "Enter your message: ");
+	scanf("%s", &message);
+	conn->Send(message, 4096);
 
 	LOG("%s", "Sent message to peer");
+
+	if (message == "\exit")
+	{
+		return;
+	}
+	
 }
 
 void DoTCPClient()
 {
-	std::thread t(DoTCPServer);
+	//std::thread t(DoTCPServer);
 	//t.join();
 	 
 	// Open a TCP socket
@@ -100,9 +109,10 @@ void DoTCPClient()
 
 	//SocketAddress a2(INADDR_LOOPBACK, 8080);
 	// Listen only for connections on this machine
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8081");
+	//SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString(INADDR_ANY);
+	SocketAddress a(INADDR_LOOPBACK, 8081);
 
-	if (a == nullptr)
+	if (&a == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
 		ExitProcess(1);
@@ -111,7 +121,7 @@ void DoTCPClient()
 	LOG("%s", "Create socket address");
 
 	// "Bind" that socket to the address we want to listen on
-	if (connSocket->Bind(*a) != NO_ERROR)
+	if (connSocket->Bind(a) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding socket");
 		ExitProcess(1);
@@ -119,15 +129,16 @@ void DoTCPClient()
 
 	LOG("%s", "Bound socket");
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+	//SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(INADDR_ANY);
+	SocketAddress servAddress(INADDR_LOOPBACK, 8080);
 
-	if (servAddress == nullptr)
+	if (&servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
 		ExitProcess(1);
 	}
 
-	if (connSocket->Connect(*servAddress) != NO_ERROR)
+	if (connSocket->Connect(servAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Connecting to server");
 		ExitProcess(1);
@@ -136,7 +147,7 @@ void DoTCPClient()
 	LOG("%s", "Connected to server!");
 
 	char message[4096];
-
+	
 	printf("%s", "Please enter a message to send:");
 	scanf("%s", &message);
 	connSocket->Send(message, 4096);
@@ -148,6 +159,12 @@ void DoTCPClient()
 
 	std::string msgReceived(buffer, bytesRead);
 	LOG("Received message: %s", msgReceived.c_str());
+
+	if (message == "\exit")
+	{
+		return;
+	}
+	
 }
 
 int main(int argc, const char** argv)
