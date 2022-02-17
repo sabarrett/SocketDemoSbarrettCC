@@ -59,7 +59,7 @@ void DoTcpServer()
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
