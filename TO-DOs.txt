@@ -1,0 +1,9 @@
+Networking TO-DOs:
+
+. Add some way to gracefully quit -- this can either be listening for when the window closes (need to use Win32 or SDL stuff for that), or simply having a special message like "/exit" be interpreted as commanding the application to quit (much simpler).
+
+. Make sure that connections are gracefully closed on each side -- to do this, check if Receive() returned 0. That means the connection was closed. Display a message when connections are closed, even if they were forcefully closed (i.e., if Receive() returns an int < 0).
+
+EXTRA CREDIT:
+. Custom usernames
+. Display connect and disconnect messages

@@ -10,9 +10,22 @@
 //Global quit variable
 bool gQuit = false;
 
+//Username (global)
+std::string username;
+
 void displayWelcomeMessage()
 {
 	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\t\tWelcome to the chat room! Type your message and press Enter to send a message.\n\n\n\n\n";
+}
+
+void requestUsername()
+{
+	//Prompt for username
+	std::cout << "Enter your username, then press Enter: ";
+	std::getline(std::cin, username);
+
+	//Formatting
+	std::cout << "\n\n\nSend a message to start chatting!\n\n";
 }
 
 //TO-DO: Come back and implement this
@@ -90,8 +103,9 @@ void setupTcpServer()
 
 	//--------------------Chat Room--------------------
 	
-	//Welcome users
+	//Welcome users and get usernames
 	displayWelcomeMessage();
+	requestUsername();
 
 	//Send
 	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
@@ -99,8 +113,11 @@ void setupTcpServer()
 		while (!gQuit) // Need to add a quit here to have it really exit!
 		{
 			//Get input
-			std::string msgToSend;
-			std::getline(std::cin, msgToSend);
+			std::string input;
+			std::getline(std::cin, input);
+
+			//Add username
+			std::string msgToSend = username + ": " + input;
 
 			//Special case - exit message
 			if (msgToSend == "/exit")
@@ -134,7 +151,8 @@ void setupTcpServer()
 
 			//Unpack and display message
 			std::string receivedMsg(buffer, bytesReceived);
-			std::cout << "Received message from " << incomingAddress.ToString() << ": " << receivedMsg << std::endl;
+			//std::cout << "Received message from " << incomingAddress.ToString() << ": " << receivedMsg << std::endl;
+			std::cout << "Received message from " << receivedMsg << std::endl;		//This contains the username! Yeah, it's jank, but it works
 		}
 	});
 
@@ -202,8 +220,9 @@ void setupTcpClient(std::string port)
 
 	//--------------------Chat Room--------------------
 
-	//Welcome users
+	//Welcome users and get usernames
 	displayWelcomeMessage();
+	requestUsername();
 
 	//Send
 	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
@@ -211,8 +230,11 @@ void setupTcpClient(std::string port)
 		while (!gQuit) // Need to add a quit here to have it really exit!
 		{
 			//Get input
-			std::string msgToSend;
-			std::getline(std::cin, msgToSend);
+			std::string input;
+			std::getline(std::cin, input);
+
+			//Add username
+			std::string msgToSend = username + ": " + input;
 
 			//Special case - exit message
 			if (msgToSend == "/exit")
@@ -246,7 +268,8 @@ void setupTcpClient(std::string port)
 
 			//Unpack and display message
 			std::string receivedMsg(buffer, bytesReceived);
-			std::cout << "Received message from " << servAddress->ToString() << ": " << receivedMsg << std::endl;
+			//std::cout << "Received message from " << servAddress->ToString() << ": " << receivedMsg << std::endl;
+			std::cout << "Received message from " << receivedMsg << std::endl;	//This contains the username! Yeah, it's jank, but it works
 		}
 	});
 
