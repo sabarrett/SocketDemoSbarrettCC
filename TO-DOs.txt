@@ -10,16 +10,10 @@ EXTRA CREDIT:
 . Ability to leave/join other chatrooms without exiting the program
 
 
-NOTES:
-. If I enter a name on client first then server, server bugs out and doesn't update the text interface and cannot send messages.
-. Commented out error check in TCPSocket::Receive().
+PROBLEMS:
 . The person that exits will get the message that the other person exited.
 . The person that got ghosted (meaning the other exited) will NOT have their program end WITHOUT std::terminate. THIS HOWEVER GIVES AN EXCEPTION, WHICH WILL END THE PROGRAM AFTER HITTING RETRY. NOT A GOOD WAY THOUGH, NO EXCEPTIONS PLEASE!!!
+. If I enter a name on client first then server, server bugs out and doesn't update the text interface and cannot send messages.
 
 QUESTIONS:
-. //Client socket, connected to server address, is now listening on it - WHY DO WE NOT NEED THIS?
-  //if (clientSocket->Listen() != NO_ERROR)
-  //{
-  //	  SocketUtil::ReportError("Listening on listening socket");
-  //	  ExitProcess(1);
-  //}
+. Is it required we connect from different machines, or can it be on the same one for the submission?
