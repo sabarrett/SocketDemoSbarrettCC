@@ -254,13 +254,6 @@ void setupTcpClient(std::string port)
 
 	//We bound the client socket to the client address, but we have the client socket connected to the server address
 
-	////Client socket, connected to server address, is now listening on it -----------------------------------------WHY DO WE NOT NEED THIS?-------------------------------------------------------------
-	//if (clientSocket->Listen() != NO_ERROR)
-	//{
-	//	SocketUtil::ReportError("Listening on listening socket");
-	//	ExitProcess(1);
-	//}
-
 	//--------------------Chat Room--------------------
 
 	//Welcome users

@@ -15,3 +15,11 @@ NOTES:
 . Commented out error check in TCPSocket::Receive().
 . The person that exits will get the message that the other person exited.
 . The person that got ghosted (meaning the other exited) will NOT have their program end.
+
+QUESTIONS:
+. //Client socket, connected to server address, is now listening on it - WHY DO WE NOT NEED THIS?
+  //if (clientSocket->Listen() != NO_ERROR)
+  //{
+  //	  SocketUtil::ReportError("Listening on listening socket");
+  //	  ExitProcess(1);
+  //}
