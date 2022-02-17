@@ -15,7 +15,7 @@ std::pair<SocketAddress, std::string> otherUsername;
 
 void displayWelcomeMessage()
 {
-	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\t\tWelcome to the chat room! Type your message and press Enter to send a message.\n\n\n\n\n";
+	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\t\tWelcome to the chat room! Type your message and press Enter to send a message.\n\t\t\t Type '/exit' at any time to leave the room.\n\n\n\n\n";
 }
 
 std::string requestMyUsername()
@@ -24,6 +24,8 @@ std::string requestMyUsername()
 	std::string myUsername;
 	std::cout << "\n\n\nEnter your username, then press Enter: ";
 	std::getline(std::cin, myUsername);
+
+	std::cout << std::endl << std::endl;
 
 	return myUsername;
 }
@@ -52,11 +54,7 @@ void setupTcpServer()
 		ExitProcess(1);
 	}
 
-	//listenSocket->SetNonBlockingMode(true);
-
 	LOG("%s", "Listening socket created");
-
-	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
 	//Ensure that your listening code can receive connections from any computer
 	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
@@ -66,6 +64,7 @@ void setupTcpServer()
 		ExitProcess(1);
 	}
 
+	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 	if (listenSocket->Bind(*listenAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding listening socket");
@@ -74,9 +73,6 @@ void setupTcpServer()
 	}
 
 	LOG("%s", "Bound listening socket");
-
-	// Blocking function call -> Waits for some input; halts the program until something "interesting" happens
-	// Non-Blocking function call -> Returns right away, as soon as the action is completed
 
 	// Listen() - Listen on socket -> Non-blocking; tells OS we care about incoming connections on this socket
 	if (listenSocket->Listen() != NO_ERROR)
@@ -192,8 +188,6 @@ void setupTcpClient(std::string port)
 
 	LOG("%s", "Client socket created");
 
-	// Bind() - "Bind" socket -> tells OS we want to use a specific address
-
 	std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
@@ -202,6 +196,7 @@ void setupTcpClient(std::string port)
 		ExitProcess(1);
 	}
 
+	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 	if (clientSocket->Bind(*clientAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding client socket");
@@ -211,8 +206,6 @@ void setupTcpClient(std::string port)
 
 	LOG("%s", "Bound client socket");
 
-	// Connect() -> Connect socket to remote host
-
 	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 	if (servAddress == nullptr)
 	{
@@ -220,6 +213,7 @@ void setupTcpClient(std::string port)
 		ExitProcess(1);
 	}
 
+	// Connect() -> Connect socket to remote host
 	if (clientSocket->Connect(*servAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Connecting to server");
