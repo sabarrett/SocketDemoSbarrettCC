@@ -8,6 +8,58 @@
 
 #if _WIN32
 
+bool TCPServerSendMessages(TCPSocketPtr conn)
+{
+	char message[4096];
+	char buffer[4096];
+
+	int32_t bytesRead = conn->Receive(buffer, 4096);
+
+	std::string msgReceived(buffer, bytesRead);
+	LOG("Received message: %s", msgReceived.c_str());
+
+	printf("%s", "Enter your message: ");
+	scanf("%s", &message);
+	conn->Send(message, 4096);
+
+	LOG("%s", "Sent message to peer");
+
+	if (message == "\exit")
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+bool TCPClientSendMessages(TCPSocketPtr connSocket)
+{
+	char message[4096];
+
+	printf("%s", "Please enter a message to send:");
+	scanf("%s", &message);
+	connSocket->Send(message, 4096);
+
+	LOG("%s", "Sent message to peer");
+
+	char buffer[4096];
+	int32_t bytesRead = connSocket->Receive(buffer, 4096);
+
+	std::string msgReceived(buffer, bytesRead);
+	LOG("Received message: %s", msgReceived.c_str());
+
+	if (message == "\exit")
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
 void DoTCPServer()
 {
 	// Open a TCP socket
@@ -64,31 +116,19 @@ void DoTCPServer()
 	SocketAddress connAddr(INADDR_LOOPBACK, 8081);
 	TCPSocketPtr conn;
 
-	//while (conn == nullptr)
+	//while (conn != nullptr)
 	{
 		conn = listenSocket->Accept(connAddr);
 	}
 
+	bool messageOnGoing = true;
+	messageOnGoing = TCPServerSendMessages(conn);
+
 	// This code isn't blocking anymore -- it'll run to the end of the program.
-	char message[4096];	
-	char buffer[4096];
-
-	int32_t bytesRead = conn->Receive(buffer, 4096);
-	
-	std::string msgReceived(buffer, bytesRead);
-	LOG("Received message: %s", msgReceived.c_str());
-
-	printf("%s", "Enter your message: ");
-	scanf("%s", &message);
-	conn->Send(message, 4096);
-
-	LOG("%s", "Sent message to peer");
-
-	if (message == "\exit")
+	while (messageOnGoing == true)
 	{
-		return;
+		TCPServerSendMessages(conn);
 	}
-	
 }
 
 void DoTCPClient()
@@ -146,25 +186,14 @@ void DoTCPClient()
 
 	LOG("%s", "Connected to server!");
 
-	char message[4096];
+	bool messageOnGoing = true;
+	messageOnGoing = TCPClientSendMessages(connSocket);
+
 	
-	printf("%s", "Please enter a message to send:");
-	scanf("%s", &message);
-	connSocket->Send(message, 4096);
-
-	LOG("%s", "Sent message to peer");
-
-	char buffer[4096];
-	int32_t bytesRead = connSocket->Receive(buffer, 4096);
-
-	std::string msgReceived(buffer, bytesRead);
-	LOG("Received message: %s", msgReceived.c_str());
-
-	if (message == "\exit")
+	while (messageOnGoing == true)
 	{
-		return;
+		TCPClientSendMessages(connSocket);
 	}
-	
 }
 
 int main(int argc, const char** argv)
@@ -183,6 +212,10 @@ int main(int argc, const char** argv)
 	SocketUtil::StaticInit();
 
 	OutputWindow win;
+	std::thread t;
+	std::thread t2;
+	bool serverConnected = true; //i have an idea to use these to wait and track when to exit with these
+	bool clientConnected = true;
 
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
