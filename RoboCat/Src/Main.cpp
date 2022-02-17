@@ -65,41 +65,8 @@ void BradsTotallyOriginalServer()
 	
 	// CONECTION ACCEPTED WE HAVE CONTACT ==============================
 	LOG("Bleep Bloop...Accepted connection from: %s", incomingAddress.ToString().c_str());
+	ServerCommunicate(incomingSocket);
 
-	//attempt to connect back to the client
-	/*
-	if (incomingSocket->Connect(incomingAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Connecting to server");
-		ExitProcess(1);
-	}
-	*/
-
-	//send data
-	std::thread t1([&]()
-		{
-			//receive data
-			char buffer[4096];
-			int32_t bytesReceived = incomingSocket->Receive(buffer, 4096);
-			while (bytesReceived < 4096)
-			{
-				bytesReceived = incomingSocket->Receive(buffer, 4096);
-				std::string receivedMsg(buffer, bytesReceived);
-				std::cout << receivedMsg << std::endl;
-				//LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());		
-			}
-		});
-	//t1.join();
-	
-	//send message
-	std::string msg("");
-	while (msg != "/exit")
-	{
-		std::getline(std::cin, msg);
-		incomingSocket->Send(msg.c_str(), msg.length());
-		//LOG("%s : %s", "sent thing", msg.c_str());
-	}
-	
 }
 
 void BradsLessOriginalClient()
@@ -151,7 +118,63 @@ void BradsLessOriginalClient()
 
 	LOG("%s", "Connected to server!");
 	//CONECTION CREATED WE HAVE CONTACT ==============================
-	std::string msg("Hello You are connected!");
+	ClientCommunicate(clientSocket);
+	
+}
+
+void ServerCommunicate(TCPSocketPtr incomingSocket)
+{
+
+	//request username
+	std::string usernameRequest("Please Input Your Username: ");
+	incomingSocket->Send(usernameRequest.c_str(), usernameRequest.length());
+	//receive username
+	//receive data
+	char buffer[4096];
+	int32_t bytesReceived = incomingSocket->Receive(buffer, 4096); // get username
+	std::string otherUsername(buffer, bytesReceived);
+	otherUsername += ": ";
+	std::cout << otherUsername << std::endl;
+
+	//send data
+	std::thread t1([&]()
+		{
+			while (bytesReceived < 4096)
+			{
+				bytesReceived = incomingSocket->Receive(buffer, 4096);
+				std::string receivedMsg(buffer, bytesReceived);
+				std::cout << otherUsername.c_str() << receivedMsg << std::endl;
+				//LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());		
+			}
+		});
+	//t1.join();
+
+	//send message
+	std::string msg("");
+	while (msg != "/exit")
+	{
+		std::getline(std::cin, msg);
+		incomingSocket->Send(msg.c_str(), msg.length());
+		//LOG("%s : %s", "sent thing", msg.c_str());
+	}
+
+}
+
+void ClientCommunicate(TCPSocketPtr clientSocket)
+{
+	//receive username request
+	char usernameBuffer[40]; // 40 character limit on username
+	int32_t usernameBytes = int32_t();
+	while (usernameBytes < 0)
+	{
+		usernameBytes = clientSocket->Receive(usernameBuffer, 40);
+	}
+	std::string usernameString(usernameBuffer, usernameBytes);
+	std::cout << usernameString << std::endl;
+	//Fulfill username request
+
+	std::string msg;
+	std::getline(std::cin, msg);
 	clientSocket->Send(msg.c_str(), msg.length());
 
 	std::thread ReceiveThread([&]()
@@ -176,9 +199,8 @@ void BradsLessOriginalClient()
 		clientSocket->Send(msg.c_str(), msg.length());
 		//std::this_thread::sleep_for(std::chrono::milliseconds(250));
 	}
+
 }
-
-
 
 #if _WIN32
 int main(int argc, const char** argv)
