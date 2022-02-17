@@ -1,6 +1,12 @@
 Networking TO-DOs:
 
 . Make sure that connections are gracefully closed on each side -- to do this, check if Receive() returned 0. That means the connection was closed. Display a message when connections are closed, even if they were forcefully closed (i.e., if Receive() returns an int < 0).
+. Display disconnect messages
+
 
 EXTRA CREDIT:
-. Display disconnect messages
+. Connect to multiple peers at once and send and receive messages from/to each
+. Display the source of each message ("source" can be anything from a unique number for each user to the full address of the sender -- as long as it's . clear who sent which messages, it meets this criteria)
+. A "<user> is typing..." message that displays when someone else in the chatroom is typing a message.
+. Ability to leave/join other chatrooms without exiting the program
+. Allow users to set a username that will be displayed on all peers when messages arrive

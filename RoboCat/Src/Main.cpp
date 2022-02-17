@@ -126,10 +126,19 @@ void setupTcpServer()
 	displayWelcomeMessage();
 
 	//Send
-	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
+	std::thread sendThread([&connSocket]()
 	{
+		bool bClarifiedSender = false;
+
 		while (!gQuit) // Need to add a quit here to have it really exit!
 		{
+			//Formatting
+			if (!bClarifiedSender)
+			{
+				std::cout << "You: ";
+				bClarifiedSender = true;
+			}
+
 			//Get input
 			std::string input;
 			std::getline(std::cin, input);
@@ -145,11 +154,12 @@ void setupTcpServer()
 			//Send message through the socket
 			connSocket->Send(input.c_str(), input.length());
 			std::cout << std::endl;
+			bClarifiedSender = false;	//Reset
 		}
 	});
 
 	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
-	std::thread receiveThread([&]()	//TO-DO: COME BACK - don't use [&] :)
+	std::thread receiveThread([&connSocket]()
 	{
 		//TO-DO: Re-evaluate if you need the same gQuit here
 		while (!gQuit)
@@ -260,10 +270,19 @@ void setupTcpClient(std::string port)
 	displayWelcomeMessage();
 
 	//Send
-	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
+	std::thread sendThread([&clientSocket]()
 	{
+		bool bClarifiedSender = false;
+
 		while (!gQuit) // Need to add a quit here to have it really exit!
 		{
+			//Formatting
+			if (!bClarifiedSender)
+			{
+				std::cout << "You: ";
+				bClarifiedSender = true;
+			}
+
 			//Get input
 			std::string input;
 			std::getline(std::cin, input);
@@ -279,11 +298,12 @@ void setupTcpClient(std::string port)
 			//Send message through the socket
 			clientSocket->Send(input.c_str(), input.length());
 			std::cout << std::endl;
+			bClarifiedSender = false;	//Reset
 		}
 	});
 
 	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
-	std::thread receiveThreadClient([&]()	//TO-DO: COME BACK - don't use [&] :)
+	std::thread receiveThreadClient([&clientSocket]()
 	{
 		//TO-DO: Re-evaluate if you need the same gQuit here
 		while (!gQuit)
