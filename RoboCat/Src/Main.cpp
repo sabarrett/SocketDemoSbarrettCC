@@ -134,11 +134,12 @@ void setupTcpServer()
 			if (input == "/exit")
 			{
 				//Display disconnect message
-				std::cout << "You have disconnected from the chat room with " << otherUsername.second << "." << std::endl << std::endl;
+				std::cout << "\n----------You have disconnected from the chat room with " << otherUsername.second << ".----------" << std::endl << std::endl;
 
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				connSocket->CleanupSocket();
+				connSocket = nullptr;
 				break;
 			}
 
@@ -159,14 +160,15 @@ void setupTcpServer()
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			
 			//Check for connection loss
-			if (bytesReceived < 0 || bytesReceived == 0)
+			if (bytesReceived <= 0)
 			{
 				//Display disconnect message
-				std::cout << otherUsername.second << " has disconnected from the chat room." << std::endl << std::endl;
+				std::cout << "\n----------" << otherUsername.second << " has disconnected from the chat room.--------------------" << std::endl << std::endl;
 				
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				connSocket->CleanupSocket();
+				connSocket = nullptr;
 				break;
 			}
 
@@ -286,11 +288,11 @@ void setupTcpClient(std::string port)
 			if (input == "/exit")
 			{
 				//Display disconnect message
-				std::cout << "You have disconnected from the chat room with " << otherUsername.second << std::endl << std::endl;
-
+				std::cout << "\n----------You have disconnected from the chat room with " << otherUsername.second << ".----------" << std::endl << std::endl;
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				clientSocket->CleanupSocket();
+				clientSocket = nullptr;
 				break;
 			}
 
@@ -311,14 +313,15 @@ void setupTcpClient(std::string port)
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
 			
 			//Check for connection loss
-			if (bytesReceived < 0 || bytesReceived == 0)
+			if (bytesReceived <= 0)
 			{
 				//Display disconnect message
-				std::cout << otherUsername.second << " has disconnected from the chat room." << std::endl << std::endl;
+				std::cout << "\n----------" << otherUsername.second << " has disconnected from the chat room.----------" << std::endl << std::endl;
 
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				clientSocket->CleanupSocket();
+				clientSocket = nullptr;
 				break;
 			}
 
