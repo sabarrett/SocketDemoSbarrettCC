@@ -6,23 +6,17 @@
 #include <string>
 #include <sstream>
 
-std::vector<TCPSocketPtr> incomingConnections;
-std::vector<TCPSocketPtr> outgoingConnections;
-
 struct Connection
 {
 	TCPSocketPtr socketPtr;
 	std::string alias;
+	int connectionID;
 };
 
 std::vector<Connection> connections;
 
-//bool quit = false;
-
-std::string alias = "anonymous";
-
-std::string receivingAddress;
-int receivingPort;
+std::string alias = "anonymous"; // <-- Default alias.
+int nextID = 1;
 
 TCPSocketPtr OpenConnection(std::string address, std::string port)
 {
@@ -35,7 +29,7 @@ TCPSocketPtr OpenConnection(std::string address, std::string port)
 	}
 	LOG("%s", "Client socket created");
 
-	// Bind() - "Bind" socket -> tells OS we want to use a specific address
+	// Bind() - "Bind" socket -> bind to address:port - trying ports 64000-64100
 	bool socketBound = false;
 	int localPort = 64000;
 	while (!socketBound && localPort <= 64100)
@@ -53,8 +47,6 @@ TCPSocketPtr OpenConnection(std::string address, std::string port)
 		}
 		else
 		{
-			receivingAddress = "127.0.0.1";
-			receivingPort = localPort;
 			socketBound = true;
 			LOG("Bound client socket to %s", myIPAddr.c_str());
 		}
@@ -75,13 +67,17 @@ TCPSocketPtr OpenConnection(std::string address, std::string port)
 	}
 	LOG("%s", "Connected to server!");
 
-	std::string msg = StringUtils::Sprintf("%s is here!", alias.c_str());
+	// Announce arrival and update alias for other clients
+	std::string msg = StringUtils::Sprintf("/CHANGEALIAS %s is here!", alias.c_str());
 	clientSocket->Send(msg.c_str(), msg.length());
 
+	// Add to connections list
 	Connection connection;
 	connection.socketPtr = clientSocket;
 	connection.socketPtr->SetNonBlockingMode(true);
 	connection.alias = alias;
+	connection.connectionID = nextID;
+	nextID++;
 	connections.push_back(connection);
 
 	return clientSocket;
@@ -102,11 +98,11 @@ int main(int argc, const char** argv)
 	__argc = argc;
 	__argv = argv;
 #endif
-
-	SocketUtil::StaticInit();
-	//SocketUtil::CleanUp();
+	
 	bool quit = false;
 	OutputWindow win;
+
+	SocketUtil::StaticInit();
 
 	std::thread t1([&win, &quit]()
 				  {
@@ -119,12 +115,12 @@ int main(int argc, const char** argv)
 			}
 			LOG("%s", "Listening socket created");
 
-			// Bind() - "Bind" socket -> tells OS we want to use a specific address
+			// Bind listener to address:port, trying other ports if 8080 is taken - allows for multiple unique instances on one device.
 			bool socketBound = false;
 			int port = 8080;
 			while (!socketBound && port <= 8090)
 			{
-				std::string IPAddr = StringUtils::Sprintf("127.0.0.1:%d", port);
+				std::string IPAddr = StringUtils::Sprintf("0.0.0.0:%d", port);
 				SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString(IPAddr);
 				if (listenAddress == nullptr)
 				{
@@ -137,8 +133,6 @@ int main(int argc, const char** argv)
 				}
 				else
 				{
-					receivingAddress = "127.0.0.1";
-					receivingPort = port;
 					socketBound = true;
 					LOG("Bound listening socket to %s", IPAddr.c_str());
 				}
@@ -152,24 +146,23 @@ int main(int argc, const char** argv)
 			}
 			LOG("%s", "Waiting to accept connections...");
 
+			// Do non-blocking accept loop while running
 			listenSocket->SetNonBlockingMode(true);
 			SocketAddress incomingAddress;
-			TCPSocketPtr connSocket;// = nullptr;// = listenSocket->Accept(incomingAddress);
+			TCPSocketPtr connSocket;
 			while (!quit)
 			{
 				connSocket = listenSocket->Accept(incomingAddress);
-				/*while (connSocket == nullptr)
-				{
-					connSocket = listenSocket->Accept(incomingAddress);
-				}*/
 				if (connSocket != nullptr)
 				{
 					Connection connection;
 					connSocket->SetNonBlockingMode(true);
 					connection.socketPtr = connSocket;
+					connection.connectionID = nextID;
+					nextID++;
 					connections.push_back(connection);
-					LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
-					std::string msg = StringUtils::Sprintf("Connected to %s!", alias.c_str());
+					LOG("-------------Accepted connection from %s-------------", incomingAddress.ToString().c_str());
+					std::string msg = StringUtils::Sprintf("-------------Connected to %s!-------------", alias.c_str());
 					connSocket->Send(msg.c_str(), msg.length());
 				}
 			}
@@ -179,14 +172,15 @@ int main(int argc, const char** argv)
 
 	std::thread t2([&win, &quit]()
 		{
-			// Write all received messages
+			// While running
 			while (!quit)
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(250));
-				for (int i = 0; i < connections.size(); i++)
+				std::this_thread::sleep_for(std::chrono::milliseconds(40)); // Without this sleep, the thread may occasionally begin attempting Receive on a VERY fresh socket(), 
+				for (int i = 0; i < connections.size(); i++)				//^throwing an error. The documentation specifies that "some time must pass" between an accept and Receive().
 				{
 					if (connections[i].socketPtr != nullptr)
 					{
+						// Write messages from each connection
 						char buffer[4096];
 						int32_t bytesReceived = connections[i].socketPtr->Receive(buffer, 4096);
 						if (bytesReceived > 0)
@@ -208,20 +202,22 @@ int main(int argc, const char** argv)
 							}
 							if (connections[i].alias.length() > 0)
 							{
-								LOG("%s: %s", connections[i].alias.c_str(), receivedMsg.c_str());
+								// Write message
+								LOG("%d - %s: %s", connections[i].connectionID, connections[i].alias.c_str(), receivedMsg.c_str());
 							}
-							else
+							else 
 							{
-								LOG("Unkown: %s", receivedMsg.c_str());
+								// Write Message with no alias
+								LOG("%d - Unkown: %s", connections[i].connectionID, receivedMsg.c_str());
 							}
 						}
 						else if (bytesReceived == 0 || SocketUtil::GetLastError() == 10054)
 						{
-							LOG("%s has disconnected", connections[i].alias.c_str());
+							// Connection closed, forecfully or otherwise - discard.
+							LOG("-------------%s has disconnected-------------", connections[i].alias.c_str());
 							connections[i].socketPtr->CleanUp();
 							connections.erase(connections.begin() + i);
 						}
-						
 					}
 				}
 			}
@@ -234,12 +230,19 @@ int main(int argc, const char** argv)
 		std::getline(std::cin, input);
 		//win.WriteFromStdin(input);
 		win.Write(input);
+
+		// Read inputs to check for commands
+		// /connect IPAddr PortNumber - connect to a peer -> Peers do not syndicate other peers: To form a chat "room", peers must connect to each person they want to talk to.
+		// /disconnect ID - close specified connection
+		// /alias - change name
+		// /list - shows all active connections by ID and alias
+		// /tell ID - sends message to specified ID
+		// /exit - disconnect all and close program
+		// IF NO COMMAND is detected -> sends typed message to all connections.
 		char* inputC = new char[input.length() + 1];
 		strcpy(inputC, input.c_str());
 		char delim[] = " ";
-
 		char* ptr = strtok(inputC, delim);
-
 		while (ptr != NULL)
 		{
 			if (strcmp(ptr, "/connect") == 0)
@@ -254,16 +257,19 @@ int main(int argc, const char** argv)
 
 				ptr = NULL;
 			}
-			else if (ptr != NULL && strcmp(ptr, "/exit") == 0)
+			else if (ptr != NULL && strcmp(ptr, "/disconnect") == 0)
 			{
+				ptr = strtok(NULL, delim);
+				std::string const disconnectID(ptr);
 				for (int i = 0; i < connections.size(); i++)
 				{
-					connections[i].socketPtr->CleanUp();
+					if (connections[i].connectionID == std::stoi(disconnectID))
+					{
+						LOG("-------------Disconnected from %d - %s-------------", connections[i].connectionID, connections[i].alias.c_str());
+						connections[i].socketPtr->CleanUp();
+						connections.erase(connections.begin() + i);
+					}
 				}
-				connections.clear();
-				quit = true;
-				t1.join();
-				t2.join();
 				ptr = NULL;
 			}
 			else if (ptr != NULL && strcmp(ptr, "/alias") == 0)
@@ -278,7 +284,42 @@ int main(int argc, const char** argv)
 				}
 				ptr = NULL;
 			}
-			else
+			else if (ptr != NULL && strcmp(ptr, "/list") == 0)
+			{
+				LOG("-------------Active Connections-------------", 0);
+				for (int i = 0; i < connections.size(); i++)
+				{
+					LOG("%d - %s", connections[i].connectionID, connections[i].alias.c_str());
+				}
+				LOG("--------------------------------------------", 0);
+				ptr = NULL;
+			}
+			else if (ptr != NULL && strcmp(ptr, "/tell") == 0)
+			{
+				ptr = strtok(NULL, delim);
+				std::string const tellID(ptr);
+				for (int i = 0; i < connections.size(); i++)
+				{
+					if (connections[i].socketPtr != nullptr && connections[i].connectionID == std::stoi(tellID))
+					{
+						connections[i].socketPtr->Send(input.c_str(), input.length());
+					}
+				}
+				ptr = NULL;
+			}
+			else if (ptr != NULL && strcmp(ptr, "/exit") == 0)
+			{
+				for (int i = 0; i < connections.size(); i++)
+				{
+					connections[i].socketPtr->CleanUp();
+				}
+				connections.clear();
+				quit = true;
+				t1.join();
+				t2.join();
+				ptr = NULL;
+			}
+			else // Send to all by default
 			{
 				for (int i = 0; i < connections.size(); i++)
 				{
