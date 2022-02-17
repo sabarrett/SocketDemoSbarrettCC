@@ -5,5 +5,4 @@ Networking TO-DOs:
 . Make sure that connections are gracefully closed on each side -- to do this, check if Receive() returned 0. That means the connection was closed. Display a message when connections are closed, even if they were forcefully closed (i.e., if Receive() returns an int < 0).
 
 EXTRA CREDIT:
-. Custom usernames
 . Display connect and disconnect messages

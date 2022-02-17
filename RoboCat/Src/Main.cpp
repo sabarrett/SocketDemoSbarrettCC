@@ -10,22 +10,25 @@
 //Global quit variable
 bool gQuit = false;
 
-//Username (global)
-std::string username;
+//The other user's username --------------------------- TO-DO: MAKE THIS A LIST IF YOU WANT MULTIPLE USERS
+std::pair<SocketAddress, std::string> otherUsername;
 
 void displayWelcomeMessage()
 {
 	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\t\tWelcome to the chat room! Type your message and press Enter to send a message.\n\n\n\n\n";
 }
 
-void requestUsername()
+std::string requestMyUsername()
 {
 	//Prompt for username
+	std::string myUsername;
 	std::cout << "Enter your username, then press Enter: ";
-	std::getline(std::cin, username);
+	std::getline(std::cin, myUsername);
 
 	//Formatting
 	std::cout << "\n\n\nSend a message to start chatting!\n\n";
+
+	return myUsername;
 }
 
 //TO-DO: Come back and implement this
@@ -99,13 +102,34 @@ void setupTcpServer()
 		// ExitProcess(1);
 	}
 
+	{
+		//Send username
+		std:: string myName = requestMyUsername();
+		connSocket->Send(myName.c_str(), myName.length());
+
+		//Save received username
+		char buffer[4096];
+		int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+
+		//Error check
+		if (bytesReceived < 0)
+		{
+			SocketUtil::ReportError("Receiving");
+			return;
+		}
+
+		//Save received username and socket address
+		std::string receivedMsg(buffer, bytesReceived);
+		otherUsername.first = incomingAddress;
+		otherUsername.second = receivedMsg;
+	}
+
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
 	//--------------------Chat Room--------------------
 	
 	//Welcome users and get usernames
 	displayWelcomeMessage();
-	requestUsername();
 
 	//Send
 	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
@@ -116,11 +140,11 @@ void setupTcpServer()
 			std::string input;
 			std::getline(std::cin, input);
 
-			//Add username
-			std::string msgToSend = username + ": " + input;
+			////Add username
+			//std::string msgToSend = otherUsername + ": " + input;
 
 			//Special case - exit message
-			if (msgToSend == "/exit")
+			if (input == "/exit")
 			{
 				gQuit = true;
 				connSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
@@ -128,7 +152,7 @@ void setupTcpServer()
 			}
 
 			//Send message through the socket
-			connSocket->Send(msgToSend.c_str(), msgToSend.length());
+			connSocket->Send(input.c_str(), input.length());
 		}
 	});
 
@@ -152,7 +176,8 @@ void setupTcpServer()
 			//Unpack and display message
 			std::string receivedMsg(buffer, bytesReceived);
 			//std::cout << "Received message from " << incomingAddress.ToString() << ": " << receivedMsg << std::endl;
-			std::cout << "Received message from " << receivedMsg << std::endl;		//This contains the username! Yeah, it's jank, but it works
+			std::cout << "Received message from " << otherUsername.second << ": " << receivedMsg << std::endl;
+			//std::cout << "Received message from " << receivedMsg << std::endl;		//This contains the username! Yeah, it's jank, but it works
 		}
 	});
 
@@ -207,6 +232,28 @@ void setupTcpClient(std::string port)
 		ExitProcess(1);
 	}
 
+	{
+		//Send username
+		std::string myName = requestMyUsername();
+		clientSocket->Send(myName.c_str(), myName.length());
+
+		//Save received username
+		char buffer[4096];
+		int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+
+		//Error check
+		if (bytesReceived < 0)
+		{
+			SocketUtil::ReportError("Receiving");
+			return;
+		}
+
+		//Save received username and socket address
+		std::string receivedMsg(buffer, bytesReceived);
+		otherUsername.first = *servAddress;
+		otherUsername.second = receivedMsg;
+	}
+
 	LOG("%s", "Connected to server!");
 
 	//We bound the client socket to the client address, but we have the client socket connected to the server address
@@ -222,7 +269,7 @@ void setupTcpClient(std::string port)
 
 	//Welcome users and get usernames
 	displayWelcomeMessage();
-	requestUsername();
+	//requestUsername();
 
 	//Send
 	std::thread sendThread([&]()	//TO-DO: COME BACK - don't use [&] :)
@@ -233,11 +280,11 @@ void setupTcpClient(std::string port)
 			std::string input;
 			std::getline(std::cin, input);
 
-			//Add username
-			std::string msgToSend = username + ": " + input;
+			////Add username
+			//std::string msgToSend = username + ": " + input;
 
 			//Special case - exit message
-			if (msgToSend == "/exit")
+			if (input == "/exit")
 			{
 				gQuit = true;
 				clientSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
@@ -245,7 +292,7 @@ void setupTcpClient(std::string port)
 			}
 
 			//Send message through the socket
-			clientSocket->Send(msgToSend.c_str(), msgToSend.length());
+			clientSocket->Send(input.c_str(), input.length());
 		}
 	});
 
@@ -269,7 +316,8 @@ void setupTcpClient(std::string port)
 			//Unpack and display message
 			std::string receivedMsg(buffer, bytesReceived);
 			//std::cout << "Received message from " << servAddress->ToString() << ": " << receivedMsg << std::endl;
-			std::cout << "Received message from " << receivedMsg << std::endl;	//This contains the username! Yeah, it's jank, but it works
+			std::cout << "Received message from " << otherUsername.second << ": " << receivedMsg << std::endl;
+			//std::cout << "Received message from " << receivedMsg << std::endl;	//This contains the username! Yeah, it's jank, but it works
 		}
 	});
 
