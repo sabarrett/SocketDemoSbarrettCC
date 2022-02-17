@@ -75,6 +75,7 @@ void DoTcpServer()
 	while (bytesReceived < 0)
 	{
 		bytesReceived = connSocket->Receive(buffer, 4096);
+		
 	}
 	std::string receivedMsg(buffer, bytesReceived);
 	LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
