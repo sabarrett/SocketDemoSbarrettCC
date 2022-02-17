@@ -213,8 +213,7 @@ void setupTcpClient(std::string ipAddress, std::string port)
 
 	LOG("%s", "Client socket created");
 
-	std::string address = ipAddress + ":0";
-	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(ipAddress + ":0");
 	if (clientAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating client address");
@@ -231,9 +230,7 @@ void setupTcpClient(std::string ipAddress, std::string port)
 
 	LOG("%s", "Bound client socket");
 
-	std::string ip_port = ipAddress + ":" + port;
-	//SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(StringUtils::Sprintf("%s:%s", ipAddress, port));	//Use IP address and port passed into the function ip:port
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(ip_port);	//Use IP address and port passed into the function ip:port
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(ipAddress + ":" + port);	//Use IP address and port passed into the function ip:port
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
