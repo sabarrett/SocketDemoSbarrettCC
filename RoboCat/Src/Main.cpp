@@ -92,7 +92,7 @@ void setupTcpServer()
 		int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 
 		//Error check
-		if (bytesReceived < 0)
+		if (bytesReceived <= 0)
 		{
 			SocketUtil::ReportError("Receiving");
 			return;
@@ -237,7 +237,7 @@ void setupTcpClient(std::string port)
 		int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
 
 		//Error check
-		if (bytesReceived < 0)
+		if (bytesReceived <= 0)
 		{
 			SocketUtil::ReportError("Receiving");
 			return;

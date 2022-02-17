@@ -1,6 +1,6 @@
 Networking TO-DOs:
 
-. Make sure that connections are gracefully closed on each side -- to do this, check if Receive() returned 0. That means the connection was closed. Display a message when connections are closed, even if they were forcefully closed (i.e., if Receive() returns an int < 0).
+MINIMUM:
 . Make it clear what you send vs what you received (fix "You: ")
 
 
@@ -8,3 +8,10 @@ EXTRA CREDIT:
 . Connect to multiple peers at once and send and receive messages from/to each
 . A "<user> is typing..." message that displays when someone else in the chatroom is typing a message.
 . Ability to leave/join other chatrooms without exiting the program
+
+
+NOTES:
+. If I enter a name on client first then server, server bugs out and doesn't update the text interface and cannot send messages.
+. Commented out error check in TCPSocket::Receive().
+. The person that exits will get the message that the other person exited.
+. The person that got ghosted (meaning the other exited) will NOT have their program end.
