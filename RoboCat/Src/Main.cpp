@@ -44,7 +44,7 @@ void setupTcpServer()
 	LOG("%s", "Listening socket created");
 
 	//Ensure that your listening code can receive connections from any computer
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");	//TO-DO: Delete :8080, take as input, have the client enter the EXACT SAME port number.
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -166,6 +166,12 @@ void setupTcpServer()
 			//Buffer to receive strings
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+
+			//Send first btye as bool for user disconnect
+			//Check it with an array access [0]
+			//Exit if it says it should
+			//Read message as remaining (cast to pointer and add 1 to the buffer so it reads starting at the firwst address)
+			//Look into reinterpreting casts
 			
 			//Check for connection loss
 			if (bytesReceived <= 0)
@@ -207,7 +213,7 @@ void setupTcpClient(std::string port)
 
 	LOG("%s", "Client socket created");
 
-	std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
+	std::string address = StringUtils::Sprintf("127.0.0.1:%s", "0");
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
 	{
@@ -225,7 +231,7 @@ void setupTcpClient(std::string port)
 
 	LOG("%s", "Bound client socket");
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");//TO-DO: Enter port that gets passed in, also input their IP address. MAKE SURE port number is the same as the server
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -372,18 +378,19 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
+	//0-indexed
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
 	//Setup server and client
 	if (isServer)
 	{
 		//Server code
-		setupTcpServer();
+		setupTcpServer();	//TO-DO: mpodify to pass in string (commandLineArg(2) for port)
 	}
 	else
 	{
 		//Client code
-		setupTcpClient(StringUtils::GetCommandLineArg(2));
+		setupTcpClient(StringUtils::GetCommandLineArg(2));	//TO-DO: mpodify to pass in 2 strings (commandLineArg(2) for IP, commandLineArg(3) for port)
 	}
 
 	SocketUtil::CleanUp();

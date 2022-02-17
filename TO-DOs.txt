@@ -2,6 +2,7 @@ Networking TO-DOs:
 
 MINIMUM:
 . Make it clear what you send vs what you received (fix "You: ")
+. Input IP address so different machines can communicate together.
 
 
 EXTRA CREDIT:
