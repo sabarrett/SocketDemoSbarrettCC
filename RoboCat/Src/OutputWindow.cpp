@@ -4,6 +4,7 @@
 OutputWindow::OutputWindow() : lineN(0)
 {
     output = GetStdHandle(STD_OUTPUT_HANDLE);
+
     MoveCursorToScreenBottom();
 }
 
