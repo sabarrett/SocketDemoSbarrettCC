@@ -11,21 +11,20 @@ std::vector<TCPSocketPtr> outgoingConnections;
 
 struct Connection
 {
-	TCPSocketPtr inSocketPtr;
-	TCPSocketPtr outSocketPtr;
+	TCPSocketPtr socketPtr;
 	std::string alias;
 };
 
 std::vector<Connection> connections;
 
-bool quit = false;
+//bool quit = false;
 
 std::string alias = "anonymous";
 
 std::string receivingAddress;
 int receivingPort;
 
-TCPSocketPtr OpenConnection(std::string address, std::string port, bool theyInitiated)
+TCPSocketPtr OpenConnection(std::string address, std::string port)
 {
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -38,11 +37,11 @@ TCPSocketPtr OpenConnection(std::string address, std::string port, bool theyInit
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 	bool socketBound = false;
-	int localPort = 50;
-	while (!socketBound && localPort <= 60)
+	int localPort = 64000;
+	while (!socketBound && localPort <= 64100)
 	{
-		std::string IPAddr = StringUtils::Sprintf("%s:%d", "127.0.0.1", localPort);
-		SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(IPAddr);
+		std::string myIPAddr = StringUtils::Sprintf("%s:%d", "127.0.0.1", localPort);
+		SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(myIPAddr);
 		if (clientAddress == nullptr)
 		{
 			SocketUtil::ReportError("Creating client address");
@@ -57,139 +56,36 @@ TCPSocketPtr OpenConnection(std::string address, std::string port, bool theyInit
 			receivingAddress = "127.0.0.1";
 			receivingPort = localPort;
 			socketBound = true;
-			LOG("Bound client socket to %s", IPAddr.c_str());
+			LOG("Bound client socket to %s", myIPAddr.c_str());
 		}
 	}
 
 	// Connect() -> Connect socket to remote host
 	std::string serverAddressString = StringUtils::Sprintf("%s:%s", address.c_str(), port.c_str());
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(serverAddressString);
-	if (servAddress == nullptr)
+	SocketAddressPtr serverAddress = SocketAddressFactory::CreateIPv4FromString(serverAddressString);
+	if (serverAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
 		ExitProcess(1);
 	}
-	if (clientSocket->Connect(*servAddress) != NO_ERROR)
+	if (clientSocket->Connect(*serverAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Connecting to server");
 		ExitProcess(1);
 	}
 	LOG("%s", "Connected to server!");
 
-	std::string returnAddress = StringUtils::Sprintf("/RETURNCONNECTION %s %d", receivingAddress.c_str(), receivingPort);
-	clientSocket->Send(returnAddress.c_str(), returnAddress.length());
-
 	std::string msg = StringUtils::Sprintf("%s is here!", alias.c_str());
 	clientSocket->Send(msg.c_str(), msg.length());
 
-	if (!theyInitiated)
-	{
-		Connection Connection;
-		Connection.outSocketPtr = clientSocket;
-		connections.push_back(Connection);
-	}
+	Connection connection;
+	connection.socketPtr = clientSocket;
+	connection.socketPtr->SetNonBlockingMode(true);
+	connection.alias = alias;
+	connections.push_back(connection);
+
 	return clientSocket;
 }
-
-void DoTcpServer()
-{
-	// Create socket
-	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	if (listenSocket == nullptr)
-	{
-		SocketUtil::ReportError("Creating listening socket");
-		ExitProcess(1);
-	}
-	LOG("%s", "Listening socket created");
-
-	// Bind() - "Bind" socket -> tells OS we want to use a specific address
-	bool socketBound = false;
-	int port = 8080;
-	while (!socketBound && port <= 8090)
-	{
-		std::string IPAddr = StringUtils::Sprintf("127.0.0.1:%d", port);
-		SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString(IPAddr);
-		if (listenAddress == nullptr)
-		{
-			SocketUtil::ReportError("Creating listen address");
-		}
-		if (listenSocket->Bind(*listenAddress) != NO_ERROR)
-		{
-			SocketUtil::ReportError("Binding listening socket");
-			port++;
-		}
-		else
-		{
-			receivingAddress = "127.0.0.1";
-			receivingPort = port;
-			socketBound = true;
-			LOG("Bound listening socket to %s", IPAddr.c_str());
-		}
-	}
-	
-
-	// Listen() - Listen on socket -> Non-blocking; tells OS we care about incoming connections on this socket
-	if (listenSocket->Listen() != NO_ERROR)
-	{
-		SocketUtil::ReportError("Listening on listening socket");
-		ExitProcess(1);
-	}
-	LOG("%s", "Listening on socket");
-
-	//SocketAddress incomingAddress;
-	//TCPSocketPtr connSocket; 
-	//connSocket->SetNonBlockingMode(true);
-	//while (!quit)
-	//{
-	//	connSocket = listenSocket->Accept(incomingAddress);
-	//	if (connSocket != nullptr)
-	//	{
-	//		incomingConnections.push_back(connSocket);
-	//		LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
-	//	}
-	//}
-
-	LOG("%s", "Waiting to accept connections...");
-	SocketAddress incomingAddress;
-	TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
-	while (connSocket == nullptr)
-	{
-		connSocket = listenSocket->Accept(incomingAddress);
-		// SocketUtil::ReportError("Accepting connection");
-		// ExitProcess(1);
-	}
-	Connection connection;
-	connection.inSocketPtr = connSocket;
-	char buffer[4096];
-	int32_t bytesReceived = connection.inSocketPtr->Receive(buffer, 4096);
-	std::string receivedMsg(buffer, bytesReceived);
-	char* inputC = new char[receivedMsg.length() + 1];
-	strcpy(inputC, receivedMsg.c_str());
-	char delim[] = " ";
-	char* ptr = strtok(inputC, delim);
-	while (ptr != NULL)
-	{
-		if (strcmp(ptr, "/RETURNCONNECTION") == 0)
-		{
-			ptr = strtok(NULL, delim);
-			std::string newAddress(ptr);
-
-			ptr = strtok(NULL, delim);
-			std::string newPort(ptr);
-
-			connection.outSocketPtr = OpenConnection(newAddress, newPort, true);
-		}
-		ptr = NULL;
-	}
-
-	//Connection.outSocketPtr = OpenConnection();
-	connections.push_back(connection);
-	//incomingConnections.push_back(connSocket);
-	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
-}
-
-
-
 
 #if _WIN32
 
@@ -208,49 +104,128 @@ int main(int argc, const char** argv)
 #endif
 
 	SocketUtil::StaticInit();
-
-	//DoTcpServer();
-
+	//SocketUtil::CleanUp();
+	bool quit = false;
 	OutputWindow win;
-	std::thread t1([&win]()
+
+	std::thread t1([&win, &quit]()
 				  {
-					  DoTcpServer();
-					  int msgNo = 1;
-					  /*while (!quit)
-					  {
-						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-						  std::string msgIn("noQuit");
-						  std::stringstream ss(msgIn);
-						  ss << msgNo;
-						  win.Write(ss.str());
-						  msgNo++;
-					  }*/
+			// Create listener socket
+			TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+			if (listenSocket == nullptr)
+			{
+				SocketUtil::ReportError("Creating listening socket");
+				ExitProcess(1);
+			}
+			LOG("%s", "Listening socket created");
+
+			// Bind() - "Bind" socket -> tells OS we want to use a specific address
+			bool socketBound = false;
+			int port = 8080;
+			while (!socketBound && port <= 8090)
+			{
+				std::string IPAddr = StringUtils::Sprintf("127.0.0.1:%d", port);
+				SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString(IPAddr);
+				if (listenAddress == nullptr)
+				{
+					SocketUtil::ReportError("Creating listen address");
+				}
+				if (listenSocket->Bind(*listenAddress) != NO_ERROR)
+				{
+					SocketUtil::ReportError("Binding listening socket");
+					port++;
+				}
+				else
+				{
+					receivingAddress = "127.0.0.1";
+					receivingPort = port;
+					socketBound = true;
+					LOG("Bound listening socket to %s", IPAddr.c_str());
+				}
+			}
+
+			// Listen() - Listen on socket -> Non-blocking; tells OS we care about incoming connections on this socket
+			if (listenSocket->Listen() != NO_ERROR)
+			{
+				SocketUtil::ReportError("Listening on listening socket");
+				ExitProcess(1);
+			}
+			LOG("%s", "Waiting to accept connections...");
+
+			listenSocket->SetNonBlockingMode(true);
+			SocketAddress incomingAddress;
+			TCPSocketPtr connSocket;// = nullptr;// = listenSocket->Accept(incomingAddress);
+			while (!quit)
+			{
+				connSocket = listenSocket->Accept(incomingAddress);
+				/*while (connSocket == nullptr)
+				{
+					connSocket = listenSocket->Accept(incomingAddress);
+				}*/
+				if (connSocket != nullptr)
+				{
+					Connection connection;
+					connSocket->SetNonBlockingMode(true);
+					connection.socketPtr = connSocket;
+					connections.push_back(connection);
+					LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+					std::string msg = StringUtils::Sprintf("Connected to %s!", alias.c_str());
+					connSocket->Send(msg.c_str(), msg.length());
+				}
+			}
+			listenSocket->CleanUp();
+			return;
 				  });
 
-	std::thread t2([&win]()
+	std::thread t2([&win, &quit]()
 		{
 			// Write all received messages
 			while (!quit)
 			{
-				for (const auto& connection : connections)
+				std::this_thread::sleep_for(std::chrono::milliseconds(250));
+				for (int i = 0; i < connections.size(); i++)
 				{
-					if (connection.inSocketPtr != nullptr)
+					if (connections[i].socketPtr != nullptr)
 					{
 						char buffer[4096];
-						int32_t bytesReceived = connection.inSocketPtr->Receive(buffer, 4096);
-						while (bytesReceived < 0)
+						int32_t bytesReceived = connections[i].socketPtr->Receive(buffer, 4096);
+						if (bytesReceived > 0)
 						{
-							bytesReceived = connection.inSocketPtr->Receive(buffer, 4096);
+							std::string receivedMsg(buffer, bytesReceived);
+							char* inputC = new char[receivedMsg.length() + 1];
+							strcpy(inputC, receivedMsg.c_str());
+							char delim[] = " ";
+							char* ptr = strtok(inputC, delim);
+							while (ptr != NULL)
+							{
+								if (ptr != NULL && strcmp(ptr, "/CHANGEALIAS") == 0)
+								{
+									ptr = strtok(NULL, delim);
+									std::string newAlias(ptr);
+									connections[i].alias = newAlias;
+								}
+								ptr = NULL;
+							}
+							if (connections[i].alias.length() > 0)
+							{
+								LOG("%s: %s", connections[i].alias.c_str(), receivedMsg.c_str());
+							}
+							else
+							{
+								LOG("Unkown: %s", receivedMsg.c_str());
+							}
 						}
-						std::string receivedMsg(buffer, bytesReceived);
-						if (connection.alias.length() > 0)
+						else if (bytesReceived == 0 || SocketUtil::GetLastError() == 10054)
 						{
-							LOG("%s: %s", connection.alias.c_str(), receivedMsg.c_str());
+							LOG("%s has disconnected", connections[i].alias.c_str());
+							connections[i].socketPtr->CleanUp();
+							connections.erase(connections.begin() + i);
 						}
-						LOG("Unkown: %s", receivedMsg.c_str());
+						
 					}
 				}
 			}
+			return;
 		});
 
 	while (!quit)
@@ -275,29 +250,46 @@ int main(int argc, const char** argv)
 				ptr = strtok(NULL, delim);
 				std::string newPort(ptr);
 
-				OpenConnection(newAddress, newPort, false);
+				OpenConnection(newAddress, newPort);
 
 				ptr = NULL;
 			}
-			else if (ptr != NULL && strcmp(ptr, "/quit") == 0)
+			else if (ptr != NULL && strcmp(ptr, "/exit") == 0)
 			{
+				for (int i = 0; i < connections.size(); i++)
+				{
+					connections[i].socketPtr->CleanUp();
+				}
+				connections.clear();
 				quit = true;
+				t1.join();
+				t2.join();
+				ptr = NULL;
+			}
+			else if (ptr != NULL && strcmp(ptr, "/alias") == 0)
+			{
+				ptr = strtok(NULL, delim);
+				std::string const newAlias(ptr);
+				alias = newAlias;
+				for (auto& connection : connections)
+				{
+					std::string changeAlias = StringUtils::Sprintf("/CHANGEALIAS %s", newAlias.c_str());
+					connection.socketPtr->Send(changeAlias.c_str(), changeAlias.length());
+				}
 				ptr = NULL;
 			}
 			else
 			{
-				for (const auto& connection : connections)
+				for (int i = 0; i < connections.size(); i++)
 				{
-					if (connection.outSocketPtr != nullptr)
+					if (connections[i].socketPtr != nullptr)
 					{
-						connection.outSocketPtr->Send(input.c_str(), input.length());
+						connections[i].socketPtr->Send(input.c_str(), input.length());
 					}
 				}
 			}
 			ptr = NULL;
 		}
-
-		
 	}
 
 	SocketUtil::CleanUp();
