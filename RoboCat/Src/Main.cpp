@@ -154,7 +154,8 @@ void setupTcpServer()
 		}
 
 		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
-		std::terminate();
+		//std::terminate();
+		return;
 	});
 
 	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
@@ -185,7 +186,8 @@ void setupTcpServer()
 		}
 
 		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
-		std::terminate();
+		//std::terminate();
+		return;
 	});
 
 	//Join threads
@@ -311,7 +313,8 @@ void setupTcpClient(std::string port)
 		}
 
 		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
-		std::terminate();
+		//std::terminate();
+		return;
 	});
 
 	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
@@ -342,7 +345,8 @@ void setupTcpClient(std::string port)
 		}
 
 		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
-		std::terminate();
+		//std::terminate();
+		return;
 	});
 
 	//Join threads
