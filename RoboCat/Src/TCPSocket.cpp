@@ -26,16 +26,21 @@ int TCPSocket::Listen( int inBackLog )
 TCPSocketPtr TCPSocket::Accept( SocketAddress& inFromAddress )
 {
 	socklen_t length = inFromAddress.GetSize();
+	string address = inFromAddress.ToString();
 	SOCKET newSocket = accept( mSocket, &inFromAddress.mSockAddr, &length );
 
 	if( newSocket != INVALID_SOCKET )
 	{
-		return TCPSocketPtr( new TCPSocket( newSocket ) );
+		TCPSocketPtr newSocketPTR = TCPSocketPtr(new TCPSocket(newSocket));
+		//newSocketPTR->address = address;
+		return newSocketPTR;
 	}
 	else
 	{
 		if (SocketUtil::GetLastError() == 10035) 
 		{
+			/*if(newSocket != NULL)
+				return TCPSocketPtr(new TCPSocket(newSocket));*/
 			return nullptr;
 		}
 		else 

@@ -10,7 +10,7 @@ void print(string str)
 	std::cout << str << std::endl;
 }
 
-void Connect(string inputAddress, std::vector<TCPSocketPtr> &outgoingClientSockets)
+void Connect(string inputAddress, string serverAddr, std::vector<TCPSocketPtr> &outgoingClientSockets)
 {
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -41,7 +41,7 @@ void Connect(string inputAddress, std::vector<TCPSocketPtr> &outgoingClientSocke
 
 	// Connect() -> Connect socket to remote host
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(serverAddr);
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -69,8 +69,10 @@ void Connect(string inputAddress, std::vector<TCPSocketPtr> &outgoingClientSocke
 }
 
 
-void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incomingClientSockets, TCPSocketPtr &listenSocket)
+void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incomingClientSockets, TCPSocketPtr &listenSocket, string addr)
 {
+
+
 	// Create socket
 	listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (listenSocket == nullptr)
@@ -85,7 +87,7 @@ void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incomingClientSo
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString(addr);
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -117,6 +119,8 @@ void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incomingClientSo
 
 	LOG("%s", "Waiting to accept connections...");
 	
+	listenSocket->SetNonBlockingMode(true);
+
 
 	std::thread listenThread([&listenStatus, &incomingClientSockets, &listenSocket]()
 	{
@@ -125,10 +129,10 @@ void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incomingClientSo
 		
 		while (listenStatus)
 		{
-			listenSocket->SetNonBlockingMode(true);
+		
 			SocketAddress incomingAddress;
 			TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
-			connSocket = listenSocket->Accept(incomingAddress);
+			//connSocket = listenSocket->Accept(incomingAddress);
 			// SocketUtil::ReportError("Accepting connection");
 			// ExitProcess(1);
 
@@ -136,6 +140,7 @@ void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incomingClientSo
 			{
 				incomingClientSockets.push_back(connSocket);
 				LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+				
 				
 			}
 		}
@@ -179,6 +184,7 @@ int main(int argc, const char** argv)
 	std::vector<TCPSocketPtr> outgoingClientSockets;
 
 	TCPSocketPtr listenSocket;
+	
 
 	std::thread receiveThread([&running, &incomingClientSockets, &outgoingClientSockets]()
 	{
@@ -189,7 +195,14 @@ int main(int argc, const char** argv)
 
 			for (TCPSocketPtr socket : incomingClientSockets)
 			{
-				//socket->SetNonBlockingMode(false);
+
+				if (socket == nullptr)
+				{
+					deadSockets.push_back(socket);
+					break;
+				}
+
+				socket->SetNonBlockingMode(true);
 				char buffer[4096];
 				int32_t bytesReceived = socket->Receive(buffer, 4096);
 				if (bytesReceived > 0)
@@ -206,6 +219,7 @@ int main(int argc, const char** argv)
 					else if (bytesReceived == -10054)
 					{
 						deadSockets.push_back(socket);
+						LOG("User disconnected: %s", "<Insert ID here>");
 					}
 
 				}
@@ -214,15 +228,19 @@ int main(int argc, const char** argv)
 
 			while(deadSockets.size() > 0){
 				TCPSocketPtr socket = deadSockets[deadSockets.size() - 1];
-
-
 				for (std::vector<TCPSocketPtr>::iterator it = incomingClientSockets.begin(); it != incomingClientSockets.end(); it++)
 				{
+					if (*it == nullptr)
+					{
+						incomingClientSockets.erase(it);
+						break;
+					}
 					if (*it == socket)
 					{
 
 						incomingClientSockets.erase(it);
 						socket->~TCPSocket();
+						deadSockets.pop_back();
 						break;
 					}
 				}
@@ -233,13 +251,21 @@ int main(int argc, const char** argv)
 
 			for (TCPSocketPtr socket : outgoingClientSockets)
 			{
-				//socket->SetNonBlockingMode(false);
+
+				if (socket == nullptr)
+				{
+					deadSockets.push_back(socket);
+					break;
+				}
+
+				socket->SetNonBlockingMode(true);
 				char buffer[4096];
 				int32_t bytesReceived = socket->Receive(buffer, 4096);
 				if (bytesReceived > 0)
 				{
 					std::string receivedMsg(buffer, bytesReceived);
 					LOG("Received message: %s", receivedMsg.c_str());
+					//LOG("Received message from %s: %s", socket->GetAddress(), receivedMsg.c_str());
 					//socket->SetNonBlockingMode(true);
 				}
 				else  if (bytesReceived < 0)
@@ -250,8 +276,8 @@ int main(int argc, const char** argv)
 					else if (bytesReceived == -10054) 
 					{
 						deadSockets.push_back(socket);
+						LOG("User disconnected: %s", "<Insert ID here>");
 					}
-					
 				}
 				
 			}
@@ -263,12 +289,17 @@ int main(int argc, const char** argv)
 
 				for (std::vector<TCPSocketPtr>::iterator it = outgoingClientSockets.begin(); it != outgoingClientSockets.end(); it++)
 				{
+					if (*it == nullptr)
+					{
+						incomingClientSockets.erase(it);
+						break;
+					}
 					if (*it == socket)
 					{
-						
 
-						outgoingClientSockets.erase(it);
+						incomingClientSockets.erase(it);
 						socket->~TCPSocket();
+						deadSockets.pop_back();
 						break;
 					}
 				}
@@ -279,7 +310,7 @@ int main(int argc, const char** argv)
 
 		}	
 
-
+		LOG("Terminating receive thread %s", " ");
 		
 	}
 	);
@@ -306,10 +337,19 @@ int main(int argc, const char** argv)
 			}
 			else if (input == connect)
 			{
-				string address;
-				std::cin >> address;
+				string localAddress;
+				std::cin >> localAddress;
 
-				Connect(address, outgoingClientSockets);
+				string serverAddr;
+
+				std::cin >> serverAddr;
+
+				if (serverAddr.length() < 14)
+				{
+					serverAddr = "127.0.0.1:8080";
+				}
+
+				Connect(localAddress, serverAddr, outgoingClientSockets);
 			}
 			else if (input == listen)
 			{
@@ -320,10 +360,19 @@ int main(int argc, const char** argv)
 				}
 				else if(input == "on")
 				{
+
+					string addr;
+
+					std::cin >> addr;
+					
+					if (addr.length() < 14)
+					{
+						addr = "127.0.0.1:8080";
+					}
 					if (!listenStatus)
 					{
 						listenStatus = true;
-						StartServer(listenStatus, incomingClientSockets, listenSocket);
+						StartServer(listenStatus, incomingClientSockets, listenSocket, addr);
 					}
 				}
 				
