@@ -140,6 +140,10 @@ void setupTcpServer()
 				gQuit = true;
 				connSocket->CleanupSocket();
 				connSocket = nullptr;
+
+				//TO-DO: Terminate other thread so it doesn't write that the other person disconnected
+
+
 				break;
 			}
 
@@ -148,6 +152,9 @@ void setupTcpServer()
 			std::cout << std::endl;
 			bClarifiedSender = false;	//Reset
 		}
+
+		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
+		std::terminate();
 	});
 
 	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
@@ -176,6 +183,9 @@ void setupTcpServer()
 			std::string receivedMsg(buffer, bytesReceived);
 			std::cout << "Received message from " << otherUsername.second << ": " << receivedMsg << std::endl << std::endl;
 		}
+
+		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
+		std::terminate();
 	});
 
 	//Join threads
@@ -282,10 +292,15 @@ void setupTcpClient(std::string port)
 			{
 				//Display disconnect message
 				std::cout << "\n----------You have disconnected from the chat room with " << otherUsername.second << ".----------" << std::endl << std::endl;
+				
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				clientSocket->CleanupSocket();
 				clientSocket = nullptr;
+
+				//TO-DO: Terminate other thread so it doesn't write that the other person disconnected
+
+
 				break;
 			}
 
@@ -294,6 +309,9 @@ void setupTcpClient(std::string port)
 			std::cout << std::endl;
 			bClarifiedSender = false;	//Reset
 		}
+
+		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
+		std::terminate();
 	});
 
 	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
@@ -322,6 +340,9 @@ void setupTcpClient(std::string port)
 			std::string receivedMsg(buffer, bytesReceived);
 			std::cout << "Received message from " << otherUsername.second << ": " << receivedMsg << std::endl << std::endl;
 		}
+
+		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
+		std::terminate();
 	});
 
 	//Join threads

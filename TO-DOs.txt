@@ -5,8 +5,8 @@ MINIMUM:
 
 
 EXTRA CREDIT:
-. Connect to multiple peers at once and send and receive messages from/to each
 . A "<user> is typing..." message that displays when someone else in the chatroom is typing a message.
+. Connect to multiple peers at once and send and receive messages from/to each
 . Ability to leave/join other chatrooms without exiting the program
 
 
@@ -14,7 +14,7 @@ NOTES:
 . If I enter a name on client first then server, server bugs out and doesn't update the text interface and cannot send messages.
 . Commented out error check in TCPSocket::Receive().
 . The person that exits will get the message that the other person exited.
-. The person that got ghosted (meaning the other exited) will NOT have their program end.
+. The person that got ghosted (meaning the other exited) will NOT have their program end WITHOUT std::terminate. THIS HOWEVER GIVES AN EXCEPTION, WHICH WILL END THE PROGRAM AFTER HITTING RETRY. NOT A GOOD WAY THOUGH, NO EXCEPTIONS PLEASE!!!
 
 QUESTIONS:
 . //Client socket, connected to server address, is now listening on it - WHY DO WE NOT NEED THIS?
