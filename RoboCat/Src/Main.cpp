@@ -30,19 +30,6 @@ std::string requestMyUsername()
 	return myUsername;
 }
 
-//TO-DO: Come back and implement this
-//void displayDisconnectMessage(bool isMe, string userName = "")
-//{
-//	if (isMe)
-//	{
-//		std::cout << "You have disconnected from the chat room.\n";
-//	}
-//	else
-//	{
-//		std::cout << "User " << userName << " has disconnected from the chat room.\n";
-//	}
-//}
-
 void setupTcpServer()
 {
 	//--------------------Setup Server--------------------
@@ -146,10 +133,13 @@ void setupTcpServer()
 			//Special case - exit message
 			if (input == "/exit")
 			{
+				//Display disconnect message
+				std::cout << "You have disconnected from the chat room with " << otherUsername.second << "." << std::endl << std::endl;
+
+				//Cleanup
 				gQuit = true;
-				//connSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 				connSocket->CleanupSocket();
-				break;
+				return;
 			}
 
 			//Send message through the socket
@@ -169,10 +159,17 @@ void setupTcpServer()
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			
-			//Error check
-			if (bytesReceived < 0)
+			//Check for connection loss
+			if (bytesReceived < 0 || bytesReceived == 0)
 			{
-				SocketUtil::ReportError("Receiving");
+				//Display disconnect message
+				std::cout << otherUsername.second << " has disconnected from the chat room." << std::endl << std::endl;
+
+				//SocketUtil::ReportError("Receiving");
+				
+				//Cleanup
+				gQuit = true;
+				connSocket->CleanupSocket();
 				return;
 			}
 
@@ -291,10 +288,13 @@ void setupTcpClient(std::string port)
 			//Special case - exit message
 			if (input == "/exit")
 			{
+				//Display disconnect message
+				std::cout << "You have disconnected from the chat room with " << otherUsername.second << std::endl << std::endl;
+
+				//Cleanup
 				gQuit = true;
-				//clientSocket->~TCPSocket(); //TO-DO: Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 				clientSocket->CleanupSocket();
-				break;
+				return;
 			}
 
 			//Send message through the socket
@@ -314,10 +314,17 @@ void setupTcpClient(std::string port)
 			char buffer[4096];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
 			
-			//Error check
-			if (bytesReceived < 0)
+			//Check for connection loss
+			if (bytesReceived < 0 || bytesReceived == 0)
 			{
-				SocketUtil::ReportError("Receiving");
+				//Display disconnect message
+				std::cout << otherUsername.second << " has disconnected from the chat room." << std::endl << std::endl;
+
+				//SocketUtil::ReportError("Receiving");
+
+				//Cleanup
+				gQuit = true;
+				clientSocket->CleanupSocket();
 				return;
 			}
 
