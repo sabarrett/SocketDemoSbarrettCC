@@ -117,7 +117,7 @@ void setupTcpServer()
 	{
 		bool bClarifiedSender = false;
 
-		while (!gQuit) // Need to add a quit here to have it really exit!
+		while (!gQuit)
 		{
 			//Formatting
 			if (!bClarifiedSender)
@@ -136,10 +136,10 @@ void setupTcpServer()
 				//Display disconnect message
 				std::cout << "You have disconnected from the chat room with " << otherUsername.second << "." << std::endl << std::endl;
 
-				//Cleanup
+				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				connSocket->CleanupSocket();
-				return;
+				break;
 			}
 
 			//Send message through the socket
@@ -152,7 +152,6 @@ void setupTcpServer()
 	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
 	std::thread receiveThread([&connSocket]()
 	{
-		//TO-DO: Re-evaluate if you need the same gQuit here
 		while (!gQuit)
 		{
 			//Buffer to receive strings
@@ -164,13 +163,11 @@ void setupTcpServer()
 			{
 				//Display disconnect message
 				std::cout << otherUsername.second << " has disconnected from the chat room." << std::endl << std::endl;
-
-				//SocketUtil::ReportError("Receiving");
 				
-				//Cleanup
+				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				connSocket->CleanupSocket();
-				return;
+				break;
 			}
 
 			//Unpack and display message
@@ -272,7 +269,7 @@ void setupTcpClient(std::string port)
 	{
 		bool bClarifiedSender = false;
 
-		while (!gQuit) // Need to add a quit here to have it really exit!
+		while (!gQuit)
 		{
 			//Formatting
 			if (!bClarifiedSender)
@@ -291,10 +288,10 @@ void setupTcpClient(std::string port)
 				//Display disconnect message
 				std::cout << "You have disconnected from the chat room with " << otherUsername.second << std::endl << std::endl;
 
-				//Cleanup
+				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				clientSocket->CleanupSocket();
-				return;
+				break;
 			}
 
 			//Send message through the socket
@@ -307,7 +304,6 @@ void setupTcpClient(std::string port)
 	//Receive - I know we don't need both to be new threads, but it looks cleaner in my mind like this
 	std::thread receiveThreadClient([&clientSocket]()
 	{
-		//TO-DO: Re-evaluate if you need the same gQuit here
 		while (!gQuit)
 		{
 			//Buffer to receive strings
@@ -320,12 +316,10 @@ void setupTcpClient(std::string port)
 				//Display disconnect message
 				std::cout << otherUsername.second << " has disconnected from the chat room." << std::endl << std::endl;
 
-				//SocketUtil::ReportError("Receiving");
-
-				//Cleanup
+				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				clientSocket->CleanupSocket();
-				return;
+				break;
 			}
 
 			//Unpack and display message
