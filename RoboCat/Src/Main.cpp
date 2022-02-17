@@ -30,7 +30,7 @@ void DoTcpServer()
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -143,7 +143,37 @@ void DoTcpClient(std::string port)
 	LOG("%s", "Bound client socket");
 
 	// Connect() -> Connect socket to remote host
+	// Create socket
+	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	if (listenSocket == nullptr)
+	{
+		SocketUtil::ReportError("Creating listening socket");
+		ExitProcess(1);
+	}
 
+	//listenSocket->SetNonBlockingMode(true);
+
+	LOG("%s", "Listening socket created");
+
+	// Bind() - "Bind" socket -> tells OS we want to use a specific address
+
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+	if (listenAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating listen address");
+		ExitProcess(1);
+	}
+
+	if (listenSocket->Bind(*listenAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Binding listening socket");
+		// This doesn't block!
+		ExitProcess(1);
+	}
+
+	LOG("%s", "Bound listening socket");
+
+	//get user input for connectimg address and pass into function
 	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 	if (servAddress == nullptr)
 	{
