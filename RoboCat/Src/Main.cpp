@@ -2,6 +2,7 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <map>
 
 // Problem: Game Loop
 //
@@ -15,6 +16,7 @@
 // goto beginning;
 
 const std::string EXIT_CODE = "!exit";
+std::map<SocketAddressPtr, std::string> usernameMap;
 
 void DoTcpServer()
 {
@@ -59,6 +61,11 @@ void DoTcpServer()
 	}
 
 	LOG("%s", "Listening on socket");
+
+	std::string username;
+	std::cout << "Please input your user name: ";
+	getline(std::cin, username);
+	usernameMap.insert(std::pair<SocketAddressPtr, std::string>(listenAddress, username));
 
 	// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
 	SocketAddress incomingAddress;
@@ -112,6 +119,7 @@ void DoTcpServer()
 					return;
 				}
 				std::string receivedMsg(buffer, bytesReceived);
+				std::string receivedUsername = usernameMap.find(incomingAddress);
 				LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 			}
 		}
@@ -181,6 +189,11 @@ void DoTcpClient(std::string port)
 		SocketUtil::ReportError("Connecting to server");
 		ExitProcess(1);
 	}
+
+	std::string username;
+	std::cout << "Please input your user name: ";
+	getline(std::cin, username);
+	usernameMap.insert(std::pair<SocketAddressPtr, std::string>(clientAddress, username));
 
 	LOG("%s", "Connected to server!");
 
