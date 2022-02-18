@@ -35,6 +35,7 @@ void DoTcpServer()
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
 	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	std::cout << listenAddress->ToString().c_str() << std::endl;
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -65,7 +66,8 @@ void DoTcpServer()
 	std::string username;
 	std::cout << "Please input your user name: ";
 	getline(std::cin, username);
-	usernameMap.insert(std::pair<SocketAddressPtr, std::string>(listenAddress, username));
+	//usernameMap.insert(std::pair<SocketAddressPtr, std::string>(listenAddress, username));
+	usernameMap[listenAddress] = username;
 
 	// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
 	SocketAddress incomingAddress;
@@ -129,7 +131,7 @@ void DoTcpServer()
 	getline(std::cin, msg);
 	while (msg != EXIT_CODE)
 	{
-		std::cout << "sending a message" << std::endl;
+		//std::cout << "sending a message" << std::endl;
 		if (connSocket->Send(msg.c_str(), msg.length()) < 0)
 		{
 			SocketUtil::ReportError("Problem with sending message");
@@ -179,11 +181,19 @@ void DoTcpClient(std::string port)
 	// Connect() -> Connect socket to remote host
 
 	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddress server = *servAddress;
+	std::cout << server.ToString().c_str() << std::endl;
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
 		ExitProcess(1);
 	}
+
+	std::string username;
+	std::cout << "Please input your user name: ";
+	getline(std::cin, username);
+	//usernameMap.insert(std::pair<SocketAddressPtr, std::string>(clientAddress, username));
+	usernameMap[clientAddress] = username;
 
 	if (clientSocket->Connect(*servAddress) != NO_ERROR)
 	{
@@ -191,10 +201,6 @@ void DoTcpClient(std::string port)
 		ExitProcess(1);
 	}
 
-	std::string username;
-	std::cout << "Please input your user name: ";
-	getline(std::cin, username);
-	usernameMap.insert(std::pair<SocketAddressPtr, std::string>(clientAddress, username));
 
 	LOG("%s", "Connected to server!");
 
@@ -224,16 +230,23 @@ void DoTcpClient(std::string port)
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(servAddress);
+			SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(server);
 			std::map<SocketAddressPtr, std::string>::iterator receivedUsername = usernameMap.find(tempUsername);
-			LOG("Received message from %s: %s", receivedUsername->second.c_str(), receivedMsg.c_str());
+			if (receivedUsername == usernameMap.end())
+			{
+				std::cout << "problem with map" << std::endl;
+				ExitProcess(1);
+			}
+			//username = receivedUsername->second;
+			//std::cout << username << std::endl;
+			LOG("Received message from %s: %s", username.c_str(), receivedMsg.c_str());
 		}
 		});
 
 	getline(std::cin, msg);
 	while (msg != EXIT_CODE)
 	{
-		std::cout << "sending a message" << std::endl;
+		//std::cout << "sending a message" << std::endl;
 		if (clientSocket->Send(msg.c_str(), msg.length()) < 0)
 		{
 			SocketUtil::ReportError("Problem with sending message");
