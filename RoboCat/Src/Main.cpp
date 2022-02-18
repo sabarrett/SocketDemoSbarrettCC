@@ -22,16 +22,14 @@ bool TCPServerSendMessages(TCPSocketPtr conn)
 	scanf("%s", &message);
 	conn->Send(message, 4096);
 
-	LOG("%s", "Sent message to peer");
-
-	if (message == "\exit")
+	if (strcmp(message, "&") == 0)
 	{
 		return false;
 	}
-	else
-	{
-		return true;
-	}
+
+	LOG("%s", "Sent message to peer");	
+	
+	return true;	
 }
 
 bool TCPClientSendMessages(TCPSocketPtr connSocket)
@@ -126,7 +124,7 @@ void DoTCPServer()
 	// This code isn't blocking anymore -- it'll run to the end of the program.
 	while (messageOnGoing == true)
 	{
-		TCPServerSendMessages(conn);
+		messageOnGoing = TCPServerSendMessages(conn);
 	}
 }
 
@@ -191,7 +189,7 @@ void DoTCPClient()
 	
 	while (messageOnGoing == true)
 	{
-		TCPClientSendMessages(connSocket);
+		messageOnGoing = TCPClientSendMessages(connSocket);
 	}
 }
 
