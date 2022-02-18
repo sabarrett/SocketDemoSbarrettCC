@@ -83,7 +83,29 @@ void DoTcpServer()
 	char buffer[4096];
 	int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 
-	while (isConnected)
+	std::thread receiveThread([&]
+		{
+			while (isConnected)
+			{
+				while (bytesReceived < 0)
+				{
+					bytesReceived = connSocket->Receive(buffer, 4096);
+				}
+				std::string receivedMsg(buffer, bytesReceived);
+				if (receivedMsg == "exit")
+				{
+					isConnected = false;
+					LOG("Connection with %s terminated.", incomingAddress.ToString().c_str());
+					ExitProcess(1);
+				}
+				LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+
+				bytesReceived = -1;
+			}
+		});
+
+	receiveThread.join();
+/*	while (isConnected)
 	{
 		while (bytesReceived < 0)
 		{
@@ -99,7 +121,7 @@ void DoTcpServer()
 		LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 
 		bytesReceived = -1;
-	}
+	}*/
 }
 
 void DoTcpClient(std::string port)
@@ -150,9 +172,24 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 	bool isConnected = true;
-	char input[4096];
+	std::string input;
 
-	while (isConnected)
+	std::thread sendThread([&]
+		{
+			while (isConnected)
+			{
+				input = GetMessage();
+				clientSocket->Send(input.c_str(), input.length());
+				if (input == "exit")
+				{
+					isConnected = false;
+					LOG("%s", "Disconnecting from server");
+					ExitProcess(1);
+				}
+			}
+		});
+	sendThread.join();
+/*	while (isConnected)
 	{
 		std::cin.getline(input, 4096);
 
@@ -165,7 +202,7 @@ void DoTcpClient(std::string port)
 			LOG("%s", "Disconnecting from server");
 			ExitProcess(1);
 		}
-	}
+	}*/
 	
 }
 
