@@ -210,7 +210,7 @@ void setupTcpServer(std::string port)
 	receiveThread.join();
 }
 
-void setupTcpClient(std::string ipAddress, std::string port)
+void setupTcpClient(std::string clientIpAddress, std::string serverIpAddress, std::string port)
 {
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -222,7 +222,7 @@ void setupTcpClient(std::string ipAddress, std::string port)
 
 	LOG("%s", "Client socket created");
 
-	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(ipAddress + ":0");
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(clientIpAddress + ":0");
 	if (clientAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating client address");
@@ -239,7 +239,7 @@ void setupTcpClient(std::string ipAddress, std::string port)
 
 	LOG("%s", "Bound client socket");
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(ipAddress + ":" + port);	//Use IP address and port passed into the function ip:port
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(serverIpAddress + ":" + port);	//Use IP address and port passed into the function ip:port
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -402,7 +402,7 @@ int main(int argc, const char** argv)
 	else
 	{
 		//Client code
-		setupTcpClient(StringUtils::GetCommandLineArg(2), StringUtils::GetCommandLineArg(3));	//CommandLineArg(2) for IP address, CommandLineArg(3) for port
+		setupTcpClient(StringUtils::GetCommandLineArg(2), StringUtils::GetCommandLineArg(3), StringUtils::GetCommandLineArg(4));	//CommandLineArg(2) for client IP address, CommandLineArg(3) for server IP address, CommandLineArg(4) for port
 	}
 
 	SocketUtil::CleanUp();
