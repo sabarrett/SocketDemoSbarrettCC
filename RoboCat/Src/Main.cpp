@@ -24,6 +24,19 @@ bool shouldQuit = false; //global quit
 
 std::pair<std::string, SocketAddress> userName;
 
+std::string currentDateAndTime() 
+{
+	//https://en.cppreference.com/w/cpp/chrono/c/strftime
+	time_t     now = time(0);
+	struct tm  tstruct;
+	char       buf[80];
+	tstruct = *localtime(&now); // not the best but it works
+	
+	strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+	return buf;
+}
+
 void DoTcpServer()
 {
 	// Create socket
@@ -101,9 +114,9 @@ void DoTcpServer()
 		{
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-			if (bytesReceived == 0)
+			if (bytesReceived <= 0) // Handle connection terminated
 			{
-				std::cout << "Client disconnected. Exiting.\n\n";
+				std::cout << "Client '" << userName.first << "' disconnected. Exiting.\n\n";
 				shouldQuit = true;
 				connSocket->CloseSocket();
 				connSocket = nullptr; 
@@ -116,7 +129,7 @@ void DoTcpServer()
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			std::cout << userName.first << " says: "<< receivedMsg << "\n";
+			std::cout << "[" << currentDateAndTime() << "] " << userName.first << " says: "<< receivedMsg << "\n";
 		}
 		return;
 		});
@@ -176,8 +189,9 @@ void DoTcpClient(std::string port)
 	std::string clientUsername;
 	std::getline(std::cin, clientUsername);
 	clientSocket->Send(clientUsername.c_str(), clientUsername.length()); // Send client username
+	std::cout << "\033[2J\033[1;1H";
 
-	LOG("%s", "Connected to server!");
+	std::cout << "Connected to the server! Welcome, " << userName.first;
 	//while (true)												//Used for early testing of send/receive
 	//{
 	//	std::string msg("Hello server! How are you?");
@@ -199,49 +213,6 @@ void DoTcpClient(std::string port)
 	});
 
 	sendMessage.join();
-}
-
-std::mutex coutMutex;
-
-void DoCout(std::string msg)
-{
-	for (int i = 0; i < 5; i++)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracefully\n";
-}
-
-bool gQuit;
-
-void DoCoutLoop(std::string msg)
-{
-	while (!gQuit)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracfully\n";
-}
-
-void DoCoutLoopLocal(std::string msg, const bool& quit)
-{
-	while (!quit)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracfully\n";
 }
 
 #if _WIN32
