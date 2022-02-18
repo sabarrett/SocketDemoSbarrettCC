@@ -105,6 +105,13 @@ void DoTcpServer()
 		receivedUsername = defaultName; //if no input, default to 'anon'
 	}
 
+	std::cout << "Enter a username: ";
+	std::string clientUsername;
+	std::getline(std::cin, clientUsername);
+	connSocket->Send(clientUsername.c_str(), clientUsername.length()); // Send server username
+	std::cout << "\033[2J\033[1;1H";
+
+
 	userName = std::make_pair(receivedUsername,incomingAddress);
 	std::cout << incomingAddress.ToString() << " sets username to: " << userName.first << "\n";
 	//bool quit = false;
@@ -129,11 +136,33 @@ void DoTcpServer()
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			std::cout << "[" << currentDateAndTime() << "] " << userName.first << " says: "<< receivedMsg << "\n";
+			std::cout << "[" << currentDateAndTime() << "] " << userName.first << " says: "<< receivedMsg << "\n\n";
 		}
 		return;
+	});
+
+	std::thread sendMessage([&]()
+		{
+			while (!shouldQuit)
+			{
+
+				std::string messageContent;
+				std::cout << "Message: ";
+				std::getline(std::cin, messageContent);
+
+				//if (messageContent == "/exit") // check for exit command
+				//{
+				//	std::cout << "Disconnecting from the server...\n";
+				//	clientSocket->CloseSocket();
+				//	shouldQuit = true;
+				//	return;
+				//}
+				connSocket->Send(messageContent.c_str(), messageContent.length());
+			}
+			connSocket->CloseSocket();
+			return;
 		});
-	
+	sendMessage.join();
 	receiveThread.join();
 }
 
@@ -220,6 +249,32 @@ void DoTcpClient(std::string port)
 		clientSocket->CloseSocket();
 		return;
 	});
+
+	std::thread receiveThread([&clientSocket]() // don't use [&] :)
+		{
+			while (!shouldQuit)
+			{
+				char buffer[4096];
+				int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+				if (bytesReceived <= 0) // Handle connection terminated
+				{
+					std::cout << "Client '" << userName.first << "' disconnected. Exiting.\n\n";
+					shouldQuit = true;
+					clientSocket->CloseSocket();
+					clientSocket = nullptr;
+					break;
+				}
+				if (bytesReceived < 0)
+				{
+					SocketUtil::ReportError("Receiving");
+					return;
+				}
+
+				std::string receivedMsg(buffer, bytesReceived);
+				std::cout << "[" << currentDateAndTime() << "] " << userName.first << " says: " << receivedMsg << "\n\n";
+			}
+			return;
+		});
 
 	sendMessage.join();
 }
