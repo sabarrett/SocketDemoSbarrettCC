@@ -1,21 +1,10 @@
 
 #include "RoboCatPCH.h"
 #include <iostream>
-#include <iostream>
-#include <cstring>
-#include <vector>
 #include <thread>
-
-// Problem: Game Loop
-//
-// updateInput(); (make sure to not block here!)
-//		conn->Receive(); !!! This blocks !!!
-//			Two solutions:
-//				- Non-Blocking Mode
-//					On Receive(), check for -10035; that means "nothings wrong, but I didn't receive any data either"
-// update();
-// render();
-// goto beginning;
+#include <string>
+#include <sstream>
+#include <mutex>
 
 void DoTcpServer()
 {
@@ -75,23 +64,32 @@ void DoTcpServer()
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
-	char buffer[4096];
-	int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-	while (bytesReceived < 0)
-	{
-		bytesReceived = connSocket->Receive(buffer, 4096);
-	}
-	std::string receivedMsg(buffer, bytesReceived);
-	LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
-
-	//Checks if the player disconnected and then prints a line saying that user disconnected
-	while (connSocket != nullptr)
-	{
-		if (connSocket == nullptr)
+	bool quit = false;
+	std::thread receiveThread([&]() { // don't use [&] :)
+		while (!quit) // Need to add a quit here to have it really exit!
 		{
-			LOG("User %s", incomingAddress.ToString().c_str(), " has disconnected %s");
+			char buffer[4096];
+			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+			if (bytesReceived == 0)
+			{
+				
+			}
+			if (bytesReceived < 0)
+			{
+				SocketUtil::ReportError("Receiving");
+				return;
+			}
+
+			std::string receivedMsg(buffer, bytesReceived);
+			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 		}
-	}
+		});
+
+	std::cout << "Press enter to exit at any time!\n";
+	std::cin.get();
+	quit = true;
+	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	receiveThread.join();
 }
 
 void DoTcpClient(std::string port)
@@ -144,13 +142,24 @@ void DoTcpClient(std::string port)
 
 	std::string msg("Hello server! How are you?");
 	clientSocket->Send(msg.c_str(), msg.length());
-	
-	std::string quit;
-	std::cin >> quit;
-	if (quit == "quit" || quit == "Quit" || quit == "q" || quit == "Q")
-	{
-		clientSocket->~TCPSocket();
-	}
+
+	bool sendQuit = false;
+	std::thread exitThread([&]() {
+		while (!sendQuit)
+		{
+			string message;
+			std::getline(std::cin, message);
+
+			if (message == "/exit")
+			{
+				sendQuit = true;
+				clientSocket->~TCPSocket();
+				break;
+			}
+		}
+		});
+	std::cout << "Type \/exit at anytime to exit\n";
+	exitThread.join();
 }
 
 #if _WIN32
@@ -169,7 +178,6 @@ int main(int argc, const char** argv)
 
 	// WinSock2.h
 	//    https://docs.microsoft.com/en-us/windows/win32/api/winsock/
-
 
 	SocketUtil::StaticInit();
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
