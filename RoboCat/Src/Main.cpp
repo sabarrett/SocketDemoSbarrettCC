@@ -4,6 +4,7 @@
 #include <mutex>
 #include <string>
 #include <sstream>
+#include <vector>
 
 // Problem: Game Loop
 //
@@ -16,6 +17,25 @@
 // render();
 // goto beginning;
 
+
+void SendToAll(vector<TCPSocketPtr> connSockets, string msg)
+{
+	for (TCPSocketPtr currentSocket : connSockets)
+	{
+		currentSocket->Send(msg.c_str(), msg.length());
+	}
+}
+
+void SendToExceptSender(vector<TCPSocketPtr> connSockets, TCPSocketPtr sender, string msg)
+{
+	for (TCPSocketPtr currentSocket : connSockets)
+	{
+		if (!std::count(connSockets.begin(), connSockets.end(), sender))
+		{
+			currentSocket->Send(msg.c_str(), msg.length());
+		}
+	}
+}
 
 void DoTcpServer()
 {
@@ -69,59 +89,72 @@ void DoTcpServer()
 
 	while (!fullQuit)
 	{
-		LOG("%s", "Waiting to accept connections...");
-		SocketAddress incomingAddress;
-		TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
-		while (connSocket == nullptr)
-		{
-			connSocket = listenSocket->Accept(incomingAddress);
-			// SocketUtil::ReportError("Accepting connection");
-			// ExitProcess(1);
-		}
-
-		LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 		LOG("%s", "use /exit to exit chat room, /fullExit to close program\n");
+		LOG("%s", "Waiting to accept a connection...");
+
+		vector<TCPSocketPtr> connSockets;
+		std::thread connectClients([&connSockets, listenSocket]()
+		{
+				SocketAddress incomingAddress;
+				//if (!std::count(connSockets.begin(), connSockets.end(), listenSocket->Accept(incomingAddress)))
+				//{
+					//connSockets.push_back(listenSocket->Accept(incomingAddress));
+					//LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+				//}
+
+				connSockets.push_back(listenSocket->Accept(incomingAddress));
+				LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+		});
 
 		string namePrint;
 		bool shouldDelete = false;
 
 		bool quit = false;
-		std::thread receiveThread([&quit, &connSocket, &namePrint, &shouldDelete]() { // don't use [&] :)
+		std::thread receiveThread([&quit, &connSockets, &namePrint, &shouldDelete]() { // don't use [&] :)
 			while (!quit) // Need to add a quit here to have it really exit!
 			{
 				char buffer[4096];
-				int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-				if (bytesReceived == 0)
+				for each (TCPSocketPtr currentSocket in connSockets)
 				{
-					LOG("%s", "Other user has disconnected");
-					quit = true;
-					// handle disconnect
-				}
-				if (bytesReceived < 0)
-				{
-					SocketUtil::ReportError("Receiving");
-					return;
-				}
+					int32_t bytesReceived = currentSocket->Receive(buffer, 4096);
 
-				if (shouldDelete)
-				{
-					printf("\33[2K\r                                                             \r");
-				}
+					if (bytesReceived == 0)
+					{
+						LOG("%s", "User has disconnected");
+						quit = true;
+						// handle disconnect
+					}
+					if (bytesReceived < 0)
+					{
+						SocketUtil::ReportError("Receiving");
+						return;
+					}
 
-				std::string receivedMsg(buffer, bytesReceived);
-
-				if (receivedMsg == "/exit")
-				{
-					LOG("%s", "Other user has exited chat room");
-					quit = true;
-					break;
-				}
-				else
-				{
-					LOG("%s", receivedMsg.c_str());
 					if (shouldDelete)
 					{
-						printf(namePrint.c_str());
+						printf("\33[2K\r                                                             \r");
+					}
+
+					std::string receivedMsg(buffer, bytesReceived);
+
+					if (receivedMsg == "/exit")
+					{
+						LOG("%s", "Other user has exited chat room");
+						SendToExceptSender(connSockets, currentSocket, "Other user has exited chat room");
+						if (connSockets.size() == 0)
+						{
+							quit = true;
+						}
+						break;
+					}
+					else
+					{
+						LOG("%s", receivedMsg.c_str());
+						SendToExceptSender(connSockets, currentSocket, receivedMsg);
+						if (shouldDelete)
+						{
+							printf(namePrint.c_str());
+						}
 					}
 				}
 			}
@@ -129,46 +162,49 @@ void DoTcpServer()
 
 		string msg;
 
-		if (username.length() == 0)
+		if (username.length() == 0 && connSockets.size() > 0)
 		{
 			std::cout << "Enter DisplayName: ";
 			std::getline(std::cin, username);
 			msg = "\n" + username + " has entered the chat :)";
-			connSocket->Send(msg.c_str(), msg.length());
+			//connSocket->Send(msg.c_str(), msg.length());
+			SendToAll(connSockets, msg);
+
+			namePrint = username + ": ";
+			printf(namePrint.c_str());
 		}
-
-		namePrint = username + ": ";
-
-		printf(namePrint.c_str());
-		while (!quit)
+		while (!quit && connSockets.size() > 0)
 		{
-			string msg;
 			std::getline(std::cin, msg);
 
 			if (msg == "/exit" || msg == "/Exit")
 			{
 				quit = true;
 				msg = "/exit";
-				connSocket->Send(msg.c_str(), msg.length());
+				//connSocket->Send(msg.c_str(), msg.length());
+				SendToAll(connSockets, msg);
 				break;
 			}
 			if (msg == "/fullExit" || msg == "/FullExit" || msg == "/full Exit" || msg == "/Full Exit")
 			{
 				fullQuit = true;
 				msg = "/exit";
-				connSocket->Send(msg.c_str(), msg.length());
+				//connSocket->Send(msg.c_str(), msg.length());
+				SendToAll(connSockets, msg);
 				ExitProcess(1);
 				break;
 			}
 
 
 			msg = username + ": " + msg;
-			connSocket->Send(msg.c_str(), msg.length());
+			//connSocket->Send(msg.c_str(), msg.length());
+			SendToAll(connSockets, msg);
 
 			printf(namePrint.c_str());
 			shouldDelete = true;
 		}
 		receiveThread.join();
+		connectClients.join();
 	}
 
 		//std::cout << "Press enter to exit at any time!\n";
@@ -243,6 +279,7 @@ void DoTcpClient(std::string port)
 				if (bytesReceived == 0)
 				{
 					LOG("%s", "Other user has disconnected");
+					//LOG("%s", "0 bytes recieved, still going");
 					quit = true;
 					// handle disconnect
 				}
@@ -264,7 +301,7 @@ void DoTcpClient(std::string port)
 					quit = true;
 					break;
 				}
-				else
+				else if(bytesReceived > 0)
 				{
 					LOG("%s", receivedMsg.c_str());
 					if (shouldDelete)
@@ -274,6 +311,7 @@ void DoTcpClient(std::string port)
 				}
 			}
 			});
+		
 
 		if (username.length() == 0)
 		{
@@ -284,6 +322,7 @@ void DoTcpClient(std::string port)
 		}
 
 		namePrint = username + ": ";
+		printf(namePrint.c_str());
 
 		while (!quit)
 		{
