@@ -60,8 +60,67 @@ void SetUpInitialListening(int &port, TCPSocketPtr &listeningSocket, SocketAddre
 	LOG("Your port is %i", static_cast<int>(nextAvailablePort - 1));
 	LOG("%s", "socket is now listening");
 }
+void SetUpSending(int portToConnectTo, int listeningPort, std::map<int, TCPSocketPtr>& sendingSockets)
+{
+	if (sendingSockets.find(portToConnectTo) == sendingSockets.end())
+	{
+		// here we can select which IPV we're using, and IPV6 is a bit wild for these purposes so, we go with IPV4
+		TCPSocketPtr newSendingSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+		if (newSendingSocket == nullptr)
+		{
+			SocketUtil::ReportError("Error Creating Sending Socket");
+			ExitProcess(1);
+		}
+		LOG("%s", "created connection socket");
 
-void HandleListening(TCPSocketPtr& listeningSocket, std::map<int, TCPSocketPtr> &connectedSockets, queue<std::pair<int, string>>&messages)
+		LOG("Your sending port is %i", static_cast<int>(nextAvailablePort));
+		SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(nextAvailablePort++)));
+		//SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
+		if (a == nullptr)
+		{
+			SocketUtil::ReportError("Error creating sending address");
+			ExitProcess(1);
+		}
+		LOG("%s", "created connection socket address");
+
+		LOG("%s", "binding the connection socket");
+		while (newSendingSocket->Bind(*a) != NO_ERROR)
+		{
+			//LOG("%s", "port: 127.0.0.1:" + std::to_string(nextAvailablePort) + " taken, using port: 127.0.0.1:" + std::to_string(nextAvailablePort));
+			a = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(nextAvailablePort)));
+			++nextAvailablePort;
+		}
+		LOG("%s", "finished binding the connection socket");
+
+
+		LOG("%s%i", "127.0.0.1:", portToConnectTo)
+			SocketAddressPtr foreignAddress = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(portToConnectTo)));  // this has to match the server's address, and it MUST NOT match client's own
+			//SocketAddressPtr foreignAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8000");  // this has to match the server's address, and it MUST NOT match client's own
+		if (foreignAddress == nullptr)
+		{
+			SocketUtil::ReportError("Error	creating foreign listener address");
+			ExitProcess(1);
+		}
+
+
+		LOG("%s", "Creating server");
+
+		if (newSendingSocket->Connect(*foreignAddress) != NO_ERROR)
+		{
+			SocketUtil::ReportError("Error connecting to server");
+			ExitProcess(1);
+		}
+
+		LOG("%s", "Connected to server");
+
+		//std::string msg("Hello, server! How are you today?");
+		std::string msg(std::to_string(listeningPort));
+		newSendingSocket->Send(msg.c_str(), msg.length());
+
+		sendingSockets.emplace(portToConnectTo, newSendingSocket);
+	}
+}
+void HandleListening(TCPSocketPtr& listeningSocket, std::map<int, TCPSocketPtr> &connectedSockets, queue<std::pair<int, string>>&messages, int listeningPort, std::map<int, TCPSocketPtr>& sendingSockets)
 {
 
 	SocketAddressPtr connAddr;
@@ -82,6 +141,7 @@ void HandleListening(TCPSocketPtr& listeningSocket, std::map<int, TCPSocketPtr> 
 
 			LOG("Established connection with port: %s", msgRecieved.c_str());
 			connectedSockets.emplace(std::stoi(msgRecieved), conn);
+			SetUpSending(std::stoi(msgRecieved), listeningPort, sendingSockets);
 			conn = nullptr;
 		}
 
@@ -97,7 +157,7 @@ void HandleListening(TCPSocketPtr& listeningSocket, std::map<int, TCPSocketPtr> 
 				char buffer[4096];
 				int32_t bytesRead = curConn.second->Receive(buffer, 4096); 
 
-				std::string msgRecieved(buffer, bytesRead);
+				string msgRecieved(buffer, bytesRead);
 				LOG("Recieved message: %s", msgRecieved.c_str());
 				messages.push(std::pair<int, std::string> (curConn.first, buffer));
 			}
@@ -107,63 +167,16 @@ void HandleListening(TCPSocketPtr& listeningSocket, std::map<int, TCPSocketPtr> 
 	// 
 }
 
-void SetUpSending(int portToConnectTo, int listeningPort, std::map<int, TCPSocketPtr> &sendingSockets)
+void SendNormalText(std::map<int, TCPSocketPtr>& sendingSockets, string& message)
 {
-	//  1
-// here we can select which IPV we're using, and IPV6 is a bit wild for these purposes so, we go with IPV4
-	TCPSocketPtr newSendingSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	if (newSendingSocket == nullptr)
+	string finalData = "1"; //marks it as simple text
+	finalData += message;
+
+	for each(std::pair<int, TCPSocketPtr> connection in sendingSockets)
 	{
-		SocketUtil::ReportError("Error Creating Sending Socket");
-		ExitProcess(1);
+
+		connection.second->Send(finalData.c_str(), finalData.length());
 	}
-	LOG("%s", "created connection socket");
-
-	LOG("Your sending port is %i", static_cast<int>(nextAvailablePort));
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString( ("127.0.0.1:" + std::to_string(nextAvailablePort++) ));
-	//SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
-	if (a == nullptr)
-	{
-		SocketUtil::ReportError("Error creating sending address");
-		ExitProcess(1);
-	}
-	LOG("%s", "created connection socket address");
-
-	LOG("%s", "binding the connection socket");
-	while (newSendingSocket->Bind(*a) != NO_ERROR)
-	{
-		//LOG("%s", "port: 127.0.0.1:" + std::to_string(nextAvailablePort) + " taken, using port: 127.0.0.1:" + std::to_string(nextAvailablePort));
-		a = SocketAddressFactory::CreateIPv4FromString( ("127.0.0.1:" + std::to_string(nextAvailablePort)));
-		++nextAvailablePort;
-	}
-	LOG("%s", "finished binding the connection socket");
-
-
-	LOG("%s%i", "127.0.0.1:" , portToConnectTo)
-	SocketAddressPtr foreignAddress = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(portToConnectTo)));  // this has to match the server's address, and it MUST NOT match client's own
-	//SocketAddressPtr foreignAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8000");  // this has to match the server's address, and it MUST NOT match client's own
-	if (foreignAddress == nullptr)
-	{
-		SocketUtil::ReportError("Error	creating foreign listener address");
-		ExitProcess(1);
-	}
-
-	
-	LOG("%s", "Creating server");
-
-	if (newSendingSocket->Connect(*foreignAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Error connecting to server");
-		ExitProcess(1);
-	}
-
-	LOG("%s", "Connected to server");
-
-	//std::string msg("Hello, server! How are you today?");
-	std::string msg(std::to_string(listeningPort));
-	newSendingSocket->Send(msg.c_str(), msg.length());
-
-	sendingSockets.emplace(portToConnectTo, newSendingSocket);
 }
 
 
@@ -176,18 +189,23 @@ string GetPortHandle(int port, std::map<int, string>& userHandles)
 	return result;
 }
 
-string HandleMessages(queue<std::pair<int, string>>& messages, std::map<int, string>& userHandles)
+string HandleReceivedData(queue<std::pair<int, string>>& dataQueue, std::map<int, string>& userHandles)
 {
-	std::string finalLine;
+	std::string finalLine("");
 
-	std::pair<int, string> newMessageInfo = messages.front();
-	messages.pop();
-
-	finalLine += GetPortHandle(newMessageInfo.first, userHandles) + ':';
-
-	if (newMessageInfo.second[0] == '1')
+	if (userHandles.size() > 0)
 	{
-		//  TODO - send plain message 
+		std::pair<int, string> newMessageInfo = dataQueue.front();
+
+		finalLine += GetPortHandle(newMessageInfo.first, userHandles) + ':';
+
+		if (newMessageInfo.second[0] == '1')
+		{
+			string temp = newMessageInfo.second;
+			temp.erase(0, 1);
+			finalLine += temp;
+		}
+		dataQueue.pop();
 	}
 
 	return finalLine;
@@ -224,7 +242,7 @@ int main(int argc, const char** argv)
 	std::map<int, TCPSocketPtr> sendingConnectionSockets;
 	string userName;
 
-	queue<std::pair<int, string>> unprocessedMessages;
+	queue<std::pair<int, string>> unprocessedReceivedData;
 
 
 	//conn->Receive();
@@ -267,7 +285,7 @@ int main(int argc, const char** argv)
 				std::cout << "\n\n What username will you use?\n";
 				std::cin >> userName;
 				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-				listeningThread = std::thread(HandleListening, listeningSocket, listeningConnectionSockets, unprocessedMessages);
+				listeningThread = std::thread(HandleListening, listeningSocket, listeningConnectionSockets, unprocessedReceivedData, listeningPort, sendingConnectionSockets);
 				break;
 			}
 
@@ -277,7 +295,7 @@ int main(int argc, const char** argv)
 				std::cout << "\n\n What is the port of the person you would like to connect to?\n";
 				std::cin >> portToConnectTo;
 				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-				listeningThread = std::thread(HandleListening, listeningSocket, listeningConnectionSockets, unprocessedMessages);
+				listeningThread = std::thread(HandleListening, listeningSocket, listeningConnectionSockets, unprocessedReceivedData, listeningPort, sendingConnectionSockets);
 				SetUpSending(portToConnectTo, listeningPort, sendingConnectionSockets);
 
 				break;
@@ -307,16 +325,16 @@ int main(int argc, const char** argv)
 		// ~~~~~~~~~~~~~~~~~~~  main menu now ~~~~~~~~~~~~~~~~~~~~~~~
 		
 
-		std::thread t([&win]()
+		std::thread t([&win, &unprocessedReceivedData, &userHandles]()
 			{
 				int msgNo = 1;
 				while (true)
 				{
-					std::this_thread::sleep_for(std::chrono::milliseconds(250));
+					std::this_thread::sleep_for(std::chrono::milliseconds(150));
 					std::string msgIn("");
 					std::stringstream ss(msgIn);
 					//ss << msgNo;
-					//ss << TODO - add the function here
+					ss << HandleReceivedData(unprocessedReceivedData, userHandles);
 					if(ss.str() != "")
 					{
 						win.Write(ss.str());
@@ -325,20 +343,32 @@ int main(int argc, const char** argv)
 				}
 			});
 
-		while (true)
+		bool wantsToExit = false;
+		while (!wantsToExit)
 		{
 
-
+			std::cout << "\n\nYou have entered the chat room, feel free to enter \\leave to exit, otherwise type what you would like to send.\n\n";
 
 			std::string input;
 			getline(std::cin, input);
 			win.WriteFromStdin(input);
+
+			if (input == "\leave" || input == "\leave\n" || input == "\\leave" || input == "\\leave\n")
+			{
+				wantsToExit = true;
+			}
+			else
+			{
+				//  TODO - flag and clean up all of the ports here
+				SendNormalText(sendingConnectionSockets, input);
+			}
+
 		}
 
 	} while (answer != 3);
 
 
-	
+	listeningThread.join();
 	//t_Sending.join();
 	//t_Listening.join();
 
