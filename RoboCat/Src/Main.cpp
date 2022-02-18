@@ -127,11 +127,24 @@ void DoTcpClient(std::string port)
 	}
 
 	LOG("%s", "Connected to server!");
-	string input;
-	std::cin >> input;
+	bool isConnected = true;
+	char input[256];
 
-	std::string msg(input);
-	clientSocket->Send(msg.c_str(), msg.length());
+	while (isConnected)
+	{
+		std::cin.getline(input, 256);
+
+		if (input == "")
+		{
+			isConnected = false;
+			LOG("%s", "Disconnecting from server");
+			ExitProcess(1);
+		}
+
+		std::string msg(input);
+		clientSocket->Send(msg.c_str(), msg.length());
+	}
+	
 }
 
 #if _WIN32
