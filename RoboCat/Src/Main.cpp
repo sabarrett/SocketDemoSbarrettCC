@@ -19,11 +19,7 @@ void BradsTotallyOriginalServer()
 	}
 	LOG("%s", "Listening socket created");
 
-	//see if this will get the port from the command line
-	//std::string port = StringUtils::GetCommandLineArg(1);
-	//LOG("%s", "WOWZA! You just told me: " + port)
-	// 
-	//create a prt for the port
+	//create a ptr for the port
 	SocketAddressPtr addressPtr = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080"); // a hard-coded port to bind to
 	if (addressPtr == nullptr)
 	{
@@ -41,7 +37,7 @@ void BradsTotallyOriginalServer()
 		ExitProcess(1); // kill
 	}
 
-	LOG("%s", "The binding is complete");
+	LOG("%s", "Socket bound");
 
 	bool listenError = listeningSocket->Listen() != NO_ERROR;
 	if (listenError)
@@ -50,11 +46,11 @@ void BradsTotallyOriginalServer()
 		ExitProcess(1); // kill
 	}
 
-	LOG("%s", "We're listening for incoming connections");
+	LOG("%s", "Listening for incoming connections...");
 
 	// accept is a blocking function so it will halt the program execution until it recieves a incoming connection
 
-	LOG("%s", "Waiting to accept connections.oof.oof.oof");
+	LOG("%s", "Waiting to accept connections...");
 
 	SocketAddress incomingAddress;
 	TCPSocketPtr incomingSocket = listeningSocket->Accept(incomingAddress);
@@ -64,8 +60,64 @@ void BradsTotallyOriginalServer()
 	}
 	
 	// CONECTION ACCEPTED WE HAVE CONTACT ==============================
-	LOG("Bleep Bloop...Accepted connection from: %s", incomingAddress.ToString().c_str());
-	ServerCommunicate(incomingSocket);
+	LOG("Request accepted from: %s", incomingAddress.ToString().c_str());
+	//request username
+	//std::string usernameRequest("Please Input Your Username: ");
+	//incomingSocket->Send(usernameRequest.c_str(), usernameRequest.length());
+	
+	// input username
+	std::string username;
+	std::cout << "Please Input Your Username: ";
+	std::getline(std::cin, username);
+	std::cout << "Waiting for other user to enter their username..." << std::endl;
+	//send username
+	incomingSocket->Send(username.c_str(), username.length());
+
+	//receive username
+	char buffer[4096];
+	int32_t bytesReceived = incomingSocket->Receive(buffer, 4096); // get username
+	while (bytesReceived < 0)
+	{
+		bytesReceived = incomingSocket->Receive(buffer, 4096);
+	}
+
+	std::string otherUsername(buffer, bytesReceived);	
+	std::cout << "Other user " << otherUsername.c_str() << " has joined the chatroom" << std::endl;
+
+	//bool exit = false;
+	//send data
+	std::thread SendThread([&incomingSocket]()
+		{
+			//send message
+			std::string msg;
+			while (msg != "/exit")
+			{			
+				std::getline(std::cin, msg); //BLOCKS
+				incomingSocket->Send(msg.c_str(), msg.length());
+
+				if (msg == "/exit")
+				{
+					incomingSocket.reset();
+					//exit = true;
+					std::cout << "connection terminated" << std::endl;
+				}
+			}
+		});
+	bool exit = false;
+	//receive data
+	while (bytesReceived < 4096 && !exit)
+	{
+		bytesReceived = incomingSocket->Receive(buffer, 4096);
+		std::string receivedMsg(buffer, bytesReceived);
+		std::cout << otherUsername.c_str() << ": " << receivedMsg.c_str() << std::endl;
+		if (receivedMsg == "/exit")
+		{
+			incomingSocket.reset();
+			exit = true;
+			std::cout << "connection terminated" << std::endl;
+		}
+	}
+	
 
 }
 
@@ -118,89 +170,67 @@ void BradsLessOriginalClient()
 
 	LOG("%s", "Connected to server!");
 	//CONECTION CREATED WE HAVE CONTACT ==============================
-	ClientCommunicate(clientSocket);
 	
-}
+	// input username
+	std::string username;
+	std::cout << "Please Input Your Username: ";
+	std::getline(std::cin, username);
+	std::cout << "Waiting for other user to enter their username..." << std::endl;
+	// send username
+	clientSocket->Send(username.c_str(), username.length());
 
-void ServerCommunicate(TCPSocketPtr incomingSocket)
-{
+	
+	// receive other username
+	char otherUsernameBuffer[40];
+	int32_t otherUsernameBytes = clientSocket->Receive(otherUsernameBuffer, 40);
+	while (otherUsernameBytes < 0)
+	{
+		otherUsernameBytes = clientSocket->Receive(otherUsernameBuffer, 40);
+	}
+	std::string otherUsername(otherUsernameBuffer, otherUsernameBytes);
+	std::cout << "Other user " << otherUsername.c_str() << " has joined the chatroom" << std::endl;
+	
+	//bool exit = false;
 
-	//request username
-	std::string usernameRequest("Please Input Your Username: ");
-	incomingSocket->Send(usernameRequest.c_str(), usernameRequest.length());
-	//receive username
-	//receive data
+	std::thread SendThread([&clientSocket]()
+		{
+			//Fulfill username request
+			std::string msg;
+			std::getline(std::cin, msg); //BLOCKS
+			clientSocket->Send(msg.c_str(), msg.length());
+			while (msg != "/exit")
+			{
+				std::getline(std::cin, msg);//BLOCKS
+				clientSocket->Send(msg.c_str(), msg.length());
+
+				if (msg == "/exit")
+				{
+					clientSocket.reset();
+					//exit = true;
+					std::cout << "connection terminated" << std::endl;
+				}
+			}
+			
+		});
+	
 	char buffer[4096];
-	int32_t bytesReceived = incomingSocket->Receive(buffer, 4096); // get username
-	std::string otherUsername(buffer, bytesReceived);
-	otherUsername += ": ";
-	std::cout << otherUsername << std::endl;
-
-	//send data
-	std::thread t1([&]()
-		{
-			while (bytesReceived < 4096)
-			{
-				bytesReceived = incomingSocket->Receive(buffer, 4096);
-				std::string receivedMsg(buffer, bytesReceived);
-				std::cout << otherUsername.c_str() << receivedMsg << std::endl;
-				//LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());		
-			}
-		});
-	//t1.join();
-
-	//send message
-	std::string msg("");
-	while (msg != "/exit")
+	int32_t bytesReceived = int32_t();
+	bool exit = false;
+	while (bytesReceived < 4096 && !exit)
 	{
-		std::getline(std::cin, msg);
-		incomingSocket->Send(msg.c_str(), msg.length());
-		//LOG("%s : %s", "sent thing", msg.c_str());
-	}
+		bytesReceived = clientSocket->Receive(buffer, 4096);
+		std::string receivedMsg(buffer, bytesReceived);
+		std::cout << otherUsername.c_str() << ": " << receivedMsg.c_str() << std::endl;
 
+		if (receivedMsg == "/exit")
+		{
+			clientSocket.reset();
+			exit = true;
+			std::cout << "connection terminated" << std::endl;
+		}
+	}
 }
 
-void ClientCommunicate(TCPSocketPtr clientSocket)
-{
-	//receive username request
-	char usernameBuffer[40]; // 40 character limit on username
-	int32_t usernameBytes = int32_t();
-	while (usernameBytes < 0)
-	{
-		usernameBytes = clientSocket->Receive(usernameBuffer, 40);
-	}
-	std::string usernameString(usernameBuffer, usernameBytes);
-	std::cout << usernameString << std::endl;
-	//Fulfill username request
-
-	std::string msg;
-	std::getline(std::cin, msg);
-	clientSocket->Send(msg.c_str(), msg.length());
-
-	std::thread ReceiveThread([&]()
-		{
-			char buffer[4096];
-			int32_t bytesReceived = int32_t();
-
-			while (bytesReceived < 4096)
-			{
-				bytesReceived = clientSocket->Receive(buffer, 4096);
-				std::string receivedMsg(buffer, bytesReceived);
-				std::cout << receivedMsg << std::endl;
-			}
-		});
-	//ReceiveThread.join();
-
-	//OutputWindow win;
-	//msg = "";
-	while (msg != "/exit")
-	{
-		std::getline(std::cin, msg);
-		clientSocket->Send(msg.c_str(), msg.length());
-		//std::this_thread::sleep_for(std::chrono::milliseconds(250));
-	}
-
-}
 
 #if _WIN32
 int main(int argc, const char** argv)
