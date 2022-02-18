@@ -75,7 +75,6 @@ void DoTcpServer()
 	while (bytesReceived < 0)
 	{
 		bytesReceived = connSocket->Receive(buffer, 4096);
-		
 	}
 	std::string receivedMsg(buffer, bytesReceived);
 	LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
@@ -128,7 +127,7 @@ void DoTcpClient(std::string port)
 	}
 
 	LOG("%s", "Connected to server!");
-	std::string input;
+	string input;
 	std::cin >> input;
 
 	std::string msg(input);
