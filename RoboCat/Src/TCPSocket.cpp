@@ -95,11 +95,21 @@ int TCPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
 	}
 }
 
-TCPSocket::~TCPSocket()
+int TCPSocket::Shutdown()
+{
+	return shutdown(mSocket, SD_SEND);
+}
+
+int TCPSocket::Close()
 {
 #if _WIN32
-	closesocket( mSocket );
+	return closesocket(mSocket);
 #else
-	close( mSocket );
+	return close(mSocket);
 #endif
+}
+
+TCPSocket::~TCPSocket()
+{
+	Close();
 }

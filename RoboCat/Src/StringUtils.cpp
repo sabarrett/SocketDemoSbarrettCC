@@ -1,5 +1,9 @@
 #include "RoboCatPCH.h"
 
+
+extern OutputWindow win;
+
+
 #if !_WIN32
 extern const char** __argv;
 extern int __argc;
@@ -55,8 +59,9 @@ void StringUtils::Log( const char* inFormat, ... )
 #else
 	vsnprintf(temp, 4096, inFormat, args);
 #endif
-	printf(temp);
-	printf("\n");
+	//printf(temp);
+	//printf("\n");
+	win.Write(temp);
 	//OutputDebugString( temp );
 	//OutputDebugString( "\n" );
 }

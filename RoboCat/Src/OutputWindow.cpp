@@ -1,7 +1,7 @@
 #include <RoboCatPCH.h>
 #include <iostream>
 
-OutputWindow::OutputWindow() : inputCharCount(0), cursorPos(0), messageTail(0)
+OutputWindow::OutputWindow(InputProcessor inputProcessor) : inputCharCount(0), cursorPos(0), messageTail(0), bufferIn(), ProcessInput(inputProcessor)
 {
     SetConsoleCP(1200);
     hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
@@ -11,7 +11,7 @@ OutputWindow::OutputWindow() : inputCharCount(0), cursorPos(0), messageTail(0)
     DWORD hConsoleOutputMode;
     CONSOLE_CURSOR_INFO consoleOutputCursorInfo;
 
-    
+  
 
     GetConsoleMode(hConsoleInput, &hConsoleInputMode);
     GetConsoleMode(hConsoleOutput, &hConsoleOutputMode);
@@ -50,7 +50,7 @@ OutputWindow::OutputWindow() : inputCharCount(0), cursorPos(0), messageTail(0)
 }
 
 
-void OutputWindow::Write(std::string msg)
+void OutputWindow::Write(std::string msg, char color)
 {
    
 
@@ -59,7 +59,7 @@ void OutputWindow::Write(std::string msg)
 
     for (size_t i = 0; i < msg.size(); i++) {
         lineBuffer[i].Char.UnicodeChar = msg[i];
-        lineBuffer[i].Attributes = 0x07;
+        lineBuffer[i].Attributes = color;
     }
 
     messageTail = (messageTail + 1) % (messageCapacity);
@@ -125,11 +125,28 @@ void OutputWindow::HandleKeyEvent(KEY_EVENT_RECORD record) {
         inputCharCount--;
         cursorPos--;
         cursorMoved = true;
-        inputBuffer[inputCharCount].Char.UnicodeChar = 0;
+        inputChanged = true;
+        bufferIn[inputCharCount] = 0;
         return;
     }
+
+    if (key == VK_RETURN) {
+        std::string input(bufferIn);
+
+        memset(bufferIn, 0, sizeof(bufferIn));
+        inputCharCount = 0;
+        cursorPos = 0;
+        cursorMoved = true;
+        inputChanged = true;
+
+        ProcessInput(input);
+    }
+
     char c = key & 0xFFFF;
     bool upper = record.dwControlKeyState & SHIFT_PRESSED;
+
+
+  
     // convert virtual codes to ascci
     // not sure why i felt the need to deal with this
     switch (key) {
@@ -173,8 +190,8 @@ void OutputWindow::HandleKeyEvent(KEY_EVENT_RECORD record) {
     if ( (c >= 'A' && c <= 'Z') && !upper)
        c += 32; // lowercase 
 
-    inputBuffer[inputCharCount].Char.UnicodeChar = c;
-    inputBuffer[inputCharCount].Attributes = 0x07;
+    inputChanged = true;
+    bufferIn[inputCharCount] = c;
     inputCharCount++;
     cursorPos++;
     cursorMoved = true;
@@ -188,9 +205,20 @@ void OutputWindow::Draw() {
         SetConsoleCursorPosition(hConsoleOutput, coord);
         cursorMoved = false;
     }
+
+    if (inputChanged) {
+        int i = 0;
+        for (; i < width; i++) {
+            inputBuffer[i].Char.UnicodeChar = bufferIn[i];
+            inputBuffer[i].Attributes = 0x07; // white
+        }
+        inputChanged = false;
+    }
+
+
     COORD messageBufferSize = { width, height };
 
-   
+    // 
     {
         SMALL_RECT writeRegion = {
             0,

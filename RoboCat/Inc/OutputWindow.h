@@ -8,8 +8,10 @@
 class OutputWindow
 {
 public:
-	OutputWindow();
-	void Write(std::string msg);
+	using InputProcessor = void (*)(std::string input);
+
+	OutputWindow(InputProcessor inputProcessor);
+	void Write(std::string msg, char color = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN /* white */);
 	void WriteFromStdin(std::string msg);
 
     void MoveBackwards(int lines = 1);
@@ -25,13 +27,17 @@ public:
 
 
 private:
-
+	//void ProcessInput();
+	void HandleMessage(std::string);
+	void HandleCommand(std::string);
 	void HandleKeyEvent(KEY_EVENT_RECORD);
 
 	CHAR_INFO* getLine(short y) { return messageBuffer + (width * y); }
 
 	HANDLE hConsoleInput;
 	HANDLE hConsoleOutput;
+
+	bool inputChanged;
 	char bufferIn[500];
 
 	short width, height;
@@ -44,7 +50,7 @@ private:
 	CHAR_INFO* inputBuffer;
 
 	
-	
+	InputProcessor ProcessInput;
 	short inputCharCount;
 	short cursorPos;
 	bool cursorMoved;
