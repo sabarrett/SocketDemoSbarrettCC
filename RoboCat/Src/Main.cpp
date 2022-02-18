@@ -130,11 +130,18 @@ void setupTcpServer(std::string port)
 			std::string input;
 			std::getline(std::cin, input);
 
+			//TO-DO: Send first byte as bool for user disconnect
+
+
 			//Special case - exit message
 			if (input == "/exit")
 			{
 				//Display disconnect message
 				std::cout << "\n----------You have disconnected from the chat room with " << otherUsername.second << ".----------" << std::endl << std::endl;
+
+				//Send newline message so it stops the getline
+				string stop = " ";
+				connSocket->Send(stop.c_str(), stop.length());
 
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
@@ -169,9 +176,9 @@ void setupTcpServer(std::string port)
 
 			//TO-DO:
 			//Send first byte as bool for user disconnect
-			//Check it with an array access [0]
-			//Exit if it says it should
-			//Read message as remaining (cast to pointer and add 1 to the buffer so it reads starting at the firwst address)
+			//Check first byte with an array access [0]
+			//Exit if it is false
+			//Read message as remaining (cast to pointer and add 1 to the buffer so it reads starting at the first address)
 			//Look into reinterpreting casts
 			
 			//Check for connection loss
@@ -194,6 +201,7 @@ void setupTcpServer(std::string port)
 
 		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
 		//std::terminate();
+		std::cout << "I'm still standing, yeah, yeah, yeah.\n";
 		return;
 	});
 
@@ -301,6 +309,10 @@ void setupTcpClient(std::string ipAddress, std::string port)
 				//Display disconnect message
 				std::cout << "\n----------You have disconnected from the chat room with " << otherUsername.second << ".----------" << std::endl << std::endl;
 				
+				//Send newline message so it stops the getline
+				string stop = " ";
+				clientSocket->Send(stop.c_str(), stop.length());
+
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
 				clientSocket->CleanupSocket();
