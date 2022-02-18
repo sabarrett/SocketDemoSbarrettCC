@@ -53,9 +53,11 @@ int32_t	TCPSocket::Send( const void* inData, size_t inLen )
 int32_t	TCPSocket::Receive( void* inData, size_t inLen )
 {
 	int bytesReceivedCount = recv( mSocket, static_cast< char* >( inData ), inLen, 0 );
-	if( bytesReceivedCount < 0 )
+
+	if( bytesReceivedCount < 0)
 	{
-		SocketUtil::ReportError( "TCPSocket::Receive" );
+		//I couldn't figure out how to make this work with non-blocking mode so I had to comment it out
+		//SocketUtil::ReportError( "TCPSocket::Receive" );
 		return -SocketUtil::GetLastError();
 	}
 	return bytesReceivedCount;

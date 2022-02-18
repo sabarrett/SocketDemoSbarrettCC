@@ -90,6 +90,8 @@ void DoTcpServer()
 
 			std::string receivedMsg(buffer, bytesReceived);
 			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			std::string msg("Hello server! How are you?");
+			connSocket->Send(msg.c_str(), msg.length());
 		}
 		});
 
@@ -100,19 +102,40 @@ void DoTcpServer()
 	receiveThread.join();
 }
 
-std::mutex cinMutex;
-void UserInput(TCPSocketPtr cSocket)
+
+
+
+void DoSocketRecieve(TCPSocketPtr socket, SocketAddressPtr address, bool& quit)
 {
-	std::string msg;
-	//cinMutex.lock();
-	//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	std::getline(std::cin,msg);
-	//cinMutex.unlock();
-	cSocket->Send(msg.c_str(), msg.length());
+	while (!quit) // Need to add a quit here to have it really exit!
+	{
+		char buffer[4096];
+		int32_t bytesReceived = socket->Receive(buffer, 4096);
+		if (bytesReceived == 0)
+		{
+			// handle disconnect
+			quit = true;
+			std::cout << "User disconnected. Press enter to quit.\n";
+			return;
+		}
+		if (bytesReceived < 0 && bytesReceived != -10035)
+		{
+			quit = true;
+			SocketUtil::ReportError("Receiving");
+			return;
+		}
+		else if (bytesReceived != -10035)
+		{
+			std::string receivedMsg(buffer, bytesReceived);
+			LOG("Received message from %s: %s", address->ToString().c_str(), receivedMsg.c_str());
+		}
+		
+	}
 }
 
 void DoTcpClient(std::string port)
 {
+	
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (clientSocket == nullptr)
@@ -140,73 +163,142 @@ void DoTcpClient(std::string port)
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Bound client socket");
+	LOG("Bound client socket at: %s", clientAddress->ToString().c_str());
 
 	// Connect() -> Connect socket to remote host
-	// Create socket
-	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	if (listenSocket == nullptr)
-	{
-		SocketUtil::ReportError("Creating listening socket");
-		ExitProcess(1);
-	}
 
-	//listenSocket->SetNonBlockingMode(true);
-
-	LOG("%s", "Listening socket created");
-
-	// Bind() - "Bind" socket -> tells OS we want to use a specific address
-
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
-	if (listenAddress == nullptr)
-	{
-		SocketUtil::ReportError("Creating listen address");
-		ExitProcess(1);
-	}
-
-	if (listenSocket->Bind(*listenAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Binding listening socket");
-		// This doesn't block!
-		ExitProcess(1);
-	}
-
-	LOG("%s", "Bound listening socket");
-
-	//get user input for connectimg address and pass into function
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
-	if (servAddress == nullptr)
-	{
-		SocketUtil::ReportError("Creating server address");
-		ExitProcess(1);
-	}
-
-	if (clientSocket->Connect(*servAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Connecting to server");
-		ExitProcess(1);
-	}
-
-	LOG("%s", "Connected to server!");
+	TCPSocketPtr connSocket;
+	SocketAddressPtr connAddress;
+	bool quit = false;
+	bool isValid = false;
+	std::string input;
+	std::cout << "Ready to connect.\nType 'listen' to start listening for connections, 'connect' to connect to a listening client, or 'quit' to exit the program: ";
 	
-	
-	std::string msg("Hello server! How are you?");
-	//std::string msg;
-	//std::cin >> msg;
-	clientSocket->Send(msg.c_str(), msg.length());
-	//std::this_thread::sleep_for(std::chrono::seconds(1));
-	
-	while (true)
+	while (!isValid)
 	{
-		//std::thread t1(UserInput, clientSocket);
-		//t1.join();
+		std::cin >> input;
+
+		
+		if (input == "listen")
+		{
+			isValid = true;
+
+			// Create socket
+			TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+			if (listenSocket == nullptr)
+			{
+				SocketUtil::ReportError("Creating listening socket");
+				ExitProcess(1);
+			}
+
+			//listenSocket->SetNonBlockingMode(true);
+
+			LOG("%s", "Listening socket created");
+
+			// Bind() - "Bind" socket -> tells OS we want to use a specific address
+			address = StringUtils::Sprintf("0.0.0.0:%s", port.c_str());
+			SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
+			if (listenAddress == nullptr)
+			{
+				SocketUtil::ReportError("Creating listen address");
+				ExitProcess(1);
+			}
+
+			if (listenSocket->Bind(*listenAddress) != NO_ERROR)
+			{
+				SocketUtil::ReportError("Binding listening socket");
+				// This doesn't block!
+				ExitProcess(1);
+			}
+
+			LOG("%s", "Bound listening socket");
+
+			// Blocking function call -> Waits for some input; halts the program until something "interesting" happens
+			// Non-Blocking function call -> Returns right away, as soon as the action is completed
+
+			// Listen() - Listen on socket -> Non-blocking; tells OS we care about incoming connections on this socket
+			if (listenSocket->Listen() != NO_ERROR)
+			{
+				SocketUtil::ReportError("Listening on listening socket");
+				ExitProcess(1);
+			}
+
+			LOG("%s", "Listening on socket");
+
+			// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
+
+			LOG("%s", "Waiting to accept connections...");
+			SocketAddress incomingAddress;
+			clientSocket = listenSocket->Accept(incomingAddress);
+			while (clientSocket == nullptr)
+			{
+				clientSocket = listenSocket->Accept(incomingAddress);
+				// SocketUtil::ReportError("Accepting connection");
+				// ExitProcess(1);
+			}
+			connAddress = SocketAddressFactory::CreateIPv4FromString(incomingAddress.ToString().c_str());
+			LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+
+		}
+		else if (input == "connect")
+		{
+			isValid = true;
+			//get user input for connectimg address and pass into function
+			std::string inputA;
+			std::cout << "Enter connection address: ";
+			std::cin >> inputA;
+			
+			connAddress = SocketAddressFactory::CreateIPv4FromString(inputA.c_str());
+
+			if (connAddress == nullptr)
+			{
+				SocketUtil::ReportError("Creating server address");
+				ExitProcess(1);
+
+			}
+			if (clientSocket->Connect(*connAddress) != NO_ERROR)
+			{
+				SocketUtil::ReportError("Connecting to server");
+				ExitProcess(1);
+			}
+			LOG("Connected to client at %s ", connAddress->ToString().c_str());
+
+
+		}
+		else if (input == "quit")
+		{
+			return;
+		}
+		else
+		{
+			std::cout << "Invalid input, please try again: ";
+		}
+	}
+	clientSocket->SetNonBlockingMode(true);
+	
+	std::cout << "Type '/quit' at any time to disconnect and exit.\n";
+	
+	std::thread receiveThread(DoSocketRecieve, clientSocket, clientAddress, std::ref(quit));
+	
+	while (!quit)
+	{
 		std::string msg;
-		//cinMutex.lock();
-		//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
 		std::getline(std::cin, msg);
-		//cinMutex.unlock();
-		clientSocket->Send(msg.c_str(), msg.length());
+		if (msg == "/quit")
+		{
+			quit = true;
+			msg.clear();
+			
+		}
+		else
+			clientSocket->Send(msg.c_str(), msg.length());
 	}
+
+	
+	receiveThread.join();
+	
+	return;
 }
 
 std::mutex coutMutex;
