@@ -191,7 +191,7 @@ void DoTcpClient(std::string port)
 	clientSocket->Send(clientUsername.c_str(), clientUsername.length()); // Send client username
 	std::cout << "\033[2J\033[1;1H";
 
-	std::cout << "Connected to the server! Welcome, " << userName.first;
+	std::cout << "Connected to the server! Welcome, " << clientUsername << "!\n";
 	//while (true)												//Used for early testing of send/receive
 	//{
 	//	std::string msg("Hello server! How are you?");
@@ -203,9 +203,18 @@ void DoTcpClient(std::string port)
 	{
 		while (!shouldQuit)
 		{
+
 			std::string messageContent;
+			std::cout << "Message: ";
 			std::getline(std::cin, messageContent);
 
+			//if (messageContent == "/exit") // check for exit command
+			//{
+			//	std::cout << "Disconnecting from the server...\n";
+			//	clientSocket->CloseSocket();
+			//	shouldQuit = true;
+			//	return;
+			//}
 			clientSocket->Send(messageContent.c_str(), messageContent.length());
 		}
 		clientSocket->CloseSocket();
