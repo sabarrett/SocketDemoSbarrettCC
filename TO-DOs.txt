@@ -4,12 +4,6 @@ MINIMUM:
 . Make it clear what you send vs what you received (fix "You: ")
 
 
-EXTRA CREDIT:
-. A "<user> is typing..." message that displays when someone else in the chatroom is typing a message.
-. Connect to multiple peers at once and send and receive messages from/to each
-. Ability to leave/join other chatrooms without exiting the program
-
-
 PROBLEMS:
 . The person that exits will get the message that the other person exited.
 . The person that got ghosted (meaning the other exited) will NOT have their program end WITHOUT std::terminate. THIS HOWEVER GIVES AN EXCEPTION, WHICH WILL END THE PROGRAM AFTER HITTING RETRY. NOT A GOOD WAY THOUGH, NO EXCEPTIONS PLEASE!!!
