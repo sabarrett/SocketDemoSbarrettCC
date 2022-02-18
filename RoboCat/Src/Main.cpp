@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdio.h>
+#include <conio.h>
 
 #if _WIN32
 
@@ -20,6 +22,12 @@ bool TCPServerSendMessages(TCPSocketPtr conn, SocketAddress address)
 
 	printf("%s", "Enter your message: ");
 	scanf("%s", &message);
+
+	if (kbhit() != 0) //this was supposed to try and display a user is typing message
+	{
+		std::string msg("a user is typing...");
+		conn->Send(msg.c_str(), msg.length());
+	}
 
 	if (strcmp(message, "&") == 0)
 	{
@@ -40,7 +48,14 @@ bool TCPClientSendMessages(TCPSocketPtr connSocket, SocketAddress address)
 	char message[4096];
 
 	printf("%s", "Please enter a message to send:");
+
 	scanf("%s", &message);
+
+	if (kbhit() != 0) //this was supposed to try and display a user is typing message
+	{
+		std::string msg("a user is typing...");
+		connSocket->Send(msg.c_str(), msg.length());
+	}
 
 	if (strcmp(message, "&") == 0)
 	{
