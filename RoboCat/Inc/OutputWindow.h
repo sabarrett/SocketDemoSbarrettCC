@@ -17,7 +17,35 @@ public:
 	int Scroll(int lines);
 	void MoveCursorToScreenBottom();
 
+
+	void HandleEvents();
+	
+
+	void Draw();
+
+
 private:
-	HANDLE output;
-	short lineN;
+
+	void HandleKeyEvent(KEY_EVENT_RECORD);
+
+	CHAR_INFO* getLine(short y) { return messageBuffer + (width * y); }
+
+	HANDLE hConsoleInput;
+	HANDLE hConsoleOutput;
+	char bufferIn[500];
+
+	short width, height;
+
+	short messageTail;
+	short messageCapacity;
+	CHAR_INFO* messageBuffer;
+
+
+	CHAR_INFO* inputBuffer;
+
+	
+	
+	short inputCharCount;
+	short cursorPos;
+	bool cursorMoved;
 };

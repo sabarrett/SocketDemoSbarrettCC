@@ -6,9 +6,15 @@
 #include <string>
 #include <sstream>
 
+void term_print(const char* str) {
+	//std::cout << str << std::endl;
+}
+
+void term_refresh() {
+
+}
+
 #if _WIN32
-
-
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -25,7 +31,7 @@ int main(int argc, const char** argv)
 	SocketUtil::StaticInit();
 
 	OutputWindow win;
-
+	
 	std::thread t([&win]()
 				  {
 					  int msgNo = 1;
@@ -39,12 +45,17 @@ int main(int argc, const char** argv)
 						  msgNo++;
 					  }
 				  });
+	
 
+	CHAR_INFO charInfo[5000] = {};
+	int char_count = 0;
+	int i = 0;
 	while (true)
 	{
-		std::string input;
-		std::getline(std::cin, input);
-		win.WriteFromStdin(input);
+		
+		win.HandleEvents();
+		win.Draw();
+	
 	}
 
 	SocketUtil::CleanUp();
