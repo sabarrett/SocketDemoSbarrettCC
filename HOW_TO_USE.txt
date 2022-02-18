@@ -2,7 +2,7 @@
 . Build the project in Visual Studio
 . cd into RoboCat/Bin/Debug
 . In one instance of the command prompt, type .\SocketDemo.exe server <port_number>
-. In the other instance of the command prompt, type .\SocketDemo.exe client(or whatever) <IPv4 address> <port_number>
+. In the other instance of the command prompt, type .\SocketDemo.exe client(or whatever) <client IPv4 address> <server IPv4 address> <port_number>
 . MAKE SURE THE PORT NUMBERS ARE THE SAME!!!
 . Type in username on the client
 . Type in username on the server

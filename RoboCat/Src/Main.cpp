@@ -185,7 +185,7 @@ void setupTcpServer(std::string port)
 			if (bytesReceived <= 0)
 			{
 				//Display disconnect message
-				std::cout << "\n----------" << otherUsername.second << " has disconnected from the chat room.--------------------" << std::endl << std::endl;
+				std::cout << "\n----------" << otherUsername.second << " has disconnected from the chat room. Press enter to exit the program.--------------------" << std::endl << std::endl;
 				
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
@@ -201,7 +201,6 @@ void setupTcpServer(std::string port)
 
 		//Terminate this thread so the program ends - TO-DO: STOP EXCEPTIONS (figure out a different way)
 		//std::terminate();
-		std::cout << "I'm still standing, yeah, yeah, yeah.\n";
 		return;
 	});
 
@@ -348,7 +347,7 @@ void setupTcpClient(std::string clientIpAddress, std::string serverIpAddress, st
 			if (bytesReceived <= 0)
 			{
 				//Display disconnect message
-				std::cout << "\n----------" << otherUsername.second << " has disconnected from the chat room.----------" << std::endl << std::endl;
+				std::cout << "\n----------" << otherUsername.second << " has disconnected from the chat room. Press enter to exit the program.----------" << std::endl << std::endl;
 
 				//Cleanup and break out of the loop (basically end thread because loop condition will no longer be met)
 				gQuit = true;
