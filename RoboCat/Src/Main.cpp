@@ -79,9 +79,24 @@ void DoTcpServer()
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
 	bool isConnected = true;
-	char input[4096];
+	std::string input;
 	char buffer[4096];
 	int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+
+	std::thread sendThread([&]
+		{
+			while (isConnected)
+			{
+				input = GetMessage();
+				connSocket->Send(input.c_str(), input.length());
+				if (input == "exit")
+				{
+					isConnected = false;
+					LOG("%s", "Disconnecting from client");
+					ExitProcess(1);
+				}
+			}
+		});
 
 	std::thread receiveThread([&]
 		{
@@ -104,24 +119,8 @@ void DoTcpServer()
 			}
 		});
 
+	sendThread.join();
 	receiveThread.join();
-/*	while (isConnected)
-	{
-		while (bytesReceived < 0)
-		{
-			bytesReceived = connSocket->Receive(buffer, 4096);
-		}
-		std::string receivedMsg(buffer, bytesReceived);
-		if (receivedMsg == "exit")
-		{
-			isConnected = false;
-			LOG("Connection with %s terminated.", incomingAddress.ToString().c_str());
-			ExitProcess(1);
-		}
-		LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
-
-		bytesReceived = -1;
-	}*/
 }
 
 void DoTcpClient(std::string port)
@@ -173,6 +172,8 @@ void DoTcpClient(std::string port)
 	LOG("%s", "Connected to server!");
 	bool isConnected = true;
 	std::string input;
+	char buffer[4096];
+	int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
 
 	std::thread sendThread([&]
 		{
@@ -188,22 +189,33 @@ void DoTcpClient(std::string port)
 				}
 			}
 		});
-	sendThread.join();
-/*	while (isConnected)
-	{
-		std::cin.getline(input, 4096);
 
-		std::string msg(input);
-		clientSocket->Send(msg.c_str(), msg.length());
-
-		if (msg == "exit")
+	std::thread receiveThread([&]
 		{
-			isConnected = false;
-			LOG("%s", "Disconnecting from server");
-			ExitProcess(1);
-		}
-	}*/
-	
+			while (isConnected)
+			{
+				while (bytesReceived < 0)
+				{
+					bytesReceived = clientSocket->Receive(buffer, 4096);
+				}
+				std::string receivedMsg(buffer, bytesReceived);
+				if (receivedMsg == "exit")
+				{
+					isConnected = false;
+					LOG("%s", "Server terminated connection");
+					ExitProcess(1);
+				}
+				LOG("Received message from server: ", *clientAddress->ToString().c_str(), receivedMsg.c_str());
+				//I apologize in advance for this. It's 4am, and this is the only way I can get the client to actually
+				//print a message sent by the server.
+				std::cout << receivedMsg << std::endl << std::endl;
+
+				bytesReceived = -1;
+			}
+		});
+
+	sendThread.join();	
+	receiveThread.join();
 }
 
 #if _WIN32
