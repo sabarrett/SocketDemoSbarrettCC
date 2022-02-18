@@ -18,6 +18,12 @@
 // render();
 // goto beginning;
 
+bool shouldQuit = false; //global quit
+//typedef list <std::pair<SocketAddress, std::string>> ClientList;
+//ClientList clientlist;
+
+std::pair<std::string, SocketAddress> userName;
+
 void DoTcpServer()
 {
 	// Create socket
@@ -28,13 +34,13 @@ void DoTcpServer()
 		ExitProcess(1);
 	}
 
-	listenSocket->SetNonBlockingMode(true);
+	//listenSocket->SetNonBlockingMode(true);
 
 	LOG("%s", "Listening socket created");
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -75,16 +81,33 @@ void DoTcpServer()
 	}
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+	// receive initial connected client username
+	std::string defaultName = "anon";
+	char buffer[4096];
+	int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+	std::string receivedUsername(buffer, bytesReceived);
 
-	bool quit = false;
-	std::thread receiveThread([&]() { // don't use [&] :)
-		while (!quit) // Need to add a quit here to have it really exit!
+	if (bytesReceived == 0)
+	{
+		receivedUsername = defaultName; //if no input, default to 'anon'
+	}
+
+	userName = std::make_pair(receivedUsername,incomingAddress);
+	std::cout << incomingAddress.ToString() << " sets username to: " << userName.first << "\n";
+	//bool quit = false;
+	std::thread receiveThread([&connSocket, &incomingAddress]() // don't use [&] :)
+	{ 
+		while (!shouldQuit)
 		{
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
-				// handle disconnect
+				std::cout << "Client disconnected. Exiting.\n\n";
+				shouldQuit = true;
+				connSocket->CloseSocket();
+				connSocket = nullptr; 
+				break;
 			}
 			if (bytesReceived < 0)
 			{
@@ -93,14 +116,11 @@ void DoTcpServer()
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			std::cout << userName.first << " says: "<< receivedMsg << "\n";
 		}
+		return;
 		});
-
-	std::cout << "Press enter to exit at any time!\n";
-	std::cin.get();
-	quit = true;
-	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	
 	receiveThread.join();
 }
 
@@ -144,20 +164,41 @@ void DoTcpClient(std::string port)
 		ExitProcess(1);
 	}
 
+
 	if (clientSocket->Connect(*servAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Connecting to server");
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Connected to server!");
+	//Set client username prior to joining server
+	std::cout << "Enter a username: ";
+	std::string clientUsername;
+	std::getline(std::cin, clientUsername);
+	clientSocket->Send(clientUsername.c_str(), clientUsername.length()); // Send client username
 
-	while (true)
+	LOG("%s", "Connected to server!");
+	//while (true)												//Used for early testing of send/receive
+	//{
+	//	std::string msg("Hello server! How are you?");
+	//	clientSocket->Send(msg.c_str(), msg.length());
+	//	std::this_thread::sleep_for(std::chrono::seconds(1));
+	//}
+
+	std::thread sendMessage([&]()
 	{
-		std::string msg("Hello server! How are you?");
-		clientSocket->Send(msg.c_str(), msg.length());
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
+		while (!shouldQuit)
+		{
+			std::string messageContent;
+			std::getline(std::cin, messageContent);
+
+			clientSocket->Send(messageContent.c_str(), messageContent.length());
+		}
+		clientSocket->CloseSocket();
+		return;
+	});
+
+	sendMessage.join();
 }
 
 std::mutex coutMutex;
@@ -203,64 +244,6 @@ void DoCoutLoopLocal(std::string msg, const bool& quit)
 	std::cout << "Exiting loop gracfully\n";
 }
 
-void DoCoutAndExit(std::string msg)
-{
-	std::cout << msg << std::endl;
-
-	std::cout << "Exiting 'loop' gracefully\n";
-}
-
-void DoThreadExample()
-{
-	// Thread Example
-
-	// Ex. 1: Two cout's at once
-
-	//DoCout();
-	gQuit = false;
-	bool quit = false;
-
-	// Lambdas = anonymous functions = Functions with no name.
-	//		max(5, 7) <- two 'anonymous' ints
-	//			int five = 5, seven = 7; max(five, seven);
-	//
-	//	Lambda syntax: [](args) {body} <- a lambda!
-	//		[] -> captures (can use variables from outside scope of function
-
-	//  TcpSocketPtr s;
-	//	std::thread receiveThread([&s]() {
-	//			s->Receive(...);
-	//		});
-	//
-	//  ReceiveOnSocket() {
-	//		s->Receive		// Not global! What are we referencing here?
-	//	}
-
-	std::thread t1(DoCoutLoopLocal, "Hello from thread 1!", std::ref(quit));
-	std::thread t2(DoCoutLoopLocal, "Thread 2 reporting in!", std::ref(quit));
-	std::thread t3([&quit] (std::string msg)
-	{
-			while (!quit)
-			{
-				std::cout << msg << std::endl;
-
-				std::cout << "Exiting 'loop' gracefully\n";
-			}
-	}, "Thread 3 here!");
-
-	std::cout << "Hello from the main thread!\n";
-
-	std::cout << "Press enter to exit at any time.\n\n";
-	std::cin.get();
-
-	gQuit = true;
-	quit = true;
-
-	t1.join();
-	t2.join();
-	t3.join();
-}
-
 #if _WIN32
 int main(int argc, const char** argv)
 {
@@ -281,27 +264,18 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-	OutputWindow win;
+	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
-	std::thread t([&win]()
-				  {
-					  int msgNo = 1;
-					  while (true)
-					  {
-						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-						  std::string msgIn("~~~auto message~~~");
-						  std::stringstream ss(msgIn);
-						  ss << msgNo;
-						  win.Write(ss.str());
-						  msgNo++;
-					  }
-				  });
-
-	while (true)
+	if (isServer)
 	{
-		std::string input;
-		std::getline(std::cin, input);
-		win.WriteFromStdin(input);
+		// Server code ----------------
+		//		Want P2P -- we'll get to that :)
+		DoTcpServer();
+	}
+	else
+	{
+		// Client code ----------------
+		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
 
 	SocketUtil::CleanUp();

@@ -55,7 +55,7 @@ int32_t	TCPSocket::Receive( void* inData, size_t inLen )
 	int bytesReceivedCount = recv( mSocket, static_cast< char* >( inData ), inLen, 0 );
 	if( bytesReceivedCount < 0 )
 	{
-		SocketUtil::ReportError( "TCPSocket::Receive" );
+		//SocketUtil::ReportError( "TCPSocket::Receive" );
 		return -SocketUtil::GetLastError();
 	}
 	return bytesReceivedCount;
@@ -66,7 +66,7 @@ int TCPSocket::Bind( const SocketAddress& inBindAddress )
 	int error = bind( mSocket, &inBindAddress.mSockAddr, inBindAddress.GetSize() );
 	if( error != 0 )
 	{
-		SocketUtil::ReportError( "TCPSocket::Bind" );
+		//SocketUtil::ReportError( "TCPSocket::Bind" );
 		return SocketUtil::GetLastError();
 	}
 
@@ -95,11 +95,17 @@ int TCPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
 	}
 }
 
+
+void TCPSocket::CloseSocket()
+{
+	this->~TCPSocket();
+}
+
 TCPSocket::~TCPSocket()
 {
-#if _WIN32
-	closesocket( mSocket );
-#else
-	close( mSocket );
-#endif
+	#if _WIN32
+		closesocket(mSocket);
+	#else
+		close(mSocket);
+	#endif
 }
