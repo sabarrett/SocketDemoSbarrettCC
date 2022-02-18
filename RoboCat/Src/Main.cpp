@@ -1,5 +1,6 @@
 #include "RoboCatPCH.h"
 #include <iostream>
+#include <thread>
 
 // Problem: Game Loop
 //
@@ -11,6 +12,13 @@
 // update();
 // render();
 // goto beginning;
+
+std::string GetMessage()
+{
+	std::string input;
+	std::getline(std::cin, input);
+	return input;
+}
 
 void DoTcpServer()
 {
@@ -82,6 +90,12 @@ void DoTcpServer()
 			bytesReceived = connSocket->Receive(buffer, 4096);
 		}
 		std::string receivedMsg(buffer, bytesReceived);
+		if (receivedMsg == "exit")
+		{
+			isConnected = false;
+			LOG("Connection with %s terminated.", incomingAddress.ToString().c_str());
+			ExitProcess(1);
+		}
 		LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 
 		bytesReceived = -1;
@@ -142,15 +156,15 @@ void DoTcpClient(std::string port)
 	{
 		std::cin.getline(input, 4096);
 
-		if (input[0] == 0)
+		std::string msg(input);
+		clientSocket->Send(msg.c_str(), msg.length());
+
+		if (msg == "exit")
 		{
 			isConnected = false;
 			LOG("%s", "Disconnecting from server");
 			ExitProcess(1);
 		}
-
-		std::string msg(input);
-		clientSocket->Send(msg.c_str(), msg.length());
 	}
 	
 }
