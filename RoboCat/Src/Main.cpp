@@ -18,22 +18,18 @@ bool quitApp = false;
 std::pair<SocketAddress, std::string> chatPartnerInfo;
 OutputWindow win;
 bool typing;
-int linesPrinted = 0;
 
 void enterChat()
 {
 	std::cout << "Username: ";
 	std::getline(std::cin, username);
-	if (username == "")
-		username = "Put addr here";
-	//win.Write(username + "has joined the chat\n\n");
-	std::cout << username << " has joined the chat\n\n";
-	linesPrinted += 4;
+
+	std::cout << username << " has joined the chat.\nType '/quit' to exit.\n";
 }
 
 
 
-void DoTcpServer()
+void DoTcpServer(std::string port)
 {
 	// Open a TCP socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -44,13 +40,12 @@ void DoTcpServer()
 	}
 
 	//LOG("%s", "Created listen socket");
-	//std::cout << ".";
 	win.WriteFromStdin(".");
 
 
 	//SocketAddress a2(INADDR_LOOPBACK, 8080);
 	// Listen only for connections on this machine
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080"); //will change to 0.0.0.0
+	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);
 	if (a == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -78,7 +73,7 @@ void DoTcpServer()
 	}
 
 	//LOG("%s", "Socket listening");
-	win.WriteFromStdin("----------Ready to Connect----------");
+	win.WriteFromStdin("----------Ready to Connect----------\n\n");
 
 	// Call "Accept" which *blocks* until we get a request to connect,
 	// and then it accepts that connection!
@@ -118,8 +113,7 @@ void DoTcpServer()
 
 	LOG("Connected to %s", chatPartnerInfo.second.c_str(), "\n\n\n\n\n\n\n\n\n\n");
 
-	/*LOG("%s: ", username.c_str());*/
-	std::cout << username.c_str() << ":oo ";
+	//std::cout << username.c_str() << ":oo "; //I tried to do cool things :< - Olli
 
 	std::thread tSend([&conn]()
 	{
@@ -138,8 +132,7 @@ void DoTcpServer()
 			else
 			{
 				conn->Send(sentMsg.c_str(), sentMsg.length());
-				//LOG("%s: ", username.c_str());
-				std::cout << username.c_str() << ":// ";
+				//std::cout << username.c_str() << ": ";
 			}
 		}
 
@@ -154,8 +147,7 @@ void DoTcpServer()
 			char buffer[4096];
 			int32_t bytesRead = conn->Receive(buffer, 4096);
 
-			
-			//win.WriteFromStdin(" ");
+			//win.WriteFromStdin(" "); //leaving this here because I still want to figure it out - Olli
 			if (bytesRead <= 0)
 			{
 				LOG("%s has disconnected. ", chatPartnerInfo.second.c_str());
@@ -164,48 +156,21 @@ void DoTcpServer()
 				break;
 			}
 			std::string msgReceived(buffer, bytesRead);
-			//std::cout << " ";
-			win.MoveBackwards();
-			win.WriteFromStdin("REWRITE");
+			/*win.MoveBackwards();
+			win.WriteFromStdin("REWRITE");*/
 			LOG("%s: %s", chatPartnerInfo.second.c_str(), msgReceived.c_str());
-			//LOG("%s: ", username.c_str());
-			std::cout << username.c_str() << ":~ ";
+			//std::cout << username.c_str() << ": ";
 		}
 
 		return;
 	});
 
-	//std::thread tTyping([&conn]()
-	//{
-	//	while (!quitApp)
-	//	{
-	//		std::cout << "Trying\n";
-
-	//		//conn->Send(typing, typing.length());
-	//		conn->Send("true", 1);
-
-	//		bool buffer[1];
-	//		int32_t bytesRead = conn->Receive(buffer, 1);
-
-	//		if (bytesRead == 0)
-	//			LOG("%s is typing...\n", chatPartnerInfo.second.c_str());
-
-	//		if (bytesRead == 1)
-	//		{
-	//			std::cout << "Here\n";
-	//			win.ClearLine(1);// Write(username + "has joined the chat\n\n");
-	//		}
-	//	}
-	//	return;
-	//});
-
 
 	tSend.join();
 	tRecieve.join();
-	//tTyping.join();
 }
 
-void DoTcpClient()
+void DoTcpClient(std::string clientip, std::string serverip, std::string port)
 {
 	// Open a TCP socket
 	TCPSocketPtr connSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -217,9 +182,7 @@ void DoTcpClient()
 
 	LOG("%s", "Created client socket");
 
-	//SocketAddress a2(INADDR_LOOPBACK, 8080);
-	// Listen only for connections on this machine
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8081");
+	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString(clientip + ":0");
 	if (a == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -237,7 +200,7 @@ void DoTcpClient()
 
 	LOG("%s", "Bound socket");
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(serverip + ":" + port);
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -260,12 +223,6 @@ void DoTcpClient()
 	int32_t userBytes = connSocket->Receive(userBuffer, 4096);
 
 	std::string partnerUserName(userBuffer, userBytes);
-	if (userBytes <= 0)
-	{
-		//partnerUserName = connSocket.ToString().c_str();
-		//SocketUtil::ReportError("Recieving user");
-		//return;
-	}
 
 	chatPartnerInfo.first = *servAddress;
 	chatPartnerInfo.second = partnerUserName;
@@ -281,7 +238,6 @@ void DoTcpClient()
 			if (sentMsg == "/quit")
 			{
 				quitApp = true;
-				//connSocket->~TCPSocket();
 				//connSocket->~TCPSocket();
 				connSocket = nullptr;
 				break;
@@ -339,36 +295,20 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-	//std::thread t();
-//t.join();
 	OutputWindow win;
-
-
-
-	// Server/Client
-	//    (Actually, we want Peer-To-Peer, but we'll get there!)
 
 	// Server Code --------------
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 	if (isServer)
 	{
-		DoTcpServer();
+		DoTcpServer(StringUtils::GetCommandLineArg(2)); //port
 	}
 
 	// Client Code --------------
 	if (!isServer)
 	{
-		DoTcpClient();
+		DoTcpClient(StringUtils::GetCommandLineArg(2), StringUtils::GetCommandLineArg(3), StringUtils::GetCommandLineArg(4)); //client ip, server ip, port
 	}
-
-	/*std::thread tWin([&win]()
-	{
-		while (!quitApp)
-		{
-			win.MoveCursorToScreenBottom();
-		}
-		return;
-	});*/
 
 	SocketUtil::CleanUp();
 
