@@ -14,6 +14,34 @@
 // render();
 // goto beginning;
 
+string username;
+void Formating()
+{
+	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n--------------------Welcome!--------------------\n\n\n\n\n";
+}
+
+void SetUsername(TCPSocketPtr socket)
+{
+	std::cout << "Please enter your username: ";
+	std::string tempName;
+	std::getline(std::cin, tempName);
+
+	std::cout << "Your username is now " << tempName << std::endl;
+	socket->Send(tempName.c_str(), tempName.length());
+
+	char buffer[4096];
+	int32_t bytesReceived = socket->Receive(buffer, 4096);
+
+	if (bytesReceived <= 0)
+	{
+		SocketUtil::ReportError("Receiving");
+		return;
+	}
+
+	std::string receivedMsg(buffer, bytesReceived);
+	username = receivedMsg;
+}
+
 void DoTcpServer()
 {
 	// Create socket
@@ -72,6 +100,9 @@ void DoTcpServer()
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
+	Formating();
+	SetUsername(connSocket);
+
 	    bool sQuit = false;
 	    std::thread sendThreadServer([&]()
 		{
@@ -83,7 +114,7 @@ void DoTcpServer()
 				if (msg == "/exit")
 				{
 					sQuit = true;
-					connSocket->~TCPSocket(); //shouldnt call destructor, find softer way to close
+					connSocket->~TCPSocket();
 					break;
 				}
 				else
@@ -100,18 +131,15 @@ void DoTcpServer()
 		{
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-			//if (bytesReceived == 0)
-			//{
-			//	// handle disconnect
-			//}
-			if (bytesReceived < 0)
+			if (bytesReceived <= 0)
 			{
-				SocketUtil::ReportError("Receiving");
+				//SocketUtil::ReportError("Receiving");
+				std::cout << "Disconnected";
 				return;
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			std::cout << "Received message from ClientPC(" << incomingAddress.ToString() << "): " << receivedMsg << std::endl;
+			std::cout << "Received message from " << username << "(" << incomingAddress.ToString() << "): " << receivedMsg << std::endl;
 		}
 		});
 
@@ -136,7 +164,7 @@ void DoTcpClient(std::string port)
 	LOG("%s", "Client socket created");
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
-
+	
 	std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
@@ -171,6 +199,10 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
+	Formating();
+
+	SetUsername(clientSocket);
+
 	bool sQuit = false;
 	std::thread sendThreadClient([&]()
 		{
@@ -182,7 +214,8 @@ void DoTcpClient(std::string port)
 				if (msg == "/exit")
 				{
 					sQuit = true;
-					clientSocket->~TCPSocket(); //shouldnt call destructor, find softer way to close
+					clientSocket->~TCPSocket();
+
 					break;
 				}
 				else
@@ -198,18 +231,15 @@ void DoTcpClient(std::string port)
 		{
 			char buffer[4096];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
-			//if (bytesReceived == 0)
-			//{
-			//	// handle disconnect
-			//}
-			if (bytesReceived < 0)
+			if (bytesReceived <= 0)
 			{
-				SocketUtil::ReportError("Receiving");
+				//SocketUtil::ReportError("Receiving");
+				std::cout << "Disconnected";
 				return;
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			std::cout << "Received message from ServerPC(" << servAddress->ToString() <<"): " << receivedMsg << std::endl;
+			std::cout << "Received message from " << username << "(" << servAddress->ToString() <<") : " << receivedMsg << std::endl;
 		}
 		});
 
