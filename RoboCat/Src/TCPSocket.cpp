@@ -95,6 +95,11 @@ int TCPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
 	}
 }
 
+void TCPSocket::CleanUp()
+{
+
+}
+
 TCPSocket::~TCPSocket()
 {
 #if _WIN32
