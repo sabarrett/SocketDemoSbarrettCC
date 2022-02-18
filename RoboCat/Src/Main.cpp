@@ -9,6 +9,7 @@
 
 #if _WIN32
 
+//Done using notes from class on multithreading
 void DoTcpServer()
 {
 	// Create socket
@@ -63,6 +64,7 @@ void DoTcpServer()
 
 	//Handle Sending, using notes on threading from class
 	bool sQuit = false;
+	std::cout << "Type /disconnect at anypoint to disconnect! /n";
 	std::thread sendThreadServer([&]()
 		{
 			while (!sQuit)
@@ -70,10 +72,10 @@ void DoTcpServer()
 				std::string msg;
 				std::getline(std::cin, msg);
 
-				if (msg == "/close")
+				if (msg == "/disconnect")
 				{
 					sQuit = true;
-					connSocket->~TCPSocket();
+					connSocket->CleanUp();
 					break;
 				}
 				else
@@ -154,26 +156,28 @@ void DoTcpClient(std::string port)
 	}
 
 	LOG("%s", "Connected to server!");
+	std::cout << "Type /disconnect at anypoint to disconnect! /n";
 
 	//This part I think is correct, aka it works but I don't think it is best way to handle it
 	//Handle Sending, using notes on threading from class
 	bool sQuit = false;
-	std::thread sendThreadServer([&]()
+	std::thread sendThreadClient([&]()
 		{
 			while (!sQuit)
 			{
 				std::string msg;
 				std::getline(std::cin, msg);
 
-				if (msg == "/exit")
+				if (msg == "/disconnect")
 				{
 					sQuit = true;
 					//Try Close Socket Call but can't access
-					clientSocket->~TCPSocket();
+					clientSocket->CleanUp();
 					break;
 				}
 				else
 				{
+
 					clientSocket->Send(msg.c_str(), msg.length());
 				}
 
@@ -183,11 +187,12 @@ void DoTcpClient(std::string port)
 
 	//Handle Recieving, using notes on threading from class
 	bool rQuit = false;
-	std::thread receiveThreadServer([&]() {
+	std::thread receiveThreadClient([&]() {
 		while (!rQuit)
 		{
 			char buffer[4096];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+			//Check to see what was recieved
 			if (bytesReceived < 0)
 			{
 				SocketUtil::ReportError("Receiving nothing");
@@ -195,12 +200,13 @@ void DoTcpClient(std::string port)
 			}
 			std::string receivedMsg(buffer, bytesReceived);
 			std::cout.clear();
+			//output
 			std::cout << "Client " << servAddress << ": " << receivedMsg << std::endl;
 		}
 		});
 
-	receiveThreadServer.join();
-	sendThreadServer.join();
+	receiveThreadClient .join();
+	sendThreadClient.join();
 }
 
 std::mutex coutMutex;
