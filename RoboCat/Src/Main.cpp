@@ -15,7 +15,7 @@
 // render();
 // goto beginning;
 
-void DoTcpServer()
+void DoTcpServer(std::string port)
 {
 	// Create socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -418,8 +418,7 @@ int main(int argc, const char** argv)
 	if (isServer)
 	{
 		// Server code ----------------
-		//		Want P2P -- we'll get to that :)
-		DoTcpServer();
+		DoTcpServer(StringUtils::GetCommandLineArg(2));
 	}
 	else
 	{
