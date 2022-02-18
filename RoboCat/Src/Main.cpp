@@ -70,14 +70,22 @@ void DoTcpServer()
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
+	bool isConnected = true;
+	char input[4096];
 	char buffer[4096];
 	int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-	while (bytesReceived < 0)
+
+	while (isConnected)
 	{
-		bytesReceived = connSocket->Receive(buffer, 4096);
+		while (bytesReceived < 0)
+		{
+			bytesReceived = connSocket->Receive(buffer, 4096);
+		}
+		std::string receivedMsg(buffer, bytesReceived);
+		LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+
+		bytesReceived = -1;
 	}
-	std::string receivedMsg(buffer, bytesReceived);
-	LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 }
 
 void DoTcpClient(std::string port)
@@ -128,13 +136,13 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 	bool isConnected = true;
-	char input[256];
+	char input[4096];
 
 	while (isConnected)
 	{
-		std::cin.getline(input, 256);
+		std::cin.getline(input, 4096);
 
-		if (input == "")
+		if (input[0] == 0)
 		{
 			isConnected = false;
 			LOG("%s", "Disconnecting from server");
