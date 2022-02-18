@@ -152,116 +152,13 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 
-	while (true)
-	{
-		std::string msg("Hello server! How are you?");
-		clientSocket->Send(msg.c_str(), msg.length());
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
-}
-
-std::mutex coutMutex;
-
-void DoCout(std::string msg)
-{
-	for (int i = 0; i < 5; i++)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracefully\n";
-}
-
-bool gQuit;
-
-void DoCoutLoop(std::string msg)
-{
-	while (!gQuit)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracfully\n";
-}
-
-void DoCoutLoopLocal(std::string msg, const bool& quit)
-{
-	while (!quit)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracfully\n";
-}
-
-void DoCoutAndExit(std::string msg)
-{
-	std::cout << msg << std::endl;
-
-	std::cout << "Exiting 'loop' gracefully\n";
-}
-
-void DoThreadExample()
-{
-	// Thread Example
-
-	// Ex. 1: Two cout's at once
-
-	//DoCout();
-	gQuit = false;
-	bool quit = false;
-
-	// Lambdas = anonymous functions = Functions with no name.
-	//		max(5, 7) <- two 'anonymous' ints
-	//			int five = 5, seven = 7; max(five, seven);
-	//
-	//	Lambda syntax: [](args) {body} <- a lambda!
-	//		[] -> captures (can use variables from outside scope of function
-
-	//  TcpSocketPtr s;
-	//	std::thread receiveThread([&s]() {
-	//			s->Receive(...);
-	//		});
-	//
-	//  ReceiveOnSocket() {
-	//		s->Receive		// Not global! What are we referencing here?
-	//	}
-
-	std::thread t1(DoCoutLoopLocal, "Hello from thread 1!", std::ref(quit));
-	std::thread t2(DoCoutLoopLocal, "Thread 2 reporting in!", std::ref(quit));
-	std::thread t3([&quit] (std::string msg)
-	{
-			while (!quit)
-			{
-				std::cout << msg << std::endl;
-
-				std::cout << "Exiting 'loop' gracefully\n";
-			}
-	}, "Thread 3 here!");
-
-	std::cout << "Hello from the main thread!\n";
-
-	std::cout << "Press enter to exit at any time.\n\n";
-	std::cin.get();
-
-	gQuit = true;
-	quit = true;
-
-	t1.join();
-	t2.join();
-	t3.join();
+	std::string msg("Hello server! How are you?");
+	clientSocket->Send(msg.c_str(), msg.length());
 }
 
 #if _WIN32
+
+
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -274,10 +171,6 @@ int main(int argc, const char** argv)
 	__argc = argc;
 	__argv = argv;
 #endif
-
-	// WinSock2.h
-	//    https://docs.microsoft.com/en-us/windows/win32/api/winsock/
-
 
 	SocketUtil::StaticInit();
 
