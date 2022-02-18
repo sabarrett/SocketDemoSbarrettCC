@@ -291,13 +291,13 @@ int main(int argc, const char** argv)
 				{
 					if (*it == nullptr)
 					{
-						incomingClientSockets.erase(it);
+						outgoingClientSockets.erase(it);
 						break;
 					}
 					if (*it == socket)
 					{
 
-						incomingClientSockets.erase(it);
+						outgoingClientSockets.erase(it);
 						socket->~TCPSocket();
 						deadSockets.pop_back();
 						break;
