@@ -97,7 +97,7 @@ int TCPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
 
 void TCPSocket::CleanUp()
 {
-	closesocket(mSocket)
+	closesocket(mSocket);
 }
 
 TCPSocket::~TCPSocket()
