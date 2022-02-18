@@ -99,7 +99,7 @@ void DoTcpServer()
 	std::thread receiveThread([&]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
-			std::cout << "waiting to receive a message" << std::endl;
+			//std::cout << "waiting to receive a message" << std::endl;
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
@@ -126,10 +126,10 @@ void DoTcpServer()
 				char buffer[4096];
 				int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 				std::string receivedMsg(buffer, bytesReceived);
-				SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(incomingAddress);
+				tempUsername = std::make_shared<SocketAddress>(incomingAddress);
 				usernameMap[tempUsername] = receivedMsg;
 
-				LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+				LOG("Accepted connection from %s", usernameMap[tempUsername].c_str());
 				quit = false;
 			}
 			else
@@ -240,7 +240,7 @@ void DoTcpClient(std::string port)
 	std::thread receiveThread([&]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
-			std::cout << "waiting for a message" << std::endl;
+			//std::cout << "waiting for a message" << std::endl;
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
