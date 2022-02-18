@@ -119,8 +119,9 @@ void DoTcpServer()
 					return;
 				}
 				std::string receivedMsg(buffer, bytesReceived);
-				std::string receivedUsername = usernameMap.find(incomingAddress);
-				LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+				SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(incomingAddress);
+				std::map<SocketAddressPtr, std::string>::iterator receivedUsername = usernameMap.find(tempUsername);
+				LOG("Received message from %s: %s", receivedUsername->second.c_str(), receivedMsg.c_str());
 			}
 		}
 		});
@@ -223,7 +224,9 @@ void DoTcpClient(std::string port)
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Received message from %s: %s", servAddress->ToString().c_str(), receivedMsg.c_str());
+			SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(servAddress);
+			std::map<SocketAddressPtr, std::string>::iterator receivedUsername = usernameMap.find(tempUsername);
+			LOG("Received message from %s: %s", receivedUsername->second.c_str(), receivedMsg.c_str());
 		}
 		});
 
