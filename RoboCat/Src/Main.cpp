@@ -42,6 +42,11 @@ bool TCPClientSendMessages(TCPSocketPtr connSocket)
 	scanf("%s", &message);
 	connSocket->Send(message, 4096);
 
+	if (strcmp(message, "&") == 0)
+	{
+		return false;
+	}
+
 	LOG("%s", "Sent message to peer");
 
 	char buffer[4096];
@@ -49,15 +54,9 @@ bool TCPClientSendMessages(TCPSocketPtr connSocket)
 
 	std::string msgReceived(buffer, bytesRead);
 	LOG("Received message: %s", msgReceived.c_str());
-
-	if (message == "\exit")
-	{
-		return false;
-	}
-	else
-	{
-		return true;
-	}
+	
+	return true;
+	
 }
 
 void DoTCPServer()
