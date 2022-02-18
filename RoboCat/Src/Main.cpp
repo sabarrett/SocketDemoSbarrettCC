@@ -16,10 +16,10 @@
 // goto beginning;
 
 const std::string EXIT_CODE = "!exit";
-std::map<SocketAddressPtr, std::string> usernameMap;
 
 void DoTcpServer()
 {
+	std::map<SocketAddressPtr, std::string> usernameMap;
 	// Create socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (listenSocket == nullptr)
@@ -35,7 +35,7 @@ void DoTcpServer()
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
 	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
-	std::cout << listenAddress->ToString().c_str() << std::endl;
+	//std::cout << listenAddress->ToString().c_str() << std::endl;
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -68,6 +68,7 @@ void DoTcpServer()
 	getline(std::cin, username);
 	//usernameMap.insert(std::pair<SocketAddressPtr, std::string>(listenAddress, username));
 	usernameMap[listenAddress] = username;
+	//std::cout << usernameMap[listenAddress] << std::endl;
 
 	// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
 	SocketAddress incomingAddress;
@@ -81,7 +82,16 @@ void DoTcpServer()
 		// ExitProcess(1);
 	}
 
-	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+	connSocket->Send(username.c_str(), username.length());
+
+	char buffer[4096];
+	int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+	std::string receivedMsg(buffer, bytesReceived);
+	SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(incomingAddress);
+	usernameMap[tempUsername] = receivedMsg;
+
+	LOG("Accepted connection from %s", usernameMap[tempUsername].c_str());
+
 
 	bool quit = false;
 	std::string msg;
@@ -89,7 +99,6 @@ void DoTcpServer()
 	std::thread receiveThread([&]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
-			char buffer[4096];
 			std::cout << "waiting to receive a message" << std::endl;
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
@@ -99,7 +108,9 @@ void DoTcpServer()
 					std::cout << "server terminating on server's behalf" << std::endl;
 					ExitProcess(1);
 				}
-				LOG("%s has disconnected", incomingAddress.ToString().c_str());
+				LOG("%s has disconnected", usernameMap[tempUsername].c_str());
+				usernameMap.erase(tempUsername);
+
 				//TCPSocketPtr connSocket = listenForConnection(incomingAddress, listenSocket);
 				LOG("%s", "Waiting to accept connections...");
 				connSocket = listenSocket->Accept(incomingAddress);
@@ -109,6 +120,14 @@ void DoTcpServer()
 					// SocketUtil::ReportError("Accepting connection");
 					// ExitProcess(1);
 				}
+
+				connSocket->Send(username.c_str(), username.length());
+
+				char buffer[4096];
+				int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+				std::string receivedMsg(buffer, bytesReceived);
+				SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(incomingAddress);
+				usernameMap[tempUsername] = receivedMsg;
 
 				LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 				quit = false;
@@ -121,8 +140,12 @@ void DoTcpServer()
 					return;
 				}
 				std::string receivedMsg(buffer, bytesReceived);
-				SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(incomingAddress);
 				std::map<SocketAddressPtr, std::string>::iterator receivedUsername = usernameMap.find(tempUsername);
+				if (receivedUsername == usernameMap.end())
+				{
+					std::cout << "problem with map" << std::endl;
+					ExitProcess(1);
+				}
 				LOG("Received message from %s: %s", receivedUsername->second.c_str(), receivedMsg.c_str());
 			}
 		}
@@ -149,6 +172,7 @@ void DoTcpServer()
 
 void DoTcpClient(std::string port)
 {
+	std::map<SocketAddressPtr, std::string> usernameMap;
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (clientSocket == nullptr)
@@ -182,7 +206,7 @@ void DoTcpClient(std::string port)
 
 	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 	SocketAddress server = *servAddress;
-	std::cout << server.ToString().c_str() << std::endl;
+	//std::cout << server.ToString().c_str() << std::endl;
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -194,6 +218,7 @@ void DoTcpClient(std::string port)
 	getline(std::cin, username);
 	//usernameMap.insert(std::pair<SocketAddressPtr, std::string>(clientAddress, username));
 	usernameMap[clientAddress] = username;
+	//std::cout << usernameMap[clientAddress] << std::endl;
 
 	if (clientSocket->Connect(*servAddress) != NO_ERROR)
 	{
@@ -201,15 +226,20 @@ void DoTcpClient(std::string port)
 		ExitProcess(1);
 	}
 
+	clientSocket->Send(username.c_str(), username.length());
 
 	LOG("%s", "Connected to server!");
+
+	char buffer[4096];
+	int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+	std::string receivedMsg(buffer, bytesReceived);
+	usernameMap[servAddress] = receivedMsg;
 
 	bool quit = false;
 	std::string msg;
 	std::thread receiveThread([&]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
-			char buffer[4096];
 			std::cout << "waiting for a message" << std::endl;
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
@@ -226,20 +256,20 @@ void DoTcpClient(std::string port)
 			if (bytesReceived < 0)
 			{
 				SocketUtil::ReportError("Receiving");
-				return;
+				ExitProcess(1);
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(server);
+			/*SocketAddressPtr tempUsername = std::make_shared<SocketAddress>(server);
 			std::map<SocketAddressPtr, std::string>::iterator receivedUsername = usernameMap.find(tempUsername);
 			if (receivedUsername == usernameMap.end())
 			{
 				std::cout << "problem with map" << std::endl;
 				ExitProcess(1);
-			}
+			}*/
 			//username = receivedUsername->second;
 			//std::cout << username << std::endl;
-			LOG("Received message from %s: %s", username.c_str(), receivedMsg.c_str());
+			LOG("Received message from %s: %s", usernameMap[servAddress].c_str(), receivedMsg.c_str());
 		}
 		});
 
