@@ -44,7 +44,7 @@ void setupTcpServer(std::string port)
 	LOG("%s", "Listening socket created");
 
 	//Ensure that your listening code can receive connections from any computer (hence the 0.0.0.0)
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);	//Have the client enter the EXACT SAME port number as the server
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:0"/* + port*/);	//Have the client enter the EXACT SAME port number as the server
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
