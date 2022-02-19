@@ -27,8 +27,6 @@ void BradsTotallyOriginalServer()
 		ExitProcess(1); // kill
 	}
 
-	LOG("%s", "WOW! You made an address for your socket");
-
 	//Bind Time!
 	bool bindError = listeningSocket->Bind(*addressPtr) != NO_ERROR;
 	if (bindError)
@@ -61,10 +59,7 @@ void BradsTotallyOriginalServer()
 	
 	// CONECTION ACCEPTED WE HAVE CONTACT ==============================
 	LOG("Request accepted from: %s", incomingAddress.ToString().c_str());
-	//request username
-	//std::string usernameRequest("Please Input Your Username: ");
-	//incomingSocket->Send(usernameRequest.c_str(), usernameRequest.length());
-	
+
 	// input username
 	std::string username;
 	std::cout << "Please Input Your Username: ";
@@ -84,41 +79,46 @@ void BradsTotallyOriginalServer()
 	std::string otherUsername(buffer, bytesReceived);	
 	std::cout << "Other user " << otherUsername.c_str() << " has joined the chatroom" << std::endl;
 
-	//bool exit = false;
+	bool exit = false;
 	//send data
-	std::thread SendThread([&incomingSocket]()
+	std::thread SendThread([&incomingSocket, &exit]()
 		{
 			//send message
 			std::string msg;
-			while (msg != "/exit")
+			while (!exit)
 			{			
 				std::getline(std::cin, msg); //BLOCKS
 				incomingSocket->Send(msg.c_str(), msg.length());
-
+				
 				if (msg == "/exit")
 				{
-					incomingSocket.reset();
-					//exit = true;
+					//incomingSocket->~TCPSocket();
+					exit = true;
 					std::cout << "connection terminated" << std::endl;
+					break; 
 				}
 			}
 		});
-	bool exit = false;
+
 	//receive data
 	while (bytesReceived < 4096 && !exit)
 	{
 		bytesReceived = incomingSocket->Receive(buffer, 4096);
+		if (bytesReceived <= 0)
+		{
+			exit = true;
+			break;
+		}
 		std::string receivedMsg(buffer, bytesReceived);
 		std::cout << otherUsername.c_str() << ": " << receivedMsg.c_str() << std::endl;
 		if (receivedMsg == "/exit")
 		{
-			incomingSocket.reset();
+			//incomingSocket->~TCPSocket();
 			exit = true;
 			std::cout << "connection terminated" << std::endl;
-		}
+		}	
 	}
-	
-
+	incomingSocket->~TCPSocket();
 }
 
 void BradsLessOriginalClient()
@@ -133,10 +133,10 @@ void BradsLessOriginalClient()
 	LOG("%s", "Client socket created");
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
-	std::string port;
-	port = StringUtils::GetCommandLineArg(2);
-	std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
-	//std::string address = StringUtils::Sprintf("127.0.0.1:8081");
+	//std::string port;
+	//port = StringUtils::GetCommandLineArg(2);
+	//std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
+	std::string address = StringUtils::Sprintf("127.0.0.1:8081");
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
 	{
@@ -190,45 +190,51 @@ void BradsLessOriginalClient()
 	std::string otherUsername(otherUsernameBuffer, otherUsernameBytes);
 	std::cout << "Other user " << otherUsername.c_str() << " has joined the chatroom" << std::endl;
 	
-	//bool exit = false;
+	bool exit = false;
 
-	std::thread SendThread([&clientSocket]()
+	std::thread SendThread([&clientSocket, &exit]()
 		{
 			//Fulfill username request
 			std::string msg;
 			std::getline(std::cin, msg); //BLOCKS
 			clientSocket->Send(msg.c_str(), msg.length());
-			while (msg != "/exit")
+			while (!exit)
 			{
 				std::getline(std::cin, msg);//BLOCKS
 				clientSocket->Send(msg.c_str(), msg.length());
-
+				
 				if (msg == "/exit")
 				{
-					clientSocket.reset();
-					//exit = true;
+					//clientSocket->~TCPSocket();
+					exit = true;
 					std::cout << "connection terminated" << std::endl;
-				}
-			}
-			
+					break;
+				}			
+			}	
 		});
 	
 	char buffer[4096];
 	int32_t bytesReceived = int32_t();
-	bool exit = false;
+	//bool exit = false;
 	while (bytesReceived < 4096 && !exit)
 	{
+
 		bytesReceived = clientSocket->Receive(buffer, 4096);
+		if (bytesReceived <= 0)
+		{
+			exit = true;
+			break;
+		}
 		std::string receivedMsg(buffer, bytesReceived);
 		std::cout << otherUsername.c_str() << ": " << receivedMsg.c_str() << std::endl;
-
 		if (receivedMsg == "/exit")
 		{
-			clientSocket.reset();
+			//clientSocket->~TCPSocket();
 			exit = true;
 			std::cout << "connection terminated" << std::endl;
-		}
+		}		
 	}
+	clientSocket->~TCPSocket();
 }
 
 
