@@ -158,7 +158,14 @@ void StartServer(bool& listenStatus, std::vector<TCPSocketPtr>& incomingClientSo
 
 
 
+#include <thread>
+#include <iostream>
+#include <string>
+#include <sstream>
+
 #if _WIN32
+
+
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -404,7 +411,6 @@ int main(int argc, const char** argv)
 
 
 	receiveThread.join();
-	
 	SocketUtil::CleanUp();
 
 	return 0;
