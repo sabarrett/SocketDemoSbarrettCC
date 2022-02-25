@@ -9,14 +9,17 @@ inline uint16_t ByteSwap2( uint16_t inData )
 
 inline uint32_t ByteSwap4( uint32_t inData )
 {
+
 	return  ( ( inData >> 24 ) & 0x000000ff ) |
 			( ( inData >>  8 ) & 0x0000ff00 ) |
 			( ( inData <<  8 ) & 0x00ff0000 ) |
 			( ( inData << 24 ) & 0xff000000 );
+			
 }
 
 inline uint64_t ByteSwap8( uint64_t inData )
 {
+
 	return  ( ( inData >> 56 ) & 0x00000000000000ff ) |
 			( ( inData >> 40 ) & 0x000000000000ff00 ) |
 			( ( inData >> 24 ) & 0x0000000000ff0000 ) |
@@ -25,6 +28,7 @@ inline uint64_t ByteSwap8( uint64_t inData )
 			( ( inData << 24 ) & 0x0000ff0000000000 ) |
 			( ( inData << 40 ) & 0x00ff000000000000 ) |
 			( ( inData << 56 ) & 0xff00000000000000 );
+	
 }
 
 
