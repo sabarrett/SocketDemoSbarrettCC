@@ -43,7 +43,7 @@ int main(int argc, const char** argv)
 	}
 	std::cout << "Sent: " << bytesSent << std::endl;
 
-	std::thread srvThread([&]() {
+	std::thread srvThread([&srvSock]() {
 		char buffer[4096];
 		SocketAddress fromAddr;
 		int bytesReceived = srvSock->ReceiveFrom(buffer, 4096, fromAddr);
