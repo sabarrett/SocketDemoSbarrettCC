@@ -1,0 +1,12 @@
+Networking TO-DOs:
+
+MINIMUM:
+. Make it clear what you send vs what you received (fix "You: ")
+
+
+PROBLEMS:
+. The person that exits will get the message that the other person exited.
+. The person that got ghosted (meaning the other exited) will NOT have their program end WITHOUT std::terminate. THIS HOWEVER GIVES AN EXCEPTION, WHICH WILL END THE PROGRAM AFTER HITTING RETRY. NOT A GOOD WAY THOUGH, NO EXCEPTIONS PLEASE!!!
+
+QUESTIONS:
+. 
