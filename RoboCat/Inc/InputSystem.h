@@ -12,13 +12,16 @@ InputSystem.h
 
 #include "GraphicsLibrary.h"
 
+
 //Include allegro libraries for input
 #include <allegro5/allegro.h>
 
 enum KeyCode
 {
-	Escape = ALLEGRO_KEY_ESCAPE,
-	R = ALLEGRO_KEY_R
+	Esc = ALLEGRO_KEY_ESCAPE,
+	R = ALLEGRO_KEY_R,
+	S = ALLEGRO_KEY_S,
+	D = ALLEGRO_KEY_D
 };
 
 enum MouseButton

@@ -19,6 +19,8 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
+	//while (activeConnection == false)
+	
 	SocketUtil::CleanUp();
 
 	return 0;

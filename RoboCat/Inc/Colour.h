@@ -9,6 +9,8 @@ Colour.h
 	This file contains data used for colours.
 */
 
+
+
 class Colour
 {
 	//-------------------------Private data-------------------------

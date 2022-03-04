@@ -5,6 +5,7 @@ GraphicsLibrary.cpp
 */
 
 #include "GraphicsLibrary.h"
+#include "RoboCatPCH.h"
 
 #include <iostream>
 #include <algorithm>
