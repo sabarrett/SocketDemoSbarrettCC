@@ -13,6 +13,9 @@ void TCPServer(UDPSocketPtr server)
 	std::thread update([&] {
 
 	});
+
+	sendInput.join();
+	update.join();
 }
 
 void TCPClient(UDPSocketPtr client)
@@ -24,6 +27,9 @@ void TCPClient(UDPSocketPtr client)
 	std::thread update([&] {
 
 	});
+
+	sendInput.join();
+	update.join();
 }
 
 
