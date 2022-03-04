@@ -1,0 +1,5 @@
+C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
+C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/out/build/x64-Debug/RedLib/CMakeFiles/RedLib.dir
+C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/out/build/x64-Debug/RedLib/CMakeFiles/edit_cache.dir
+C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/out/build/x64-Debug/RedLib/CMakeFiles/rebuild_cache.dir

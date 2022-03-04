@@ -1,0 +1,21 @@
+# ninja log v5
+1	578	668118510	RedLib/CMakeFiles/RedLib.dir/RedLib.cpp.obj	aad734b1c0a1927b
+578	1058	668118511	RedLib/RedLib.exe	f682385287acc55b
+3	132	668118548	build.ninja	b71968c8abb6092e
+8	757	668118549	RedLib/CMakeFiles/RedLib.dir/Source_Files/Trackable.cpp.obj	ac24839278760d62
+4	785	668118549	RedLib/CMakeFiles/RedLib.dir/Source_Files/Vector2D.cpp.obj	223e24f32b4811f3
+1	809	668118549	RedLib/CMakeFiles/RedLib.dir/Source_Files/MemoryTracker.cpp.obj	18c8a3c3786215e5
+10	1043	668118549	RedLib/CMakeFiles/RedLib.dir/Source_Files/Timer.cpp.obj	dc43e36d03c1497f
+1044	1110	668118549	RedLib/RedLib.lib	3bf861c86e80e16c
+0	17	0	clean	c813891121c2e17
+15	485	668118605	RedLib/CMakeFiles/RedLib.dir/Source_Files/Trackable.cpp.obj	ac24839278760d62
+9	489	668118605	RedLib/CMakeFiles/RedLib.dir/Source_Files/Vector2D.cpp.obj	223e24f32b4811f3
+1	538	668118605	RedLib/CMakeFiles/RedLib.dir/Source_Files/MemoryTracker.cpp.obj	18c8a3c3786215e5
+12	581	668118605	RedLib/CMakeFiles/RedLib.dir/Source_Files/Timer.cpp.obj	dc43e36d03c1497f
+581	629	668118605	RedLib/RedLib.lib	3bf861c86e80e16c
+0	18	0	clean	c813891121c2e17
+1	486	668118758	RedLib/CMakeFiles/RedLib.dir/Source_Files/Trackable.cpp.obj	ac24839278760d62
+15	510	668118758	RedLib/CMakeFiles/RedLib.dir/Source_Files/Vector2D.cpp.obj	223e24f32b4811f3
+12	535	668118758	RedLib/CMakeFiles/RedLib.dir/Source_Files/MemoryTracker.cpp.obj	18c8a3c3786215e5
+8	579	668118758	RedLib/CMakeFiles/RedLib.dir/Source_Files/Timer.cpp.obj	dc43e36d03c1497f
+579	629	668118758	RedLib/RedLib.lib	3bf861c86e80e16c
