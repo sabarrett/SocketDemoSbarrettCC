@@ -4,6 +4,28 @@
 
 #if _WIN32
 
+void TCPServer(UDPSocketPtr server)
+{
+	std::thread sendInput([&] {
+
+	});
+
+	std::thread update([&] {
+
+	});
+}
+
+void TCPClient(UDPSocketPtr client)
+{
+	std::thread sendInput([&] {
+
+	});
+
+	std::thread update([&] {
+
+	});
+}
+
 
 int main(int argc, const char** argv)
 {
@@ -55,6 +77,8 @@ int main(int argc, const char** argv)
 		std::string msg(buffer, bytesReceived);
 		std::cout << "Received message from " << fromAddr.ToString() << ": " << msg << std::endl;
 	});
+
+
 
 	srvThread.join();
 
