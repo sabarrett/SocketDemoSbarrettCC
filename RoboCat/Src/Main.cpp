@@ -1,6 +1,8 @@
 
 #include "RoboCatPCH.h"
 
+#include <thread>
+
 #if _WIN32
 
 
@@ -18,6 +20,40 @@ int main(int argc, const char** argv)
 #endif
 
 	SocketUtil::StaticInit();
+
+	UDPSocketPtr clientSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
+	UDPSocketPtr serverSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
+
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:65000");
+	SocketAddressPtr serverAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:65001");
+
+	clientSocket->Bind(*clientAddress);
+	serverSocket->Bind(*serverAddress);
+
+	std::thread serverThread([&serverSocket]() {
+		char buffer[4096];
+		SocketAddress fromAddress;
+		int bytesReceived = serverSocket->ReceiveFrom(buffer, 4096, fromAddress);
+		if (bytesReceived <= 0)
+		{
+			SocketUtil::ReportError("ByesRecieved <= 0");
+			return;
+		}
+		std::string msg(buffer, bytesReceived);
+		std::cout << fromAddress.ToString() << ": " << msg.c_str() << "\n";
+		
+		});
+
+
+	std::string msg("Hello, sir.");
+	int bytesSent = clientSocket->SendTo(msg.c_str(), msg.length(), *serverAddress);
+	std::cout << bytesSent << "\n";
+	if (bytesSent <= 0)
+	{
+		SocketUtil::ReportError("None Sended");
+	}
+
+	serverThread.join();
 
 	SocketUtil::CleanUp();
 
