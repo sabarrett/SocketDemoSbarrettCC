@@ -1,0 +1,3 @@
+[submodule "allegro_wrapper_functions"]
+	path = allegro_wrapper_functions
+	url = https://github.com/adel-talhouk/allegro_wrapper_functions.git
