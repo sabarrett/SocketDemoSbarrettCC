@@ -163,9 +163,8 @@ int main(int argc, const char** argv)
 
 		//Cleanup when done
 		cleanup();
+		SocketUtil::CleanUp();
 	}
-
-	SocketUtil::CleanUp();
 
 	return 0;
 }
