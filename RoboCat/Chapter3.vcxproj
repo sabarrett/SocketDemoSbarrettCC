@@ -383,7 +383,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="GameManager.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
@@ -398,9 +398,7 @@
     <ClInclude Include="Inc\RoboCatShared.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
     <ClCompile Include="..\allegro_wrapper_functions\Colour.cpp" />
-    <ClCompile Include="..\allegro_wrapper_functions\GraphicsLibrary.cpp" />
-    <ClCompile Include="..\allegro_wrapper_functions\InputSystem.cpp" />
-    <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Paddle.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />

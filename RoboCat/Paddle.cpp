@@ -21,7 +21,7 @@ Paddle::~Paddle()
 void Paddle::Render()
 {
 	al_draw_filled_rectangle(mOriginX, mOriginY, mOriginX + mLength, mOriginY + mWidth, mColor);
-	//al_draw_filled_rectangle(100, 100, 100 + 15, 100 + 15, al_map_rgb(155, 255, 155));
+	
 }
 
 void Paddle::SetPosition(int x, int y)
