@@ -1,9 +1,4 @@
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_font.h>
-#include <allegro5/allegro_ttf.h>
-#include <allegro5/allegro_acodec.h>
-#include <allegro5/allegro_image.h>
-#include <allegro5/allegro_primitives.h>
+#include <iostream>
 
 #include "RoboCatPCH.h"
 #include "..\Game.h"
@@ -12,8 +7,39 @@
 
 int main(int argc, const char** argv)
 {
-	Game game;
-	game.Update();
+
+	bool isServer = false;
+	string input;
+
+	std::cout << "Would you like to host or join(Join/Host)? " << std::endl;
+	std::cin >> input;
+	
+	while (input != "Join" && input != "Host")
+	{
+		std::cout << "Please enter a valid answer " << std::endl;
+		std::cout << "Would you like to host or join(Join/Host)? " << std::endl;
+		std::cin >> input;
+
+	}
+
+	Game* game;
+
+	if (input == "Host")
+	{
+		isServer = true;
+		game = new Game();
+	}
+	else
+	{
+		isServer = false;
+
+		std::cout << "Enter an IP address to connect to? " << std::endl;
+		std::cin >> input;
+		game = new Game(input);
+	}
+
+	
+	game->Update();
 
 	return 0;
 }

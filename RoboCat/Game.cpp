@@ -23,6 +23,28 @@ Game::Game()
 		mRunning = true;
 	}
 
+	mIsServer = true;
+	mLocalLeft = mIsServer;
+
+}
+
+Game::Game(std::string IP)
+{
+
+
+	if (InitAllegro())
+	{
+		ALLEGRO_COLOR paddleColor = al_map_rgb(255, 255, 255);
+		mPaddleOne = new Paddle(20, 100, paddleColor);
+		mPaddleOne->SetPosition(30, 100);
+
+		mPaddleTwo = new Paddle(20, 100, paddleColor);
+		mPaddleTwo->SetPosition(al_get_display_width(mDisplay) - 50, 100);
+
+		keyboardState = new ALLEGRO_KEYBOARD_STATE();
+		mRunning = true;
+	}
+	mIsServer = false;
 	mLocalLeft = mIsServer;
 
 }
@@ -129,13 +151,12 @@ void Game::Update()
 		if (mIsServer)
 		{
 			CheckCollisions();
-			SendUpdatedStates();
+			//SendUpdatedStates();
 		}
 		else
 		{
-			SendUpdatedStates();
+			//SendUpdatedStates();
 		}
-
 		
 	}
 
