@@ -1,6 +1,7 @@
 #pragma once
-#include <allegro5/allegro.h>
-#include <string>
+
+
+
 
 class Paddle;
 
@@ -11,6 +12,7 @@ class Game
 	Paddle* mPaddleOne;
 	Paddle* mPaddleTwo;
 	ALLEGRO_KEYBOARD_STATE* keyboardState;
+	TCPSocketPtr TCPSocket;
 
 
 	bool mRunning = false;
@@ -18,6 +20,8 @@ class Game
 	bool mLocalLeft = true;
 
 	bool InitAllegro();
+	void StartServer();
+	void ConnectToServer(std::string ip);
 	void ProcessLocalInput();
 	void UpdateLocalPaddle();
 	void Render();
@@ -25,7 +29,7 @@ class Game
 	//void SendUpdatedStates();
 	void DrawMenu();
 
-	//void ProcessMenuInput();
+	
 
 
 public:

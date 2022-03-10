@@ -25,6 +25,7 @@ Game::Game()
 
 	mIsServer = true;
 	mLocalLeft = mIsServer;
+	StartServer();
 
 }
 
@@ -46,7 +47,7 @@ Game::Game(std::string IP)
 	}
 	mIsServer = false;
 	mLocalLeft = mIsServer;
-
+	ConnectToServer(IP);
 }
 
 Game::~Game()
@@ -206,4 +207,119 @@ bool Game::InitAllegro()
 
 	return true;
 
+}
+
+void Game::StartServer()
+{
+	SocketUtil::StaticInit();
+
+
+	// Create socket
+	TCPSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	if (TCPSocket == nullptr)
+	{
+		SocketUtil::ReportError("Creating listening socket");
+		ExitProcess(1);
+	}
+
+	//listenSocket->SetNonBlockingMode(true);
+
+	LOG("%s", "Listening socket created");
+
+	// Bind() - "Bind" socket -> tells OS we want to use a specific address
+
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+	if (listenAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating listen address");
+		ExitProcess(1);
+	}
+
+	if (TCPSocket->Bind(*listenAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Binding listening socket");
+		// This doesn't block!
+		ExitProcess(1);
+	}
+
+	LOG("%s", "Bound listening socket");
+
+	// Blocking function call -> Waits for some input; halts the program until something "interesting" happens
+	// Non-Blocking function call -> Returns right away, as soon as the action is completed
+
+	// Listen() - Listen on socket -> Non-blocking; tells OS we care about incoming connections on this socket
+	if (TCPSocket->Listen() != NO_ERROR)
+	{
+		SocketUtil::ReportError("Listening on listening socket");
+		ExitProcess(1);
+	}
+
+	LOG("%s", "Listening on socket");
+
+	// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
+
+	LOG("%s", "Waiting to accept connections...");
+
+	TCPSocket->SetNonBlockingMode(false);
+
+	SocketAddress incomingAddress;
+	TCPSocketPtr connSocket = TCPSocket->Accept(incomingAddress);
+	
+	TCPSocket->~TCPSocket();
+	TCPSocket = connSocket;
+	TCPSocket->SetNonBlockingMode(false);
+	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+
+
+}
+
+void Game::ConnectToServer(std::string ip)
+{
+	// Create socket
+	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	if (clientSocket == nullptr)
+	{
+		SocketUtil::ReportError("Creating client socket");
+		ExitProcess(1);
+		return;
+	}
+
+	string address = "0.0.0.0:8080";
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
+	if (clientAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating client address");
+		ExitProcess(1);
+		return;
+	}
+
+	if (clientSocket->Bind(*clientAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Binding client socket");
+		// This doesn't block!
+		ExitProcess(1);
+	}
+
+	LOG("%s", "Bound client socket");
+
+	// Connect() -> Connect socket to remote host
+
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(ip);
+	if (servAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating server address");
+		ExitProcess(1);
+	}
+
+	if (clientSocket->Connect(*servAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Connecting to server");
+		ExitProcess(1);
+	}
+
+
+	LOG("%s", "Connected to server!");
+
+	
+	clientSocket->SetNonBlockingMode(true);
 }
