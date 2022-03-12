@@ -1,10 +1,17 @@
 #include "Game.h"
 #include "Paddle.h"
+//#include "MemoryBitStream.h"
 #include <iostream>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_primitives.h>
+#include <thread>
+
+enum class PacketType
+{
+	PT_PADDLE
+};
 
 Game::Game()
 {
@@ -130,6 +137,68 @@ void Game::CheckCollisions()
 
 }
 
+void Game::SendUpdatedStates()
+{
+
+	Paddle* localPaddle;
+
+	if (mLocalLeft)
+	{
+		localPaddle = mPaddleOne;
+	}
+	else
+	{
+		localPaddle = mPaddleTwo;
+	}
+
+
+	int yPos = localPaddle->GetPosY();
+
+	OutputMemoryBitStream oStream;
+	oStream.Write(PacketType::PT_PADDLE);
+	oStream.Write(yPos);
+
+	TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+
+
+}
+
+void Game::Receive()
+{
+	while (mRunning)
+	{
+		char buffer[1024];
+		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
+		if (bytesReceived > 0)
+		{
+			InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
+			PacketType type;
+			iStream.Read(type);
+
+			if (type == PacketType::PT_PADDLE)
+			{
+				int yPos;
+				iStream.Read(yPos);
+
+				UpdateNetworkedPaddle(yPos);
+			}
+		}
+		else  if (bytesReceived < 0)
+		{
+			if (bytesReceived == -10035)
+			{
+
+			}
+			else if (bytesReceived == -10054)
+			{
+				mRunning = false;
+				LOG("User disconnected: %s", "<Insert ID here>");
+			}
+		}
+	}
+	
+}
+
 void Game::Render()
 {
 	ALLEGRO_COLOR backgroundColor = al_map_rgb(0, 0, 0);
@@ -143,6 +212,8 @@ void Game::Render()
 
 void Game::Update()
 {
+	std::thread receiveThread(&Game::Receive,this);
+
 	while (mRunning)
 	{
 
@@ -152,17 +223,35 @@ void Game::Update()
 		if (mIsServer)
 		{
 			CheckCollisions();
-			//SendUpdatedStates();
+			SendUpdatedStates();
 		}
 		else
 		{
-			//SendUpdatedStates();
+			SendUpdatedStates();
 		}
 		
 	}
 
-
+	receiveThread.join();
 }
+
+void Game::UpdateNetworkedPaddle(int y)
+{
+	Paddle* networkedPaddle;
+
+	if (mLocalLeft)
+	{
+		networkedPaddle = mPaddleTwo;
+	}
+	else
+	{
+		networkedPaddle = mPaddleOne;
+	}
+
+
+	networkedPaddle->SetPosition(y);
+}
+
 
 bool Game::InitAllegro()
 {
@@ -228,7 +317,7 @@ void Game::StartServer()
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -275,16 +364,18 @@ void Game::StartServer()
 
 void Game::ConnectToServer(std::string ip)
 {
+	SocketUtil::StaticInit();
+
 	// Create socket
-	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	if (clientSocket == nullptr)
+	TCPSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	if (TCPSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating client socket");
 		ExitProcess(1);
 		return;
 	}
 
-	string address = "0.0.0.0:8080";
+	string address = "127.0.0.2:8080";
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
 	{
@@ -293,7 +384,7 @@ void Game::ConnectToServer(std::string ip)
 		return;
 	}
 
-	if (clientSocket->Bind(*clientAddress) != NO_ERROR)
+	if (TCPSocket->Bind(*clientAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding client socket");
 		// This doesn't block!
@@ -311,7 +402,7 @@ void Game::ConnectToServer(std::string ip)
 		ExitProcess(1);
 	}
 
-	if (clientSocket->Connect(*servAddress) != NO_ERROR)
+	if (TCPSocket->Connect(*servAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Connecting to server");
 		ExitProcess(1);
@@ -321,5 +412,6 @@ void Game::ConnectToServer(std::string ip)
 	LOG("%s", "Connected to server!");
 
 	
-	clientSocket->SetNonBlockingMode(true);
+	TCPSocket->SetNonBlockingMode(true);
+
 }

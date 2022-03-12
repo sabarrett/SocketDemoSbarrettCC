@@ -16,6 +16,7 @@ public:
 	void Render();
 
 	void SetPosition(int x, int y);
+	void SetPosition(int y) { mOriginY = y; };
 	void SetDims(int l, int w);
 	void SetColor(ALLEGRO_COLOR c);
 

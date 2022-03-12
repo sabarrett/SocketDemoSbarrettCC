@@ -26,8 +26,8 @@ class Game
 	void UpdateLocalPaddle();
 	void Render();
 	void CheckCollisions();
-	//void SendUpdatedStates();
-	void DrawMenu();
+	void SendUpdatedStates();
+	void Receive(); 
 
 	
 
@@ -37,6 +37,7 @@ public:
 	Game(std::string ip);
 	~Game();
 	void Update();
+	void UpdateNetworkedPaddle(int y);
 	
 
 };
