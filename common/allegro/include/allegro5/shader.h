@@ -1,8 +1,8 @@
 #ifndef __al_included_allegro5_shader_h
 #define __al_included_allegro5_shader_h
 
-#include "allegro5/base.h"
-#include "allegro5/transformations.h"
+#include "../allegro5/base.h"
+#include "../allegro5/transformations.h"
 
 #ifdef __cplusplus
    extern "C" {

@@ -1,7 +1,7 @@
 #ifndef __al_included_allegro5_allegro_image_h
 #define __al_included_allegro5_allegro_image_h
 
-#include "allegro5/base.h"
+#include "../allegro5/base.h"
 
 #if (defined ALLEGRO_MINGW32) || (defined ALLEGRO_MSVC) || (defined ALLEGRO_BCC32)
    #ifndef ALLEGRO_STATICLINK

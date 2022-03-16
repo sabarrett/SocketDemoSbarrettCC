@@ -1,17 +1,9 @@
 #pragma once
 #include<iostream>
 #include<vector>
-#include<allegro5/allegro.h>
+#include<../../common/allegro/include/allegro5/allegro.h>
 #include"common/DeanLib/include/Trackable.h"
 #include"GraphicsLib/Animation.h"
-
-/*
-Author: Nicholas Preis
-	Class : Game Architecture <250-71>
-	Assignment : Assignment 3
-	Certification of Authenticity :
-I certify that this assignment is entirely my own work.
-*/
 
 class Animation;
 class GraphicsBuffer;

@@ -16,8 +16,8 @@
 #ifndef __al_included_allegro5_touch_input_h
 #define __al_included_allegro5_touch_input_h
 
-#include "allegro5/base.h"
-#include "allegro5/events.h"
+#include "../allegro5/base.h"
+#include "../allegro5/events.h"
 
 #ifdef __cplusplus
    extern "C" {

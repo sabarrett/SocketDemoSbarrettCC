@@ -16,9 +16,9 @@
 #ifndef __al_included_allegro5_keyboard_h
 #define __al_included_allegro5_keyboard_h
 
-#include "allegro5/base.h"
-#include "allegro5/events.h"
-#include "allegro5/keycodes.h"
+#include "../allegro5/base.h"
+#include "../allegro5/events.h"
+#include "../allegro5/keycodes.h"
 
 #ifdef __cplusplus
    extern "C" {

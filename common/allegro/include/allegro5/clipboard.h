@@ -16,9 +16,9 @@
 #ifndef __al_included_allegro5_clipboard_h
 #define __al_included_allegro5_clipboard_h
 
-#include "allegro5/base.h"
-#include "allegro5/display.h"
-#include "allegro5/utf8.h"
+#include "../allegro5/base.h"
+#include "../allegro5/display.h"
+#include "../allegro5/utf8.h"
 
 #ifdef __cplusplus
    extern "C" {

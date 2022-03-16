@@ -1,7 +1,7 @@
 #ifndef __al_included_allegro5_render_state_h
 #define __al_included_allegro5_render_state_h
 
-#include "allegro5/base.h"
+#include "../allegro5/base.h"
 
 #ifdef __cplusplus
    extern "C" {

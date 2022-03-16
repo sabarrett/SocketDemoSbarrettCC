@@ -19,8 +19,8 @@
 #ifndef __al_included_allegro5_fmaths_h
 #define __al_included_allegro5_fmaths_h
 
-#include "allegro5/base.h"
-#include "allegro5/fixed.h"
+#include "../allegro5/base.h"
+#include "../allegro5/fixed.h"
 
 #ifdef __cplusplus
    extern "C" {
@@ -39,7 +39,7 @@ AL_ARRAY(al_fixed, _al_fix_acos_tbl);
    }
 #endif
 
-#include "allegro5/inline/fmaths.inl"
+#include "../allegro5/inline/fmaths.inl"
 
 #endif
 

@@ -20,7 +20,7 @@
 #define __al_included_allegro5_debug_h
 
 #include <assert.h>
-#include "allegro5/base.h"
+#include "../allegro5/base.h"
 
 #ifdef __cplusplus
    extern "C" {

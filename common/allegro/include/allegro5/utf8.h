@@ -1,7 +1,7 @@
 #ifndef __al_included_allegro5_utf8_h
 #define __al_included_allegro5_utf8_h
 
-#include "allegro5/base.h"
+#include "../allegro5/base.h"
 
 #ifdef __cplusplus
    extern "C" {

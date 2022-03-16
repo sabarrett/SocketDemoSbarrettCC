@@ -2,11 +2,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_audio.h>
-#include <allegro5/allegro_acodec.h>
-#include <allegro5/allegro_image.h>
-#include <allegro5/allegro_primitives.h>
+#include <../../../common/allegro/include/allegro5/allegro.h>
+#include <../../../common/allegro/include/allegro5/allegro_audio.h>
+#include <../../../common/allegro/include/allegro5/allegro_acodec.h>
+#include <../../../common/allegro/include/allegro5/allegro_image.h>
+#include <../../../common/allegro/include/allegro5/allegro_primitives.h>
 #include "../common/DeanLib/include/Trackable.h"
 #include "Sprite.h"
 #include "GraphicsBuffer.h"

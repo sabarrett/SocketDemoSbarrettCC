@@ -1,8 +1,8 @@
 #ifndef __al_included_allegro5_system_h
 #define __al_included_allegro5_system_h
 
-#include "allegro5/config.h"
-#include "allegro5/path.h"
+#include "../allegro5/config.h"
+#include "../allegro5/path.h"
 
 #ifdef __cplusplus
    extern "C" {

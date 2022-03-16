@@ -25,37 +25,37 @@
 
 /* include platform-specific stuff */
 
-#include "allegro5/platform/alplatf.h"
+#include "../../allegro5/platform/alplatf.h"
 
 
 
 #if defined ALLEGRO_WATCOM
-   #include "allegro5/platform/alwatcom.h"
+   #include "../../allegro5/platform/alwatcom.h"
 #elif defined ALLEGRO_MINGW32
-   #include "allegro5/platform/almngw32.h"
+   #include "../../allegro5/platform/almngw32.h"
 #elif defined ALLEGRO_BCC32
-   #include "allegro5/platform/albcc32.h"
+   #include "../../allegro5/platform/albcc32.h"
 #elif defined ALLEGRO_MSVC
-   #include "allegro5/platform/almsvc.h"
+   #include "../../allegro5/platform/almsvc.h"
 #elif defined ALLEGRO_IPHONE
-   #include "allegro5/platform/aliphonecfg.h"
+   #include "../../allegro5/platform/aliphonecfg.h"
 #elif defined ALLEGRO_MACOSX
-   #include "allegro5/platform/alosxcfg.h"
+   #include "../../allegro5/platform/alosxcfg.h"
 #elif defined ALLEGRO_ANDROID
-   #include "allegro5/platform/alandroidcfg.h"
+   #include "../../allegro5/platform/alandroidcfg.h"
 #elif defined ALLEGRO_RASPBERRYPI
-   #include "allegro5/platform/alraspberrypicfg.h"
+   #include "../../allegro5/platform/alraspberrypicfg.h"
 #elif defined ALLEGRO_UNIX
-   #include "allegro5/platform/alucfg.h"
+   #include "../../allegro5/platform/alucfg.h"
 #elif defined ALLEGRO_SDL
-   #include "allegro5/platform/allegro_sdl_config.h"
+   #include "../../allegro5/platform/allegro_sdl_config.h"
 #else
    #error platform not supported
 #endif
 
   
-#include "allegro5/platform/astdint.h"
-#include "allegro5/platform/astdbool.h"
+#include "../../allegro5/platform/astdint.h"
+#include "../../allegro5/platform/astdbool.h"
 
 
 
