@@ -1,16 +1,8 @@
 #pragma once
 #include<iostream>
-#include"Trackable.h"
+#include"../common/DeanLib/include/Trackable.h"
 #include<map>
 #include<iterator>
-
-/*
-Author: Nicholas Preis
-	Class : Game Architecture <250-71>
-	Assignment : Assignment 4
-	Certification of Authenticity :
-I certify that this assignment is entirely my own work.
-*/
 
 using namespace std;
 

@@ -1,15 +1,7 @@
 #pragma once
 
 #include <string>
-#include <trackable.h>
-
-/*
-Author: Nicholas Preis
-	Class : Game Architecture <250-71>
-	Assignment : Assignment 5
-	Certification of Authenticity :
-I certify that this assignment is entirely my own work.
-*/
+#include "../common/DeanLib/include/Trackable.h"
 
 using namespace std;
 

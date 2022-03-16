@@ -3,15 +3,7 @@
 #include<allegro5/allegro.h>
 #include<allegro5/keyboard.h>
 #include<allegro5/mouse.h>
-#include"Trackable.h"
-
-/*
-Author: Nicholas Preis
-	Class : Game Architecture <250-71>
-	Assignment : Assignment 5
-	Certification of Authenticity :
-I certify that this assignment is entirely my own work.
-*/
+#include"../common/DeanLib/include/Trackable.h"
 
 using namespace std;
 

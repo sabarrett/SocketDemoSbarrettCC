@@ -2,13 +2,7 @@
 #include <iostream>
 #include <string>
 #include <allegro5/allegro.h>
-#include "Trackable.h"
-
-/*
-Author: Ryan Littleton, with help from the rest of the class
-Class : GPR-250-71
-Assignment : Assignment 2
-*/
+#include "../common/DeanLib/include/Trackable.h"
 
 class Color : public Trackable
 {

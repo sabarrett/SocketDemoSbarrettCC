@@ -7,17 +7,11 @@
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
-#include "Trackable.h"
+#include "../common/DeanLib/include/Trackable.h"
 #include "Sprite.h"
 #include "GraphicsBuffer.h"
 #include "Font.h"
 #include "Color.h"
-
-/*
-Author: Ryan Littleton, with help from the rest of the class
-Class : GPR-250-71
-Assignment : Assignment 2
-*/
 
 const int DISP_WIDTH = 800;
 const int DISP_HEIGHT = 600;

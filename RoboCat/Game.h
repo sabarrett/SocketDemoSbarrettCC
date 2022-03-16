@@ -1,8 +1,8 @@
 #pragma once
-#include "Trackable.h"
-#include <Timer.h>
+#include "common/DeanLib/include/Trackable.h"
+#include "common/DeanLib/include/Timer.h"
 #include <assert.h>
-#include <PerformanceTracker.h>
+#include "common/DeanLib/include/PerformanceTracker.h"
 #include "GraphicsLib/Sprite.h"
 #include "GraphicsLib/EventListener.h"
 

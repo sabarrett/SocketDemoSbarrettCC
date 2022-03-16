@@ -4,13 +4,8 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
-#include "Trackable.h"
+#include "../common/DeanLib/include/Trackable.h"
 
-/*
-Author: Ryan Littleton, with help from the rest of the class
-Class : GPR-250-71
-Assignment : Assignment 2
-*/
 
 const std::string FONT_ASSET_PATH = "..\\..\\common\\assets\\cour.ttf";
 const int FONT_SIZE = 48;

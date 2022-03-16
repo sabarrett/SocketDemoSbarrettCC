@@ -1,15 +1,7 @@
 #pragma once
 #include<iostream>
 #include<vector>
-#include"Trackable.h"
-
-/*
-Author: Nicholas Preis
-	Class : Game Architecture <250-71>
-	Assignment : Assignment 3
-	Certification of Authenticity :
-I certify that this assignment is entirely my own work.
-*/
+#include"../common/DeanLib/include/Trackable.h"
 
 class Sprite;
 class GraphicsBuffer;

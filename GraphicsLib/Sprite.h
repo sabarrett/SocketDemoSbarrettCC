@@ -2,15 +2,7 @@
 #include<iostream>
 #include<string>
 #include<allegro5/allegro.h>
-#include"Trackable.h"
-
-/*
-Author: Nicholas Preis
-	Class : Game Architecture <250-71>
-	Assignment : Assignment 2
-	Certification of Authenticity :
-I certify that this assignment is entirely my own work.
-*/
+#include"../common/DeanLib/include/Trackable.h"
 
 class GraphicsBuffer;
 

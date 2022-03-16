@@ -4,8 +4,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SocketDemo", "RoboCat\Chapter3.vcxproj", "{B3B75176-8D81-4E7B-A5D0-C2E5423844D3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DB900E08-5331-46D6-B450-6775A2C7C856} = {DB900E08-5331-46D6-B450-6775A2C7C856}
+		{4B9AB2DA-44CB-4F3D-866F-FA7F345BD810} = {4B9AB2DA-44CB-4F3D-866F-FA7F345BD810}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraphicsLib", "GraphicsLib\GraphicsLib.vcxproj", "{4B9AB2DA-44CB-4F3D-866F-FA7F345BD810}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DB900E08-5331-46D6-B450-6775A2C7C856} = {DB900E08-5331-46D6-B450-6775A2C7C856}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeanLib", "common\DeanLib\DeanLib.vcxproj", "{DB900E08-5331-46D6-B450-6775A2C7C856}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +50,16 @@ Global
 		{4B9AB2DA-44CB-4F3D-866F-FA7F345BD810}.Release|Win32.Build.0 = Release|Win32
 		{4B9AB2DA-44CB-4F3D-866F-FA7F345BD810}.Release|x64.ActiveCfg = Release|x64
 		{4B9AB2DA-44CB-4F3D-866F-FA7F345BD810}.Release|x64.Build.0 = Release|x64
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Debug|Win32.Build.0 = Debug|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Debug|x64.ActiveCfg = Debug|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Profile|Win32.ActiveCfg = Release|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Profile|Win32.Build.0 = Release|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Profile|x64.ActiveCfg = Release|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Profile|x64.Build.0 = Release|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Release|Win32.ActiveCfg = Release|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Release|Win32.Build.0 = Release|Win32
+		{DB900E08-5331-46D6-B450-6775A2C7C856}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
