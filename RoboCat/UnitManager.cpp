@@ -1,8 +1,8 @@
 #include"UnitManager.h"
 #include"Unit.h"
-#include"Animation.h"
-#include"Sprite.h"
-#include"System.h"
+#include"GraphicsLib/Animation.h"
+#include"GraphicsLib/Sprite.h"
+#include"GraphicsLib/System.h"
 
 UnitManager::UnitManager()
 {

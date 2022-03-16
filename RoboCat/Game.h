@@ -3,8 +3,8 @@
 #include <Timer.h>
 #include <assert.h>
 #include <PerformanceTracker.h>
-#include "Sprite.h"
-#include "EventListener.h"
+#include "GraphicsLib/Sprite.h"
+#include "GraphicsLib/EventListener.h"
 
 using namespace std;
 

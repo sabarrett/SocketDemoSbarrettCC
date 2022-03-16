@@ -3,7 +3,7 @@
 #include<vector>
 #include<allegro5/allegro.h>
 #include"Trackable.h"
-#include"Animation.h"
+#include"GraphicsLib/Animation.h"
 
 /*
 Author: Nicholas Preis

@@ -1,8 +1,7 @@
 #include"Unit.h"
-#include"Animation.h"
-#include"GraphicsBuffer.h"
-#include"GraphicsSystem.h"
-#include"System.h"
+#include"GraphicsLib/GraphicsBuffer.h"
+#include"GraphicsLib/GraphicsSystem.h"
+#include"GraphicsLib/System.h"
 #include"Game.h"
 
 Unit::Unit()
