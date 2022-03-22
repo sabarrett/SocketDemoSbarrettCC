@@ -71,7 +71,7 @@ void update()
 		case MouseButton::LeftMouse:
 		{
 			//Spawn current GameObject type
-			//TO-DO: This ^
+			//TO-DO: Spawn correct GameObject type
 			GameObject newGameObject(gameObjectID, networkID, pInput->getMouseX(), pInput->getMouseY());
 			gameObjectsVec.push_back(newGameObject);
 
