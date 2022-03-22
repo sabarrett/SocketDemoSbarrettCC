@@ -13,7 +13,7 @@ bool bShouldRedraw = true;
 InputSystem* pInput;
 
 //-------------------------Assets-------------------------
-const std::string ASSET_PATH = "..\\Assets\\";
+const std::string ASSET_PATH = "Assets\\";
 const std::string BACKGROUND_IMAGE_FILE = "Background_Image.jpg";
 
 //-------------------------Asset Identifiers-------------------------
@@ -28,7 +28,7 @@ bool init()
 
 	//Setup the graphical window
 	pGraphics = new GraphicsLibrary(screenSizeX, screenSizeY);
-	bSuccessfulInit = pGraphics->init(ASSET_PATH + BACKGROUND_IMAGE_FILE);
+	bSuccessfulInit = pGraphics->init();
 
 	//Add images to the graphcis library
 	pGraphics->loadImage(ASSET_PATH + BACKGROUND_IMAGE_FILE, backgroundImageSprite);
@@ -102,7 +102,7 @@ void update()
 void draw()
 {
 	//Background image
-	pGraphics->drawImage(backgroundImageSprite, screenSizeX * 0.5, screenSizeY * 0.5);
+	pGraphics->drawImage(backgroundImageSprite, 0, 0);
 
 	//TO-DO: Draw more stuff here
 
