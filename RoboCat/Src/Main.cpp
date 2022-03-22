@@ -22,6 +22,9 @@ const std::string backgroundImageSprite = "background_image";
 //-------------------------Game Data-------------------------
 bool bGameIsRunning = true;
 
+//-------------------------GameObject Data-------------------------
+GameObject player;
+
 bool init()
 {
 	bool bSuccessfulInit = false;
