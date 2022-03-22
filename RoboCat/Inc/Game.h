@@ -29,13 +29,16 @@ public:
 	void CreateGameWindow(char* title, int width, int height);
 
 	// Get
-	bool Running() { return isRunning; };
+	bool Running() { return m_isRunning; };
 	const Uint8* getKeyStates() { return m_keyStates; }
+	SDL_Renderer* getRenderer() { return m_renderer; }
 private:
-	bool isRunning;
-	SDL_Window* window;
-	SDL_Renderer* renderer;
-	std::vector<GameObject*> allObjects;
+	bool m_isRunning;
+	SDL_Window* m_window;
+	SDL_Renderer* m_renderer;
+	std::vector<GameObject*> m_allObjects;
 
 	const Uint8* m_keyStates;
+
+	int m_nextUID = 0;
 };

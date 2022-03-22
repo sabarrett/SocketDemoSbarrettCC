@@ -13,8 +13,8 @@ public:
 	~GameObject();
 
 	// Core functions
-	void Init(SDL_Renderer* gameRenderer, std::string name);
-	void Init(SDL_Renderer* gameRenderer, std::string name, std::string filePath);
+	void Init(Game* game, std::string name);
+	void Init(Game* game, std::string name, std::string filePath);
 	void Update(Game* game);
 	void Draw();
 	void CleanUp();
@@ -27,6 +27,8 @@ private:
 	std::string m_name;
 	SDL_Texture* m_texture;
 	SDL_Rect m_textureRect;
+
+	int m_UID = 0;
 
 	float m_xPos = 0;
 	float m_yPos = 0;

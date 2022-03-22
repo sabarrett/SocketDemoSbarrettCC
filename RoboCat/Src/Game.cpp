@@ -13,17 +13,17 @@ void Game::Init(char* title, int width, int height)
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(IMG_INIT_PNG);
 	CreateGameWindow(title, width, height);
-	isRunning = true;
+	m_isRunning = true;
 
-	CreateObject("Player", "Assets/player.png");
+	CreateObject("Player", "Assets/Player.png");
 }
 
 void Game::CreateGameWindow(char* title, int width, int height)
 {
-	window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
-	renderer = SDL_CreateRenderer(window, -1, 0);
+	m_window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+	m_renderer = SDL_CreateRenderer(m_window, -1, 0);
 
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
 
 	
 
@@ -38,7 +38,7 @@ void Game::Update()
 		switch (sdlEvent.type)
 		{
 		case SDL_QUIT:
-			isRunning = false;
+			m_isRunning = false;
 			break;
 		default:
 			break;
@@ -46,28 +46,29 @@ void Game::Update()
 	}
 	m_keyStates = SDL_GetKeyboardState(NULL);
 
-	for (size_t i = 0; i < allObjects.size(); i++)
+	for (size_t i = 0; i < m_allObjects.size(); i++)
 	{
-		allObjects[i]->Update(this);
+		m_allObjects[i]->Update(this);
 	}
 	
 }
 
 void Game::Draw()
 {
-	SDL_RenderClear(renderer);
-	for (size_t i = 0; i < allObjects.size(); i++)
+	SDL_RenderClear(m_renderer);
+	for (size_t i = 0; i < m_allObjects.size(); i++)
 	{
-		allObjects[i]->Draw();
+		m_allObjects[i]->Draw();
 	}
-	SDL_RenderPresent(renderer);
+	SDL_RenderPresent(m_renderer);
 }
 
 GameObject* Game::CreateObject(std::string name, std::string filePath)
 {
 	GameObject* gameObject = new GameObject;
-	gameObject->Init(renderer, name, filePath);
-	allObjects.push_back(gameObject);
+	gameObject->Init(this, name, filePath);
+	int i = 0;
+	m_allObjects.push_back(gameObject);
 	return gameObject;
 }
 
@@ -78,12 +79,12 @@ void Game::DestroyObject(GameObject* gameObject)
 
 void Game::CleanUp()
 {
-	for (size_t i = 0; i < allObjects.size(); i++)
+	for (size_t i = 0; i < m_allObjects.size(); i++)
 	{
-		DestroyObject(allObjects[i]);
+		DestroyObject(m_allObjects[i]);
 	}
-	SDL_DestroyWindow(window);
-	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(m_window);
+	SDL_DestroyRenderer(m_renderer);
 	SDL_Quit();
 }
 

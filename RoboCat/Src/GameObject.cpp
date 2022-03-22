@@ -8,9 +8,9 @@ GameObject::~GameObject()
 {
 }
 
-void GameObject::Init(SDL_Renderer* gameRenderer, std::string name)
+void GameObject::Init(Game* game, std::string name)
 {
-	m_gameRenderer = gameRenderer;
+	m_gameRenderer = game->getRenderer();
 
 	m_name = name;
 
@@ -20,14 +20,16 @@ void GameObject::Init(SDL_Renderer* gameRenderer, std::string name)
 	SDL_FreeSurface(tmpSurface);
 }
 
-void GameObject::Init(SDL_Renderer* gameRenderer, std::string name, std::string filePath)
+void GameObject::Init(Game* game, std::string name, std::string filePath)
 {
-	m_gameRenderer = gameRenderer;
+	m_gameRenderer = game->getRenderer();
 
 	m_name = name;
 
 	SDL_Surface* tmpSurface = IMG_Load(filePath.c_str());
+	printf(" %s\n", SDL_GetError());
 	m_texture = SDL_CreateTextureFromSurface(m_gameRenderer, tmpSurface);
+	
 	m_textureRect = tmpSurface->clip_rect;
 	SDL_FreeSurface(tmpSurface);
 }
