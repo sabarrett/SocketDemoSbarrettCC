@@ -35,7 +35,11 @@
 #include "deque"
 #include "unordered_set"
 #include "cassert"
-
+#include <thread>
+#include <stack>
+	
+using std::stack;
+using std::thread;
 using std::shared_ptr;
 using std::unique_ptr;
 using std::vector;

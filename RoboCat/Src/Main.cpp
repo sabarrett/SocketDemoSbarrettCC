@@ -5,17 +5,11 @@
 /// 
 
 // standard libraries
-#include <thread>
-#include <stack>
+
 
 // libraries provided to us
 #include "RoboCatPCH.h"
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
-
-// custom libraries
-
-
-#if _WIN32
 
 
 ///
@@ -30,6 +24,8 @@
 ///    X - if using UDP, there is a chance of things arriving out of order, so note the time of last remote update and send the time of the update with it, discarding old ones
 ///  X - when user wants to quit, set  closingConnections = true; (to clean things up)
 
+// can probably be bigger since we're using UDP
+const int BUFFER_SIZE = 4096;
 
 const float SCREEN_X = 1000;
 const float SCREEN_Y = 500;
@@ -40,7 +36,7 @@ const int JOINER_PORT = 8100;
 
 void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress)
 {
-		// here we can select which IPV we're using, and IPV6 is a bit wild for these purposes so, we go with IPV4
+	// here we can select which IPV we're using, and IPV6 is a bit wild for these purposes so, we go with IPV4
 	listeningSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 	if (listeningSocket == nullptr)
 	{
@@ -75,12 +71,20 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 	LOG("Your port is %i", static_cast<int>(port));
 	LOG("%s", "socket is now listening");
 }
-void HandleListening(bool& closingConnections, UDPSocketPtr& listeningSocket, std::stack<void*>& unprocessedData, bool& waitingForMessage)
+void HandleListening(bool& closingConnections, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress, std::stack<void*>& unprocessedData, bool& waitingForMessage)
 {
-	while (!closingConnections)
-		;
+	if (!closingConnections)
+	{
+		std::cout << "\n\nListening Now!\n\n";
+		void* recievedData = nullptr;
+		listeningSocket->ReceiveFrom(recievedData, BUFFER_SIZE, *listeningAddress);
+
+	}
+
 }
 
+
+#if _WIN32
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -129,7 +133,10 @@ int main(int argc, const char** argv)
 
 		listeningPort = CREATOR_PORT;
 		SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
-		listeningThread = std::thread(HandleListening, closingConnections);
+		
+		HandleListening(closingConnections, listeningSocket, listeningAddress, unprocessedData, waitingForConnection);
+		//something about this thread is cursed, throws errors in the actual implementation of thread
+		//listeningThread = thread(HandleListening, closingConnections, listeningSocket, listeningAddress, unprocessedData, waitingForConnection);
 
 		do
 		{
