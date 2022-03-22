@@ -23,9 +23,32 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	Game game;
+	const int FPS = 60;
+	const int frameDelay = 1000 / FPS;
 
-	game.Init("Heya", 1600, 900);
+	Uint32 frameStart;
+	int frameTime;
+
+	Game* game = new Game();
+
+	game->Init("Heya", 1600, 900);
+
+	while (game->Running())
+	{
+		frameStart = SDL_GetTicks();
+
+		game->Update();
+		game->Draw();
+
+		frameTime = SDL_GetTicks() - frameStart;
+		if (frameDelay > frameTime)
+		{
+			SDL_Delay(frameDelay - frameTime);
+		}
+
+	}
+	
+	game->CleanUp();
 
 	SocketUtil::StaticInit();
 
