@@ -1,11 +1,6 @@
 
 #include "RoboCatPCH.h"
 
-#include <thread>
-#include <iostream>
-#include <string>
-#include <sstream>
-
 #if _WIN32
 
 
@@ -23,29 +18,6 @@ int main(int argc, const char** argv)
 #endif
 
 	SocketUtil::StaticInit();
-
-	OutputWindow win;
-
-	std::thread t([&win]()
-				  {
-					  int msgNo = 1;
-					  while (true)
-					  {
-						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-						  std::string msgIn("~~~auto message~~~");
-						  std::stringstream ss(msgIn);
-						  ss << msgNo;
-						  win.Write(ss.str());
-						  msgNo++;
-					  }
-				  });
-
-	while (true)
-	{
-		std::string input;
-		std::getline(std::cin, input);
-		win.WriteFromStdin(input);
-	}
 
 	SocketUtil::CleanUp();
 
