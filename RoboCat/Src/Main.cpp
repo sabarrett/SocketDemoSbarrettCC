@@ -6,6 +6,7 @@
 
 // standard libraries
 #include <thread>
+#include <stack>
 
 // libraries provided to us
 #include "RoboCatPCH.h"
@@ -27,6 +28,7 @@
 ///  X - Involve creating and destroying objects, which is then synchronized between clients.
 ///  X - Use TCP and UDP appropriately, (for deltas and world state respectively) 
 ///    X - if using UDP, there is a chance of things arriving out of order, so note the time of last remote update and send the time of the update with it, discarding old ones
+///  X - when user wants to quit, set  closingConnections = true; (to clean things up)
 
 
 const float SCREEN_X = 1000;
@@ -35,9 +37,6 @@ const string FILE_PATH = "../images/";
 const string BACKGROUND = "background.jpg";
 const int CREATOR_PORT = 8080;
 const int JOINER_PORT = 8100;
-
-std::atomic<bool> closingConnections{ false };
-
 
 void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress)
 {
@@ -76,7 +75,11 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 	LOG("Your port is %i", static_cast<int>(port));
 	LOG("%s", "socket is now listening");
 }
-
+void HandleListening(bool& closingConnections, UDPSocketPtr& listeningSocket, std::stack<void*>& unprocessedData, bool& waitingForMessage)
+{
+	while (!closingConnections)
+		;
+}
 
 int main(int argc, const char** argv)
 {
@@ -91,12 +94,20 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 	
-	string userAnswer;
-	bool userIsHosting;
 	
+	string userAnswer;
+	
+	// connection-related
+	bool userIsHosting;
+	bool closingConnections = false;
 	int listeningPort;
+	std::thread listeningThread;
 	UDPSocketPtr listeningSocket;
 	SocketAddressPtr listeningAddress;
+
+	std::stack<void*> unprocessedData;
+
+	// start of game
 
 	SocketUtil::StaticInit();
 
@@ -118,6 +129,7 @@ int main(int argc, const char** argv)
 
 		listeningPort = CREATOR_PORT;
 		SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
+		listeningThread = std::thread(HandleListening, closingConnections);
 
 		do
 		{
@@ -143,19 +155,23 @@ int main(int argc, const char** argv)
 	while (true)
 	{
 		//  Input
+
 		//  UpdateGameWorld
+
 		//  UpdateNetwork()
-		//    HandleIncomingPackets()
-		//    HandleOutgoingPackets()
+		//  |
+		//  L HandleIncomingPackets()
+		//  |
+		//  L HandleOutgoingPackets()
+
 		//  Render
-		//  
-		//  
 
 
 
 		;
 	}
 
+	listeningThread.join();
 	SocketUtil::CleanUp();
 
 	return 0;
