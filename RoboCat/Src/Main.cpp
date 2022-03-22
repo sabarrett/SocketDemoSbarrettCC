@@ -96,28 +96,29 @@ void DoTCPClient()
 	// "Bind" that socket to the address we want to listen on
 	if (connSocket->Bind(a) != NO_ERROR)
 	{
-		SocketUtil::ReportError("Binding socket");
+		SocketUtil::ReportError("binding socket");
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Bound socket");
+	LOG("%s", "bound socket");
 
 	//SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(INADDR_ANY);
 	SocketAddress servAddress(INADDR_LOOPBACK, 8080);
 
 	if (&servAddress == nullptr)
 	{
-		SocketUtil::ReportError("Creating server address");
+		SocketUtil::ReportError("creating server address");
 		ExitProcess(1);
 	}
 
 	if (connSocket->Connect(servAddress) != NO_ERROR)
 	{
-		SocketUtil::ReportError("Connecting to server");
+		SocketUtil::ReportError("connecting to server");
 		ExitProcess(1);
 	}
 
-	LOG("%s", "Connected to server!");
+	LOG("%s", "connected to server!");
+	
 	std::string msg("someone has connected");
 	connSocket->Send(msg.c_str(), msg.length());
 
@@ -146,16 +147,36 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-	//while (activeConnection == false)
-	InputSystem mInputSystem; 
-	bool activeConnection; // = true
+	InputSystem mInputSystem; //do i need this to be a pointer and create it?
+
+	bool activeConnection = true;
+	int unitCount = 0; //if this changes we need to send info about making or deleting units
+	int pastUnitCount = 0;
 
 	//something to start up the connection (info from assignment 1?)
 	//then add the keys for making the objects spawn (3 objects, 3 keys)
 		//need something to track the objects made? idk if there is something i can use?
 	//each update send out the information about the object type and its position
 		//then prepare to receive it as well?
-	//if (mInputSystem.getKeyboardInput())
+
+	while (activeConnection == true)
+	{
+		pastUnitCount = unitCount; //this might not be the right way to do this tbh idk
+
+		if (mInputSystem.getKeyboardInput() == KeyCode::S)
+		{
+			//spawn an object
+			unitCount++;
+		}
+
+		if (mInputSystem.getKeyboardInput() == KeyCode::D)
+		{
+			//despawn an object
+			unitCount--;
+		}
+
+		//then i need to take in the information from the other side and send out this info
+	}
 	
 	
 	SocketUtil::CleanUp();
