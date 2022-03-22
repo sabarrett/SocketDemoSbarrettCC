@@ -17,7 +17,7 @@ InputSystem.h
 
 enum KeyCode
 {
-	Escape = ALLEGRO_KEY_ESCAPE,
+	ESCAPE_KEY = ALLEGRO_KEY_ESCAPE,
 	R = ALLEGRO_KEY_R
 };
 

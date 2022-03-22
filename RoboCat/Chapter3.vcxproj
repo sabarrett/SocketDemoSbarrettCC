@@ -92,6 +92,9 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <OutDir>Bin\$(Configuration)\</OutDir>
+    <Allegro_AddonImage>true</Allegro_AddonImage>
+    <Allegro_AddonTTF>true</Allegro_AddonTTF>
+    <Allegro_AddonFont>true</Allegro_AddonFont>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">
     <LinkIncremental>true</LinkIncremental>
@@ -370,6 +373,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\allegro_wrapper_functions-main\Colour.h" />
+    <ClInclude Include="..\allegro_wrapper_functions-main\GraphicsLibrary.h" />
+    <ClInclude Include="..\allegro_wrapper_functions-main\InputSystem.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
@@ -383,6 +389,9 @@
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
+    <ClCompile Include="..\allegro_wrapper_functions-main\Colour.cpp" />
+    <ClCompile Include="..\allegro_wrapper_functions-main\GraphicsLibrary.cpp" />
+    <ClCompile Include="..\allegro_wrapper_functions-main\InputSystem.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />

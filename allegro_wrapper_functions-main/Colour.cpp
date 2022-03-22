@@ -3,6 +3,7 @@ Allegro Wrapper Functions
 Written by Adel Talhouk in FA21
 Colour.cpp
 */
+#include "RoboCatPCH.h"
 
 #include "Colour.h"
 

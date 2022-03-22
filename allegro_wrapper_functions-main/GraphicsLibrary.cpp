@@ -4,6 +4,8 @@ Written by Adel Talhouk in FA21
 GraphicsLibrary.cpp
 */
 
+#include "RoboCatPCH.h"
+
 #include "GraphicsLibrary.h"
 
 #include <iostream>
@@ -36,7 +38,7 @@ GraphicsLibrary::~GraphicsLibrary()
 	mpDisplay = nullptr;
 }
 
-bool GraphicsLibrary::init(std::string backgroundFilePath)
+bool GraphicsLibrary::init()
 {
 	//Init allegro
 	if (!al_init())
