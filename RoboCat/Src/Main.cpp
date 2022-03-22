@@ -18,10 +18,17 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	GraphicsLibrary gl(1920.0, 1080.0);
+	const float SCREEN_X = 1000;
+	const float SCREEN_Y = 500;
+	const string FILE_PATH = "../images/";
+	const string BACKGROUND = "background.bmp";
+
+	GraphicsLibrary gl(SCREEN_X, SCREEN_Y);
 	gl.init();
 
-
+	gl.loadImage(FILE_PATH + BACKGROUND, BACKGROUND);
+	gl.drawImage(BACKGROUND, 0, 0);
+	gl.render();
 
 	SocketUtil::StaticInit();
 	// main game loop

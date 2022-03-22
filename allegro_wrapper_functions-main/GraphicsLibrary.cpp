@@ -92,7 +92,12 @@ void GraphicsLibrary::render()
 void GraphicsLibrary::loadImage(std::string imageFilePath, std::string imageIdentifier)
 {
 	//Add the name of the image and the loaded bitmap to the vector of pairs
-	mBitmapPointersVector.push_back(std::make_pair(imageIdentifier, al_load_bitmap(imageFilePath.c_str())));
+
+	ALLEGRO_BITMAP *bmp = al_load_bitmap(imageFilePath.c_str());
+	
+	assert((bmp != NULL), "bitmap didn't load @ ", imageFilePath);
+	
+	mBitmapPointersVector.push_back(std::make_pair(imageIdentifier, bmp));
 }
 
 void GraphicsLibrary::drawImage(std::string imageIdentifier, float posX, float posY)
