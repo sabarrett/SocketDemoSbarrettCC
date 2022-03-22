@@ -18,7 +18,8 @@ InputSystem.h
 enum KeyCode
 {
 	Esc = ALLEGRO_KEY_ESCAPE,
-	R = ALLEGRO_KEY_R
+	R = ALLEGRO_KEY_R,
+	Tab = ALLEGRO_KEY_TAB
 };
 
 enum MouseButton

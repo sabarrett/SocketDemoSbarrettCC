@@ -10,8 +10,8 @@ class GameObject
 	//-------------------------Private data-------------------------
 
 	//Identifiers
-	int mID;
-	int mNetworkID;
+	const int mID;
+	const int mNetworkID;
 
 	//Position
 	float mPosX;
@@ -21,13 +21,15 @@ class GameObject
 public:
 
 	//Constructor(s)
-	GameObject(int gameObjectID, int networkID);
+	GameObject(const int gameObjectID, const int networkID);
+	GameObject(const int gameObjectID, const int networkID, float posX, float posY);
 
 	//Destructor
 	~GameObject();
 
 	//Accessor(s)
-	int getID() { return mID; };
+	const int getGameObjectID() { return mID; };
+	const int getNetworkID() { return mID; };
 	float getPosX() { return mPosX; };
 	float getPosY() { return mPosY; };
 

@@ -2,6 +2,7 @@
 #include "RoboCatPCH.h"
 #include "InputSystem.h"
 #include "GraphicsLibrary.h"	//This itself includes Colour
+#include "GameObject.h"
 
 //-------------------------Graphics Data-------------------------
 GraphicsLibrary* pGraphics;
@@ -21,9 +22,14 @@ const std::string backgroundImageSprite = "background_image";
 
 //-------------------------Game Data-------------------------
 bool bGameIsRunning = true;
+std::vector<GameObject> gameObjectsVec;
 
 //-------------------------GameObject Data-------------------------
-GameObject player;
+GameObject currentGameObjectType;	//TO-DO: Figure out how to cycle through inherited classes
+int gameObjectID = 0;
+
+//-------------------------Network Data-------------------------
+int networkID = 0;
 
 bool init()
 {
@@ -64,7 +70,14 @@ void update()
 		{
 		case MouseButton::LeftMouse:
 		{
+			//Spawn current GameObject type
+			//TO-DO: This ^
+			GameObject newGameObject(gameObjectID, networkID, pInput->getMouseX(), pInput->getMouseY());
+			gameObjectsVec.push_back(newGameObject);
 
+			//Increment identifiers
+			gameObjectID++;
+			networkID++;
 
 			break;
 		}
@@ -83,6 +96,13 @@ void update()
 		case KeyCode::R:
 		{
 
+
+			break;
+		}
+
+		case KeyCode::Tab:
+		{
+			//TO-DO: Cycle throught gameobject types
 
 			break;
 		}
