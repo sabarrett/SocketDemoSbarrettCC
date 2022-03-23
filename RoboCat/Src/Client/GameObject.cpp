@@ -1,4 +1,4 @@
-#include "GameObject.h"
+#include "Client/GameObject.h"
 
 GameObject::GameObject()
 {
@@ -31,33 +31,53 @@ void GameObject::Init(Game* game, std::string name, std::string filePath)
 	m_texture = SDL_CreateTextureFromSurface(m_gameRenderer, tmpSurface);
 	
 	m_textureRect = tmpSurface->clip_rect;
+	m_textureRect.h *= 0.12f;
+	m_textureRect.w *= 0.12f;
 	SDL_FreeSurface(tmpSurface);
 }
 
 void GameObject::Update(Game* game)
 {
+	bool moving = false;
+	float yDeltaVel = 0;
+	float xDeltaVel = 0;
+
 	if (game->getKeyStates()[SDL_SCANCODE_W])
 	{
-		m_yVel += -2;
+		yDeltaVel += -2;
+		moving = true;
 	}
 	if (game->getKeyStates()[SDL_SCANCODE_S])
 	{
-		m_yVel += 2;
+		yDeltaVel += 2;
+		moving = true;
 	}
 	if (game->getKeyStates()[SDL_SCANCODE_A])
 	{
-		m_xVel += -2;
+		xDeltaVel += -2;
+		moving = true;
 	}
 	if (game->getKeyStates()[SDL_SCANCODE_D])
 	{
-		m_xVel += 2;
+		xDeltaVel += 2;
+		moving = true;
 	}
 
-	if (m_xVel != 0)
+	float mag = sqrt(((double)xDeltaVel * (double)xDeltaVel) + ((double)yDeltaVel * (double)yDeltaVel));
+	if (mag > 0)
+	{
+		yDeltaVel /= mag;
+		xDeltaVel /= mag;
+	}
+
+	m_xVel += xDeltaVel;
+	m_yVel += yDeltaVel;
+
+	if (m_xVel != 0 && !moving)
 	{
 		m_xVel *= 0.8;
 	}
-	if (m_yVel != 0)
+	if (m_yVel != 0 && !moving)
 	{
 		m_yVel *= 0.8;
 	}

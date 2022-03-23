@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "Client/Game.h"
 #include <iostream>
 Game::Game()
 {
@@ -24,10 +24,6 @@ void Game::CreateGameWindow(char* title, int width, int height)
 	m_renderer = SDL_CreateRenderer(m_window, -1, 0);
 
 	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
-
-	
-
-	
 }
 
 void Game::Update()
@@ -50,7 +46,6 @@ void Game::Update()
 	{
 		m_allObjects[i]->Update(this);
 	}
-	
 }
 
 void Game::Draw()

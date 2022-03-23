@@ -1,5 +1,5 @@
-#include "RoboCatPCH.h"
-#include "Game.h"
+#include "Util/RoboCatPCH.h"
+#include "Client/Game.h"
 
 #include <thread>
 
@@ -31,7 +31,9 @@ int main(int argc, const char** argv)
 
 	Game* game = new Game();
 
-	game->Init("Heya", 1600, 900);
+	SocketUtil::StaticInit();
+
+	game->Init("Network Game", 1600, 900);
 
 	while (game->Running())
 	{
@@ -50,7 +52,7 @@ int main(int argc, const char** argv)
 	
 	game->CleanUp();
 
-	SocketUtil::StaticInit();
+	
 
 	SocketUtil::CleanUp();
 
