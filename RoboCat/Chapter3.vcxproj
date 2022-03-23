@@ -384,6 +384,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Inc\Server\Server.cpp" />
     <ClCompile Include="Src\Util\MemoryBitStream.cpp" />
     <ClCompile Include="Src\Util\OutputWindow.cpp" />
     <ClCompile Include="Src\Util\RoboCatPCH.cpp" />
@@ -398,6 +399,7 @@
     <ClCompile Include="Src\Client\Game.cpp" />
     <ClCompile Include="Src\Client\GameObject.cpp" />
     <ClCompile Include="Src\Main.cpp" />
+    <ClInclude Include="Inc\Server\Server.h" />
     <ClInclude Include="Inc\Util\ByteSwap.h" />
     <ClInclude Include="Inc\Util\LinkingContext.h" />
     <ClInclude Include="Inc\Util\MemoryBitStream.h" />

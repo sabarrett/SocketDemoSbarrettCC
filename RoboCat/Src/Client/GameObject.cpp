@@ -8,24 +8,15 @@ GameObject::~GameObject()
 {
 }
 
-void GameObject::Init(Game* game, std::string name)
+void GameObject::Init(std::string name, int UID)
 {
-	m_gameRenderer = game->getRenderer();
-
 	m_name = name;
-
-	SDL_Surface* tmpSurface = IMG_Load("Assets/Player.png");
-	m_texture = SDL_CreateTextureFromSurface(m_gameRenderer, tmpSurface);
-	m_textureRect = tmpSurface->clip_rect;
-	SDL_FreeSurface(tmpSurface);
+	m_UID = UID;
 }
 
-void GameObject::Init(Game* game, std::string name, std::string filePath)
+void GameObject::InitRenderer(Game* game, std::string filePath)
 {
 	m_gameRenderer = game->getRenderer();
-
-	m_name = name;
-
 	SDL_Surface* tmpSurface = IMG_Load(filePath.c_str());
 	printf(" %s\n", SDL_GetError());
 	m_texture = SDL_CreateTextureFromSurface(m_gameRenderer, tmpSurface);
@@ -36,28 +27,28 @@ void GameObject::Init(Game* game, std::string name, std::string filePath)
 	SDL_FreeSurface(tmpSurface);
 }
 
-void GameObject::Update(Game* game)
+void GameObject::Update(const Uint8* m_keyStates)
 {
 	bool moving = false;
 	float yDeltaVel = 0;
 	float xDeltaVel = 0;
 
-	if (game->getKeyStates()[SDL_SCANCODE_W])
+	if (m_keyStates[SDL_SCANCODE_W])
 	{
 		yDeltaVel += -2;
 		moving = true;
 	}
-	if (game->getKeyStates()[SDL_SCANCODE_S])
+	if (m_keyStates[SDL_SCANCODE_S])
 	{
 		yDeltaVel += 2;
 		moving = true;
 	}
-	if (game->getKeyStates()[SDL_SCANCODE_A])
+	if (m_keyStates[SDL_SCANCODE_A])
 	{
 		xDeltaVel += -2;
 		moving = true;
 	}
-	if (game->getKeyStates()[SDL_SCANCODE_D])
+	if (m_keyStates[SDL_SCANCODE_D])
 	{
 		xDeltaVel += 2;
 		moving = true;

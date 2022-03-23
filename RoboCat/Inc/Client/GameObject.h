@@ -13,9 +13,9 @@ public:
 	~GameObject();
 
 	// Core functions
-	void Init(Game* game, std::string name);
-	void Init(Game* game, std::string name, std::string filePath);
-	void Update(Game* game);
+	void Init(std::string name, int m_UID);
+	void InitRenderer(Game* game, std::string filePath);
+	void Update(const Uint8* m_keyStates);
 	void Draw();
 	void CleanUp();
 
