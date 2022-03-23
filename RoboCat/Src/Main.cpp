@@ -34,6 +34,8 @@ const string BACKGROUND = "background.jpg";
 const int CREATOR_PORT = 8080;
 const int JOINER_PORT = 8100;
 
+
+// ~~~~~~~~~~~~~~~~~~~~~   Listening   ~~~~~~~~~~~~~~~~~~~~~~~
 void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress)
 {
 	// here we can select which IPV we're using, and IPV6 is a bit wild for these purposes so, we go with IPV4
@@ -45,7 +47,9 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 	}
 	LOG("%s", "created listening socket");
 
-	listeningSocket->SetNonBlockingMode(true);
+	// lol true sets it to blocking mode, idk why
+	if(listeningSocket->SetNonBlockingMode(true) != NO_ERROR)   
+		SocketUtil::ReportError("Error Setting To Blocking mode");
 
 	listeningAddress = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + std::to_string(port++)));
 	if (listeningAddress == nullptr)
@@ -71,18 +75,73 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 	LOG("Your port is %i", static_cast<int>(port));
 	LOG("%s", "socket is now listening");
 }
-void HandleListening(bool& closingConnections, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress, std::stack<void*>& unprocessedData, bool& waitingForMessage)
+void HandleListening(bool& closingConnections, UDPSocketPtr listeningSocket, SocketAddressPtr addressRecievedFrom, std::stack<void*>& unprocessedData, bool& waitingForFirstMessage)
 {
-	if (!closingConnections)
+	std::cout << "Listening Now!"; 
+	while (!closingConnections)
 	{
-		std::cout << "\n\nListening Now!\n\n";
 		void* recievedData = nullptr;
-		listeningSocket->ReceiveFrom(recievedData, BUFFER_SIZE, *listeningAddress);
-
+		listeningSocket->ReceiveFrom(recievedData, BUFFER_SIZE, *(addressRecievedFrom));
+		
+		if (recievedData != nullptr)
+		{
+			string msgRecieved(static_cast<char*>(recievedData), BUFFER_SIZE);
+			LOG("Recieved message: %s", msgRecieved.c_str());
+			waitingForFirstMessage = false;
+		}
 	}
-
 }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~ Sending ~~~~~~~~~~~~~~~~~~~~~~~~~~
+void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress)
+{
+	UDPSocketPtr newSendingSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
+	if (newSendingSocket == nullptr)
+	{
+		SocketUtil::ReportError("Error Creating Sending Socket");
+		ExitProcess(1);
+	}
+	LOG("%s", "created connection socket");
+
+	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(portUsedForSending)));
+	//SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
+	if (a == nullptr)
+	{
+		SocketUtil::ReportError("Error creating sending address");
+		ExitProcess(1);
+	}
+	LOG("%s", "created connection socket address");
+
+	LOG("%s", "binding the connection socket");
+	while (newSendingSocket->Bind(*a) != NO_ERROR)
+	{
+		//LOG("%s", "port: 127.0.0.1:" + std::to_string(nextAvailablePort) + " taken, using port: 127.0.0.1:" + std::to_string(nextAvailablePort));
+		a = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(++portUsedForSending)));
+	}
+	LOG("%s", "finished binding the connection socket");
+
+
+	LOG("%s%i", "127.0.0.1:", portToSendTo);
+    sendingAddress = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(portToSendTo)));  // this has to match the server's address, and it MUST NOT match client's own
+		//SocketAddressPtr foreignAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8000");  // this has to match the server's address, and it MUST NOT match client's own
+	if (sendingAddress == nullptr)
+	{
+		SocketUtil::ReportError("Error	creating foreign listener address");
+		ExitProcess(1);
+	}
+
+	string msg("Hello, server! How are you today?");
+	//std::string msg(std::to_string(listeningPort));
+	if (newSendingSocket->SendTo(msg.c_str(), msg.length(), *sendingAddress) < 0);
+	{
+		SocketUtil::ReportError("Error Sending First Message");
+	}
+
+	LOG("%s", "sent message");
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #if _WIN32
 int main(int argc, const char** argv)
@@ -109,9 +168,14 @@ int main(int argc, const char** argv)
 	UDPSocketPtr listeningSocket;
 	SocketAddressPtr listeningAddress;
 
+	UDPSocketPtr sendingSocket;
+	SocketAddressPtr sendingAddress;
+
+	SocketAddressPtr addressToSendTo;
+
 	std::stack<void*> unprocessedData;
 
-	// start of game
+	//--------------------- intialization window -------------------------------
 
 	SocketUtil::StaticInit();
 
@@ -120,6 +184,7 @@ int main(int argc, const char** argv)
 	do
 	{
 		std::cin >> userAnswer;
+		std::cin.clear();
 	} while (!(userAnswer == "c" || userAnswer == "C" || userAnswer == "j" || userAnswer == "J"));
 
 	userIsHosting = (userAnswer == "c" || userAnswer == "C");
@@ -131,10 +196,12 @@ int main(int argc, const char** argv)
 
 		bool waitingForConnection = true;
 
+
 		listeningPort = CREATOR_PORT;
 		SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
 		
-		HandleListening(closingConnections, listeningSocket, listeningAddress, unprocessedData, waitingForConnection);
+		addressToSendTo = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + std::to_string(JOINER_PORT+1)));
+		HandleListening(closingConnections, listeningSocket, addressToSendTo, unprocessedData, waitingForConnection);
 		//something about this thread is cursed, throws errors in the actual implementation of thread
 		//listeningThread = thread(HandleListening, closingConnections, listeningSocket, listeningAddress, unprocessedData, waitingForConnection);
 
@@ -144,10 +211,14 @@ int main(int argc, const char** argv)
 			std::cout << '.';
 		} while (waitingForConnection);
 
+
+		// set up sending to joiner here
+
 	}
 	else // try to connect to a host
 	{
 		listeningPort = JOINER_PORT; 
+		SetUpSending(CREATOR_PORT+1, listeningPort, sendingSocket, sendingAddress);
 	}
 
 	//  Graphics init
@@ -158,7 +229,7 @@ int main(int argc, const char** argv)
 	gl.drawImage(BACKGROUND, 0, 0);
 	gl.render();
 
-	// main game loop
+	// `````````````````````````  main game loop  ``````````````````````````` 
 	while (true)
 	{
 		//  Input
@@ -177,6 +248,9 @@ int main(int argc, const char** argv)
 
 		;
 	}
+
+
+	// ______________________________   Clean Up ______________________________
 
 	listeningThread.join();
 	SocketUtil::CleanUp();
