@@ -4,6 +4,7 @@
 #include "GraphicsLibrary.h"	//This itself includes Colour
 #include "GameObject.h"
 #include "Rock.h"
+#include "Wall.h"
 
 //-------------------------Graphics Data-------------------------
 GraphicsLibrary* pGraphics;
@@ -24,6 +25,9 @@ const std::string backgroundImageSprite = "background_image";
 //-------------------------Game Data-------------------------
 bool bGameIsRunning = true;
 std::vector<GameObject*> gameObjectsVec;
+
+float wallSizeX = 150;
+float wallSizeY = 15;
 
 //-------------------------GameObject Data-------------------------
 GameObjectType currentGameObjectType;	//TO-DO: Figure out how to cycle through inherited classes
@@ -84,7 +88,7 @@ void update()
 			}
 			case GameObjectType::WALL:
 			{
-
+				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, pInput->getMouseX(), pInput->getMouseY(), wallSizeX, wallSizeY));
 
 				break;
 			}
@@ -129,6 +133,7 @@ void update()
 			currentGameObjectType = static_cast<GameObjectType>(currentGameObjectType + 1 % GameObjectType::ENUM_SIZE);
 
 			//TO-DO: Text indicator of current GameObject Type
+
 
 			break;
 		}

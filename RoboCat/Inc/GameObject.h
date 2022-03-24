@@ -33,12 +33,12 @@ protected:
 	float mPosX;
 	float mPosY;
 
-	//-------------------------Public data-------------------------
-public:
-
 	//Constructor(s)
 	GameObject(const int gameObjectID, const int networkID);
 	GameObject(const int gameObjectID, const int networkID, float posX, float posY);
+
+	//-------------------------Public data-------------------------
+public:
 
 	//Destructor
 	~GameObject();
@@ -54,5 +54,5 @@ public:
 	float setPosY(float posY) { mPosY = posY; };
 
 	//Functions
-	
+	virtual void draw();
 };

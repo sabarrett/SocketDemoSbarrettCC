@@ -30,5 +30,5 @@ public:
 
 
 	//Functions
-
+	void draw();
 };
