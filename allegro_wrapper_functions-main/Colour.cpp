@@ -5,6 +5,7 @@ Colour.cpp
 */
 
 #include "Colour.h"
+#include "RoboCatPCH.h"
 
 //Constructor - without alpha
 Colour::Colour(unsigned __int8 r, unsigned __int8 g, unsigned __int8 b)

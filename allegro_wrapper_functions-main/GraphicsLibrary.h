@@ -14,16 +14,16 @@ GraphicsLibrary.h
 
 #include <string>
 #include <vector>
-
-#include "Colour.h"
-
-//https://github.com/liballeg/allegro_wiki/wiki/Allegro-in-Visual-Studio#using-nuget-within-visual-studio
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+
+#include "Colour.h"
+
+//https://github.com/liballeg/allegro_wiki/wiki/Allegro-in-Visual-Studio#using-nuget-within-visual-studio
 
 class GraphicsLibrary
 {

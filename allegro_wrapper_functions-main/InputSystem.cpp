@@ -5,6 +5,7 @@ InputSystem.cpp
 */
 
 #include "InputSystem.h"
+#include "RoboCatPCH.h"
 
 #include <iostream>
 
@@ -118,8 +119,8 @@ KeyCode InputSystem::getKeyboardInput()
 		//Check the type
 		switch (mEvent.keyboard.keycode)
 		{
-		case KeyCode::Escape:
-			return KeyCode::Escape;
+		case KeyCode::KeyEscape:
+			return KeyCode::KeyEscape;
 			break;
 
 		case KeyCode::R:
