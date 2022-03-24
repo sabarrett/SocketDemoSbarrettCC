@@ -3,6 +3,7 @@
 #include "InputSystem.h"
 #include "GraphicsLibrary.h"	//This itself includes Colour
 #include "GameObject.h"
+#include "Rock.h"
 
 //-------------------------Graphics Data-------------------------
 GraphicsLibrary* pGraphics;
@@ -22,10 +23,10 @@ const std::string backgroundImageSprite = "background_image";
 
 //-------------------------Game Data-------------------------
 bool bGameIsRunning = true;
-std::vector<GameObject> gameObjectsVec;
+std::vector<GameObject*> gameObjectsVec;
 
 //-------------------------GameObject Data-------------------------
-GameObject currentGameObjectType;	//TO-DO: Figure out how to cycle through inherited classes
+GameObjectType currentGameObjectType;	//TO-DO: Figure out how to cycle through inherited classes
 int gameObjectID = 0;
 
 //-------------------------Network Data-------------------------
@@ -71,15 +72,37 @@ void update()
 		case MouseButton::LeftMouse:
 		{
 			//Spawn current GameObject type
-			//TO-DO: Spawn correct GameObject type
-			GameObject newGameObject(gameObjectID, networkID, pInput->getMouseX(), pInput->getMouseY());
-			gameObjectsVec.push_back(newGameObject);
+			GameObject* gameObjectToSpawn;
+
+			switch (currentGameObjectType)
+			{
+			case GameObjectType::ROCK:
+			{
+				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(gameObjectID, networkID, pInput->getMouseX(), pInput->getMouseY()));
+
+				break;
+			}
+			case GameObjectType::WALL:
+			{
+
+
+				break;
+			}
+
+			default:
+			{
+				std::cout << "INVALID GAMEOBJECT TYPE! CANNOT CREATE!\n";
+
+				break;
+			}
+			}
+
+			gameObjectsVec.push_back(gameObjectToSpawn);
+			gameObjectToSpawn = nullptr;
 
 			//Increment identifiers
 			gameObjectID++;
 			networkID++;
-
-			break;
 		}
 
 		default:
@@ -102,7 +125,10 @@ void update()
 
 		case KeyCode::Tab:
 		{
-			//TO-DO: Cycle throught gameobject types
+			//Cycle throught GameObject types
+			currentGameObjectType = static_cast<GameObjectType>(currentGameObjectType + 1 % GameObjectType::ENUM_SIZE);
+
+			//TO-DO: Text indicator of current GameObject Type
 
 			break;
 		}
@@ -139,6 +165,13 @@ void draw()
 
 void cleanup()
 {
+	//Cleanup GameObjects
+	for (int i = 0; i < gameObjectsVec.size(); i++)
+	{
+		delete gameObjectsVec[i];
+		gameObjectsVec[i] = nullptr;
+	}
+	
 	//Cleanup input system
 	delete pInput;
 	pInput = nullptr;

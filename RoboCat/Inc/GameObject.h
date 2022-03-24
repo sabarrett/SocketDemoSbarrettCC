@@ -5,9 +5,25 @@
 	This file contains the definition for the GameObject class.
 */
 
+enum GameObjectType
+{
+	INVALID = -1,
+	ROCK,
+	WALL,
+	ENUM_SIZE
+};
+
 class GameObject
 {
-	//-------------------------Private data-------------------------
+	////-------------------------Private data-------------------------
+
+	////Identifiers
+	//const int mID;
+	//const int mNetworkID;
+
+	//-------------------------Protected data-------------------------
+
+protected:
 
 	//Identifiers
 	const int mID;
