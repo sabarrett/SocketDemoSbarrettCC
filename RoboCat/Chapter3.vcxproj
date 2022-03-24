@@ -373,6 +373,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Wall.cpp" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\Colour.h" />
     <ClInclude Include="Inc\GameObject.h" />
@@ -404,6 +405,7 @@
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="Inc\Wall.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">
