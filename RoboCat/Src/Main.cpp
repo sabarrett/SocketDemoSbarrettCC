@@ -159,6 +159,7 @@ int main(int argc, const char** argv)
 	//each update send out the information about the object type and its position
 		//then prepare to receive it as well?
 	//use serialization ideas from previous save assignment last semester
+		//i think it will have a lot of potential uses here
 
 	//if (isServer)
 

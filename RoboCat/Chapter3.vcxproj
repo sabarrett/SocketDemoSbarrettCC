@@ -374,7 +374,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="GameObject.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\Colour.h" />
     <ClInclude Include="Inc\GraphicsLibrary.h" />
@@ -391,8 +390,8 @@
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
-    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Src\Colour.cpp" />
+    <ClCompile Include="Src\GameObject.cpp" />
     <ClCompile Include="Src\GraphicsLibrary.cpp" />
     <ClCompile Include="Src\InputSystem.cpp" />
     <ClCompile Include="Src\Main.cpp" />
@@ -403,6 +402,7 @@
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="Src\GameObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">
