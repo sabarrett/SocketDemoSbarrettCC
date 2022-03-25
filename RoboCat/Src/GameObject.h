@@ -5,10 +5,9 @@
 #include "GraphicsLibrary.h"
 #include <vector>
 
-//Some functions to make shapes for the game objects to track and send info about
-//al_draw_circle
-//al_draw_triangle
-//al_draw_rectangle
+//do i want this function to work like this as a sort of manager?
+//my alternative thought is that the array is in main, and here is just a single object
+//then just pick one to delete in main and delete it here or something
 
 class GameObject
 {

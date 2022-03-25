@@ -3,6 +3,9 @@
 #include "InputSystem.h"
 #include "GraphicsLibrary.h"
 #include "Colour.h"
+#include "GameObject.h"
+
+int MAX_OBJECT_COUNT = 100; //i think this might be needed i am unsure
 
 #if _WIN32
 
@@ -143,9 +146,10 @@ int main(int argc, const char** argv)
 	SocketUtil::StaticInit();
 
 	InputSystem mInputSystem; //do i need this to be a pointer and create it?
-	
+	GameObject mGameObjects; //possibly make this an array with MAX_OBJECT_COUNT
 
 	bool activeConnection = true;
+	bool isServer;
 	int unitCount = 0; //if this changes we need to send info about making or deleting units
 	int pastUnitCount = 0;
 
@@ -154,6 +158,9 @@ int main(int argc, const char** argv)
 		//need something to track the objects made? idk if there is something i can use?
 	//each update send out the information about the object type and its position
 		//then prepare to receive it as well?
+	//use serialization ideas from previous save assignment last semester
+
+	//if (isServer)
 
 	while (activeConnection == true)
 	{
