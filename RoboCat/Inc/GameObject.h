@@ -41,7 +41,7 @@ protected:
 public:
 
 	//Destructor
-	~GameObject();
+	virtual ~GameObject();
 
 	//Accessor(s)
 	const int getGameObjectID() { return mID; };

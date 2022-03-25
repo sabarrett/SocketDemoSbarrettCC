@@ -10,7 +10,7 @@
 GraphicsLibrary* pGraphics;
 float screenSizeX = 1600.0;
 float screenSizeY = 900.0;
-bool bShouldRedraw = true;
+//bool bShouldRedraw = true;
 
 //-------------------------Input Data-------------------------
 InputSystem* pInput;
@@ -21,7 +21,7 @@ const std::string BACKGROUND_IMAGE_FILE = "Background_Image.jpg";
 const std::string ARIAL_FONT_FILE = "ARIBL0.ttf";
 
 //-------------------------Colours-------------------------
-Colour white(1, 1, 1, 1);
+Colour white(255, 255, 255, 255);
 
 //-------------------------Asset Identifiers-------------------------
 const std::string backgroundImageSprite = "background_image";
@@ -47,7 +47,7 @@ bool init()
 
 	//Setup the graphical window
 	pGraphics = new GraphicsLibrary(screenSizeX, screenSizeY);
-	bSuccessfulInit = pGraphics->init(ARIAL_FONT_FILE, white);
+	bSuccessfulInit = pGraphics->init(ASSET_PATH + ARIAL_FONT_FILE, white);
 
 	//Add images to the graphcis library
 	pGraphics->loadImage(ASSET_PATH + BACKGROUND_IMAGE_FILE, backgroundImageSprite);
@@ -66,7 +66,8 @@ bool init()
 
 void start()
 {
-
+	//Default GameObject to spawn
+	currentGameObjectType = GameObjectType::ROCK;
 }
 
 void update()
@@ -163,7 +164,7 @@ void update()
 		{
 			//Quit game
 			bGameIsRunning = false;
-			bShouldRedraw = false;	//Skip over draw call, just end the "game"
+			//bShouldRedraw = false;	//Skip over draw call, just end the "game"
 			return;
 			break;
 		}
@@ -199,7 +200,7 @@ void draw()
 	pGraphics->render();
 
 	//Do not re-draw each frame (efficiency)
-	bShouldRedraw = false;
+	//bShouldRedraw = false;
 }
 
 void cleanup()
@@ -249,11 +250,11 @@ int main(int argc, const char** argv)
 			update();
 
 			//If it should redraw - to save framerate
-			if (bShouldRedraw)
-			{
-				//Draw call
-				draw();
-			}
+			//if (bShouldRedraw)
+			//{
+			//Draw call
+			draw();
+			//}
 		}
 
 		//Cleanup when done

@@ -76,7 +76,7 @@ bool GraphicsLibrary::init(std::string fontFilePath, Colour colour)
 	}
 
 	//Init font
-	mpFont = al_load_font(fontFilePath.c_str(), 0, 0);
+	mpFont = al_load_ttf_font(fontFilePath.c_str(), 14, 0);
 	mColour = al_map_rgba(colour.getR(), colour.getG(), colour.getB(), colour.getA());
 
 	//Setup display
