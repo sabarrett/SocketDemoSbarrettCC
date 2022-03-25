@@ -32,12 +32,16 @@ GraphicsLibrary::~GraphicsLibrary()
 	}
 	mBitmapPointersVector.clear();
 
+	//Clean up font
+	al_destroy_font(mpFont);
+	mpFont = nullptr;
+
 	//Clean up display
 	al_destroy_display(mpDisplay);
 	mpDisplay = nullptr;
 }
 
-bool GraphicsLibrary::init()
+bool GraphicsLibrary::init(std::string fontFilePath, Colour colour)
 {
 	//Init allegro
 	if (!al_init())
@@ -71,6 +75,10 @@ bool GraphicsLibrary::init()
 		return false;
 	}
 
+	//Init font
+	mpFont = al_load_font(fontFilePath.c_str(), 0, 0);
+	mColour = al_map_rgba(colour.getR(), colour.getG(), colour.getB(), colour.getA());
+
 	//Setup display
 	mpDisplay = al_create_display(mScreenSizeX, mScreenSizeY);
 
@@ -92,6 +100,11 @@ void GraphicsLibrary::loadImage(std::string imageFilePath, std::string imageIden
 {
 	//Add the name of the image and the loaded bitmap to the vector of pairs
 	mBitmapPointersVector.push_back(std::make_pair(imageIdentifier, al_load_bitmap(imageFilePath.c_str())));
+}
+
+void GraphicsLibrary::drawText(float posX, float posY, std::string text, TextAlignment alignment)
+{
+	al_draw_text(mpFont, mColour, posX, posY, alignment, text.c_str());
 }
 
 void GraphicsLibrary::drawImage(std::string imageIdentifier, float posX, float posY)

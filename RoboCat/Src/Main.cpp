@@ -18,6 +18,10 @@ InputSystem* pInput;
 //-------------------------Assets-------------------------
 const std::string ASSET_PATH = "Assets\\";
 const std::string BACKGROUND_IMAGE_FILE = "Background_Image.jpg";
+const std::string ARIAL_FONT_FILE = "ARIBL0.ttf";
+
+//-------------------------Colours-------------------------
+Colour white(1, 1, 1, 1);
 
 //-------------------------Asset Identifiers-------------------------
 const std::string backgroundImageSprite = "background_image";
@@ -30,7 +34,8 @@ float wallSizeX = 150;
 float wallSizeY = 15;
 
 //-------------------------GameObject Data-------------------------
-GameObjectType currentGameObjectType;	//TO-DO: Figure out how to cycle through inherited classes
+GameObjectType currentGameObjectType;
+std::string currentGameObjectTypeString;
 int gameObjectID = 0;
 
 //-------------------------Network Data-------------------------
@@ -42,7 +47,7 @@ bool init()
 
 	//Setup the graphical window
 	pGraphics = new GraphicsLibrary(screenSizeX, screenSizeY);
-	bSuccessfulInit = pGraphics->init();
+	bSuccessfulInit = pGraphics->init(ARIAL_FONT_FILE, white);
 
 	//Add images to the graphcis library
 	pGraphics->loadImage(ASSET_PATH + BACKGROUND_IMAGE_FILE, backgroundImageSprite);
@@ -132,8 +137,27 @@ void update()
 			//Cycle throught GameObject types
 			currentGameObjectType = static_cast<GameObjectType>(currentGameObjectType + 1 % GameObjectType::ENUM_SIZE);
 
-			//TO-DO: Text indicator of current GameObject Type
+			switch (currentGameObjectType)
+			{
+			case GameObjectType::INVALID:
+				currentGameObjectTypeString = "INVALID";
+				break;
 
+			case GameObjectType::ROCK:
+				currentGameObjectTypeString = "Rock";
+				break;
+
+			case GameObjectType::WALL:
+				currentGameObjectTypeString = "Wall";
+				break;
+
+			default:
+				currentGameObjectTypeString = "INVALID";
+				break;
+			}
+
+			//Text indicator of current GameObject Type
+			pGraphics->drawText(100, 100, "Current Object to Spawn: " + currentGameObjectTypeString + ".\n", TextAlignment::ALIGN_LEFT);
 
 			break;
 		}
@@ -151,6 +175,12 @@ void update()
 			break;
 		}
 	}
+
+	//Update GameObjects
+	for (int i = 0; i < gameObjectsVec.size(); i++)
+	{
+		gameObjectsVec[i]->update();
+	}
 }
 
 void draw()
@@ -158,8 +188,11 @@ void draw()
 	//Background image
 	pGraphics->drawImage(backgroundImageSprite, 0, 0);
 
-	//TO-DO: Draw more stuff here
-
+	//Draw GameObjects
+	for (int i = 0; i < gameObjectsVec.size(); i++)
+	{
+		gameObjectsVec[i]->draw();
+	}
 
 	//Render it all
 	pGraphics->render();

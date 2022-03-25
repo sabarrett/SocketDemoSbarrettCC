@@ -25,6 +25,13 @@ GraphicsLibrary.h
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 
+enum TextAlignment
+{
+	ALIGN_LEFT = ALLEGRO_ALIGN_LEFT,
+	ALIGN_CENTER = ALLEGRO_ALIGN_CENTRE,
+	ALIGN_RIGHT = ALLEGRO_ALIGN_RIGHT
+};
+
 class GraphicsLibrary
 {
 	//-------------------------Private data-------------------------
@@ -38,6 +45,10 @@ class GraphicsLibrary
 
 	//Other images to draw
 	std::vector<std::pair<std::string, ALLEGRO_BITMAP*>> mBitmapPointersVector;
+
+	//UI text
+	ALLEGRO_FONT* mpFont;
+	ALLEGRO_COLOR mColour;
 
 	friend class InputSystem;
 
@@ -57,11 +68,12 @@ public:
 	//Mutator(s)
 
 	//Functions
-	bool init();
+	bool init(std::string fontFilePath, Colour colour);
 	void render();
 	void loadImage(std::string imageFilePath, std::string imageIdentifier);
 
 	//Drawing functions
+	void drawText(float posX, float posY, std::string text, TextAlignment alignment);
 	void drawImage(std::string imageIdentifier, float posX, float posY);
 	void drawTintedImage(std::string imageIdentifier, float posX, float posY, Colour col);
 };
