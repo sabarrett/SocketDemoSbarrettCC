@@ -68,7 +68,8 @@ public:
 	//Mutator(s)
 
 	//Functions
-	bool init(std::string fontFilePath, Colour colour);
+	bool init();
+	bool initText(std::string fontFilePath, int fontSize, Colour textColour);
 	void render();
 	void loadImage(std::string imageFilePath, std::string imageIdentifier);
 

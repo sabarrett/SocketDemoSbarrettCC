@@ -41,7 +41,7 @@ GraphicsLibrary::~GraphicsLibrary()
 	mpDisplay = nullptr;
 }
 
-bool GraphicsLibrary::init(std::string fontFilePath, Colour colour)
+bool GraphicsLibrary::init()
 {
 	//Init allegro
 	if (!al_init())
@@ -59,6 +59,19 @@ bool GraphicsLibrary::init(std::string fontFilePath, Colour colour)
 		return false;
 	}
 
+	//Setup display
+	mpDisplay = al_create_display(mScreenSizeX, mScreenSizeY);
+
+	if (mpDisplay == nullptr)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool GraphicsLibrary::initText(std::string fontFilePath, int fontSize, Colour textColour)
+{
 	//Init font add on
 	if (!al_init_font_addon())
 	{
@@ -76,13 +89,10 @@ bool GraphicsLibrary::init(std::string fontFilePath, Colour colour)
 	}
 
 	//Init font
-	mpFont = al_load_ttf_font(fontFilePath.c_str(), 14, 0);
-	mColour = al_map_rgba(colour.getR(), colour.getG(), colour.getB(), colour.getA());
+	mpFont = al_load_ttf_font(fontFilePath.c_str(), fontSize, 0);
+	mColour = al_map_rgba(textColour.getR(), textColour.getG(), textColour.getB(), textColour.getA());
 
-	//Setup display
-	mpDisplay = al_create_display(mScreenSizeX, mScreenSizeY);
-
-	if (mpDisplay == nullptr)
+	if (mpFont == nullptr)
 	{
 		return false;
 	}

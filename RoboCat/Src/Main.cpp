@@ -19,6 +19,7 @@ InputSystem* pInput;
 const std::string ASSET_PATH = "Assets\\";
 const std::string BACKGROUND_IMAGE_FILE = "Background_Image.jpg";
 const std::string ARIAL_FONT_FILE = "ARIBL0.ttf";
+const int FONT_SIZE = 18;
 
 //-------------------------Colours-------------------------
 Colour white(255, 255, 255, 255);
@@ -47,7 +48,11 @@ bool init()
 
 	//Setup the graphical window
 	pGraphics = new GraphicsLibrary(screenSizeX, screenSizeY);
-	bSuccessfulInit = pGraphics->init(ASSET_PATH + ARIAL_FONT_FILE, white);
+	bSuccessfulInit = pGraphics->init();
+
+	//Setup text
+	if (bSuccessfulInit)
+		bSuccessfulInit = pGraphics->initText(ASSET_PATH + ARIAL_FONT_FILE, FONT_SIZE, white);
 
 	//Add images to the graphcis library
 	pGraphics->loadImage(ASSET_PATH + BACKGROUND_IMAGE_FILE, backgroundImageSprite);
