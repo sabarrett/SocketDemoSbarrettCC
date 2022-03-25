@@ -10,7 +10,6 @@
 GraphicsLibrary* pGraphics;
 float screenSizeX = 1600.0;
 float screenSizeY = 900.0;
-//bool bShouldRedraw = true;
 
 //-------------------------Input Data-------------------------
 InputSystem* pInput;
@@ -169,7 +168,6 @@ void update()
 		{
 			//Quit game
 			bGameIsRunning = false;
-			//bShouldRedraw = false;	//Skip over draw call, just end the "game"
 			return;
 			break;
 		}
@@ -203,9 +201,6 @@ void draw()
 
 	//Render it all
 	pGraphics->render();
-
-	//Do not re-draw each frame (efficiency)
-	//bShouldRedraw = false;
 }
 
 void cleanup()
@@ -254,12 +249,8 @@ int main(int argc, const char** argv)
 			//Update call
 			update();
 
-			//If it should redraw - to save framerate
-			//if (bShouldRedraw)
-			//{
 			//Draw call
 			draw();
-			//}
 		}
 
 		//Cleanup when done
