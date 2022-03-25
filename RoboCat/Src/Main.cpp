@@ -4,11 +4,6 @@
 #include "GraphicsLibrary.h"
 #include "Colour.h"
 
-//Some functions to make shapes for the game objects to track and send info about
-//al_draw_circle
-//al_draw_triangle
-//al_draw_rectangle
-
 #if _WIN32
 
 void DoTCPServer()
