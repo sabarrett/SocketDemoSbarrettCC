@@ -143,6 +143,7 @@ int main(int argc, const char** argv)
 	SocketUtil::StaticInit();
 
 	InputSystem mInputSystem; //do i need this to be a pointer and create it?
+	
 
 	bool activeConnection = true;
 	int unitCount = 0; //if this changes we need to send info about making or deleting units

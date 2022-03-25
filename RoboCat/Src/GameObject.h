@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Colour.h"
+#include "InputSystem.h"
+#include "GraphicsLibrary.h"
+#include <vector>
 
 //Some functions to make shapes for the game objects to track and send info about
 //al_draw_circle
@@ -11,11 +14,14 @@ class GameObject
 {
 	private:
 		Colour mColor = Colour(0, 255, 0);
-		//i need something to track the objects probably
+		int objectCount;
+
+		std::vector<int> xPosition; //unsure if there is a way to track both in the same vector
+		std::vector<int> yPosition;
 	public:
 		GameObject();
 		~GameObject();
 
-		void CreateObject(int val);
+		void CreateObject();
 		void DeleteObject();
 };
