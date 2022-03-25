@@ -54,6 +54,6 @@ public:
 	float setPosY(float posY) { mPosY = posY; };
 
 	//Functions
-	virtual void update();
-	virtual void draw();
+	virtual void update() = 0;
+	virtual void draw() = 0;
 };

@@ -18,3 +18,13 @@ Wall::~Wall()
 {
 
 }
+
+void Wall::update()
+{
+
+}
+
+void Wall::draw()
+{
+
+}

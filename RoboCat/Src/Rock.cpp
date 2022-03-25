@@ -17,3 +17,13 @@ Rock::~Rock()
 {
 
 }
+
+void Rock::update()
+{
+
+}
+
+void Rock::draw()
+{
+
+}

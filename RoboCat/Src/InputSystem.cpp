@@ -127,6 +127,10 @@ KeyCode InputSystem::getKeyboardInput()
 			return KeyCode::R;
 			break;
 
+		case KeyCode::Tab:
+			return KeyCode::Tab;
+			break;
+
 		default:
 			/*return KeyCode::NONE*/;
 		}

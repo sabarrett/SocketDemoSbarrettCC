@@ -32,5 +32,6 @@ public:
 
 
 	//Functions
+	void update();
 	void draw();
 };

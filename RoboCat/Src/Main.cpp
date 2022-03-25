@@ -156,9 +156,6 @@ void update()
 				break;
 			}
 
-			//Text indicator of current GameObject Type
-			pGraphics->drawText(100, 100, "Current Object to Spawn: " + currentGameObjectTypeString + ".\n", TextAlignment::ALIGN_LEFT);
-
 			break;
 		}
 
@@ -177,7 +174,7 @@ void update()
 	}
 
 	//Update GameObjects
-	for (int i = 0; i < gameObjectsVec.size(); i++)
+	for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
 	{
 		gameObjectsVec[i]->update();
 	}
@@ -189,10 +186,14 @@ void draw()
 	pGraphics->drawImage(backgroundImageSprite, 0, 0);
 
 	//Draw GameObjects
-	for (int i = 0; i < gameObjectsVec.size(); i++)
+	for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
 	{
 		gameObjectsVec[i]->draw();
 	}
+
+	//Text indicator of current GameObject Type
+	pGraphics->drawText(100, 100, "Current Object to Spawn: " + currentGameObjectTypeString + ".\n", TextAlignment::ALIGN_LEFT);
+
 
 	//Render it all
 	pGraphics->render();
@@ -204,7 +205,7 @@ void draw()
 void cleanup()
 {
 	//Cleanup GameObjects
-	for (int i = 0; i < gameObjectsVec.size(); i++)
+	for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
 	{
 		delete gameObjectsVec[i];
 		gameObjectsVec[i] = nullptr;
