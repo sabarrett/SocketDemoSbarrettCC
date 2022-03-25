@@ -18,7 +18,7 @@ InputSystem* pInput;
 const std::string ASSET_PATH = "Assets\\";
 const std::string BACKGROUND_IMAGE_FILE = "Background_Image.jpg";
 const std::string ARIAL_FONT_FILE = "ARIBL0.ttf";
-const int FONT_SIZE = 18;
+const int FONT_SIZE = 32;
 
 //-------------------------Colours-------------------------
 Colour white(255, 255, 255, 255);
@@ -72,6 +72,7 @@ void start()
 {
 	//Default GameObject to spawn
 	currentGameObjectType = GameObjectType::ROCK;
+	currentGameObjectTypeString = "Rock";
 }
 
 void update()
@@ -140,7 +141,7 @@ void update()
 		case KeyCode::Tab:
 		{
 			//Cycle throught GameObject types
-			currentGameObjectType = static_cast<GameObjectType>(currentGameObjectType + 1 % GameObjectType::ENUM_SIZE);
+			currentGameObjectType = static_cast<GameObjectType>((currentGameObjectType + 1) % GameObjectType::ENUM_SIZE);
 
 			switch (currentGameObjectType)
 			{
@@ -196,8 +197,14 @@ void draw()
 	}
 
 	//Text indicator of current GameObject Type
-	pGraphics->drawText(100, 100, "Current Object to Spawn: " + currentGameObjectTypeString + ".\n", TextAlignment::ALIGN_LEFT);
+	pGraphics->drawText(100, 50, "Current Object to Spawn: " + currentGameObjectTypeString, TextAlignment::ALIGN_LEFT);
 
+	//Text indicators for instructions
+	{
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 50, "TAB - Change GameObject to Spawn.", TextAlignment::ALIGN_LEFT);
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 100, "Left Mouse - Spawn GameObject.", TextAlignment::ALIGN_LEFT);
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 150, "ESC - Quit.", TextAlignment::ALIGN_LEFT);
+	}
 
 	//Render it all
 	pGraphics->render();
