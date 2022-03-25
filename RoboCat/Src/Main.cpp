@@ -4,7 +4,7 @@
 #if _WIN32
 
 
-int main(int argc, const char** argv)
+int main1(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
 	UNREFERENCED_PARAMETER(argv);
