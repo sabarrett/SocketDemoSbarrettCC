@@ -27,6 +27,9 @@
 // can probably be bigger since we're using UDP
 const int BUFFER_SIZE = 4096;
 
+const string HOME_ADDRESS = "127.0.0.1:";
+const string ACCEPT_ALL_ADDRESS = "0.0.0.0:";
+
 const float SCREEN_X = 1000;
 const float SCREEN_Y = 500;
 const string FILE_PATH = "../images/";
@@ -48,10 +51,10 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 	LOG("%s", "created listening socket");
 
 	// lol true sets it to blocking mode, idk why
-	if(listeningSocket->SetNonBlockingMode(true) != NO_ERROR)   
-		SocketUtil::ReportError("Error Setting To Blocking mode");
+	/*if(listeningSocket->SetNonBlockingMode(true) != NO_ERROR)   
+		SocketUtil::ReportError("Error Setting To Blocking mode");*/
 
-	listeningAddress = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + std::to_string(port++)));
+	listeningAddress = SocketAddressFactory::CreateIPv4FromString((ACCEPT_ALL_ADDRESS + std::to_string(port++)));
 	if (listeningAddress == nullptr)
 	{
 		SocketUtil::ReportError("Error creating listening address");
@@ -62,7 +65,7 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 	while (listeningSocket->Bind(*listeningAddress) != NO_ERROR)
 	{
 		//LOG("%s", "port: 0.0.0.0:" + std::to_string(nextAvailablePort) + " taken, trying to use port: 0.0.0.0:" + std::to_string(nextAvailablePort + 1));
-		listeningAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + std::to_string(port));
+		listeningAddress = SocketAddressFactory::CreateIPv4FromString(ACCEPT_ALL_ADDRESS + std::to_string(port));
 	}
 
 	//LOG("%s", "bound the socket");	
@@ -75,19 +78,25 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 	LOG("Your port is %i", static_cast<int>(port));
 	LOG("%s", "socket is now listening");
 }
-void HandleListening(bool& closingConnections, UDPSocketPtr listeningSocket, SocketAddressPtr addressRecievedFrom, std::stack<void*>& unprocessedData, bool& waitingForFirstMessage)
+void HandleListening(bool& connectionsOpen, UDPSocketPtr listeningSocket, SocketAddressPtr addressRecievedFrom, vector<std::pair<int, void*>>& unprocessedData)
 {
 	std::cout << "Listening Now!"; 
-	while (!closingConnections)
+	void* recievedData = nullptr;
+	while (connectionsOpen)
 	{
-		void* recievedData = nullptr;
-		listeningSocket->ReceiveFrom(recievedData, BUFFER_SIZE, *(addressRecievedFrom));
+		LOG("%s", "listening1\n");
+
+		char buffer[BUFFER_SIZE];
+		listeningSocket->ReceiveFrom(buffer, BUFFER_SIZE, *(addressRecievedFrom));
+	
+		LOG("%s", "listening2\n");
 		
-		if (recievedData != nullptr)
+
+		if (buffer != nullptr)
 		{
-			string msgRecieved(static_cast<char*>(recievedData), BUFFER_SIZE);
+			string msgRecieved(static_cast<char*>(buffer), BUFFER_SIZE);
 			LOG("Recieved message: %s", msgRecieved.c_str());
-			waitingForFirstMessage = false;
+			unprocessedData.push_back(std::pair<int, void*>(time(0), buffer));
 		}
 	}
 }
@@ -103,8 +112,9 @@ void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sending
 	}
 	LOG("%s", "created connection socket");
 
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(portUsedForSending)));
-	//SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
+
+	// make sure you send to THIS address, not the folloing one
+	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString((ACCEPT_ALL_ADDRESS + std::to_string(portUsedForSending)));
 	if (a == nullptr)
 	{
 		SocketUtil::ReportError("Error creating sending address");
@@ -115,26 +125,23 @@ void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sending
 	LOG("%s", "binding the connection socket");
 	while (newSendingSocket->Bind(*a) != NO_ERROR)
 	{
-		//LOG("%s", "port: 127.0.0.1:" + std::to_string(nextAvailablePort) + " taken, using port: 127.0.0.1:" + std::to_string(nextAvailablePort));
-		a = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(++portUsedForSending)));
+		a = SocketAddressFactory::CreateIPv4FromString((HOME_ADDRESS + std::to_string(++portUsedForSending)));
 	}
 	LOG("%s", "finished binding the connection socket");
 
 
-	LOG("%s%i", "127.0.0.1:", portToSendTo);
-    sendingAddress = SocketAddressFactory::CreateIPv4FromString(("127.0.0.1:" + std::to_string(portToSendTo)));  // this has to match the server's address, and it MUST NOT match client's own
-		//SocketAddressPtr foreignAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8000");  // this has to match the server's address, and it MUST NOT match client's own
+	LOG("%s%i", "Sending message to 127.0.0.1:", portToSendTo);
+    sendingAddress = SocketAddressFactory::CreateIPv4FromString((HOME_ADDRESS + std::to_string(portToSendTo)));  // this has to match the server's address, and it MUST NOT match client's own
 	if (sendingAddress == nullptr)
 	{
-		SocketUtil::ReportError("Error	creating foreign listener address");
+		SocketUtil::ReportError("Creating foreign listener address");
 		ExitProcess(1);
 	}
 
-	string msg("Hello, server! How are you today?");
-	//std::string msg(std::to_string(listeningPort));
-	if (newSendingSocket->SendTo(msg.c_str(), msg.length(), *sendingAddress) < 0);
+	string msg("Let's start a game?");
+	if ((newSendingSocket->SendTo(msg.c_str(), BUFFER_SIZE, *sendingAddress)) < 0);
 	{
-		SocketUtil::ReportError("Error Sending First Message");
+		SocketUtil::ReportError("Sending First Message");
 	}
 
 	LOG("%s", "sent message");
@@ -162,7 +169,7 @@ int main(int argc, const char** argv)
 	
 	// connection-related
 	bool userIsHosting;
-	bool closingConnections = false;
+	bool connectionsOpen = true;
 	int listeningPort;
 	std::thread listeningThread;
 	UDPSocketPtr listeningSocket;
@@ -173,7 +180,7 @@ int main(int argc, const char** argv)
 
 	SocketAddressPtr addressToSendTo;
 
-	std::stack<void*> unprocessedData;
+	vector<std::pair<int, void*>> unprocessedData = vector<std::pair<int, void*>>();
 
 	//--------------------- intialization window -------------------------------
 
@@ -194,22 +201,22 @@ int main(int argc, const char** argv)
 	{
 		std::cout << "Thank you for your answer, we will now wait for someone to join the game.\n";
 
-		bool waitingForConnection = true;
-
 
 		listeningPort = CREATOR_PORT;
 		SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
 		
-		addressToSendTo = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + std::to_string(JOINER_PORT+1)));
-		HandleListening(closingConnections, listeningSocket, addressToSendTo, unprocessedData, waitingForConnection);
+		addressToSendTo = SocketAddressFactory::CreateIPv4FromString((ACCEPT_ALL_ADDRESS + std::to_string(JOINER_PORT+1)));
+		//HandleListening(closingConnections, listeningSocket, addressToSendTo, unprocessedData, waitingForConnection);
 		//something about this thread is cursed, throws errors in the actual implementation of thread
-		//listeningThread = thread(HandleListening, closingConnections, listeningSocket, listeningAddress, unprocessedData, waitingForConnection);
+		listeningThread = std::thread(HandleListening, std::ref(connectionsOpen), listeningSocket, addressToSendTo, std::ref(unprocessedData));
 
 		do
 		{
 			Sleep(500); // wait 0.5 second
 			std::cout << '.';
-		} while (waitingForConnection);
+		} while (unprocessedData.size() < 1);
+		
+		std::cout << "\nGame Started!\n";
 
 
 		// set up sending to joiner here
@@ -217,8 +224,22 @@ int main(int argc, const char** argv)
 	}
 	else // try to connect to a host
 	{
-		listeningPort = JOINER_PORT; 
-		SetUpSending(CREATOR_PORT+1, listeningPort, sendingSocket, sendingAddress);
+		
+		SetUpSending(CREATOR_PORT, JOINER_PORT + 10, sendingSocket, sendingAddress);
+		std::cout << "\nSent the request to join, waiting for a reply.\n";
+		
+		bool waitingForConnection = true;
+
+		//int listeningPort = JOINER_PORT;
+
+		//SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
+		//addressToSendTo = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + std::to_string(CREATOR_PORT + 1)));
+		//HandleListening(closingConnections, listeningSocket, addressToSendTo, unprocessedData, waitingForConnection);
+		do
+		{
+			Sleep(500); // wait 0.5 second
+			std::cout << '.';
+		} while (waitingForConnection);
 	}
 
 	//  Graphics init
@@ -251,6 +272,8 @@ int main(int argc, const char** argv)
 
 
 	// ______________________________   Clean Up ______________________________
+
+	connectionsOpen = false;
 
 	listeningThread.join();
 	SocketUtil::CleanUp();
