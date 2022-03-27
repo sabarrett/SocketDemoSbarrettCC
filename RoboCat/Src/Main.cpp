@@ -146,7 +146,7 @@ void BradsLessOriginalClient()
 		ThrowSocketError("Connecting to server");
 
 	//LOG("%s", "Connected to server!");
-
+	/*
 	// input username
 	std::string username;
 	std::cout << "Please Input Your Username: ";
@@ -154,8 +154,9 @@ void BradsLessOriginalClient()
 	std::cout << "Waiting for other user to enter their username..." << std::endl;
 	// send username
 	clientSocket->Send(username.c_str(), username.length());
+	*/
 
-
+	/*
 	// receive other username
 	char otherUsernameBuffer[40];
 	int32_t otherUsernameBytes = clientSocket->Receive(otherUsernameBuffer, 40);
@@ -165,7 +166,7 @@ void BradsLessOriginalClient()
 	}
 	std::string otherUsername(otherUsernameBuffer, otherUsernameBytes);
 	std::cout << "Other user " << otherUsername.c_str() << " has joined the chatroom" << std::endl;
-
+	*/
 	bool exit = false;
 
 	std::thread SendThread([&clientSocket, &exit]()
@@ -191,7 +192,6 @@ void BradsLessOriginalClient()
 
 	char buffer[4096];
 	int32_t bytesReceived = int32_t();
-	//bool exit = false;
 	while (bytesReceived < 4096 && !exit)
 	{
 
@@ -202,7 +202,7 @@ void BradsLessOriginalClient()
 			break;
 		}
 		std::string receivedMsg(buffer, bytesReceived);
-		std::cout << otherUsername.c_str() << ": " << receivedMsg.c_str() << std::endl;
+		//std::cout << otherUsername.c_str() << ": " << receivedMsg.c_str() << std::endl;
 		if (receivedMsg == "/exit")
 		{
 			//clientSocket->~TCPSocket();
