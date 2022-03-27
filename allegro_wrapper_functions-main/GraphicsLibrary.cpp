@@ -89,14 +89,14 @@ void GraphicsLibrary::render()
 	al_flip_display();
 }
 
-void GraphicsLibrary::loadImage(std::string imageFilePath, std::string imageIdentifier)
+void GraphicsLibrary::loadImage(std::string imageFolderFilePath, std::string imageIdentifier)
 {
 	//Add the name of the image and the loaded bitmap to the vector of pairs
 
-	ALLEGRO_BITMAP *bmp = al_load_bitmap((__FILE__ + imageFilePath).c_str());
+	ALLEGRO_BITMAP *bmp = al_load_bitmap((__FILE__ + imageFolderFilePath + imageIdentifier).c_str());
 	if (bmp == NULL)
 	{
-		std::cout << ("\nbitmap didn't load @ " + (__FILE__ + imageFilePath));
+		std::cout << ("\nbitmap didn't load @ " + (__FILE__ + imageFolderFilePath + imageIdentifier));
 		std::getchar();
 	}
 	

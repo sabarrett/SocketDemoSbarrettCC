@@ -10,6 +10,8 @@
 // libraries provided to us
 #include "RoboCatPCH.h"
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
+#include "allegro_wrapper_functions-main/InputSystem.h"
+#include "GameFiles/Lock.h"
 
 
 ///
@@ -20,7 +22,7 @@
 ///  X - At least 10 synchronized objects in the world at once.
 ///  X - At least 3 different kinds of game objects.
 ///  X - Involve creating and destroying objects, which is then synchronized between clients.
-///  X - Use TCP and UDP appropriately, (for deltas and world state respectively) 
+///  O - Use TCP and UDP appropriately, (for deltas and world state respectively) 
 ///    X - if using UDP, there is a chance of things arriving out of order, so note the time of last remote update and send the time of the update with it, discarding old ones
 ///  X - when user wants to quit, set  closingConnections = true; (to clean things up)
 
@@ -48,7 +50,7 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 		SocketUtil::ReportError("Error Creating Listen Socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "created listening socket");
+	//LOG("%s", "created listening socket");
 
 	// lol true sets it to blocking mode, idk why
 	/*if(listeningSocket->SetNonBlockingMode(true) != NO_ERROR)   
@@ -61,7 +63,7 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 		ExitProcess(1);
 	}
 
-	LOG("%s", "binding the socket");
+	//LOG("%s", "binding the socket");
 	while (listeningSocket->Bind(*listeningAddress) != NO_ERROR)
 	{
 		//LOG("%s", "port: 0.0.0.0:" + std::to_string(nextAvailablePort) + " taken, trying to use port: 0.0.0.0:" + std::to_string(nextAvailablePort + 1));
@@ -75,8 +77,8 @@ void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddre
 	//	ExitProcess(1);
 	//}
 
-	LOG("Your port is %i", static_cast<int>(port));
-	LOG("%s", "socket is now listening");
+	LOG("Your port is %i\n", static_cast<int>(port));
+	//LOG("%s", "socket is now listening");
 }
 void HandleListening(bool& connectionsOpen, UDPSocketPtr listeningSocket, SocketAddressPtr addressRecievedFrom, vector<std::pair<int, void*>>& unprocessedData)
 {
@@ -84,12 +86,12 @@ void HandleListening(bool& connectionsOpen, UDPSocketPtr listeningSocket, Socket
 	
 	while (connectionsOpen)
 	{
-		LOG("%s", "listening1\n");
+		//LOG("%s", "In handleListening before Recieve\n");
 
 		char buffer[BUFFER_SIZE];
 		listeningSocket->ReceiveFrom(buffer, BUFFER_SIZE, *(addressRecievedFrom));
 	
-		LOG("%s", "listening2\n");
+		//LOG("%s", "In handleListening aft	er Recieve\n");
 		
 
 		if (buffer != nullptr)
@@ -110,7 +112,7 @@ void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sending
 		SocketUtil::ReportError("Error Creating Sending Socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "created connection socket");
+	//LOG("%s", "created connection socket");
 
 
 	// make sure you send to THIS address, not the folloing one
@@ -120,17 +122,17 @@ void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sending
 		SocketUtil::ReportError("Error creating sending address");
 		ExitProcess(1);
 	}
-	LOG("%s", "created connection socket address");
+	//LOG("%s", "created connection socket address");
 
-	LOG("%s", "binding the connection socket");
+	//LOG("%s", "binding the connection socket");
 	while (newSendingSocket->Bind(*a) != NO_ERROR)
 	{
 		a = SocketAddressFactory::CreateIPv4FromString((HOME_ADDRESS + std::to_string(++portUsedForSending)));
 	}
-	LOG("%s", "finished binding the connection socket");
+	//LOG("%s", "finished binding the connection socket");
 
 
-	LOG("%s%i", "Sending message to 127.0.0.1:", portToSendTo);
+	//LOG("%s%i", "Sending message to 127.0.0.1:", portToSendTo);
     sendingAddress = SocketAddressFactory::CreateIPv4FromString((HOME_ADDRESS + std::to_string(portToSendTo)));  // this has to match the server's address, and it MUST NOT match client's own
 	if (sendingAddress == nullptr)
 	{
@@ -144,9 +146,8 @@ void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sending
 		SocketUtil::ReportError("Sending First Message");
 	}
 
-	LOG("%s", "sent message");
+	LOG("%s\n", "Starting message sent.");
 }
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -168,7 +169,7 @@ int main(int argc, const char** argv)
 	string userAnswer;
 	
 	// connection-related
-	bool userIsHosting;
+	bool userIsCreator;
 	bool connectionsOpen = true;
 	int listeningPort;
 	std::thread listeningThread;
@@ -186,18 +187,26 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
+
+	// instructions
+
+	std::cout <<
+		"Hello, welcome to this game demonstration, here are the controls\n" <<
+		"The creator(c) of the game and the joiner(j) have different moves available" <<
+		"Left Click (c) - Creates a lock at that position";
+
 	// pre-game menu
-	std::cout << "Hello, would you like to create (c) or join (j) a match of this game?\n";
+	std::cout << "\n\nWould you like to create (type c) or join (type j) a match of this game?\n";
 	do
 	{
 		std::cin >> userAnswer;
 		std::cin.clear();
 	} while (!(userAnswer == "c" || userAnswer == "C" || userAnswer == "j" || userAnswer == "J"));
 
-	userIsHosting = (userAnswer == "c" || userAnswer == "C");
+	userIsCreator = (userAnswer == "c" || userAnswer == "C");
 
 	
-	if (userIsHosting)
+	if (userIsCreator)
 	{
 		std::cout << "Thank you for your answer, we will now wait for someone to join the game.\n";
 
@@ -216,10 +225,11 @@ int main(int argc, const char** argv)
 			std::cout << '.';
 		} while (unprocessedData.size() < 1);
 
-		std::cout << "\nSending the confirmation to play a game, starting it now.\n";
+		std::cout << "\n Recieved an offer to start the game, now sending the reply to start their game.\n";
 		SetUpSending(JOINER_PORT, CREATOR_PORT + 10, sendingSocket, addressToSendTo);
 
-		std::cout << "\nGame Started!\n";
+
+		std::cout << "\n\nStarting the game!\n";
 
 
 		// set up sending to joiner here
@@ -247,18 +257,25 @@ int main(int argc, const char** argv)
 		} while (unprocessedData.size() < 1);
 	}
 
+	
+
 	//  Graphics init
 	GraphicsLibrary gl(SCREEN_X, SCREEN_Y);
 	gl.init();
 
-	gl.loadImage(FILE_PATH + BACKGROUND, BACKGROUND);
+	// Input Init
+	InputSystem is;
+	is.init(&(gl));
+
+	// load background
+	gl.loadImage(FILE_PATH, BACKGROUND);
 	gl.drawImage(BACKGROUND, 0, 0);
 	gl.render();
 
 	// `````````````````````````  main game loop  ``````````````````````````` 
 	while (true)
 	{
-		//  Input
+		is.Update(userIsCreator);
 
 		//  UpdateGameWorld
 
@@ -285,3 +302,4 @@ int main(int argc, const char** argv)
 
 	return 0;
 }
+

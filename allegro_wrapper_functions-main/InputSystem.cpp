@@ -134,3 +134,15 @@ KeyCode InputSystem::getKeyboardInput()
 
 	//return KeyCode::NONE;
 }
+
+void InputSystem::Update(bool isCreator)
+{
+	if (isCreator)
+	{
+		std::cout << "\nCREATOR INPUT";
+	}
+	else
+	{
+		std::cout << "\nJOINER INPUT";
+	}
+}

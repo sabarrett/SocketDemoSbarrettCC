@@ -65,4 +65,7 @@ public:
 	bool init(GraphicsLibrary* pGraphicsLib);
 	MouseButton getMouseInput();
 	KeyCode getKeyboardInput();
+
+	// custom function to handle the game's input - bb
+	void Update(bool isCreator);
 };
