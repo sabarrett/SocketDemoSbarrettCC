@@ -385,6 +385,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Inc\Server\Server.cpp" />
+    <ClCompile Include="Src\Client\ArrayOfPointersGameObject.cpp" />
     <ClCompile Include="Src\Util\MemoryBitStream.cpp" />
     <ClCompile Include="Src\Util\OutputWindow.cpp" />
     <ClCompile Include="Src\Util\RoboCatPCH.cpp" />
@@ -394,6 +395,7 @@
     <ClCompile Include="Src\Util\StringUtils.cpp" />
     <ClCompile Include="Src\Util\TCPSocket.cpp" />
     <ClCompile Include="Src\Util\UDPSocket.cpp" />
+    <ClInclude Include="Inc\Client\ArrayOfPointersGameObject.h" />
     <ClInclude Include="Inc\Client\Game.h" />
     <ClInclude Include="Inc\Client\GameObject.h" />
     <ClCompile Include="Src\Client\Game.cpp" />
@@ -403,6 +405,7 @@
     <ClInclude Include="Inc\Util\ByteSwap.h" />
     <ClInclude Include="Inc\Util\LinkingContext.h" />
     <ClInclude Include="Inc\Util\MemoryBitStream.h" />
+    <ClInclude Include="Inc\Util\NetworkEnums.h" />
     <ClInclude Include="Inc\Util\OutputWindow.h" />
     <ClInclude Include="Inc\Util\RoboCatPCH.h" />
     <ClInclude Include="Inc\Util\RoboCatShared.h" />

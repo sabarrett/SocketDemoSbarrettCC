@@ -1,5 +1,7 @@
-#include "Util/RoboCatPCH.h"
+#pragma once
+
 #include "Client/Game.h"
+#include "Server/Server.h"
 
 #include <thread>
 
@@ -23,33 +25,83 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	const int FPS = 60;
+	const int FPS = 144;
 	const int frameDelay = 1000 / FPS;
 
 	Uint32 frameStart;
 	int frameTime;
+	int frame = 0;
 
 	Game* game = new Game();
+	Server* server = nullptr;
 
 	SocketUtil::StaticInit();
 
 	game->Init("Network Game", 1600, 900);
 
+	std::cout
+		<< "TYPE \"/connect x.x.x.x portNumber\" to connect to server\n"
+		<< "TYPE \"/host portNumber\" to host server\n";
+	std::string launchCommand;
+	std::getline(std::cin, launchCommand);
+	char* inputC = new char[launchCommand.length() + 1];
+	strcpy(inputC, launchCommand.c_str());
+	char delim[] = " ";
+	char* ptr = strtok(inputC, delim);
+	while (ptr != NULL)
+	{
+		if (strcmp(ptr, "/connect") == 0)
+		{
+			ptr = strtok(NULL, delim);
+			std::string newAddress(ptr);
+
+			ptr = strtok(NULL, delim);
+			std::string newPort(ptr);
+
+			game->ConnectToServer(newAddress, newPort);
+
+			ptr = NULL;
+		}
+		if (ptr != NULL && strcmp(ptr, "/host") == 0)
+		{
+			server = new Server;
+			int port = server->Init();
+
+			/*ptr = strtok(NULL, delim);
+			std::string newAddress(ptr);*/
+
+			/*ptr = strtok(NULL, delim);
+			std::string newPort(ptr);*/
+			
+			game->ConnectToServer("127.0.0.1", StringUtils::Sprintf("%d", port));
+
+			ptr = NULL;
+		}
+	}
+
 	while (game->Running())
 	{
 		frameStart = SDL_GetTicks();
 
+		if (server)
+		{
+			server->Update();
+		}
 		game->Update();
 		game->Draw();
+		game->DoNetworking();
 
 		frameTime = SDL_GetTicks() - frameStart;
 		if (frameDelay > frameTime)
 		{
 			SDL_Delay(frameDelay - frameTime);
 		}
-
+		frame++;
 	}
-	
+	if (server)
+	{
+		server->CleanUp();
+	}
 	game->CleanUp();
 
 	
