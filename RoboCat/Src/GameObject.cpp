@@ -18,7 +18,7 @@ void GameObject::CreateObject()
 
 	if (val == 0)
 	{
-		//al_draw_circle();
+		//al_draw_filled_circle();
 	}
 	else if (val == 1)
 	{

@@ -147,6 +147,7 @@ int main(int argc, const char** argv)
 
 	InputSystem mInputSystem; //do i need this to be a pointer and create it?
 	GameObject mGameObjects; //possibly make this an array with MAX_OBJECT_COUNT
+	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
 
 	bool activeConnection = true;
 	bool isServer;
@@ -160,6 +161,8 @@ int main(int argc, const char** argv)
 		//then prepare to receive it as well?
 	//use serialization ideas from previous save assignment last semester
 		//i think it will have a lot of potential uses here
+
+	//mGraphicsLibrary->init();
 
 	//if (isServer)
 
