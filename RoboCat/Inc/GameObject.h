@@ -1,7 +1,16 @@
 #pragma once
 
+enum GameObjectType
+{
+	PLAYER,
+	BULLET,
+	EFFECT,
+	ENUM_SIZE
+};
+
 class GameObject
 {
+
 	const int mGameID;
 	const int mNetID;
 
