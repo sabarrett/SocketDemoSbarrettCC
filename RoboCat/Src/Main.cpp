@@ -152,12 +152,11 @@ int main(int argc, const char** argv)
 
 	bool activeConnection = true;
 	bool isServer;
-	int unitCount = 0; //if this changes we need to send info about making or deleting units
+	int unitCount = 0; //use this to track changes for deleting/making units
 	int pastUnitCount = 0;
 
 	//something to start up the connection (info from assignment 1?)
-	//then add the keys for making the objects spawn (3 objects, 3 keys)
-		//need something to track the objects made? idk if there is something i can use?
+	//then add the keys for making the objects spawn
 	//each update send out the information about the object type and its position
 		//then prepare to receive it as well?
 	//use serialization ideas from previous save assignment last semester
@@ -167,7 +166,7 @@ int main(int argc, const char** argv)
 
 	if (isServer)
 	{
-		DoTCPServer();
+		DoTCPServer(); //these maybe should function very differently
 	}
 	else
 	{
@@ -175,10 +174,12 @@ int main(int argc, const char** argv)
 	}
 
 	mpGraphicsLibrary->init(BACKGROUND_PATH);
+	//mpGraphicsLibrary->loadImage()
 
 	while (activeConnection == true)
 	{
-		pastUnitCount = unitCount; //this might not be the right way to do this tbh idk
+		pastUnitCount = unitCount;
+		mpGraphicsLibrary->render(); //render here or at the end?
 
 		if (mInputSystem.getKeyboardInput() == KeyCode::S)
 		{
@@ -214,7 +215,8 @@ int main(int argc, const char** argv)
 			}
 		}
 
-		//then i need to take in the information from the other side and send out this info
+		//now i need to move and send this info
+
 	}
 	
 	delete mpGraphicsLibrary;
