@@ -444,7 +444,7 @@
     <ClCompile Include="Src\GraphicsSrc\GraphicsSystem.cpp" />
     <ClCompile Include="Src\GraphicsSrc\Sprite.cpp" />
     <ClCompile Include="Src\GraphicsSrc\System.cpp" />
-    <ClCompile Include="Src\Main.cpp" />
+    <ClCompile Include="Src\SocketMain.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
     <ClCompile Include="Src\SocketAddress.cpp" />

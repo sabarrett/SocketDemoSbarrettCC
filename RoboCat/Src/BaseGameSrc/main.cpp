@@ -18,8 +18,11 @@
 #include "RoboCatPCH.h"
 using namespace std;
 
-int main()
+int main(int argc, const char** argv)
 {
+	UNREFERENCED_PARAMETER(argc);
+	UNREFERENCED_PARAMETER(argv);
+
 	const unsigned int WIDTH = 800;
 	const unsigned int HEIGHT = 600;
 	//SocketUtil::StaticInit();
