@@ -113,24 +113,20 @@ void Networker::GetNewGameObjectState(GameObject* gameObject)
 	if (byteRecieve > 0)
 	{
 		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
-		switch (gameObject->getGameObjectID())
+
+		GameObjectType recieveType;
+		IMBStream.Read(recieveType);
+		switch (recieveType)
 		{
 		case GameObjectType::ROCK:
-
-			break;
-
 		case GameObjectType::WALL:
-
+			//Recieve position and unserialize
 			break;
 
 		default:
 			break;
 		}
 
-	}
-	else if (byteRecieve < 0)
-	{
-		LOG("%s", "User has disconnected");
 	}
 }
 
@@ -139,7 +135,17 @@ void Networker::SendNewGameObjectState(GameObject* gameObject)
 {
 	OutputMemoryBitStream OMBStream;
 	OMBStream.Write(gameObject->getGameObjectID());
-	//Get data from serialization and write it OMBStream.Write(DATA HERE);
+	
+	switch (gameObject->getGameObjectID())
+	{
+	case GameObjectType::ROCK:
+	case GameObjectType::WALL:
+		//serialize position and send it over
+		break;
+
+	default:
+		break;
+	}
 
 	mTCPSocket->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
 }
