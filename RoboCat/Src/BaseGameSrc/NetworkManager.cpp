@@ -2,7 +2,9 @@
 
 NetworkManager::NetworkManager()
 {
-
+	mBytesSentThisFrame = 0;
+	mBytesReceivedPerSecond = 0.f;
+	mBytesSentPerSecond = 0.f;
 }
 
 NetworkManager::~NetworkManager()

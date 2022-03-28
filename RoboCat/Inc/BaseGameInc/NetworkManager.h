@@ -17,7 +17,7 @@ public:
 	void init(uint16_t port);
 	void cleanup();
 
-	void ProcessIncomingPackets();
+	//void ProcessIncomingPackets();
 
 	void SendPacket(const OutputMemoryBitStream& inOutputStream, const SocketAddress& inFromAddress);
 
@@ -26,7 +26,7 @@ private:
 	class ReceivedPacket
 	{
 	public:
-		ReceivedPacket(float inReceivedTime, InputMemoryBitStream& inInputMemoryBitStream, const SocketAddress& inAddress);
+		//ReceivedPacket(float inReceivedTime, InputMemoryBitStream& inInputMemoryBitStream, const SocketAddress& inAddress);
 
 		const	SocketAddress& GetFromAddress()	const { return mFromAddress; }
 		float					GetReceivedTime()	const { return mReceivedTime; }
@@ -43,8 +43,8 @@ private:
 	queue< ReceivedPacket, list< ReceivedPacket > >	mPacketQueue;
 	UDPSocketPtr mSocket;
 	
-	int mBytesSentThisFrame;
-	float mBytesReceivedPerSecond;
-	float mBytesSentPerSecond;
+	int mBytesSentThisFrame = 0;
+	float mBytesReceivedPerSecond = 0.f;
+	float mBytesSentPerSecond = 0.f;
 
 };
