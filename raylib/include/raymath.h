@@ -46,6 +46,8 @@
 
 #ifndef RAYMATH_H
 #define RAYMATH_H
+#undef near
+#undef far
 
 #if defined(RAYMATH_IMPLEMENTATION) && defined(RAYMATH_STATIC_INLINE)
     #error "Specifying both RAYMATH_IMPLEMENTATION and RAYMATH_STATIC_INLINE is contradictory"
