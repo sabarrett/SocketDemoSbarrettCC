@@ -22,7 +22,7 @@ class Unit;
 class UnitManager;
 
 
-const string ASSET_FILEPATH = "..\\..\\common\\assets\\";
+const string ASSET_FILEPATH = "..\\common\\assets\\";
 const string SMURF_FILEPATH = "smurf_sprites.png";
 const string DEAN_FILEPATH = "dean_sprites.png";
 const string WOODS_FILEPATH = "Woods.png";
