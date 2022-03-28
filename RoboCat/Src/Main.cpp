@@ -1,13 +1,8 @@
 
 
-#include <raylib.h>
+#include "RoboCatPCH.h"
 
-
-//#include "RoboCatPCH.h"
-
-//#if _WIN32
-
-/*
+#if _WIN32
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -23,14 +18,7 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-	SocketUtil::CleanUp();
 
-	return 0;
-}
-*/
-
-int main(void)
-{
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
@@ -66,5 +54,8 @@ int main(void)
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
-    return 0;
+
+	SocketUtil::CleanUp();
+
+	return 0;
 }

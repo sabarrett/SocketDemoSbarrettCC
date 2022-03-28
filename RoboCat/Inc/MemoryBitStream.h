@@ -17,6 +17,7 @@ inline float ConvertFromFixed( uint32_t inNumber, float inMin, float inPrecision
 }
 
 
+
 class OutputMemoryBitStream
 {
 public:
