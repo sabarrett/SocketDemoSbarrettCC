@@ -12,16 +12,27 @@ class Networker
 {
 public:
 
-	static Networker* GetInstance();
+	static Networker *GetInstance()
+	{
+		if (mInstance)
+		{
+			delete mInstance;
+			mInstance = nullptr;
+		}
 
-	virtual ~Networker();
+		mInstance = new Networker;
+		return mInstance;
+	};
+
+	~Networker();
 
 	//Starting and connect to server
 	void InitServer();
 	void Connect(string IPAddress);
 
 	//Update game state
-	void UpdateGameObject(GameObject gameObject);
+	void GetNewGameObjectState(GameObject* gameObject);
+	void SendNewGameObjectState(GameObject* gameObject);
 
 private:
 

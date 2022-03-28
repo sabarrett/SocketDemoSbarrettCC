@@ -10,19 +10,6 @@ Networker::~Networker()
 {
 }
 
-//Get Instance of the Class
-Networker* Networker::GetInstance()
-{
-	if (mInstance)
-	{
-		delete mInstance;
-		mInstance = nullptr;
-	}
-
-	mInstance = new Networker;
-	return mInstance;
-}
-
 void Networker::InitServer()
 {
 	SocketUtil::StaticInit();
@@ -116,4 +103,43 @@ void Networker::Connect(string IPAddress)
 
 	mTCPSocket->SetNonBlockingMode(true);
 
+}
+
+//TO DO: FINISH THIS
+void Networker::GetNewGameObjectState(GameObject* gameObject)
+{
+	char buffer[1024];
+	int32_t byteRecieve = mTCPSocket->Receive(buffer, 1024);
+	if (byteRecieve > 0)
+	{
+		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
+		switch (gameObject->getGameObjectID())
+		{
+		case GameObjectType::ROCK:
+
+			break;
+
+		case GameObjectType::WALL:
+
+			break;
+
+		default:
+			break;
+		}
+
+	}
+	else if (byteRecieve < 0)
+	{
+		LOG("%s", "User has disconnected");
+	}
+}
+
+//TO DO: FINISH THIS
+void Networker::SendNewGameObjectState(GameObject* gameObject)
+{
+	OutputMemoryBitStream OMBStream;
+	OMBStream.Write(gameObject->getGameObjectID());
+	//Get data from serialization and write it OMBStream.Write(DATA HERE);
+
+	mTCPSocket->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
 }
