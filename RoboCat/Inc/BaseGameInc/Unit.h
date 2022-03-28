@@ -25,11 +25,16 @@ public:
 	Vector2D getULPosition() const;
 	Vector2D getCenterPosition() const { return mPos; };
 	Vector2D getLRPosition() const;
+
+	uint32_t getNetworkID() { return mNetworkID; }
+	void setNetworkID(uint32_t id) { mNetworkID = id; };
 private:
 	Animation mMainAnimation;
 	Animation mAltAnimation;
 	Animation* mpCurrentAnimation;
 	Vector2D mPos;
+
+	uint32_t mNetworkID;
 
 	Unit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
 	~Unit() {};

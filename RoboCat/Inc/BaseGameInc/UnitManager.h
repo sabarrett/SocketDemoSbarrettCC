@@ -33,4 +33,5 @@ public:
 
 private:
 	std::vector<Unit*> mUnits;
+	uint32_t nextID;
 };

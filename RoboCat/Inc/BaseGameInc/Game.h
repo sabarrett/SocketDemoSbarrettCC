@@ -23,7 +23,7 @@ public:
 	static void initInstance();
 	static void deleteInstance();
 
-	void init(unsigned int width, unsigned int height, double targetTimePerFrame = 16.7);
+	bool init(unsigned int width, unsigned int height, double targetTimePerFrame = 16.7);
 	void cleanup();
 
 	void doLoop();

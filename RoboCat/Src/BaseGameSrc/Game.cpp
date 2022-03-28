@@ -52,7 +52,7 @@ void Game::deleteInstance()
 	mspInstance = nullptr;
 }
 
-void Game::init(unsigned int width, unsigned int height, double targetTimePerFrame /*= 16.7*/)
+bool Game::init(unsigned int width, unsigned int height, double targetTimePerFrame /*= 16.7*/)
 {
 	if (mIsInitted)
 	{
@@ -60,9 +60,29 @@ void Game::init(unsigned int width, unsigned int height, double targetTimePerFra
 	}
 	SocketUtil::StaticInit();
 
+	string destination = StringUtils::GetCommandLineArg(1);
+	string name = StringUtils::GetCommandLineArg(2);
+	if (destination == "" || name == "")
+	{
+		LOG("ERROR: Missing command line arguments.");
+		return false;
+	}
 	mpNetworkManager = new NetworkManager;
-	mpNetworkManager->init(stoi(StringUtils::GetCommandLineArg(1)));
-
+	//assume no colon implies this is just the port, which implies that this is the master peer
+	if (destination.find_first_of(':') == string::npos)
+	{
+		mpNetworkManager->InitAsMasterPeer(stoi(destination), name);
+	}
+	else
+	{
+		SocketAddressPtr targetAddress = SocketAddressFactory::CreateIPv4FromString(destination);
+		if (!targetAddress)
+		{
+			LOG("ERROR: Unable to create target address from destination.");
+			return false;
+		}
+		mpNetworkManager->InitAsPeer(*targetAddress, name);
+	}
 	mpSystem->init(width, height);
 	mTargetTimePerFrame = targetTimePerFrame;
 
@@ -77,6 +97,8 @@ void Game::init(unsigned int width, unsigned int height, double targetTimePerFra
 	loadBuffers();
 
 	mIsInitted = true;
+
+	return true;
 }
 
 void Game::cleanup()

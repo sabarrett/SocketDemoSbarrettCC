@@ -10,6 +10,7 @@ using namespace std;
 
 UnitManager::UnitManager()
 {
+	nextID = 0;
 }
 
 UnitManager::~UnitManager()
@@ -63,7 +64,7 @@ Unit* UnitManager::createUnit(const Vector2D& position, const Animation& mainAni
 
 
 	mUnits.push_back(pUnit);//put the unit into the vector
-
+	nextID += 1;
 	return pUnit;//return the newly created Unit (for convenience)
 }
 

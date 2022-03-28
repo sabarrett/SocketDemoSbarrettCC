@@ -9,6 +9,7 @@ Unit::Unit(const Vector2D& position, const Animation& mainAnimation, const Anima
 	,mMainAnimation(mainAnimation)
 	,mAltAnimation(altAnimation)
 	,mpCurrentAnimation(NULL)
+	,mNetworkID(id)
 {
 	mpCurrentAnimation = &mMainAnimation;
 }
