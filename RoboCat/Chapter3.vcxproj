@@ -377,6 +377,7 @@
     <ClInclude Include="..\allegro_wrapper_functions-main\GraphicsLibrary.h" />
     <ClInclude Include="..\allegro_wrapper_functions-main\InputSystem.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
+    <ClInclude Include="Inc\GameObject.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
@@ -392,6 +393,7 @@
     <ClCompile Include="..\allegro_wrapper_functions-main\Colour.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\GraphicsLibrary.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\InputSystem.cpp" />
+    <ClCompile Include="Src\GameObject.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
