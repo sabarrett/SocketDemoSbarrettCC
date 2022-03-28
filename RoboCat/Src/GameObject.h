@@ -21,7 +21,7 @@ class GameObject
 
 		void CreateObject();
 		void DeleteObject();
-		//void UpdatePosition();
+		void UpdatePosition();
 
 		char GetObjectType();
 		float GetPositionX();

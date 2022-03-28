@@ -51,6 +51,40 @@ void GameObject::DeleteObject()
 	
 }
 
+void GameObject::UpdatePosition()
+{
+	int val;
+	val = rand() % 4;
+
+	if (val == 0)
+	{
+		//have it move up and to the right
+		positionX += 20;
+		positionY += 20;
+	}
+
+	if (val == 1)
+	{
+		//move down and to the right
+		positionX += 20;
+		positionY -= 20;
+	}
+
+	if (val == 2)
+	{
+		//down and to the left
+		positionX -= 20;
+		positionY -= 20;
+	}
+
+	if (val == 3)
+	{
+		//up and to the left
+		positionX -= 20;
+		positionY += 20;
+	}
+}
+
 char GameObject::GetObjectType()
 {
 	return objectType;
