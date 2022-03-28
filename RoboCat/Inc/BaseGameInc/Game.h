@@ -14,7 +14,6 @@ class MemoryManager;
 class GraphicsBufferManager;
 class NetworkManager;
 typedef std::string GBKey;
-
 class Game : public Trackable
 {
 public:
@@ -35,6 +34,17 @@ public:
 	UnitManager* getUnitManager() const { return mpUnitManager; };
 	MemoryManager* getMemoryManager() const { return mpMemoryManager; };
 
+	void startGame() { gameStarted = true; };
+
+	enum ActionTypes
+	{
+		CreateUnit,
+		DestroyUnit,
+		ToggleAnimSingle,
+		ToggleAnimAll
+	};
+
+	void HandleAction(ActionTypes, Vector2D, uint32_t);
 
 private:
 	static Game* mspInstance;
@@ -47,7 +57,7 @@ private:
 	double mTargetTimePerFrame=0;
 	bool mIsInitted = false;
 	bool mShouldContinue = true;
-
+	bool gameStarted = false;
 	NetworkManager* mpNetworkManager = NULL;
 
 
@@ -66,7 +76,10 @@ private:
 
 	void loadBuffers();
 	void createUnit(const Vector2D& pos);
+
+	
 };
+
 
 
 const GBKey WOODS("woods");

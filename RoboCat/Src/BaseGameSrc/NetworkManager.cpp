@@ -2,7 +2,7 @@
 namespace
 {
 	const float kTimeBetweenHellos = 1.f;
-	const float kStartDelay = 3.0f;
+	const float kStartDelay = 1.0f;
 	const int	kSubTurnsPerTurn = 3;
 	const int	kMaxPlayerCount = 4;
 }
@@ -16,7 +16,6 @@ NetworkManager::NetworkManager() :
 	mPlayerId(0),
 	mNewNetworkId(1),
 	mIsMasterPeer(false),
-	//mState(NMS_Unitialized),
 	mPlayerCount(0),
 	mHighestPlayerId(0),
 	mTimeOfLastHello(0.0f),
@@ -111,12 +110,12 @@ void NetworkManager::SendOutgoingPackets()
 		UpdateSayingHello();
 		break;
 	case NMS_Starting:
-		std::cout << "Starting" << std::endl;
+		//std::cout << "Starting" << std::endl;
 		UpdateStarting();
 		break;
 	case NMS_Playing:
-		std::cout << "Playing" << std::endl;
-		//UpdateSendTurnPacket();
+		//std::cout << "Playing" << std::endl;
+		UpdateSendActionPacket();
 		break;
 	default:
 		break;
@@ -152,87 +151,28 @@ void NetworkManager::UpdateStarting()
 		EnterPlayingState();
 	}
 }
-/*
-void NetworkManager::UpdateSendTurnPacket()
-{
-	mSubTurnNumber++;
-	if (mSubTurnNumber == kSubTurnsPerTurn)
-	{
-		//create our turn data
-		TurnData data(mPlayerId, RandGen::sInstance->GetRandomUInt32(0, UINT32_MAX),
-			ComputeGlobalCRC(), InputManager::sInstance->GetCommandList());
 
+void NetworkManager::UpdateSendActionPacket()
+{
 		//we need to send a turn packet to all of our peers
 		OutputMemoryBitStream packet;
-		packet.Write(kTurnCC);
-		//we're sending data for 2 turns from now
-		packet.Write(mTurnNumber + 2);
+		packet.Write(kUpdateCC);
 		packet.Write(mPlayerId);
-		data.Write(packet);
+		packet.Write(mActionVec.size());
+		for (int i = 0; i < mActionVec.size(); i++)
+		{
+			mActionVec[i].Write(packet);
+		}
+		
+		
 
 		for (auto& iter : mPlayerToSocketMap)
 		{
 			SendPacket(packet, iter.second);
 		}
-
-		//save our turn data for turn + 2
-		mTurnData[mTurnNumber + 2].emplace(mPlayerId, data);
-		InputManager::sInstance->ClearCommandList();
-
-		if (mTurnNumber >= 0)
-		{
-			TryAdvanceTurn();
-		}
-		else
-		{
-			//a negative turn means there's no possible commands yet
-			mTurnNumber++;
-			mSubTurnNumber = 0;
-		}
-	}
+		mActionVec.clear();
 }
 
-
-void NetworkManager::TryAdvanceTurn()
-{
-	//only advance the turn IF we received the data for everyone
-	if (mTurnData[mTurnNumber + 1].size() == mPlayerCount)
-	{
-		if (mState == NMS_Delay)
-		{
-			//throw away any input accrued during delay
-			InputManager::sInstance->ClearCommandList();
-			mState = NMS_Playing;
-			//wait 100ms to give the slow peer a chance to catch up
-			SDL_Delay(100);
-		}
-
-		mTurnNumber++;
-		mSubTurnNumber = 0;
-
-		if (CheckSync(mTurnData[mTurnNumber]))
-		{
-			//process all the moves for this turn
-			for (auto& iter : mTurnData[mTurnNumber])
-			{
-				iter.second.GetCommandList().ProcessCommands(iter.first);
-			}
-		}
-		else
-		{
-			//for simplicity, just kill the game if it desyncs
-			LOG("DESYNC: Game over man, game over.");
-			Engine::sInstance->SetShouldKeepRunning(false);
-		}
-	}
-	else
-	{
-		//don't have all player's turn data, we have to delay :(
-		mState = NMS_Delay;
-		LOG("Going into delay state, don't have all the info for turn %d", mTurnNumber + 1);
-	}
-}
-*/
 void NetworkManager::ProcessPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress)
 {
 	switch (mState)
@@ -355,7 +295,6 @@ void NetworkManager::ProcessPacketsLobby(InputMemoryBitStream& inInputStream, co
 	switch (packetType)
 	{
 	case kHelloCC:
-		std::cout << "handling hello" << std::endl;
 		HandleHelloPacket(inInputStream, inFromAddress);
 		break;
 	case kIntroCC:
@@ -442,6 +381,7 @@ void NetworkManager::HandleIntroPacket(InputMemoryBitStream& inInputStream, cons
 	//master peer can safely ignore the intro packet
 	if (!mIsMasterPeer)
 	{
+		std::cout << "handling intro" << std::endl;
 		//just contains player's id and name
 		int playerId;
 		string name;
@@ -471,6 +411,7 @@ void NetworkManager::HandleStartPacket(InputMemoryBitStream& inInputStream, cons
 		//the time to start, based on latency/jitter
 		mState = NMS_Starting;
 		mTimeToStart = kStartDelay - Timing::sInstance.GetDeltaTime();
+		Game::getInstance()->startGame();
 	}
 }
 
@@ -490,28 +431,33 @@ void NetworkManager::ProcessPacketsPlaying(InputMemoryBitStream& inInputStream, 
 	}
 }
 
-//TO DO: CHANGE TO DO UNIT UPDATES
 void NetworkManager::HandleUpdatePacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress)
 {
 	if (mSocketToPlayerMap.find(inFromAddress) != mSocketToPlayerMap.end())
 	{
 		int expectedId = mSocketToPlayerMap[inFromAddress];
 
-		int turnNum;
+	
 		int playerId;
 		//inInputStream.Read(turnNum);
 		inInputStream.Read(playerId);
 
 		if (playerId != expectedId)
 		{
-			LOG("We received turn data for a different player Id...stop trying to cheat!");
+			std::cout << "We received turn data for a different player Id...stop trying to cheat!" << std::endl;
 			return;
 		}
+		int size;
+		inInputStream.Read(size);
 
-		//TurnData data;
-		//data.Read(inInputStream);
+		for (int i = 0; i < size; i++)
+		{
+			ActionData data;
+			data.Read(inInputStream);
+			Game::getInstance()->HandleAction(data.type, data.postion, data.unitNetID);
+			
+		}
 
-		//mTurnData[turnNum].emplace(playerId, data);
 	}
 }
 
@@ -568,7 +514,6 @@ void NetworkManager::HandleConnectionReset(const SocketAddress& inFromAddress)
 
 void NetworkManager::ReadIncomingPacketsIntoQueue()
 {
-	//should we just keep a static one?
 	//should we just keep a static one?
 	char packetMem[1500];
 	int packetSize = sizeof(packetMem);
@@ -652,64 +597,9 @@ void NetworkManager::UpdateHighestPlayerId(uint32_t inId)
 	mHighestPlayerId = std::max(mHighestPlayerId, inId);
 }
 
-//TO DO: IMPLEMENT GAMEPLAY START
 void NetworkManager::EnterPlayingState()
 {
 	mState = NMS_Playing;
-
-	//create scoreboard entry for each player
-	for (auto& iter : mPlayerNameMap)
-	{
-		//ScoreBoardManager::sInstance->AddEntry(iter.first, iter.second);
-		//everyone gets a score of 3 cause 3 cats
-		//ScoreBoardManager::sInstance->GetEntry(iter.first)->SetScore(3);
-	}
-
-	//spawn a cat for each player
-	/*
-	float halfWidth = kWorldWidth / 2.0f;
-	float halfHeight = kWorldHeight / 2.0f;
-
-	// ( pos.x, pos.y, rot )
-	std::array<Vector3, 4> spawnLocs = {
-		Vector3(-halfWidth + halfWidth / 5, -halfHeight + halfHeight / 5, 2.35f), // UP-LEFT
-		Vector3(-halfWidth + halfWidth / 5, halfHeight - halfHeight / 4, -5.49f), // DOWN-LEFT
-		Vector3(halfWidth - halfWidth / 5, halfHeight - halfHeight / 4, -0.78f), // DOWN-RIGHT
-		Vector3(halfWidth - halfWidth / 5, -halfHeight + halfHeight / 4, -2.35f), // UP-RIGHT
-	};
-
-	//use this to randomize location of cats
-	std::array<int, 4> indices = { 0, 1, 2, 3 };
-	std::shuffle(indices.begin(), indices.end(), RandGen::sInstance->GetGeneratorRef());
-
-	const float kCatOffset = 1.0f;
-
-	int i = 0;
-	for (auto& iter : mPlayerNameMap)
-	{
-		Vector3 spawnVec = spawnLocs[indices[i]];
-		//spawn 3 cats per player
-		SpawnCat(iter.first, spawnVec);
-		if (spawnVec.mX > 0.0f)
-		{
-			SpawnCat(iter.first, Vector3(spawnVec.mX - kCatOffset, spawnVec.mY, spawnVec.mZ));
-		}
-		else
-		{
-			SpawnCat(iter.first, Vector3(spawnVec.mX + kCatOffset, spawnVec.mY, spawnVec.mZ));
-		}
-
-		if (spawnVec.mY > 0.0f)
-		{
-			SpawnCat(iter.first, Vector3(spawnVec.mX, spawnVec.mY - kCatOffset, spawnVec.mZ));
-		}
-		else
-		{
-			SpawnCat(iter.first, Vector3(spawnVec.mX, spawnVec.mY + kCatOffset, spawnVec.mZ));
-		}
-		i++;
-	}
-	*/
 }
 
 void NetworkManager::SendPacket(const OutputMemoryBitStream& inOutputStream, const SocketAddress& inToAddress)
@@ -730,11 +620,6 @@ void NetworkManager::TryStartGame()
 		//let everyone know
 		OutputMemoryBitStream outPacket;
 		outPacket.Write(kStartCC);
-
-		//select a seed value
-		//uint32_t seed = RandGen::sInstance->GetRandomUInt32(0, UINT32_MAX);
-		//RandGen::sInstance->Seed(seed);
-		//outPacket.Write(seed);
 
 		for (auto& iter : mPlayerToSocketMap)
 		{
@@ -765,65 +650,30 @@ NetworkManager::ReceivedPacket::ReceivedPacket(float inReceivedTime, InputMemory
 {
 }
 
-
-Unit* NetworkManager::GetGameObject(uint32_t inNetworkId) const
+void NetworkManager::addAction(Game::ActionTypes type, Vector2D pos, uint32_t id)
 {
-	auto gameObjectIt = mNetworkIdToGameObjectMap.find(inNetworkId);
-	if (gameObjectIt != mNetworkIdToGameObjectMap.end())
-	{
-		return gameObjectIt->second;
-	}
-	else
-	{
-		return nullptr;
-	}
+	ActionData action;
+	action.type = type;
+	action.postion = pos;
+	action.unitNetID = id;
+
+	mActionVec.push_back(action);
 }
 
-Unit* NetworkManager::RegisterAndReturn(Unit* inGameObject)
+void NetworkManager::ActionData::Write(OutputMemoryBitStream& inOutputStream)
 {
-	//GameObjectPtr toRet(inGameObject);
-	RegisterGameObject(inGameObject);
-	return inGameObject;
+	inOutputStream.Write(type);
+	inOutputStream.Write(postion.getX());
+	inOutputStream.Write(postion.getY());
+	inOutputStream.Write(unitNetID);
 }
 
-void NetworkManager::UnregisterGameObject(Unit* inGameObject)
+void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
 {
-	int networkId = inGameObject->getNetworkID();
-	auto iter = mNetworkIdToGameObjectMap.find(networkId);
-	if (iter != mNetworkIdToGameObjectMap.end())
-	{
-		mNetworkIdToGameObjectMap.erase(iter);
-	}
+	float x, y;
+	inInputStream.Read(type);
+	inInputStream.Read(x);
+	inInputStream.Read(y);
+	postion = Vector2D(x, y);
+	inInputStream.Read(unitNetID);
 }
-
-void NetworkManager::AddToNetworkIdToGameObjectMap(Unit* inGameObject)
-{
-	mNetworkIdToGameObjectMap[inGameObject->getNetworkID()] = inGameObject;
-}
-
-void NetworkManager::RemoveFromNetworkIdToGameObjectMap(Unit* inGameObject)
-{
-	mNetworkIdToGameObjectMap.erase(inGameObject->getNetworkID());
-}
-
-void NetworkManager::RegisterGameObject(Unit* inGameObject)
-{
-	//assign network id
-	int newNetworkId = GetNewNetworkId();
-	inGameObject->setNetworkID(newNetworkId);
-
-	//add mapping from network id to game object
-	mNetworkIdToGameObjectMap[newNetworkId] = inGameObject;
-}
-
-uint32_t NetworkManager::GetNewNetworkId()
-{
-	uint32_t toRet = mNewNetworkId++;
-	if (mNewNetworkId < toRet)
-	{
-		LOG("Network ID Wrap Around!!! You've been playing way too long...", 0);
-	}
-
-	return toRet;
-}
-

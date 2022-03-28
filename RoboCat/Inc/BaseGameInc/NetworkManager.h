@@ -2,6 +2,7 @@
 #include "Trackable.h"
 #include "RoboCatPCH.h"
 #include "Unit.h"
+#include "Game.h"
 class NetworkManager : public Trackable
 {
 public:
@@ -32,6 +33,7 @@ public:
 		NMS_Delay,
 	};
 
+	
 	//static bool	StaticInitAsMasterPeer(uint16_t inPort, const string& inName);
 	//static bool StaticInitAsPeer(const SocketAddress& inMPAddress, const string& inName);
 
@@ -48,7 +50,7 @@ private:
 	void	UpdateSayingHello(bool inForce = false);
 	void	SendHelloPacket();
 	void	UpdateStarting();
-	void	UpdateSendTurnPacket();
+	void	UpdateSendActionPacket();
 
 public:
 
@@ -83,24 +85,16 @@ public:
 	bool	IsMasterPeer() const { return mIsMasterPeer; }
 	float	GetTimeToStart() const { return mTimeToStart; }
 
-	Unit* GetGameObject(uint32_t inNetworkId) const;
-	Unit* RegisterAndReturn(Unit* inGameObject);
-	void UnregisterGameObject(Unit* inGameObject);
-
 	int		GetPlayerCount() const { return mPlayerCount; }
 	uint32_t GetMyPlayerId() const { return mPlayerId; }
-
-	void	AddToNetworkIdToGameObjectMap(Unit* inGameObject);
-	void	RemoveFromNetworkIdToGameObjectMap(Unit* inGameObject);
-	void	RegisterGameObject(Unit* inGameObject);
-	uint32_t GetNewNetworkId();
-	uint32_t ComputeGlobalCRC();
 
 	bool	InitAsMasterPeer(uint16_t inPort, const string& inName);
 	bool	InitAsPeer(const SocketAddress& inMPAddress, const string& inName);
 	bool	InitSocket(uint16_t inPort);
 
 	NetworkManagerState GetState() { return mState; };
+
+	void addAction(Game::ActionTypes type, Vector2D pos, uint32_t id);
 
 private:
 	
@@ -110,7 +104,7 @@ private:
 		ReceivedPacket(float inReceivedTime, InputMemoryBitStream& inInputMemoryBitStream, const SocketAddress& inAddress);
 
 		const	SocketAddress& GetFromAddress()	const { return mFromAddress; }
-		float					GetReceivedTime()	const { return mReceivedTime; }
+		float	GetReceivedTime()	const { return mReceivedTime; }
 		InputMemoryBitStream& GetPacketBuffer() { return mPacketBuffer; }
 
 	private:
@@ -119,6 +113,15 @@ private:
 		InputMemoryBitStream	mPacketBuffer;
 		SocketAddress			mFromAddress;
 
+	};
+
+	struct ActionData
+	{
+		void Write(OutputMemoryBitStream& inOutputStream);
+		void Read(InputMemoryBitStream& inInputStream);
+		Game::ActionTypes type;
+		Vector2D postion;
+		uint32_t unitNetID;
 	};
 
 	void	UpdateBytesSentLastFrame();
@@ -172,4 +175,6 @@ private:
 
 	NetworkManagerState	mState;
 
+	vector<ActionData> mActionVec;
 };
+

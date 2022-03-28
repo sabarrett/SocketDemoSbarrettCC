@@ -105,7 +105,8 @@ public:
 		
 	}
 	
-	~InputMemoryBitStream() { if (mIsBufferOwner) { std::cout << "Freeing " << mBuffer << std::endl; free(mBuffer); }; }
+	~InputMemoryBitStream() { if (mIsBufferOwner) { //std::cout << "Freeing " << mBuffer << std::endl; 
+	free(mBuffer); }; }
 	
 	const 	char*	GetBufferPtr()		const	{ return mBuffer; }
 	uint32_t	GetRemainingBitCount() 	const { return mBitCapacity - mBitHead; }

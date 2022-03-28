@@ -160,37 +160,50 @@ void Game::doLoop()
 
 void Game::getInput()
 {
-	if (mpSystem->isKeyPressed(System::ESCAPE_KEY))
+	if (gameStarted)
 	{
-		mShouldContinue = false;
-	}
-	if (mpSystem->isKeyPressed(System::ENTER_KEY))
-	{
-		Unit* pUnit = mpUnitManager->getLastUnitCreated();
-		if (pUnit)
+		if (mpSystem->isKeyPressed(System::ESCAPE_KEY))
 		{
-			pUnit->toggleAnimation();
+			mShouldContinue = false;
+		}
+		if (mpSystem->isKeyPressed(System::ENTER_KEY))
+		{
+			Unit* pUnit = mpUnitManager->getLastUnitCreated();
+			if (pUnit)
+			{
+				pUnit->toggleAnimation();
+				mpNetworkManager->addAction(ActionTypes::ToggleAnimSingle, pUnit->getCenterPosition(), pUnit->getNetworkID());
+			}
+		}
+		if (mpSystem->isKeyPressed(System::SPACE_KEY))
+		{
+			mpUnitManager->togglePauseStateForAllAnimations();
+			mpNetworkManager->addAction(ActionTypes::ToggleAnimAll, Vector2D(0, 0), -1);
+		}
+		if (mpSystem->isMouseButtonPressed(System::LEFT))
+		{
+			Vector2D mousePos = mpSystem->getCurrentMousePos();
+			createUnit(mousePos);
+			mpNetworkManager->addAction(ActionTypes::CreateUnit, mousePos, -1);
+		}
+		if (mpSystem->isMouseButtonPressed(System::RIGHT))
+		{
+			Vector2D mousePos = mpSystem->getCurrentMousePos();
+			mpUnitManager->deleteAllUnitsAt2DPosition(mousePos);
+			mpNetworkManager->addAction(ActionTypes::DestroyUnit, mousePos, -1);
 		}
 	}
-	if (mpSystem->isKeyPressed(System::SPACE_KEY))
+	if (mpSystem->isKeyPressed(System::S_KEY) && !gameStarted && mpNetworkManager->IsMasterPeer())
 	{
-		mpUnitManager->togglePauseStateForAllAnimations();
-	}
-	if (mpSystem->isMouseButtonPressed(System::LEFT))
-	{
-		Vector2D mousePos = mpSystem->getCurrentMousePos();
-		createUnit(mousePos);
-	}
-	if (mpSystem->isMouseButtonPressed(System::RIGHT))
-	{
-		Vector2D mousePos = mpSystem->getCurrentMousePos();
-		mpUnitManager->deleteAllUnitsAt2DPosition(mousePos);
+		mpNetworkManager->TryStartGame();
+		gameStarted = true;
 	}
 }
 
 void Game::update(double dt)
 {
 	mpUnitManager->update(dt);
+	Timing::sInstance.Update();
 }
 
 void Game::render()
@@ -235,3 +248,33 @@ void Game::createUnit(const Vector2D& pos)
 	mpUnitManager->createUnit(pos, smurfAnimation, deanAnimation);
 }
 
+void Game::HandleAction(ActionTypes type, Vector2D pos, uint32_t id)
+{
+	switch (type)
+	{
+	case ToggleAnimAll:
+	{
+		mpUnitManager->togglePauseStateForAllAnimations();
+		break;
+	}
+	case ToggleAnimSingle:
+	{
+		Unit* pUnit = mpUnitManager->getLastUnitCreated();
+		if (pUnit)
+		{
+			pUnit->toggleAnimation();
+		}
+		break;
+	}
+	case CreateUnit:
+	{
+		createUnit(pos);
+		break;
+	}
+	case DestroyUnit:
+	{
+		mpUnitManager->deleteAllUnitsAt2DPosition(pos);
+		break;
+	}
+	}
+}
