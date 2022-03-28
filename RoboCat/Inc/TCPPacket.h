@@ -31,7 +31,7 @@ TCPPacket* InternalTCPPacketMaker();
 typedef void (*TCPPacketHandler)(TCPPacket*);
 
 
-class TCPPacketHandler {
+class TCPPacketManager {
 	std::vector<TCPPacketMaker> makers;
 	std::vector<TCPPacketHandler> handlers;
 	
@@ -82,6 +82,6 @@ struct TCPPacketMove : public TCPPacket {
 };
 
 template <>
-TCPPacket* InternalTCPPacketMaker<TCPPacketDestroy>() {
+TCPPacket* InternalTCPPacketMaker<TCPPacketMove>() {
 	return (TCPPacket*)new TCPPacketMove();
 }

@@ -66,6 +66,20 @@ void InputMemoryBitStream::Read( Vector3& outVector )
 	Read( outVector.z );
 }
 
+
+void OutputMemoryBitStream::Write(const Vector2& inVector)
+{
+	Write(inVector.x);
+	Write(inVector.y);
+}
+
+void InputMemoryBitStream::Read(Vector2& outVector)
+{
+	Read(outVector.x);
+	Read(outVector.y);
+}
+
+
 void OutputMemoryBitStream::Write( const Quaternion& inQuat )
 {
 	float precision = ( 2.f / 65535.f );
