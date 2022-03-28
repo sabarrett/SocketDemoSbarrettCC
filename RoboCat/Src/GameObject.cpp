@@ -35,11 +35,7 @@ void GameObject::CreateObject()
 
 void GameObject::DeleteObject()
 {
-	int tmpRand;
-	tmpRand = rand() % objectCount;
-
-	//iterate through the list of positions tmp rand times
-	//delete the object that it lands on
+	//idk if there is any deletion i need to do necessarily
 
 	objectCount--;
 }

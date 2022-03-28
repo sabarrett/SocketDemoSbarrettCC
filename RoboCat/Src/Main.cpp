@@ -5,7 +5,8 @@
 #include "Colour.h"
 #include "GameObject.h"
 
-int MAX_OBJECT_COUNT = 100; //i think this might be needed i am unsure
+const int MAX_OBJECT_COUNT = 100; //i think this might be needed i am unsure
+std::string BACKGROUND_PATH = "..//..//Assets//Woods.png"; //I think
 
 #if _WIN32
 
@@ -146,7 +147,7 @@ int main(int argc, const char** argv)
 	SocketUtil::StaticInit();
 
 	InputSystem mInputSystem; //do i need this to be a pointer and create it?
-	GameObject mGameObjects; //possibly make this an array with MAX_OBJECT_COUNT
+	GameObject mGameObjects[MAX_OBJECT_COUNT]; //possibly make this an array with MAX_OBJECT_COUNT
 	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
 
 	bool activeConnection = true;
@@ -162,9 +163,18 @@ int main(int argc, const char** argv)
 	//use serialization ideas from previous save assignment last semester
 		//i think it will have a lot of potential uses here
 
-	//mGraphicsLibrary->init();
+	isServer = StringUtils::GetCommandLineArg(1) == "server";
 
-	//if (isServer)
+	if (isServer)
+	{
+		DoTCPServer();
+	}
+	else
+	{
+		DoTCPClient();
+	}
+
+	mpGraphicsLibrary->init(BACKGROUND_PATH);
 
 	while (activeConnection == true)
 	{
@@ -173,19 +183,43 @@ int main(int argc, const char** argv)
 		if (mInputSystem.getKeyboardInput() == KeyCode::S)
 		{
 			//spawn an object
+			mGameObjects[unitCount].CreateObject();
+
 			unitCount++;
 		}
 
 		if (mInputSystem.getKeyboardInput() == KeyCode::D)
 		{
 			//despawn an object
+			int tmpRand;
+			GameObject tmpObjects[MAX_OBJECT_COUNT];
+
+			tmpRand = rand() % MAX_OBJECT_COUNT;
+
+			mGameObjects[tmpRand].DeleteObject();
+
+			for (int i = 0; i < unitCount; i++)
+			{
+				if (i != tmpRand)
+				{
+					tmpObjects[i] = mGameObjects[i];
+				}
+			}
+
 			unitCount--;
+
+			for (int i = 0; i < unitCount; i++)
+			{
+				mGameObjects[i] = tmpObjects[i];
+			}
 		}
 
 		//then i need to take in the information from the other side and send out this info
 	}
 	
-	
+	delete mpGraphicsLibrary;
+	mpGraphicsLibrary = NULL; //is this needed?
+
 	SocketUtil::CleanUp();
 
 	return 0;
