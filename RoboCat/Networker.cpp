@@ -121,7 +121,13 @@ void Networker::GetNewGameObjectState(GameObject* gameObject)
 		{
 		case GameObjectType::ROCK:
 		case GameObjectType::WALL:
-			//Recieve position and unserialize
+
+			float x;
+			IMBStream.Read(x);
+			float y;
+			IMBStream.Read(y);
+			gameObject->setPos(std::make_pair(x, y));
+
 			break;
 
 		default:
@@ -141,7 +147,10 @@ void Networker::SendNewGameObjectState(GameObject* gameObject)
 	{
 	case GameObjectType::ROCK:
 	case GameObjectType::WALL:
-		//serialize position and send it over
+
+		pair<float, float> pos = gameObject->getPosition();
+		OMBStream.Write(pos.first);
+		OMBStream.Write(pos.second);
 		break;
 
 	default:

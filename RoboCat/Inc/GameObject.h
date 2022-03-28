@@ -48,11 +48,12 @@ public:
 	//Accessor(s)
 	const int getGameObjectID() { return mID; };
 	const int getNetworkID() { return mID; };
-	pair<float, float> getPosition() { return mPosition; };
+	const pair<float, float> getPosition() { return mPosition; };
 
 	//Mutator(s)
 	float setPosX(float posX) { mPosition.first = posX; };
 	float setPosY(float posY) { mPosition.second = posY; };
+	pair<float, float> setPos(pair<float, float> newPos) { mPosition = newPos; };
 
 	//Functions
 	virtual void update() = 0;
