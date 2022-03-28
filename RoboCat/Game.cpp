@@ -1,7 +1,9 @@
 #include "Game.h"
 #include "Paddle.h"
+#include "Ball.h"
 //#include "MemoryBitStream.h"
 #include <iostream>
+#include <cmath>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
@@ -10,7 +12,8 @@
 
 enum class PacketType
 {
-	PT_PADDLE
+	PT_PADDLE,
+	PT_BALL
 };
 
 Game::Game()
@@ -26,6 +29,8 @@ Game::Game()
 		mPaddleTwo = new Paddle(20, 100, paddleColor);
 		mPaddleTwo->SetPosition(al_get_display_width(mDisplay) - 50, 100);
 
+		mBall = new ball(-0.05, -0.05f, 15, paddleColor);
+		mBall->SetPosition(al_get_display_width(mDisplay)/2, al_get_display_height(mDisplay) / 2);
 		keyboardState = new ALLEGRO_KEYBOARD_STATE();
 		mRunning = true;
 	}
@@ -50,6 +55,10 @@ Game::Game(std::string IP)
 		mPaddleTwo->SetPosition(al_get_display_width(mDisplay) - 50, 100);
 
 		keyboardState = new ALLEGRO_KEYBOARD_STATE();
+
+		mBall = new ball(-0.05, -0.05f, 15, paddleColor);
+		mBall->SetPosition(al_get_display_width(mDisplay) / 2, al_get_display_height(mDisplay) / 2);
+
 		mRunning = true;
 	}
 	mIsServer = false;
@@ -119,7 +128,7 @@ void Game::UpdateLocalPaddle()
 	{
 		if (height > 0)
 		{
-			localPaddle->SetPosition(localPaddle->GetPosX(), height - 2);
+			localPaddle->SetPosition(localPaddle->GetPosX(), height - 1);
 		}
 	}
 
@@ -127,14 +136,41 @@ void Game::UpdateLocalPaddle()
 	{
 		if (height + localPaddle->GetDimsW() < al_get_display_height(mDisplay))
 		{
-			localPaddle->SetPosition(localPaddle->GetPosX(), height + 2);
+			localPaddle->SetPosition(localPaddle->GetPosX(), height + 1);
 		}
 	}
 }
 
-void Game::CheckCollisions()
+void Game::UpdateBall()
 {
+	mBall->SetPosition(mBall->GetPosX() + mBall->GetDirX(), mBall->GetPosY() + mBall->GetDirY());
+	float ballPos[2] = { mBall->GetPosX(), mBall->GetPosY() };
 
+	OutputMemoryBitStream oStream;
+	oStream.Write(PacketType::PT_BALL);
+	oStream.Write(ballPos[0]);
+	oStream.Write(ballPos[1]);
+
+	TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+}
+
+void Game::CheckCollisions(ball* ball, Paddle* paddle)
+{
+	if (ball->GetPosY() + ball->GetRadius() >= al_get_display_height(mDisplay) || ball->GetPosY() - ball->GetRadius() <= 0) 
+	{
+		mBall->SetMovementVector(ball->GetDirX(), ball->GetDirY() * -1);
+	}
+
+	if (ball->GetPosX() <= mPaddleOne->GetPosX()) 
+	{
+		if(ball->GetPosY() >= mPaddleOne->GetPosY() - mPaddleOne->GetDimsL()/2 && ball->GetPosY() <= mPaddleOne->GetPosY() + mPaddleOne->GetDimsL() / 2)
+			mBall->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
+	}
+	if (ball->GetPosX() >= mPaddleTwo->GetPosX())
+	{
+		if (ball->GetPosY() >= mPaddleTwo->GetPosY() - mPaddleTwo->GetDimsL() / 2 && ball->GetPosY() <= mPaddleTwo->GetPosY() + mPaddleTwo->GetDimsL() / 2)
+			mBall->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
+	}
 }
 
 void Game::SendUpdatedStates()
@@ -159,8 +195,6 @@ void Game::SendUpdatedStates()
 	oStream.Write(yPos);
 
 	TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
-
-
 }
 
 void Game::Receive()
@@ -175,12 +209,22 @@ void Game::Receive()
 			PacketType type;
 			iStream.Read(type);
 
+			float ballPosX, 
+				  ballPosY;
+
 			if (type == PacketType::PT_PADDLE)
 			{
 				int yPos;
 				iStream.Read(yPos);
 
 				UpdateNetworkedPaddle(yPos);
+			}
+			if (type == PacketType::PT_BALL) 
+			{
+				iStream.Read(ballPosX);
+				iStream.Read(ballPosY);
+				ball* networkedBall = mBall;
+				networkedBall->SetPosition(ballPosX, ballPosY);
 			}
 		}
 		else  if (bytesReceived < 0)
@@ -206,6 +250,7 @@ void Game::Render()
 
 	mPaddleOne->Render();
 	mPaddleTwo->Render();
+	mBall->Render();
 
 	al_flip_display();
 }
@@ -222,7 +267,8 @@ void Game::Update()
 
 		if (mIsServer)
 		{
-			CheckCollisions();
+			CheckCollisions(mBall, mPaddleOne);
+			UpdateBall();
 			SendUpdatedStates();
 		}
 		else
@@ -250,6 +296,12 @@ void Game::UpdateNetworkedPaddle(int y)
 
 
 	networkedPaddle->SetPosition(y);
+}
+
+void Game::UpdateNetworkedBall(int x, int y)
+{
+	ball* networkedBall = mBall;
+	networkedBall->SetPosition(x, y);
 }
 
 
