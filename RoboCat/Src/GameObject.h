@@ -14,9 +14,8 @@ class GameObject
 	private:
 		Colour mColor = Colour(0, 255, 0);
 		int objectCount;
-
-		std::vector<int> xPosition; //unsure if there is a way to track both in the same vector
-		std::vector<int> yPosition;
+		int positionX; //floats for positions?
+		int positionY;
 	public:
 		GameObject();
 		~GameObject();

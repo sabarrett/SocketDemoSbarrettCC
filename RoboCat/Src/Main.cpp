@@ -196,7 +196,7 @@ int main(int argc, const char** argv)
 
 			tmpRand = rand() % MAX_OBJECT_COUNT;
 
-			mGameObjects[tmpRand].DeleteObject();
+			mGameObjects[tmpRand].DeleteObject(); //could be unneeded
 
 			for (int i = 0; i < unitCount; i++)
 			{
