@@ -42,13 +42,13 @@ float InputSystem::getMouseY()
 	return mouseState.y;
 }
 
-std::pair<float, float> InputSystem::getMousePosition()
+Location InputSystem::getMousePosition()
 {
 	//Update mouse state
 	ALLEGRO_MOUSE_STATE mouseState;
 	al_get_mouse_state(&mouseState);
-
-	return std::make_pair(mouseState.x, mouseState.y);
+	Location mouseLocation{ mouseState.x, mouseState.y };
+	return mouseLocation;
 }
 
 //Init
@@ -82,31 +82,25 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 	return true;
 }
 
-MouseButton InputSystem::getMouseInput()
+MouseButton InputSystem::GetMouseInput()
 {
-	//If there is an event
-	al_wait_for_event(mpEventQueue, &mEvent);
+	ALLEGRO_MOUSE_STATE state;
 
-	if (mEvent.type == InputMode::MouseDown)
+	al_get_mouse_state(&state);
+	if (state.buttons & 1) 
 	{
-		//Update mouse state
-		ALLEGRO_MOUSE_STATE mouseState;
-		al_get_mouse_state(&mouseState);
-
-		//Check the button pressed
-		if (mouseState.buttons & 1)		//Left mouse held
-		{
-			return MouseButton::LeftMouse;
-		}
-		else if (mouseState.buttons & 2)	//Right mouse held
-		{
-			return MouseButton::RightMouse;
-		}
-		else if (mouseState.buttons & 4)	//Middle mouse held
-		{
-			return MouseButton::MiddleMouse;
-		}
+		return MouseButton::LeftMouse;
 	}
+	if (state.buttons & 4)
+	{
+		return MouseButton::MiddleMouse;
+	}
+	if (state.buttons & 2) 
+	{
+		return MouseButton::RightMouse;
+	}
+	
+	return MouseButton::None;
 }
 
 KeyCode InputSystem::getKeyboardInput()
@@ -137,12 +131,33 @@ KeyCode InputSystem::getKeyboardInput()
 
 void InputSystem::Update(bool isCreator)
 {
-	if (isCreator)
+	switch (GetMouseInput())
 	{
-		std::cout << "\nCREATOR INPUT";
-	}
-	else
-	{
-		std::cout << "\nJOINER INPUT";
+	case MouseButton::LeftMouse:
+		if (!wasHoldingLeftMouseLastFrame)
+		{
+			wasHoldingLeftMouseLastFrame = true;
+			std::cout << "\nLeft Clicked";
+		}
+		break;
+	case MouseButton::MiddleMouse:
+		if (!wasHoldingMiddleMouseLastFrame)
+		{
+			wasHoldingMiddleMouseLastFrame = true;
+			std::cout << "\nMiddle Clicked";
+		}
+		break;
+	case MouseButton::RightMouse:
+		if (!wasHoldingRightMouseLastFrame)
+		{
+			wasHoldingRightMouseLastFrame = true;
+			std::cout << "\nRight Clicked";
+		}
+		break;
+	case MouseButton::None:
+		wasHoldingLeftMouseLastFrame = false;
+		wasHoldingMiddleMouseLastFrame = false;
+		wasHoldingRightMouseLastFrame = false;
+		break;
 	}
 }

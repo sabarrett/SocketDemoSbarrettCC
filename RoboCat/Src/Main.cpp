@@ -206,6 +206,7 @@ int main(int argc, const char** argv)
 	userIsCreator = (userAnswer == "c" || userAnswer == "C");
 
 	
+	// handling the initial networking set up
 	if (userIsCreator)
 	{
 		std::cout << "Thank you for your answer, we will now wait for someone to join the game.\n";
@@ -261,11 +262,13 @@ int main(int argc, const char** argv)
 
 	//  Graphics init
 	GraphicsLibrary gl(SCREEN_X, SCREEN_Y);
-	gl.init();
+	if ( !gl.init())
+		std::cout << "ERROR INTIALIZING THE GRAPHICS LIBRARY\n";
 
 	// Input Init
-	InputSystem is;
-	is.init(&(gl));
+	InputSystem inputSys;
+	if (!inputSys.init(&(gl)))
+		std::cout << "ERROR INITIALIZING THE INPUT SYSTEM\n";
 
 	// load background
 	gl.loadImage(FILE_PATH, BACKGROUND);
@@ -275,7 +278,7 @@ int main(int argc, const char** argv)
 	// `````````````````````````  main game loop  ``````````````````````````` 
 	while (true)
 	{
-		is.Update(userIsCreator);
+		inputSys.Update(userIsCreator);
 
 		//  UpdateGameWorld
 

@@ -23,6 +23,7 @@ enum KeyCode
 
 enum MouseButton
 {
+	None = -1,
 	LeftMouse = 0,
 	RightMouse = 1,
 	MiddleMouse = 2
@@ -35,6 +36,24 @@ enum InputMode
 	KeyReleased = ALLEGRO_EVENT_KEY_UP,
 	MouseDown = ALLEGRO_EVENT_MOUSE_BUTTON_DOWN,
 	MouseUp = ALLEGRO_EVENT_MOUSE_BUTTON_UP
+};
+
+enum InputActionTypes
+{
+	CREATOR_LOCK_SPAWN
+};
+
+struct Location
+{
+	float x;
+	float y;
+};
+
+struct InputAction
+{
+	time_t time;
+	InputActionTypes type;
+	Location location;
 };
 
 class InputSystem
@@ -59,12 +78,16 @@ public:
 	//Accessor(s)
 	float getMouseX();
 	float getMouseY();
-	std::pair<float, float> getMousePosition();
+	Location getMousePosition();
 
 	//Functions
 	bool init(GraphicsLibrary* pGraphicsLib);
-	MouseButton getMouseInput();
+	MouseButton GetMouseInput();
 	KeyCode getKeyboardInput();
+
+	bool wasHoldingLeftMouseLastFrame = false;
+	bool wasHoldingMiddleMouseLastFrame = false;
+	bool wasHoldingRightMouseLastFrame = false;
 
 	// custom function to handle the game's input - bb
 	void Update(bool isCreator);
