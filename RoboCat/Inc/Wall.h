@@ -19,7 +19,7 @@ public:
 
 	//Constructor(s)
 	Wall(const int gameObjectID, const int networkID);
-	Wall(const int gameObjectID, const int networkID, float posX, float posY, float sizeX, float sizeY);
+	Wall(const int gameObjectID, const int networkID, pair<float, float> position, float sizeX, float sizeY);
 
 	//Destructor
 	~Wall();

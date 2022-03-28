@@ -93,13 +93,15 @@ void update()
 			{
 			case GameObjectType::ROCK:
 			{
-				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(gameObjectID, networkID, pInput->getMouseX(), pInput->getMouseY()));
+				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
+				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(gameObjectID, networkID, mousePos));
 
 				break;
 			}
 			case GameObjectType::WALL:
 			{
-				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, pInput->getMouseX(), pInput->getMouseY(), wallSizeX, wallSizeY));
+				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
+				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, mousePos, wallSizeX, wallSizeY));
 
 				break;
 			}

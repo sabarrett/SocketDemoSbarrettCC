@@ -1,4 +1,7 @@
 #pragma once
+#include <utility>
+
+using std::pair;
 
 /*
 	File information:
@@ -30,12 +33,11 @@ protected:
 	const int mNetworkID;
 
 	//Position
-	float mPosX;
-	float mPosY;
+	pair<float, float> mPosition;
 
 	//Constructor(s)
 	GameObject(const int gameObjectID, const int networkID);
-	GameObject(const int gameObjectID, const int networkID, float posX, float posY);
+	GameObject(const int gameObjectID, const int networkID, pair<float, float> position);
 
 	//-------------------------Public data-------------------------
 public:
@@ -46,12 +48,11 @@ public:
 	//Accessor(s)
 	const int getGameObjectID() { return mID; };
 	const int getNetworkID() { return mID; };
-	float getPosX() { return mPosX; };
-	float getPosY() { return mPosY; };
+	pair<float, float> getPosition() { return mPosition; };
 
 	//Mutator(s)
-	float setPosX(float posX) { mPosX = posX; };
-	float setPosY(float posY) { mPosY = posY; };
+	float setPosX(float posX) { mPosition.first = posX; };
+	float setPosY(float posY) { mPosition.second = posY; };
 
 	//Functions
 	virtual void update() = 0;

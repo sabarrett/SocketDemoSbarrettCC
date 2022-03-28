@@ -5,16 +5,15 @@ GameObject::GameObject(const int gameObjectID, const int networkID)
 	: mID(gameObjectID), mNetworkID(networkID)
 {
 	//Position
-	mPosX = 0.0;
-	mPosY = 0.0;
+	mPosition.first = 0.0;
+	mPosition.second = 0.0;
 }
 
-GameObject::GameObject(const int gameObjectID, const int networkID, float posX, float posY)
+GameObject::GameObject(const int gameObjectID, const int networkID, pair<float, float> position)
 	: mID(gameObjectID), mNetworkID(networkID)
 {
 	//Position
-	mPosX = posX;
-	mPosY = posY;
+	mPosition = position;
 }
 GameObject::~GameObject()
 {

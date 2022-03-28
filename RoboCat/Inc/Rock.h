@@ -18,7 +18,7 @@ public:
 
 	//Constructor(s)
 	Rock(const int gameObjectID, const int networkID);
-	Rock(const int gameObjectID, const int networkID, float posX, float posY);
+	Rock(const int gameObjectID, const int networkID, pair<float, float> position);
 
 	//Destructor
 	~Rock();

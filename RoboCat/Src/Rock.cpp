@@ -7,8 +7,8 @@ Rock::Rock(const int gameObjectID, const int networkID)
 
 }
 
-Rock::Rock(const int gameObjectID, const int networkID, float posX, float posY)
-	: GameObject(gameObjectID, networkID, posX, posY)
+Rock::Rock(const int gameObjectID, const int networkID, pair<float, float> position)
+	: GameObject(gameObjectID, networkID, position)
 {
 
 }

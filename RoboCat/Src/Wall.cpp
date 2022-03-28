@@ -7,8 +7,8 @@ Wall::Wall(const int gameObjectID, const int networkID)
 
 }
 
-Wall::Wall(const int gameObjectID, const int networkID, float posX, float posY, float sizeX, float sizeY)
-	: GameObject(gameObjectID, networkID, posX, posY)
+Wall::Wall(const int gameObjectID, const int networkID, pair<float, float> position, float sizeX, float sizeY)
+	: GameObject(gameObjectID, networkID, position)
 {
 	mSizeX = sizeX;
 	mSizeY = sizeY;
