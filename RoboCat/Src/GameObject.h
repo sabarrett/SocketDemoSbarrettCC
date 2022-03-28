@@ -22,6 +22,7 @@ class GameObject
 		void CreateObject();
 		void DeleteObject();
 		void UpdatePosition();
+		void DrawObjects();
 
 		char GetObjectType();
 		float GetPositionX();

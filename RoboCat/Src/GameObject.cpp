@@ -85,6 +85,24 @@ void GameObject::UpdatePosition()
 	}
 }
 
+void GameObject::DrawObjects()
+{
+	if (objectType == 'r')
+	{
+		al_draw_filled_circle(positionX, positionY, 10, al_map_rgb(255, 0, 0));
+	}
+
+	if (objectType == 'g')
+	{
+		al_draw_filled_circle(positionX, positionY, 10, al_map_rgb(0, 255, 0));
+	}
+
+	if (objectType == 'b')
+	{
+		al_draw_filled_circle(positionX, positionY, 10, al_map_rgb(0, 0, 255));
+	}
+}
+
 char GameObject::GetObjectType()
 {
 	return objectType;

@@ -215,6 +215,11 @@ int main(int argc, const char** argv)
 			}
 		}
 
+		for (int i = 0; i < unitCount; i++)
+		{
+			mGameObjects[i].UpdatePosition();
+		}
+
 		//now i need to move and send this info
 
 	}
