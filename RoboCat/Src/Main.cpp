@@ -1,7 +1,13 @@
 
 #include "RoboCatPCH.h"
+#include "allegro_wrapper_functions-main/GraphicsLibrary.h"
+#include "allegro_wrapper_functions-main/Colour.h"
+#include "allegro_wrapper_functions-main/InputSystem.h"
 
 #include <thread>
+#include <vector>
+
+using namespace std;
 
 #if _WIN32
 
@@ -18,6 +24,20 @@ UDPSocketPtr CreateBoundSocket(std::string IP)
 		return cliSock;
 }
 
+class LeftGameObject
+{
+	private:
+		int xPos;
+		int	yPos;
+		string imageName;
+	public:
+		LeftGameObject(int x, int y, string fileName) { xPos = x; yPos = y; imageName = fileName; };
+		int getX() { return xPos; };
+		int getY() { return yPos; };
+		void Update() { xPos--; };
+		string getImageName() { return imageName; };
+};
+
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -31,7 +51,7 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	SocketUtil::StaticInit();
+	/*/SocketUtil::StaticInit();
 
 
 	UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
@@ -52,9 +72,48 @@ int main(int argc, const char** argv)
 			SocketUtil::ReportError("Client SendTo");
 		}
 		std::cout << "sent " << bytesSent << " bytes\n";
+	}*/
+
+	GraphicsLibrary mLibrary(800, 600);
+	mLibrary.init("../2517597.jpg");
+	mLibrary.loadImage("../2517597.jpg", "background");
+	mLibrary.drawImage("background", 0, 0);
+	mLibrary.render();
+
+	InputSystem mInputSystem;
+	mInputSystem.init(&mLibrary);
+
+	vector<LeftGameObject*> vLeftGameObjects;
+
+	bool escapePressed = false;
+
+	while (!escapePressed)
+	{
+		for (LeftGameObject* obj : vLeftGameObjects)
+		{
+			obj->Update();
+			mLibrary.drawImage("LeftObject", obj->getX(), obj->getY());
+		}
+		int mousePress = mInputSystem.getMouseInput();
+		int keyPress = mInputSystem.getKeyboardInput();
+
+		if (keyPress == KeyCode::KeyEscape)
+			escapePressed = true;
+
+		switch (mousePress)
+		{
+			case MouseButton::LeftMouse:
+			{
+				mLibrary.loadImage("../output-onlinepngtools.png", "LeftObject");
+				vLeftGameObjects.push_back(new LeftGameObject((int)mInputSystem.getMouseX(), (int)mInputSystem.getMouseY(), "../output-onlinepngtools.png"));
+			}
+		}
+		mLibrary.render();
 	}
 	
-	std::thread srvThread([&srvSock]() {
+	//scott recommends no threads
+
+	/*std::thread srvThread([&srvSock]() {
 		char buffer[4096];
 		SocketAddress fromAddr;
 		int bytesReceived = srvSock->ReceiveFrom(buffer, 4096, fromAddr);
@@ -67,7 +126,7 @@ int main(int argc, const char** argv)
 		std::cout << "Received message from " << fromAddr.ToString() << ": " << msg << std::endl;
 		});
 
-	srvThread.join();
+	srvThread.join();*/
 
 	SocketUtil::CleanUp();
 
