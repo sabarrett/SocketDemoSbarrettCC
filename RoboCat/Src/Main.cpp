@@ -65,13 +65,13 @@ int main(int argc, const char** argv)
 		}
 		srvSock->Bind(*srvAddr);
 
-		std::string msg("Hello server!");
+		string msg("Hello server!");
 		int bytesSent = cliSock->SendTo(msg.c_str(), msg.length(), *srvAddr);
 		if (bytesSent <= 0)
 		{
 			SocketUtil::ReportError("Client SendTo");
 		}
-		std::cout << "sent " << bytesSent << " bytes\n";
+		cout << "sent " << bytesSent << " bytes\n";
 	}*/
 
 	GraphicsLibrary mLibrary(800, 600);
@@ -84,6 +84,7 @@ int main(int argc, const char** argv)
 	mInputSystem.init(&mLibrary);
 
 	vector<LeftGameObject*> vLeftGameObjects;
+
 
 	bool escapePressed = false;
 
@@ -109,6 +110,7 @@ int main(int argc, const char** argv)
 			}
 		}
 		mLibrary.render();
+		mLibrary.drawImage("background", 0, 0);
 	}
 	
 	//scott recommends no threads
