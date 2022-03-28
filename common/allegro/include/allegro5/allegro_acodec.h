@@ -1,8 +1,8 @@
 #ifndef __al_included_allegro5_allegro_acodec_h
 #define __al_included_allegro5_allegro_acodec_h
 
-#include "allegro5/allegro.h"
-#include "allegro5/allegro_audio.h"
+#include "../allegro5/allegro.h"
+#include "../allegro5/allegro_audio.h"
 
 #ifdef __cplusplus
 extern "C" {

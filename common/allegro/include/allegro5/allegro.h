@@ -69,7 +69,7 @@
 
 
 #ifdef ALLEGRO_EXTRA_HEADER
-   #include ALLEGRO_EXTRA_HEADER
+   //#include ALLEGRO_EXTRA_HEADER
 #endif
 
 

@@ -1,8 +1,8 @@
 #pragma once
 #include<iostream>
-#include<../../../common/allegro/include/allegro5/allegro.h>
-#include<../../../common/allegro/include/allegro5/keyboard.h>
-#include<../../../common/allegro/include/allegro5/mouse.h>
+#include"../common/allegro/include/allegro5/allegro.h"
+#include"../common/allegro/include/allegro5/keyboard.h"
+#include"../common/allegro/include/allegro5/mouse.h"
 #include"../common/DeanLib/include/Trackable.h"
 
 using namespace std;

@@ -1,9 +1,9 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include <../../../common/allegro/include/allegro5/allegro.h>
-#include <../../../common/allegro/include/allegro5/allegro_font.h>
-#include <../../../common/allegro/include/allegro5/allegro_ttf.h>
+#include "../common/allegro/include/allegro5/allegro.h"
+#include "../common/allegro/include/allegro5/allegro_font.h"
+#include "../common/allegro/include/allegro5/allegro_ttf.h"
 #include "../common/DeanLib/include/Trackable.h"
 
 
