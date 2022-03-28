@@ -12,7 +12,7 @@ class GraphicsBuffer;
 class UnitManager;
 class MemoryManager;
 class GraphicsBufferManager;
-
+class NetworkManager;
 typedef std::string GBKey;
 
 class Game : public Trackable
@@ -47,6 +47,9 @@ private:
 	double mTargetTimePerFrame=0;
 	bool mIsInitted = false;
 	bool mShouldContinue = true;
+
+	NetworkManager* mpNetworkManager = NULL;
+
 
 
 	//private constructor/destructor - don't want someone trying to delete the instance directly

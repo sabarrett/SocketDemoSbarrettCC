@@ -379,6 +379,7 @@
     <ClInclude Include="Inc\BaseGameInc\Game.h" />
     <ClInclude Include="Inc\BaseGameInc\GraphicsBufferManager.h" />
     <ClInclude Include="Inc\BaseGameInc\MemoryManager.h" />
+    <ClInclude Include="Inc\BaseGameInc\NetworkManager.h" />
     <ClInclude Include="Inc\BaseGameInc\Unit.h" />
     <ClInclude Include="Inc\BaseGameInc\UnitManager.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
@@ -421,6 +422,7 @@
     <ClCompile Include="Src\BaseGameSrc\GraphicsBufferManager.cpp" />
     <ClCompile Include="Src\BaseGameSrc\main.cpp" />
     <ClCompile Include="Src\BaseGameSrc\MemoryManager.cpp" />
+    <ClCompile Include="Src\BaseGameSrc\NetworkManager.cpp" />
     <ClCompile Include="Src\BaseGameSrc\Unit.cpp" />
     <ClCompile Include="Src\BaseGameSrc\UnitManager.cpp" />
     <ClCompile Include="Src\DeanSrc\CircularQueue.cpp" />

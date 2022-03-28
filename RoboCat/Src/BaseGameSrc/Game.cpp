@@ -2,7 +2,7 @@
 #include "Unit.h"
 #include "UnitManager.h"
 #include "GraphicsBufferManager.h"
-
+#include "NetworkManager.h"
 #include "MemoryManager.h"
 
 #include <System.h>
@@ -17,6 +17,7 @@
 using namespace std;
 
 Game* Game::mspInstance = NULL;
+
 
 Game::Game()
 {
@@ -57,6 +58,10 @@ void Game::init(unsigned int width, unsigned int height, double targetTimePerFra
 	{
 		cleanup();
 	}
+	SocketUtil::StaticInit();
+
+	mpNetworkManager = new NetworkManager;
+	mpNetworkManager->init(stoi(StringUtils::GetCommandLineArg(1)));
 
 	mpSystem->init(width, height);
 	mTargetTimePerFrame = targetTimePerFrame;
@@ -83,10 +88,10 @@ void Game::cleanup()
 		delete mpUnitManager;
 		delete mpGraphicsBufferManager;
 		delete mpMemoryManager;
-		
+		delete mpNetworkManager;
 		mpSystem->cleanup();
 	}
-
+	SocketUtil::CleanUp();
 	mIsInitted = false;
 }
 
@@ -109,7 +114,7 @@ void Game::doLoop()
 		tracker.stopTracking("loop");
 		//cout << tracker.getElapsedTime("loop") << endl;
 
-		cout << "Allocated memory: " << mpMemoryManager->getTotalAllocated() << endl;
+		//cout << "Allocated memory: " << mpMemoryManager->getTotalAllocated() << endl;
 		//cout << "Current available memory: " << mpMemoryManager->getTotalCapacity() << endl;
 	}
 }
@@ -162,7 +167,7 @@ void Game::render()
 
 void Game::loadBuffers()
 {
-	const string ASSET_PATH = "..\\assets\\";
+	const string ASSET_PATH = "..\\..\\..\\assets\\";
 	const string BACKGROUND_FILENAME = "woods.png";
 	const string SMURF_FILENAME = "smurf_sprites.png";
 	const string DEAN_FILENAME = "dean_sprites.png";
