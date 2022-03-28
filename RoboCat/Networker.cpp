@@ -116,6 +116,7 @@ void Networker::GetNewGameObjectState(GameObject* gameObject)
 
 		GameObjectType recieveType;
 		IMBStream.Read(recieveType);
+
 		switch (recieveType)
 		{
 		case GameObjectType::ROCK:
