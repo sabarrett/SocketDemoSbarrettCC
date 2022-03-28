@@ -3,10 +3,11 @@ Allegro Wrapper Functions
 Written by Adel Talhouk in FA21
 InputSystem.cpp
 */
+#include <iostream>
 
+#include "RoboCatPCH.h"
 #include "InputSystem.h"
 
-#include <iostream>
 
 //Constructor
 InputSystem::InputSystem()
@@ -118,12 +119,12 @@ KeyCode InputSystem::getKeyboardInput()
 		//Check the type
 		switch (mEvent.keyboard.keycode)
 		{
-		case KeyCode::Escape:
-			return KeyCode::Escape;
+		case KeyCode::ESCAPE_KEY:
+			return KeyCode::ESCAPE_KEY;
 			break;
 
-		case KeyCode::R:
-			return KeyCode::R;
+		case KeyCode::R_KEY:
+			return KeyCode::R_KEY;
 			break;
 
 		default:

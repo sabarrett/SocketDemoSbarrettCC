@@ -4,10 +4,11 @@ Written by Adel Talhouk in FA21
 GraphicsLibrary.cpp
 */
 
+#include "RoboCatPCH.h"
 #include "GraphicsLibrary.h"
-
 #include <iostream>
 #include <algorithm>
+
 
 //Constructor
 GraphicsLibrary::GraphicsLibrary(float screenSizeX, float screenSizeY)

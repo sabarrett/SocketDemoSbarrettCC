@@ -1,5 +1,6 @@
 
 #include "RoboCatPCH.h"
+#include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 
 #if _WIN32
 
@@ -17,7 +18,14 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
+	GraphicsLibrary GL(1920.0, 1080.0);
+	GL.init("background");
+
 	SocketUtil::StaticInit();
+
+	while (true)
+	{
+	}
 
 	SocketUtil::CleanUp();
 
