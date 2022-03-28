@@ -380,6 +380,7 @@
     <ClInclude Include="Inc\SocketAddressFactory.h" />
     <ClInclude Include="Inc\SocketUtil.h" />
     <ClInclude Include="Inc\StringUtils.h" />
+    <ClInclude Include="Inc\TCPPacket.h" />
     <ClInclude Include="Inc\TCPSocket.h" />
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
@@ -391,6 +392,7 @@
     <ClCompile Include="Src\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
+    <ClCompile Include="Src\TCPPacket.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
