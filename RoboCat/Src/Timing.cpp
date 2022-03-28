@@ -1,5 +1,5 @@
 #include "RoboCatPCH.h"
-#include "Timing.h"
+
 float kDesiredFrameTime = 0.03333333f;
 #if !_WIN32
 #include <chrono>

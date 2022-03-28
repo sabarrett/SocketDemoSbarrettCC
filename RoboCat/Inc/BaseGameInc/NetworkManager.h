@@ -100,6 +100,8 @@ public:
 	bool	InitAsPeer(const SocketAddress& inMPAddress, const string& inName);
 	bool	InitSocket(uint16_t inPort);
 
+	NetworkManagerState GetState() { return mState; };
+
 private:
 	
 	class ReceivedPacket

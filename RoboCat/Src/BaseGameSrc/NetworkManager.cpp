@@ -48,6 +48,7 @@ bool NetworkManager::InitAsMasterPeer(uint16_t inPort, const string& inName)
 	//add myself to the player name map
 	mName = inName;
 	mPlayerNameMap.emplace(mPlayerId, mName);
+	std::cout << "Init as Master peer" << std::endl;
 	return true;
 }
 
@@ -66,7 +67,7 @@ bool NetworkManager::InitAsPeer(const SocketAddress& inMPAddress, const string& 
 	//set my name
 	mName = inName;
 	//don't know my player id, so can't add myself to the name map yet
-
+	std::cout << "Init as peer" << std::endl;
 	return true;
 }
 
@@ -75,8 +76,8 @@ bool NetworkManager::InitSocket(uint16_t inPort)
 	mSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 	SocketAddress ownAddress(INADDR_ANY, inPort);
 	mSocket->Bind(ownAddress);
-
-	LOG("Initializing NetworkManager at port %d", inPort);
+	std::cout << "Initializing NetworkManager at port " << inPort << std::endl;
+	
 
 	//did we bind okay?
 	if (mSocket == nullptr)
@@ -110,10 +111,12 @@ void NetworkManager::SendOutgoingPackets()
 		UpdateSayingHello();
 		break;
 	case NMS_Starting:
+		std::cout << "Starting" << std::endl;
 		UpdateStarting();
 		break;
 	case NMS_Playing:
-		UpdateSendTurnPacket();
+		std::cout << "Playing" << std::endl;
+		//UpdateSendTurnPacket();
 		break;
 	default:
 		break;
@@ -137,7 +140,7 @@ void NetworkManager::SendHelloPacket()
 
 	helloPacket.Write(kHelloCC);
 	helloPacket.Write(mName);
-
+	std::cout << "Saying hello" << std::endl;
 	SendPacket(helloPacket, mMasterPeerAddr);
 }
 
@@ -263,6 +266,7 @@ void NetworkManager::ProcessPacketsHello(InputMemoryBitStream& inInputStream, co
 		HandleNotMPPacket(inInputStream);
 		break;
 	case kWelcomeCC:
+		std::cout << "Handling welcome" << std::endl;
 		HandleWelcomePacket(inInputStream);
 		break;
 	case kNotJoinableCC:
@@ -351,6 +355,7 @@ void NetworkManager::ProcessPacketsLobby(InputMemoryBitStream& inInputStream, co
 	switch (packetType)
 	{
 	case kHelloCC:
+		std::cout << "handling hello" << std::endl;
 		HandleHelloPacket(inInputStream, inFromAddress);
 		break;
 	case kIntroCC:
@@ -413,7 +418,7 @@ void NetworkManager::HandleHelloPacket(InputMemoryBitStream& inInputStream, cons
 			outputStream.Write(iter.first);
 			outputStream.Write(iter.second);
 		}
-
+		std::cout << "Sending welcome" << std::endl;
 		SendPacket(outputStream, inFromAddress);
 
 		//increment the player count and add this player to maps

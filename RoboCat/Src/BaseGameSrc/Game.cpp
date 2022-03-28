@@ -64,8 +64,10 @@ bool Game::init(unsigned int width, unsigned int height, double targetTimePerFra
 	string name = StringUtils::GetCommandLineArg(2);
 	if (destination == "" || name == "")
 	{
-		LOG("ERROR: Missing command line arguments.");
-		return false;
+		destination = "8000";
+		name = "Harris";
+		// LOG("ERROR: Missing command line arguments.");
+		//return false;
 	}
 	mpNetworkManager = new NetworkManager;
 	//assume no colon implies this is just the port, which implies that this is the master peer
@@ -129,7 +131,22 @@ void Game::doLoop()
 		timer.start();
 
 		getInput();
-		update(mTargetTimePerFrame);
+
+		if (mpNetworkManager->GetState() != NetworkManager::NMS_Delay)
+		{
+			
+			update(mTargetTimePerFrame);
+			mpNetworkManager->ProcessIncomingPackets();
+			mpNetworkManager->SendOutgoingPackets();
+		}
+		else
+		{
+			//only grab the incoming packets because if I'm in delay,
+			//the only way I'm getting out is if an incoming packet saves me
+			mpNetworkManager->ProcessIncomingPackets();
+		}
+
+		
 		render();
 
 		timer.sleepUntilElapsed(mTargetTimePerFrame);
