@@ -5,6 +5,7 @@
 #include "Bullet.h"
 #include <chrono>
 #include "Player.h"
+#include <algorithm>
 
 #if _WIN32
 
@@ -24,6 +25,7 @@ const float RESOLUTION_Y = 1080.0;
 // Sprites sizes
 const float PLAYER_SIZE = 80.0;
 const float BULLET_SIZE = 40.0;
+const float OFFSET_HIT = 3.0;
 
 // Objects speed
 const float BULLET_SPEED = 0.3;
@@ -167,6 +169,20 @@ int main(int argc, const char** argv)
 				pGL->drawImage(newBullet->mImageIdentifier, newBullet->getPosX(), newBullet->getPosY());
 				bulletsVector.push_back(newBullet);
 				std::cout << "Space Pressed" << std::endl;
+			}
+
+			for (auto& bullet : bulletsVector)
+			{
+				//check bullet y is <= player y + playersize
+				//check bullet x is >= player x - bulletsize / 2 and <= player x + playersize
+				if (bullet->getPosY() <= player2->getPosY() + PLAYER_SIZE + OFFSET_HIT && 
+					bullet->getPosX() >= player2->getPosX() - BULLET_SIZE && 
+					bullet->getPosX() <= player2->getPosX() + PLAYER_SIZE && 
+					bullet->getPosY() >= player2->getPosY() - BULLET_SIZE / 2)
+				{
+					std::cout << "BULLET HIT";
+					bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
+				}
 			}
 
 			pGL->drawImage(player1->mImageIdentifier, player1->getPosX(), player1->getPosY());
