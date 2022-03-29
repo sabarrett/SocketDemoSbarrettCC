@@ -18,7 +18,10 @@ InputSystem.h
 enum KeyCode
 {
 	ESCAPE_KEY = ALLEGRO_KEY_ESCAPE,
-	R_KEY = ALLEGRO_KEY_R
+	R_KEY = ALLEGRO_KEY_R,
+	A_KEY = ALLEGRO_KEY_A,
+	D_KEY = ALLEGRO_KEY_D,
+	SPACE_KEY = ALLEGRO_KEY_SPACE
 };
 
 enum MouseButton
@@ -37,6 +40,29 @@ enum InputMode
 	MouseUp = ALLEGRO_EVENT_MOUSE_BUTTON_UP
 };
 
+struct InputData
+{
+	bool keyPressed_A;
+	bool keyPressed_D;
+	bool keyPressed_R;
+	bool keyPressed_SPACE;
+	bool keyPressed_ESCAPE;
+
+	InputData()
+	{
+		clean();
+	}
+
+	void clean()
+	{
+		keyPressed_A = false;
+		keyPressed_D = false;
+		keyPressed_R = false;
+		keyPressed_SPACE = false;
+		keyPressed_ESCAPE = false;
+	}
+};
+
 class InputSystem
 {
 	//-------------------------Private data-------------------------
@@ -46,6 +72,9 @@ class InputSystem
 
 	//Event
 	ALLEGRO_EVENT mEvent;
+
+	InputData lastFrameData;
+	InputData currentFrameData;
 
 	//-------------------------Public data-------------------------
 public:
@@ -63,6 +92,8 @@ public:
 
 	//Functions
 	bool init(GraphicsLibrary* pGraphicsLib);
+	void update();
+	InputData getInputData();
 	MouseButton getMouseInput();
 	KeyCode getKeyboardInput();
 };

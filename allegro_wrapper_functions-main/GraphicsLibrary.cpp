@@ -37,7 +37,7 @@ GraphicsLibrary::~GraphicsLibrary()
 	mpDisplay = nullptr;
 }
 
-bool GraphicsLibrary::init(std::string backgroundFilePath)
+bool GraphicsLibrary::init()
 {
 	//Init allegro
 	if (!al_init())
