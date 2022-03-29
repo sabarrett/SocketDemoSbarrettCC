@@ -348,7 +348,7 @@ void BradsTotallyOriginalServer()
 		bytesReceived = incomingSocket->Receive(buffer, 4096);
 
 		GameObject inObj = GameObject();
-		iStream.Read(inObj);
+		//iStream.Read(inObj);
 
 		al_draw_rectangle(inObj.xPos, inObj.yPos, inObj.xPos+inObj.width, inObj.yPos+inObj.height, al_map_rgb(255, 0, 0), 2);
 	}
@@ -459,18 +459,18 @@ void BradsLessOriginalClient()
 						yMove = true;
 						yAxis = -1;
 					}
-					else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
+					if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
 					{
 						yMove = true;
 						yAxis = 1;
 					}
-					else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
+					if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
 					{
 						xAxis = 1;
 						xMove = true;
 					}
 
-					else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
+					if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 					{
 						xAxis = -1;
 						xMove = true;
@@ -500,7 +500,7 @@ void BradsLessOriginalClient()
 		bytesReceived = clientSocket->Receive(buffer, 4096);
 
 		GameObject inObj = GameObject();
-		iStream.Read(inObj);
+		//iStream.Read(inObj);
 
 		al_draw_rectangle(inObj.xPos, inObj.yPos, inObj.xPos + inObj.width, inObj.yPos + inObj.height, al_map_rgb(255, 0, 0), 2);
 	}
