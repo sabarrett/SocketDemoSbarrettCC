@@ -92,6 +92,12 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <OutDir>Bin\$(Configuration)\</OutDir>
+    <Allegro_AddonImage>true</Allegro_AddonImage>
+    <Allegro_AddonTTF>true</Allegro_AddonTTF>
+    <Allegro_AddonAudio>true</Allegro_AddonAudio>
+    <Allegro_AddonFont>true</Allegro_AddonFont>
+    <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
+    <Allegro_AddonAcodec>true</Allegro_AddonAcodec>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">
     <LinkIncremental>true</LinkIncremental>
@@ -127,8 +133,8 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <AdditionalIncludeDirectories>..\SDL\include;Inc;..\</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>..\SDL\include;Inc;..\;Inc\GraphicsInc;Inc\DeanInc;Inc\BaseGameInc</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -370,7 +376,36 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\BaseGameInc\Game.h" />
+    <ClInclude Include="Inc\BaseGameInc\GraphicsBufferManager.h" />
+    <ClInclude Include="Inc\BaseGameInc\MemoryManager.h" />
+    <ClInclude Include="Inc\BaseGameInc\NetworkManager.h" />
+    <ClInclude Include="Inc\BaseGameInc\Unit.h" />
+    <ClInclude Include="Inc\BaseGameInc\UnitManager.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
+    <ClInclude Include="Inc\DeanInc\CircularQueue.h" />
+    <ClInclude Include="Inc\DeanInc\ConditionalCallback.h" />
+    <ClInclude Include="Inc\DeanInc\DataRepository.h" />
+    <ClInclude Include="Inc\DeanInc\DeanLibDefines.h" />
+    <ClInclude Include="Inc\DeanInc\DeanLibUtilities.h" />
+    <ClInclude Include="Inc\DeanInc\DeanMath.h" />
+    <ClInclude Include="Inc\DeanInc\MemoryPool.h" />
+    <ClInclude Include="Inc\DeanInc\MemoryTracker.h" />
+    <ClInclude Include="Inc\DeanInc\MultiDimensionalArray.h" />
+    <ClInclude Include="Inc\DeanInc\PerformanceTracker.h" />
+    <ClInclude Include="Inc\DeanInc\RayCaster.h" />
+    <ClInclude Include="Inc\DeanInc\TimedCallback.h" />
+    <ClInclude Include="Inc\DeanInc\Timer.h" />
+    <ClInclude Include="Inc\DeanInc\Trackable.h" />
+    <ClInclude Include="Inc\DeanInc\Vector2D.h" />
+    <ClInclude Include="Inc\GraphicsInc\Animation.h" />
+    <ClInclude Include="Inc\GraphicsInc\Color.h" />
+    <ClInclude Include="Inc\GraphicsInc\Font.h" />
+    <ClInclude Include="Inc\GraphicsInc\GraphicsBuffer.h" />
+    <ClInclude Include="Inc\GraphicsInc\GraphicsLib.h" />
+    <ClInclude Include="Inc\GraphicsInc\GraphicsSystem.h" />
+    <ClInclude Include="Inc\GraphicsInc\Sprite.h" />
+    <ClInclude Include="Inc\GraphicsInc\System.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
@@ -382,8 +417,36 @@
     <ClInclude Include="Inc\TCPSocket.h" />
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
+    <ClInclude Include="Inc\Timing.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
-    <ClCompile Include="Src\Main.cpp" />
+    <ClCompile Include="Src\BaseGameSrc\Game.cpp" />
+    <ClCompile Include="Src\BaseGameSrc\GraphicsBufferManager.cpp" />
+    <ClCompile Include="Src\BaseGameSrc\main.cpp" />
+    <ClCompile Include="Src\BaseGameSrc\MemoryManager.cpp" />
+    <ClCompile Include="Src\BaseGameSrc\NetworkManager.cpp" />
+    <ClCompile Include="Src\BaseGameSrc\Unit.cpp" />
+    <ClCompile Include="Src\BaseGameSrc\UnitManager.cpp" />
+    <ClCompile Include="Src\DeanSrc\CircularQueue.cpp" />
+    <ClCompile Include="Src\DeanSrc\DataRepository.cpp" />
+    <ClCompile Include="Src\DeanSrc\DeanLibUtilities.cpp" />
+    <ClCompile Include="Src\DeanSrc\DeanMath.cpp" />
+    <ClCompile Include="Src\DeanSrc\MemoryPool.cpp" />
+    <ClCompile Include="Src\DeanSrc\MemoryTracker.cpp" />
+    <ClCompile Include="Src\DeanSrc\PerformanceTracker.cpp" />
+    <ClCompile Include="Src\DeanSrc\RayCaster.cpp" />
+    <ClCompile Include="Src\DeanSrc\Timer.cpp" />
+    <ClCompile Include="Src\DeanSrc\Trackable.cpp" />
+    <ClCompile Include="Src\DeanSrc\Vector2D.cpp" />
+    <ClCompile Include="Src\GraphicsSrc\Animation.cpp" />
+    <ClCompile Include="Src\GraphicsSrc\Color.cpp" />
+    <ClCompile Include="Src\GraphicsSrc\Font.cpp" />
+    <ClCompile Include="Src\GraphicsSrc\GraphicsBuffer.cpp" />
+    <ClCompile Include="Src\GraphicsSrc\GraphicsLib.cpp" />
+    <ClCompile Include="Src\GraphicsSrc\GraphicsSystem.cpp" />
+    <ClCompile Include="Src\GraphicsSrc\Sprite.cpp" />
+    <ClCompile Include="Src\GraphicsSrc\System.cpp" />
+    <ClCompile Include="Src\RoboMath.cpp" />
+    <ClCompile Include="Src\SocketMain.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
     <ClCompile Include="Src\SocketAddress.cpp" />
@@ -391,12 +454,14 @@
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="Inc\WeightedTimedMovingAverage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Src\Timing.cpp" />
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
