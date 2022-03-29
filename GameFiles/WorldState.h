@@ -2,9 +2,8 @@
 class GameObject;
 class LinkingContext;
 class GraphicsLibrary;
-struct Location;
 //class InputSystem;
-
+struct Location;
 class WorldState
 {
 	const float SCREEN_X = 1000;
@@ -24,6 +23,8 @@ class WorldState
 		void CreateKey();
 		void CreateKey(Location loc);
 
+		void Write(OutputMemoryBitStream& stream);
+		virtual void Read(InputMemoryBitStream& stream);
 	protected:
 	private:
 		vector<GameObject*> mGameObjects;

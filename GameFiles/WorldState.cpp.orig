@@ -1,7 +1,11 @@
 #include "RoboCatPCH.h"
-#include "WorldState.h"
-#include "Lock.h"
+
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
+
+#include "WorldState.h"
+
+#include "Lock.h"
+#include "Key.h"
 
 WorldState::WorldState(GraphicsLibrary* gl)
 {
@@ -49,6 +53,19 @@ void WorldState::CreateLock(int posX, int posY)
 	mGameObjects.push_back(createdGameObject);
 }
 
+<<<<<<< HEAD
+void WorldState::CreateKey()
+{
+	CreateKey(Location{0,0});
+}
+
+void WorldState::CreateKey(Location loc)
+{
+	GameObject* createdGameObject = Key::CreateInstance();
+	createdGameObject->SetPostion(loc.x , loc.y);
+	mpGameObjectLinker->GetNetworkId(createdGameObject, true);
+	mGameObjects.push_back(createdGameObject);
+=======
 void WorldState::Write(OutputMemoryBitStream& stream)
 {
 	int count = mGameObjects.size();
@@ -92,4 +109,5 @@ void WorldState::Read(InputMemoryBitStream& stream)
 		
 		tempObj->Read(stream);
 	}
+>>>>>>> 53b7d8bebddd73c83e40367fd0206359099adf60
 }

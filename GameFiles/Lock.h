@@ -9,7 +9,9 @@ class Lock : public GameObject
 		~Lock();
 	protected:
 	public:
+		virtual void Write(OutputMemoryBitStream& stream);
+		virtual void Read(InputMemoryBitStream& stream);
+		virtual void Update();
 
-		void Update();
 		CLASS_IDENTIFICATION('LOCK', Lock)
 };
