@@ -38,6 +38,7 @@ void GameObject::Read(InputMemoryBitStream& stream)
 	stream.Read(height);
 	stream.Read(xPos);
 	stream.Read(yPos);
+	
 }
 
 void GameObject::Write(OutputMemoryBitStream& stream) const
@@ -106,91 +107,7 @@ void ThrowSocketError(std::string errorMsg)
 	ExitProcess(1); // kill
 }
 
-void RunGameLoop(GameObject objects[], int numObjects)
-{
-	bool exit = false;
 
-	std::thread UpdateThread([&objects, &numObjects, &exit]()
-		{
-			ALLEGRO_DISPLAY* display;
-			display = al_create_display(windowWidth, windowHeight);
-
-			ALLEGRO_KEYBOARD_STATE keyState;
-			ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
-			al_register_event_source(eventQueue, al_get_keyboard_event_source());
-
-			int xAxis = 0;
-			int yAxis = 0;
-
-			bool xMove = true;
-			bool yMove = true;
-
-			while (!exit) //GameLoop
-			{
-				//Get keyboardInput
-				ALLEGRO_EVENT events;
-
-				al_get_next_event(eventQueue, &events);
-				if (events.type == ALLEGRO_EVENT_KEY_UP)
-				{
-					switch (events.keyboard.keycode)
-					{
-					case ALLEGRO_KEY_ESCAPE:
-						exit = true;
-					case ALLEGRO_KEY_UP:
-						yMove = false;
-						yAxis = 0;
-					case ALLEGRO_KEY_DOWN:
-						yMove = false;
-						yAxis = 0;
-					case ALLEGRO_KEY_RIGHT:
-						xAxis = 0;
-						xMove = false;
-					case ALLEGRO_KEY_LEFT:
-						xAxis = 0;
-						xMove = false;
-					}
-				}
-				if (events.type == ALLEGRO_EVENT_KEY_DOWN)
-				{
-					al_get_keyboard_state(&keyState);
-					if (al_key_down(&keyState, ALLEGRO_KEY_UP))
-					{
-						yMove = true;
-						yAxis = -1;
-					}
-					else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
-					{
-						yMove = true;
-						yAxis = 1;
-					}
-					else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
-					{
-						xAxis = 1;
-						xMove = true;
-					}
-
-					else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
-					{
-						xAxis = -1;
-						xMove = true;
-					}
-				}
-
-				for (int i = 0; i < numObjects; i++)
-				{
-					if (xMove || yMove)
-					{
-						objects[i].UpdatePos(xAxis, yAxis);
-					}
-					objects[i].Draw();
-				}
-				al_flip_display();
-				al_clear_to_color(al_map_rgb(0, 0, 0));
-			}
-		});
-	UpdateThread.join();
-}
 
 void BradsTotallyOriginalServer()
 {
@@ -240,13 +157,10 @@ void BradsTotallyOriginalServer()
 	std::thread SendThread([&incomingSocket, &exit, &objects, &numObjects]()
 		{
 			//send message
-			OutputMemoryBitStream oStream = OutputMemoryBitStream();
-			for (int i = 0; i < numObjects; i++)
+			while (1)
 			{
-				objects[i].Write(oStream);
-			}
-			while (!exit)
-			{
+				OutputMemoryBitStream oStream = OutputMemoryBitStream();
+
 				for (int i = 0; i < numObjects; i++)
 				{
 					objects[i].Write(oStream);
@@ -255,10 +169,28 @@ void BradsTotallyOriginalServer()
 			}
 		});
 	//SendThread.join();
-	
-	
 
-	std::thread UpdateThread([&objects, &numObjects, &exit]()
+	GameObject inObj = GameObject();
+	thread RecieveThread([&exit, &incomingSocket, &inObj]()
+		{
+			char buffer[4096];
+			int32_t bytesReceived = int32_t(); // get username
+			InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
+			while (1)
+			{
+				LOG("%s %s", "server game loop", exit);
+				bytesReceived = incomingSocket->Receive(buffer, 4096);
+
+				inObj.Read(iStream);
+
+			}
+			incomingSocket->~TCPSocket();
+		});
+	//SendThread.join();
+	//UpdateThread.join();
+	//RecieveThread.join();
+
+	std::thread ServerUpdateThread([&objects, &numObjects, &exit, &inObj]()
 		{
 			ALLEGRO_DISPLAY* display;
 			display = al_create_display(windowWidth, windowHeight);
@@ -332,27 +264,18 @@ void BradsTotallyOriginalServer()
 						objects[i].UpdatePos(xAxis, yAxis);
 					}
 					objects[i].Draw();
+					inObj.Draw();
 				}
 				al_flip_display();
 				al_clear_to_color(al_map_rgb(0, 0, 0));
 			}
+			//al_destroy_display(display);
+
 		});
-	UpdateThread.join();
+	//ServerUpdateThread.join();
 	//receive data
-	char buffer[4096];
-	int32_t bytesReceived = int32_t(); // get username
-	InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
-	while (!exit)
-	{
-		LOG("%s","server game loop");
-		bytesReceived = incomingSocket->Receive(buffer, 4096);
+	
 
-		GameObject inObj = GameObject();
-		//iStream.Read(inObj);
-
-		al_draw_rectangle(inObj.xPos, inObj.yPos, inObj.xPos+inObj.width, inObj.yPos+inObj.height, al_map_rgb(255, 0, 0), 2);
-	}
-	incomingSocket->~TCPSocket();
 }
 
 void BradsLessOriginalClient()
@@ -389,28 +312,46 @@ void BradsLessOriginalClient()
 		objects[j] = GameObject(rand() % 100 + 1, rand() % 100 + 1, rand() % windowWidth + 1, rand() % windowHeight + 1);
 	}
 
-	std::thread SendThread([&clientSocket, &exit]()
+	std::thread ClientSendThread([&clientSocket, &exit, &objects, &numObjects]()
 		{
-			std::string msg;
-			while (!exit)
+			//send message
+			while (1)
 			{
-				std::getline(std::cin, msg);//BLOCKS
-				clientSocket->Send(msg.c_str(), msg.length());
+				OutputMemoryBitStream oStream = OutputMemoryBitStream();
 
-				if (msg == "/exit")
+				for (int i = 0; i < numObjects; i++)
 				{
-					//clientSocket->~TCPSocket();
-					exit = true;
-					std::cout << "connection terminated" << std::endl;
-					break;
+					objects[i].Write(oStream);
 				}
+				clientSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 			}
 			
 		});
+	//ClientSendThread.join();
 
+	GameObject inObj = GameObject();
+	thread ClientRecieveThread([&exit, &clientSocket, &numObjects,&inObj]()
+		{
+			char buffer[4096];
+			InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
+			int32_t bytesReceived = int32_t();
+			while (1)
+			{
+				LOG("%s", "server game loop");
+				bytesReceived = clientSocket->Receive(buffer, 4096);
+
+				inObj.Read(iStream);
+
+				//al_draw_rectangle(inObj.xPos, inObj.yPos, inObj.xPos + inObj.width, inObj.yPos + inObj.height, al_map_rgb(255, 0, 0), 2);
+
+			}
+			clientSocket->~TCPSocket();
+		});
+	//SendThread.join();
+	//UpdateThread.join();
+	//ClientRecieveThread.join();
 	
-	
-	std::thread UpdateThread([&objects, &numObjects, &exit]()
+	std::thread ClientUpdateThread([&objects, &numObjects, &exit, &inObj]()
 		{
 			ALLEGRO_DISPLAY* display;
 			display = al_create_display(windowWidth, windowHeight);
@@ -459,18 +400,18 @@ void BradsLessOriginalClient()
 						yMove = true;
 						yAxis = -1;
 					}
-					if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
+					else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
 					{
 						yMove = true;
 						yAxis = 1;
 					}
-					if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
+					else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
 					{
 						xAxis = 1;
 						xMove = true;
 					}
 
-					if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
+					else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 					{
 						xAxis = -1;
 						xMove = true;
@@ -484,27 +425,17 @@ void BradsLessOriginalClient()
 						objects[i].UpdatePos(xAxis, yAxis);
 					}
 					objects[i].Draw();
+					inObj.Draw();
 				}
 				al_flip_display();
 				al_clear_to_color(al_map_rgb(0, 0, 0));
 			}
+			//al_destroy_display(display);
+			//al_destroy_display(display);
 		});
-	UpdateThread.join();
+	//ClientUpdateThread.join();
 	//receive data
-	char buffer[4096];
-	InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
-	int32_t bytesReceived = int32_t();
-	while (!exit)
-	{
-		LOG("%s", "server game loop");
-		bytesReceived = clientSocket->Receive(buffer, 4096);
-
-		GameObject inObj = GameObject();
-		//iStream.Read(inObj);
-
-		al_draw_rectangle(inObj.xPos, inObj.yPos, inObj.xPos + inObj.width, inObj.yPos + inObj.height, al_map_rgb(255, 0, 0), 2);
-	}
-	clientSocket->~TCPSocket();
+	
 }
 
 
