@@ -20,13 +20,12 @@ class WorldState
 		void CreateLock();
 		void CreateLock(int posX, int posY);
 
-		void Write(OutputMemoryBitStream& stream);
+		void Write(OutputMemoryBitStream& stream) const;
 		virtual void Read(InputMemoryBitStream& stream);
 	protected:
 	private:
 		vector<GameObject*> mGameObjects;
 		LinkingContext* mpGameObjectLinker;
 		GraphicsLibrary* mpGraphicsLibrary;
-		//InputSystem mpInputSystem;
 };
 

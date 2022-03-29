@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameFiles/JoinerInput.h"
+#include "WorldState.h"
 
 namespace NetworkManager
 {
@@ -12,17 +13,17 @@ namespace NetworkManager
 
         // "Primitive" Connection Functions
     void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress);
-    void HandleListening(bool& connectionsOpen, UDPSocketPtr listeningSocket, SocketAddressPtr addressRecievedFrom, vector<std::pair<int, void*>>& unprocessedData);
+    void HandleListening(bool& connectionsOpen, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom, vector<std::pair<int, void*>>& unprocessedData);
     
-    void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress);
+    void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
     
         // Derived Connection Functions for in-game use
     // creator
     bool HandleIncomingInputPackets(vector<std::pair<int, void*>>& unprocessedData);
-    bool HandleOutgoingWorldStatePackets();
+    bool HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
     // joiner
-    bool HandleIncomingWorldStatePackets();
-    bool HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress);
+    bool HandleIncomingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom);
+    bool HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
 }
 
 

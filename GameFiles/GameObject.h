@@ -15,8 +15,8 @@ class GameObject
 		enum { mClassId = 'GOBJ' };
 		virtual uint32_t GetClassId() const { return mClassId; }
 		virtual void Update() = 0;
-		virtual void Write(OutputMemoryBitStream &stream) = 0;
-		virtual void Read(InputMemoryBitStream &stream) = 0;
+		virtual void Write(OutputMemoryBitStream &stream);
+		virtual void Read(InputMemoryBitStream &stream);
 		virtual void Render(GraphicsLibrary* gl);
 		void SetPostion(int posX, int posY);
 		~GameObject();

@@ -42,7 +42,7 @@ void NetworkManager::SetUpInitialListening(int& port, UDPSocketPtr& listeningSoc
 	LOG("Your port is %i\n", static_cast<int>(port));
 	//LOG("%s", "socket is now listening");
 }
-void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr listeningSocket, SocketAddressPtr addressRecievedFrom, vector<std::pair<int, void*>>& unprocessedData)
+void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom, vector<std::pair<int, void*>>& unprocessedData)
 {
 	std::cout << "Listening Now!";
 
@@ -65,7 +65,7 @@ void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr listeni
 	}
 }
 
-void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress)
+void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress)
 {
 	sendingSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 	if (sendingSocket == nullptr)
@@ -118,20 +118,29 @@ bool NetworkManager::HandleIncomingInputPackets(vector<std::pair<int, void*>>& u
 	return true;
 }
 
-bool NetworkManager::HandleOutgoingWorldStatePackets()
+bool NetworkManager::HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr &sendingSocket, SocketAddressPtr &sendingAddress)
 {
-	//std::cout << "HandlingCreatorOutgoing\n";
+	OutputMemoryBitStream stream;
+	gameWorld.Write(stream);
+	sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress);
 	return true;
 }
 
 
-bool NetworkManager::HandleIncomingWorldStatePackets()
+bool NetworkManager::HandleIncomingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom)
 {
 	std::cout << "HandlingJoinerIncoming\n";
+
+	char buffer[BUFFER_SIZE];
+	InputMemoryBitStream stream = InputMemoryBitStream(buffer, BUFFER_SIZE*8);
+	listeningSocket->ReceiveFrom(buffer, BUFFER_SIZE, *(addressRecievedFrom));
+
+	gameWorld.Read(stream);
+
 	return true;
 }
 
-bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress)
+bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress)
 {
 	OutputMemoryBitStream outStream;
 	bool allGood = true;
@@ -143,7 +152,7 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 	{
 		input.Write(outStream);
 		std::cout << "JoinerOut2\n";
-		if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetBitLength(), *sendingAddress)) < 0)
+		if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), *sendingAddress)) < 0)
 		{
 			SocketUtil::ReportError("Sending outgoingPacket");
 			allGood = false;

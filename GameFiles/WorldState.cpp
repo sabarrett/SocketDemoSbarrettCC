@@ -1,6 +1,8 @@
 #include "RoboCatPCH.h"
 #include "WorldState.h"
 #include "Lock.h"
+#include "Key.h"
+#include "Coin.h"
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 
 WorldState::WorldState(GraphicsLibrary* gl)
@@ -49,7 +51,7 @@ void WorldState::CreateLock(int posX, int posY)
 	mGameObjects.push_back(createdGameObject);
 }
 
-void WorldState::Write(OutputMemoryBitStream& stream)
+void WorldState::Write(OutputMemoryBitStream& stream) const
 {
 	int count = mGameObjects.size();
 	GameObject* tempObj;
@@ -84,10 +86,17 @@ void WorldState::Read(InputMemoryBitStream& stream)
 				case 'LOCK':
 					tempObj = Lock::CreateInstance();
 					break;
+				case 'KEYS':
+					tempObj = Key::CreateInstance();
+					break;
+				case 'COIN':
+					tempObj = Coin::CreateInstance();
+					break;
 				default:
 					break;
 			}
 			mpGameObjectLinker->AddGameObject(tempObj, networkID);
+			mGameObjects.push_back(tempObj);
 		}
 		
 		tempObj->Read(stream);

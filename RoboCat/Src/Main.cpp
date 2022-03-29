@@ -165,7 +165,11 @@ int main(int argc, const char** argv)
 	gl.loadImage(FILE_PATH, "lock_blue.png");
 
 	WorldState gameWorld = WorldState(&gl);
-	gameWorld.CreateLock();
+
+	if (userIsCreator)
+	{
+		gameWorld.CreateLock();
+	}
 
 	vector<JoinerInput> joinerInputs;
 
@@ -181,13 +185,13 @@ int main(int argc, const char** argv)
 			gameWorld.Update();
 			//ProcessWorldState();
 
-			NetworkManager::HandleOutgoingWorldStatePackets();
+			NetworkManager::HandleOutgoingWorldStatePackets(std::ref(gameWorld), sendingSocket, addressToSendTo);
 		}
 		else
 		{
-			gameWorld.Update();
+			//gameWorld.Update();
 			//ProcessWorldState();
-			NetworkManager::HandleIncomingWorldStatePackets();
+			NetworkManager::HandleIncomingWorldStatePackets(std::ref(gameWorld),listeningSocket, addressRecievedFrom);
 			NetworkManager::HandleOutgoingInputPackets(std::ref(joinerInputs), sendingSocket, addressToSendTo);
 		}
 
