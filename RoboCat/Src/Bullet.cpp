@@ -13,6 +13,12 @@ Bullet::Bullet(const int gameID, float posX, float posY, float speed, bool isGoi
 	mIsGoingUpwards = isGoingUpwards;
 }
 
+Bullet::Bullet(const int gameID, float posX, float posY, string imageIdentifier, float speed, bool isGoingUpwards) : GameObject{ gameID, posX, posY, imageIdentifier }
+{
+	mSpeed = speed;
+	mIsGoingUpwards = isGoingUpwards;
+}
+
 Bullet::~Bullet()
 {
 
@@ -68,5 +74,12 @@ void Bullet::ReceiveBullet(int inSocket, Bullet* outBullet)
 	else {
 		std::free(temporaryBuffer);
 	}
+}
 
+void Bullet::Update(float dt)
+{
+	if(mIsGoingUpwards)
+		mPosY -= dt * mSpeed;
+	else
+		mPosY += dt * mSpeed;
 }

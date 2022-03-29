@@ -12,6 +12,7 @@ private:
 public:
 	Bullet(const int gameID, float speed, bool isGoingUpwards);
 	Bullet(const int gameID, float posX, float posY, float speed, bool isGoingUpwards);
+	Bullet(const int gameID, float posX, float posY, string imageIdentifier, float speed, bool isGoingUpwards);
 
 	~Bullet();
 
@@ -20,4 +21,6 @@ public:
 
 	void SendBullet(int inSocket, const Bullet* inBullet);
 	void ReceiveBullet(int inSocket, Bullet* outBullet);
+
+	void Update(float dt);
 };

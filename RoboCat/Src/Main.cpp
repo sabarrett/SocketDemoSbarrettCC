@@ -4,6 +4,7 @@
 #include "allegro_wrapper_functions-main/InputSystem.h"
 #include "Bullet.h"
 #include <chrono>
+#include "Player.h"
 
 #if _WIN32
 
@@ -24,6 +25,9 @@ const float RESOLUTION_Y = 1080.0;
 const float PLAYER_SIZE = 80.0;
 const float BULLET_SIZE = 40.0;
 
+// Objects speed
+const float BULLET_SPEED = 0.3;
+
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -41,6 +45,7 @@ int main(int argc, const char** argv)
 
 	// ---------------------- General Game Data ----------------------
 	bool isGameRunning = true;
+	std::vector<Bullet*> bulletsVector;
 
 	// ---------------------- Time related ----------------------
 	clock_t start, end;
@@ -49,7 +54,7 @@ int main(int argc, const char** argv)
 	start = clock();
 
 	// ---------------------- Temporary Player Stuff ----------------------
-	float playerSpeed = 0.2;
+	float playerSpeed = 0.05;
 	float playerPositionX = RESOLUTION_X / 2;
 	float playerPositionY = RESOLUTION_Y / 10;
 
@@ -114,10 +119,9 @@ int main(int argc, const char** argv)
 
 		// Draw Stuff
 		pGL->drawImage("background", 0.0, 0.0);
-		pGL->drawImage("player1", playerPositionX, playerPositionY);
 
-		GameObject* player1 = new GameObject(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, "player");
-		GameObject* player2 = new GameObject(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, "player");
+		Player* player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, playerSpeed, "player");
+		Player* player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, playerSpeed, "player");
 
 		// ---------------------- Main Game Loop ----------------------
 		while (isGameRunning)
@@ -131,31 +135,40 @@ int main(int argc, const char** argv)
 			// Updates
 			pIS->update();
 			inputData = pIS->getInputData();
+			for (auto& bullet : bulletsVector)
+			{
+				bullet->Update(dt);
+				pGL->drawImage(bullet->mImageIdentifier, bullet->getPosX(), bullet->getPosY());
+			}
 
 			if (inputData.keyPressed_ESCAPE)
 			{
 				isGameRunning = false;
-				std::cout << "Escape Pressed" << std::endl;
+				//std::cout << "Escape Pressed" << std::endl;
 			}
 			if (inputData.keyPressed_R)
 			{
-				std::cout << "R Pressed" << std::endl;
+				//std::cout << "R Pressed" << std::endl;
 			}
 			if (inputData.keyPressed_A)
 			{
-				std::cout << "A Pressed" << std::endl;
+				//std::cout << "A Pressed" << std::endl;
+				player1->Move(-dt * playerSpeed);
 			}
 			if (inputData.keyPressed_D)
 			{
-				std::cout << "D Pressed" << std::endl;
+				//std::cout << "D Pressed" << std::endl;				
+				player1->Move(dt * playerSpeed);
+
 			}
 			if (inputData.keyPressed_SPACE)
 			{
+				Bullet* newBullet = new Bullet(0, player1->getPosX() + PLAYER_SIZE / 2 - BULLET_SIZE / 2, RESOLUTION_Y * 8 / 10, "bullet", BULLET_SPEED, true);
+				pGL->drawImage(newBullet->mImageIdentifier, newBullet->getPosX(), newBullet->getPosY());
+				bulletsVector.push_back(newBullet);
 				std::cout << "Space Pressed" << std::endl;
 			}
 
-			playerPositionX += dt * playerSpeed;
-			player1->setPosX(playerPositionX);
 			pGL->drawImage(player1->mImageIdentifier, player1->getPosX(), player1->getPosY());
 			pGL->drawImage(player2->mImageIdentifier, player2->getPosX(), player2->getPosY());
 			pGL->render();

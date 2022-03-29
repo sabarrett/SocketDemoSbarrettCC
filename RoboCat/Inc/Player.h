@@ -13,6 +13,7 @@ private:
 public:
 	Player(const int gameID, float speed);
 	Player(const int gameID, float posX, float posY, float speed);
+	Player(const int gameID, float posX, float posY, float speed, string imageIdentifier);
 
 	~Player();
 
@@ -21,4 +22,6 @@ public:
 
 	void SendPlayer(int inSocket, const Player* inPlayer);
 	void ReceivePlayer(int inSocket, Player* outPlayer);
+
+	void Move(float deltaX);
 };

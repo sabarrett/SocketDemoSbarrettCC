@@ -11,6 +11,11 @@ Player::Player(const int gameID, float posX, float posY, float speed) : GameObje
 	mSpeed = speed;
 }
 
+Player::Player(const int gameID, float posX, float posY, float speed, string imageIdentifier) : GameObject{ gameID, posX, posY, imageIdentifier }
+{
+	mSpeed = speed;
+}
+
 Player::~Player()
 {
 
@@ -69,4 +74,9 @@ void Player::ReceivePlayer(int inSocket, Player* outPlayer)
 		std::free(temporaryBuffer);
 	}
 
+}
+
+void Player::Move(float deltaX)
+{
+	mPosX += deltaX;
 }
