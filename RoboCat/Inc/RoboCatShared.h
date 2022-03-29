@@ -35,7 +35,12 @@
 #include "deque"
 #include "unordered_set"
 #include "cassert"
+#include <thread>
+#include <stack>
+#include <typeinfo>
 
+using std::stack;
+using std::thread;
 using std::shared_ptr;
 using std::unique_ptr;
 using std::vector;
@@ -48,6 +53,12 @@ using std::unordered_set;
 
 class RoboCat;
 class GameObject;
+
+#include "RoboMath.h"
+
+#include "LinkingContext.h"
+#include "ByteSwap.h"
+#include "MemoryBitStream.h"
 
 #include "StringUtils.h"
 #include "SocketAddress.h"
