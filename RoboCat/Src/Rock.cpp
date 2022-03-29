@@ -7,8 +7,8 @@ Rock::Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphic
 
 }
 
-Rock::Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position)
-	: GameObject(gameObjectID, networkID, position, graphicsLibrary)
+Rock::Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier)
+	: GameObject(gameObjectID, networkID, position, graphicsLibrary, spriteIdentifier)
 {
 
 }

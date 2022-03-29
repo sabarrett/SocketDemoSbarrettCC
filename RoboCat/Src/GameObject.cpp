@@ -12,8 +12,8 @@ GameObject::GameObject(const int gameObjectID, const int networkID, GraphicsLibr
 	mPosition.second = 0.0;
 }
 
-GameObject::GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position)
-	: mID(gameObjectID), mNetworkID(networkID)
+GameObject::GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier)
+	: mID(gameObjectID), mNetworkID(networkID), mSPRITE_IDENTIFIER(spriteIdentifier)
 {
 	//Graphics library
 	pGraphicsLibrary = graphicsLibrary;

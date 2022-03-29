@@ -374,6 +374,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Networker.cpp" />
+    <ClCompile Include="Src\PlayerController.cpp" />
     <ClCompile Include="Src\Wall.cpp" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\Colour.h" />
@@ -383,6 +384,7 @@
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
+    <ClInclude Include="Inc\PlayerController.h" />
     <ClInclude Include="Inc\RoboMath.h" />
     <ClInclude Include="Inc\Rock.h" />
     <ClInclude Include="Inc\SocketAddress.h" />
