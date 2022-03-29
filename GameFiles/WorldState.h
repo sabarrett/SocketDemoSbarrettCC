@@ -20,9 +20,6 @@ class WorldState
 		void CreateLock();
 		void CreateLock(int posX, int posY);
 
-		void CreateKey();
-		void CreateKey(Location loc);
-
 		void Write(OutputMemoryBitStream& stream);
 		virtual void Read(InputMemoryBitStream& stream);
 	protected:

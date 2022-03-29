@@ -147,7 +147,6 @@ void InputSystem::Update(bool isCreator, WorldState& gameWorld, vector<JoinerInp
 			else
 			{
 				// create key
-				gameWorld.CreateKey(GetMousePosition());
 				joinerInputs.push_back(JoinerInput(JoinerInput::JOINER_KEY_SPAWN, GetMousePosition()));
 			}
 		}

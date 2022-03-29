@@ -16,4 +16,7 @@ class JoinerInput
 	Location location;
 
 	JoinerInput(InputActionTypes initalType, Location loc);
+
+	void Write(OutputMemoryBitStream& stream);
+	void Read(InputMemoryBitStream& stream);
 };

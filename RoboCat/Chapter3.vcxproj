@@ -378,7 +378,6 @@
     <ClInclude Include="..\allegro_wrapper_functions-main\InputSystem.h" />
     <ClInclude Include="..\GameFiles\GameObject.h" />
     <ClInclude Include="..\GameFiles\JoinerInput.h" />
-    <ClInclude Include="..\GameFiles\Key.h" />
     <ClInclude Include="..\GameFiles\Lock.h" />
     <ClInclude Include="..\GameFiles\NetworkManager.h" />
     <ClInclude Include="..\GameFiles\WorldState.h" />
@@ -400,7 +399,6 @@
     <ClCompile Include="..\allegro_wrapper_functions-main\InputSystem.cpp" />
     <ClCompile Include="..\GameFiles\GameObject.cpp" />
     <ClCompile Include="..\GameFiles\JoinerInput.cpp" />
-    <ClCompile Include="..\GameFiles\Key.cpp" />
     <ClCompile Include="..\GameFiles\Lock.cpp" />
     <ClCompile Include="..\GameFiles\NetworkManager.cpp" />
     <ClCompile Include="..\GameFiles\WorldState.cpp" />

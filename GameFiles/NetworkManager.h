@@ -1,4 +1,6 @@
 #pragma once
+extern class JoinerInput;
+
 namespace NetworkManager
 {
     // can probably be bigger since we're using UDP
@@ -16,7 +18,7 @@ namespace NetworkManager
         // Derived Connection Functions for in-game use
     // creator
     bool HandleIncomingInputPackets();
-    bool HandleOutgoingWorldStatePackets();
+    bool HandleOutgoingWorldStatePackets(vector<JoinerInput>& joinerInputs);
     // joiner
     bool HandleIncomingWorldStatePackets();
     bool HandleOutgoingInputPackets();
