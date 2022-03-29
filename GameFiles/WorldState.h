@@ -24,6 +24,7 @@ class WorldState
 
 		void CreateLock();
 		void CreateLock(int posX, int posY);
+		void CreateKey(int posX, int posY);
 
 		template<typename T>
 		void Create()

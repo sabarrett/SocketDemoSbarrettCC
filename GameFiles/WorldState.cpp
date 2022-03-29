@@ -18,11 +18,15 @@ WorldState::~WorldState()
 	mpGraphicsLibrary = nullptr;
 }
 
-void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInput)
+void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs)
 {
 	if (isCreator)
 	{
-		// 
+		for (int i = 0; i < joinerInputs.size(); i++)
+		{
+			CreateKey(joinerInputs[i].location.x, joinerInputs[i].location.y);
+		}
+		joinerInputs.clear();
 	}
 
 	for(int i = 0; i < mGameObjects.size(); i++)
@@ -53,6 +57,14 @@ void WorldState::CreateLock()
 void WorldState::CreateLock(int posX, int posY)
 {
 	GameObject* createdGameObject = Lock::CreateInstance();
+	createdGameObject->SetPostion(posX, posY);
+	mpGameObjectLinker->GetNetworkId(createdGameObject,true);
+	mGameObjects.push_back(createdGameObject);
+}
+
+void WorldState::CreateKey(int posX, int posY)
+{
+	GameObject* createdGameObject = Key::CreateInstance();
 	createdGameObject->SetPostion(posX, posY);
 	mpGameObjectLinker->GetNetworkId(createdGameObject,true);
 	mGameObjects.push_back(createdGameObject);
