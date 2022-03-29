@@ -12,6 +12,7 @@
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 #include "allegro_wrapper_functions-main/InputSystem.h"
 #include "GameFiles/Lock.h"
+#include "GameFiles/NetworkManager.h"
 
 
 ///
@@ -26,11 +27,7 @@
 ///    X - if using UDP, there is a chance of things arriving out of order, so note the time of last remote update and send the time of the update with it, discarding old ones
 ///  X - when user wants to quit, set  closingConnections = true; (to clean things up)
 
-// can probably be bigger since we're using UDP
-const int BUFFER_SIZE = 4096;
 
-const string HOME_ADDRESS = "127.0.0.1:";
-const string ACCEPT_ALL_ADDRESS = "0.0.0.0:";
 
 const float SCREEN_X = 1000;
 const float SCREEN_Y = 500;
@@ -41,113 +38,9 @@ const int JOINER_PORT = 8100;
 
 
 // ~~~~~~~~~~~~~~~~~~~~~   Listening   ~~~~~~~~~~~~~~~~~~~~~~~
-void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress)
-{
-	// here we can select which IPV we're using, and IPV6 is a bit wild for these purposes so, we go with IPV4
-	listeningSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-	if (listeningSocket == nullptr)
-	{
-		SocketUtil::ReportError("Error Creating Listen Socket");
-		ExitProcess(1);
-	}
-	//LOG("%s", "created listening socket");
 
-	// lol true sets it to blocking mode, idk why
-	/*if(listeningSocket->SetNonBlockingMode(true) != NO_ERROR)   
-		SocketUtil::ReportError("Error Setting To Blocking mode");*/
-
-	listeningAddress = SocketAddressFactory::CreateIPv4FromString((ACCEPT_ALL_ADDRESS + std::to_string(port++)));
-	if (listeningAddress == nullptr)
-	{
-		SocketUtil::ReportError("Error creating listening address");
-		ExitProcess(1);
-	}
-
-	//LOG("%s", "binding the socket");
-	while (listeningSocket->Bind(*listeningAddress) != NO_ERROR)
-	{
-		//LOG("%s", "port: 0.0.0.0:" + std::to_string(nextAvailablePort) + " taken, trying to use port: 0.0.0.0:" + std::to_string(nextAvailablePort + 1));
-		listeningAddress = SocketAddressFactory::CreateIPv4FromString(ACCEPT_ALL_ADDRESS + std::to_string(port));
-	}
-
-	//LOG("%s", "bound the socket");	
-	//if (listeningSocket->ReceiveFrom() != NO_ERROR)
-	//{
-	//	SocketUtil::ReportError("Error listening with the socket");
-	//	ExitProcess(1);
-	//}
-
-	LOG("Your port is %i\n", static_cast<int>(port));
-	//LOG("%s", "socket is now listening");
-}
-void HandleListening(bool& connectionsOpen, UDPSocketPtr listeningSocket, SocketAddressPtr addressRecievedFrom, vector<std::pair<int, void*>>& unprocessedData)
-{
-	std::cout << "Listening Now!"; 
-	
-	while (connectionsOpen)
-	{
-		//LOG("%s", "In handleListening before Recieve\n");
-
-		char buffer[BUFFER_SIZE];
-		listeningSocket->ReceiveFrom(buffer, BUFFER_SIZE, *(addressRecievedFrom));
-	
-		//LOG("%s", "In handleListening aft	er Recieve\n");
-		
-
-		if (buffer != nullptr)
-		{
-			string msgRecieved(static_cast<char*>(buffer), BUFFER_SIZE);
-			LOG("Recieved message: %s", msgRecieved.c_str());
-			unprocessedData.push_back(std::pair<int, void*>(time(0), buffer));
-		}
-	}
-}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~ Sending ~~~~~~~~~~~~~~~~~~~~~~~~~~
-void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress)
-{
-	UDPSocketPtr newSendingSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-	if (newSendingSocket == nullptr)
-	{
-		SocketUtil::ReportError("Error Creating Sending Socket");
-		ExitProcess(1);
-	}
-	//LOG("%s", "created connection socket");
-
-
-	// make sure you send to THIS address, not the folloing one
-	SocketAddressPtr a = SocketAddressFactory::CreateIPv4FromString((ACCEPT_ALL_ADDRESS + std::to_string(portUsedForSending)));
-	if (a == nullptr)
-	{
-		SocketUtil::ReportError("Error creating sending address");
-		ExitProcess(1);
-	}
-	//LOG("%s", "created connection socket address");
-
-	//LOG("%s", "binding the connection socket");
-	while (newSendingSocket->Bind(*a) != NO_ERROR)
-	{
-		a = SocketAddressFactory::CreateIPv4FromString((HOME_ADDRESS + std::to_string(++portUsedForSending)));
-	}
-	//LOG("%s", "finished binding the connection socket");
-
-
-	//LOG("%s%i", "Sending message to 127.0.0.1:", portToSendTo);
-    sendingAddress = SocketAddressFactory::CreateIPv4FromString((HOME_ADDRESS + std::to_string(portToSendTo)));  // this has to match the server's address, and it MUST NOT match client's own
-	if (sendingAddress == nullptr)
-	{
-		SocketUtil::ReportError("Creating foreign listener address");
-		ExitProcess(1);
-	}
-
-	string msg("Let's start a game?");
-	if ((newSendingSocket->SendTo(msg.c_str(), BUFFER_SIZE, *sendingAddress)) < 0)
-	{
-		SocketUtil::ReportError("Sending First Message");
-	}
-
-	LOG("%s\n", "Starting message sent.");
-}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -213,12 +106,12 @@ int main(int argc, const char** argv)
 
 
 		listeningPort = CREATOR_PORT;
-		SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
+		NetworkManager::SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
 		
-		addressRecievedFrom = SocketAddressFactory::CreateIPv4FromString((ACCEPT_ALL_ADDRESS + std::to_string(CREATOR_PORT+5)));
+		addressRecievedFrom = SocketAddressFactory::CreateIPv4FromString((NetworkManager::ACCEPT_ALL_ADDRESS + std::to_string(CREATOR_PORT+5)));
 		//HandleListening(closingConnections, listeningSocket, addressToSendTo, unprocessedData, waitingForConnection);
 		//something about this thread is cursed, throws errors in the actual implementation of thread
-		listeningThread = std::thread(HandleListening, std::ref(connectionsOpen), listeningSocket, addressRecievedFrom, std::ref(unprocessedData));
+		listeningThread = std::thread(NetworkManager:: HandleListening, std::ref(connectionsOpen), listeningSocket, addressRecievedFrom, std::ref(unprocessedData));
 
 		do
 		{
@@ -227,7 +120,7 @@ int main(int argc, const char** argv)
 		} while (unprocessedData.size() < 1);
 
 		std::cout << "\n Recieved an offer to start the game, now sending the reply to start their game.\n";
-		SetUpSending(JOINER_PORT, CREATOR_PORT + 10, sendingSocket, addressToSendTo);
+		NetworkManager::SetUpSending(JOINER_PORT, CREATOR_PORT + 10, sendingSocket, addressToSendTo);
 
 
 		std::cout << "\n\nStarting the game!\n";
@@ -239,7 +132,7 @@ int main(int argc, const char** argv)
 	else // try to connect to a host
 	{
 		
-		SetUpSending(CREATOR_PORT, JOINER_PORT + 10, sendingSocket, addressToSendTo);
+		NetworkManager::SetUpSending(CREATOR_PORT, JOINER_PORT + 10, sendingSocket, addressToSendTo);
 		std::cout << "\nSent the request to join, waiting for a reply.\n";
 		
 		bool waitingForConnection = true;
@@ -247,10 +140,10 @@ int main(int argc, const char** argv)
 		//int listeningPort = JOINER_PORT;
 
 		listeningPort = JOINER_PORT;
-		SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
+		NetworkManager::SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
 
-		addressRecievedFrom = SocketAddressFactory::CreateIPv4FromString((ACCEPT_ALL_ADDRESS + std::to_string( JOINER_PORT + 5)));
-		listeningThread = std::thread(HandleListening, std::ref(connectionsOpen), listeningSocket, addressRecievedFrom, std::ref(unprocessedData));
+		addressRecievedFrom = SocketAddressFactory::CreateIPv4FromString((NetworkManager::ACCEPT_ALL_ADDRESS + std::to_string( JOINER_PORT + 5)));
+		listeningThread = std::thread(NetworkManager::HandleListening, std::ref(connectionsOpen), listeningSocket, addressRecievedFrom, std::ref(unprocessedData));
 		do
 		{
 			Sleep(500); // wait 0.5 second
@@ -258,7 +151,8 @@ int main(int argc, const char** argv)
 		} while (unprocessedData.size() < 1);
 	}
 
-	
+	// we don't need the welcome message
+	unprocessedData.clear();
 
 	//  Graphics init
 	GraphicsLibrary gl(SCREEN_X, SCREEN_Y);
@@ -280,13 +174,19 @@ int main(int argc, const char** argv)
 	{
 		inputSys.Update(userIsCreator);
 
-		//  UpdateGameWorld
+		//if (userIsCreator)
+		//{
+		//	HandleIncomingInputPackets(); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
+		//	ProcessWorldState();
+		//	HandleOutgoingWorldStatePackets();
+		//}
+		//else
+		//{
+		//	ProcessWorldState();
+		//	HandleIncomingWorldStatePackets();
+		//	HandleOutgoingInputs();
+		//}
 
-		//  UpdateNetwork()
-		//  |
-		//  L HandleIncomingPackets()
-		//  |
-		//  L HandleOutgoingPackets()
 
 		//  Render
 
