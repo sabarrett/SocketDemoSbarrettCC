@@ -11,8 +11,13 @@ Exe: SocketDemo.exe 127.0.0.1:8000 Scott
 5. The game should now be started and you can take the following actions.
 
 LEFT CLICK: Will draw the base game object on both instances. Can be held down to draw more.
+
 RIGHT CLICK: Will delete all game objects at the clicked location
+
 ONE KEY: Will create a different game object at a random location. The locations will be synced
+
 TWO KEY: Will create a 3rd game object at your mouse location. Will then move to a new location every few seconds. (Note: I couldn't get the random working right so while the movement is synced, it's not exactly random.)
+
 SPACE KEY: Will pause all animations. (It's updated every frame, so if the button is held it will toggle quickly.)
+
 ESCAPE: Will quit and end the program. (Can be done even if not connected to other players)
