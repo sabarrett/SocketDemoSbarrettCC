@@ -48,6 +48,14 @@ public:
 	void getNewGameObjectState(map<int, GameObject*> gameObjectMap);
 	void sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID);
 
+	//Map
+	void CleanupMap();
+	void AddGameObjectToMap(GameObject* objectToAdd);
+	GameObject* GetGameObjectFromMap(int ID) { return mGameObjectMap[mGameObjectID]; };
+	map<int, GameObject*> GetMap() { return mGameObjectMap; };
+	void UpdateMapObjects();
+	void RenderMapObjects();
+
 private:
 
 	Networker();
@@ -56,4 +64,6 @@ private:
 
 	//Data
 	TCPSocketPtr* mpTCPSocket;
+	std::map<int, GameObject*> mGameObjectMap;
+	int mGameObjectID;
 };

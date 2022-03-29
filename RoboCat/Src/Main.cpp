@@ -38,7 +38,6 @@ const std::string PLAYER_SPRITE_IDENTIFIER = "player_image";
 
 //-------------------------Game Data-------------------------
 bool bGameIsRunning = true;
-std::vector<GameObject*> gameObjectsVec;
 std::map<int, GameObject*> gameObjectMap;
 
 float FPS = 60;
@@ -105,8 +104,7 @@ void start()
 
 	//Spawn player
 	pPlayerController = new PlayerController(gameObjectID, networkID, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
-	gameObjectMap[gameObjectID] = pPlayerController;
-	gameObjectID++;
+	pNetworkManager->AddGameObjectToMap(pPlayerController);
 	networkID++;
 
 
@@ -135,8 +133,7 @@ void update()
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(gameObjectID, networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
-				gameObjectMap[gameObjectID] = gameObjectToSpawn;
-				gameObjectID++;
+				pNetworkManager->AddGameObjectToMap(gameObjectToSpawn);
 				networkID++;
 
 				break;
@@ -145,8 +142,7 @@ void update()
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, pGraphics, mousePos, wallSizeX, wallSizeY, white, wallBorderThickness));
-				gameObjectMap[gameObjectID] = gameObjectToSpawn;
-				gameObjectID++;
+				pNetworkManager->AddGameObjectToMap(gameObjectToSpawn);
 				networkID++;
 
 				break;
@@ -225,11 +221,7 @@ void update()
 		}
 	}
 
-	map<int, GameObject*>::iterator it;
-	for (it = gameObjectMap.begin(); it != gameObjectMap.end(); ++it)
-	{
-		it->second->update();
-	}
+	pNetworkManager->UpdateMapObjects();
 
 	//Update player controller
 	pPlayerController->update();
@@ -243,11 +235,7 @@ void draw()
 	pGraphics->drawImage(BACKGROUND_IMAGE_SPRITE_IDENTIFIER, 0, 0);
 
 	//Draw GameObjects
-	map<int, GameObject*>::iterator it;
-	for (it = gameObjectMap.begin(); it != gameObjectMap.end(); ++it)
-	{
-		it->second->draw();
-	}
+	pNetworkManager->RenderMapObjects();
 
 	//Draw player controller
 	pPlayerController->draw();
@@ -276,14 +264,7 @@ void cleanup()
 	al_destroy_event_queue(eventQueue);
 
 	//Cleanup GameObjects
-	map<int, GameObject*>::iterator it;
-	for (it = gameObjectMap.begin(); it != gameObjectMap.end(); ++it)
-	{
-		delete it->second;
-		it->second = nullptr;
-		gameObjectMap.erase(it->first);
-	}
-	gameObjectMap.clear();
+	pNetworkManager->CleanupMap();
 
 	//Cleanup player
 	delete pPlayerController;

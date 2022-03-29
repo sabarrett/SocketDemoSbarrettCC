@@ -209,3 +209,39 @@ void Networker::sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int 
 
 	(*mpTCPSocket)->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
 }
+
+void Networker::CleanupMap()
+{
+	map<int, GameObject*>::iterator it;
+	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	{
+		delete it->second;
+		it->second = nullptr;
+		mGameObjectMap.erase(it->first);
+	}
+	mGameObjectMap.clear();
+}
+
+void Networker::AddGameObjectToMap(GameObject* objectToAdd)
+{
+	mGameObjectMap.insert(pair<int, GameObject*>(mGameObjectID, objectToAdd));
+	++mGameObjectID;
+}
+
+void Networker::UpdateMapObjects()
+{
+	map<int, GameObject*>::iterator it;
+	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	{
+		it->second->update();
+	}
+}
+
+void Networker::RenderMapObjects()
+{
+	map<int, GameObject*>::iterator it;
+	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	{
+		it->second->draw();
+	}
+}
