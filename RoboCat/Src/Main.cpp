@@ -4,6 +4,7 @@
 #include "allegro_wrapper_functions-main/InputSystem.h"
 #include "Bullet.h"
 #include <chrono>
+#include "Player.h"
 
 #if _WIN32
 
@@ -114,10 +115,9 @@ int main(int argc, const char** argv)
 
 		// Draw Stuff
 		pGL->drawImage("background", 0.0, 0.0);
-		pGL->drawImage("player1", playerPositionX, playerPositionY);
 
-		GameObject* player1 = new GameObject(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, "player");
-		GameObject* player2 = new GameObject(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, "player");
+		Player* player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, playerSpeed, "player");
+		Player* player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, playerSpeed, "player");
 
 		// ---------------------- Main Game Loop ----------------------
 		while (isGameRunning)
@@ -144,17 +144,19 @@ int main(int argc, const char** argv)
 			if (inputData.keyPressed_A)
 			{
 				std::cout << "A Pressed" << std::endl;
+				playerPositionX -= dt * playerSpeed;
 			}
 			if (inputData.keyPressed_D)
 			{
-				std::cout << "D Pressed" << std::endl;
+				std::cout << "D Pressed" << std::endl;				
+				playerPositionX += dt * playerSpeed;
+
 			}
 			if (inputData.keyPressed_SPACE)
 			{
 				std::cout << "Space Pressed" << std::endl;
 			}
 
-			playerPositionX += dt * playerSpeed;
 			player1->setPosX(playerPositionX);
 			pGL->drawImage(player1->mImageIdentifier, player1->getPosX(), player1->getPosY());
 			pGL->drawImage(player2->mImageIdentifier, player2->getPosX(), player2->getPosY());

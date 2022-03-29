@@ -13,6 +13,7 @@ private:
 public:
 	Player(const int gameID, float speed);
 	Player(const int gameID, float posX, float posY, float speed);
+	Player(const int gameID, float posX, float posY, float speed, string imageIdentifier);
 
 	~Player();
 
