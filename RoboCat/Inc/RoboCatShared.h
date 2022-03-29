@@ -65,3 +65,4 @@ class GameObject;
 #include "TCPSocket.h"
 #include "SocketUtil.h"
 #include "OutputWindow.h"
+#include "TCPPacket.h"

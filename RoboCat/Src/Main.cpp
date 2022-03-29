@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include "stdlib.h"
+#include "TCPPacket.h"
 
 const int BRICK_COLUMNS = 10;
 const int BRICK_ROWS = 5;
@@ -56,14 +57,18 @@ enum class StartupScreenAction {
     HOST,
 };
 
+void HandleDestroy(TCPPacketDestroy* destroy) {
+    printf("got destroy packet %i\n", destroy->objectID);
+}
+
 StartupScreenAction StartupScreen(SocketAddress* out_address) {
     bool complete = false;
     float centerX = screenWidth / 2.0f;
     float btnWidth = 400;
 
-    Rectangle textBox = { centerX - (btnWidth * 0.5), 180, (btnWidth * 0.7), 50 };
-    Rectangle connectBtn = { centerX + (btnWidth * 0.25), 180, (btnWidth * 0.25), 50 };
-    Rectangle hostBtn = { centerX - (btnWidth * 0.5), 270, btnWidth, 50 };
+    Rectangle textBox = { centerX - (btnWidth * 0.5f), 180, (btnWidth * 0.7), 50 };
+    Rectangle connectBtn = { centerX + (btnWidth * 0.25f), 180, (btnWidth * 0.25), 50 };
+    Rectangle hostBtn = { centerX - (btnWidth * 0.5f), 270, btnWidth, 50 };
 
     const int inputBufferSize = sizeof("000.000.000.000");
     const int inputCountMax = inputBufferSize-1;
@@ -259,6 +264,14 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
+    TCPPacketManager packetManager;
+
+    packetManager.RegisterType<TCPPacketDestroy>();
+    packetManager.RegisterType<TCPPacketMove>();
+    packetManager.RegisterType<TCPPacketCreate>();
+
+    packetManager.RegisterHandler<TCPPacketDestroy>(HandleDestroy);
+
     InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
 
     InitGame();
@@ -283,10 +296,15 @@ int main(int argc, const char** argv)
     if (action == StartupScreenAction::CONNECT)
        socket = StartConnect(address);
 
+    TCPPacketDestroy testDestroy;
+    testDestroy.type = TCPPacketType::DESTROY;
+    testDestroy.objectID = 54;
+  
+    packetManager.SendPacket(socket.get(), &testDestroy);
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-
+        packetManager.HandleInput(socket.get());
         if (player.life > 0)
         {
             // Update

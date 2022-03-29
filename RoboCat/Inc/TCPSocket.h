@@ -13,8 +13,6 @@ public:
 
 	bool HasRead();
 	bool HasWrite();
-
-	void Send(TCPPacket* packet);
 private:
 	friend class SocketUtil;
 	TCPSocket( SOCKET inSocket ) : mSocket( inSocket ) {}
