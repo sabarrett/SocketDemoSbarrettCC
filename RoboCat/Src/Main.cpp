@@ -15,8 +15,64 @@ int windowHeight = 600;
 int FPS = 30;
 
 #if _WIN32
+class CircleClass
+{
+public:
+	CircleClass(int xStart, int yStart, float newRadius);
+	CircleClass();
+	void Read(InputMemoryBitStream& iStream);
+	void Write(OutputMemoryBitStream& oStream) const;
+	void Draw();
+	void UpdatePos(int xChange, int yChange);
 
-class GameObject
+	vector<int> position;
+	float radius;
+
+};
+void CircleClass::Read(InputMemoryBitStream& iStream)
+{
+	iStream.Read(position[0]);
+	iStream.Read(position[1]);
+	iStream.Read(radius);
+}
+void CircleClass::Write(OutputMemoryBitStream& oStream) const
+{
+	oStream.Write(position[0]);
+	oStream.Write(position[1]);
+	oStream.Write(radius);
+}
+
+void CircleClass::Draw()
+{
+	al_draw_circle(position[0], position[1], radius, al_map_rgb(0, 0, 255), 2);
+}
+CircleClass::CircleClass(int xStart, int yStart, float newRadius)
+{
+	position.push_back(xStart);
+	position.push_back(yStart);
+	radius = newRadius;
+}
+
+CircleClass::CircleClass()
+{
+	int xTemp = 0;
+	int yTemp = 0;
+	position.push_back(xTemp);
+	position.push_back(yTemp);
+	radius = 10;
+}
+void CircleClass::UpdatePos(int xChange, int yChange)
+{
+
+	position[0] += xChange;
+	position[1] += yChange;
+	if (position[0] > windowWidth) position[0] = 0;
+	if (position[1] > windowHeight) position[1] = 0;
+	if (position[0] < 0) position[0] = windowWidth;
+	if (position[1] < 0) position[1] = windowHeight;
+}
+
+class RectangleObject
 {
 public:
 	int width;
@@ -25,23 +81,24 @@ public:
 	int yPos;
 	void Read(InputMemoryBitStream& stream);
 	void Write(OutputMemoryBitStream& stream) const;
-	GameObject::GameObject(int newWidth, int newHeight, int startPosX, int startPosY);
-	GameObject::GameObject();
+	RectangleObject(int newWidth, int newHeight, int startPosX, int startPosY);
+	RectangleObject();
 	void UpdatePos(int xChange, int yChange);
 	void Draw();
+	
 };
 
 
-void GameObject::Read(InputMemoryBitStream& stream)
+void RectangleObject::Read(InputMemoryBitStream& stream)
 {
 	stream.Read(width);
 	stream.Read(height);
 	stream.Read(xPos);
 	stream.Read(yPos);
-	
+
 }
 
-void GameObject::Write(OutputMemoryBitStream& stream) const
+void RectangleObject::Write(OutputMemoryBitStream& stream) const
 {
 	stream.Write(width);
 	stream.Write(height);
@@ -49,14 +106,14 @@ void GameObject::Write(OutputMemoryBitStream& stream) const
 	stream.Write(yPos);
 }
 
-GameObject::GameObject(int newWidth, int newHeight, int startPosX, int startPosY)
+RectangleObject::RectangleObject(int newWidth, int newHeight, int startPosX, int startPosY)
 {
 	width = newWidth;
 	height = newHeight;
 	xPos = startPosX;
 	yPos = startPosY;
 }
-GameObject::GameObject()
+RectangleObject::RectangleObject()
 {
 	width = 10;
 	height = 10;
@@ -64,30 +121,9 @@ GameObject::GameObject()
 	yPos = rand() % 100 + 1;
 }
 
-void GameObject::UpdatePos(int xChange, int yChange)
+void RectangleObject::UpdatePos(int xChange, int yChange)
 {
-	//Update blockPosition
-	/*
-	int xStep = rand() % 2 + 1;
-	//int xStep = 1;
-	int yStep = rand() % 2 + 1;
-	//int yStep = 1;
-	int randNum = rand() % (2 - 1 + 1) + 1;
-	if (randNum == 1)
-	{
-		xPos += xStep;
-		yPos += yStep;
-	}
-	if (randNum == 2)
-	{
-		xPos -= xStep;
-		yPos -= yStep;
-	}
-	if (xPos > windowWidth) xPos = 0;
-	if (yPos > windowHeight) yPos = 0;
-	if (xPos < 0) xPos = windowWidth;
-	if (yPos < 0) yPos = windowHeight;
-	*/
+
 	xPos += xChange;
 	yPos += yChange;
 	if (xPos > windowWidth) xPos = 0;
@@ -96,7 +132,7 @@ void GameObject::UpdatePos(int xChange, int yChange)
 	if (yPos < 0) yPos = windowHeight;
 }
 
-void GameObject::Draw()
+void RectangleObject::Draw()
 {
 	al_draw_rectangle(xPos, yPos, xPos + width, yPos + height, al_map_rgb(255, 0, 0), 2);
 }
@@ -106,6 +142,7 @@ void ThrowSocketError(std::string errorMsg)
 	SocketUtil::ReportError(errorMsg.c_str());
 	ExitProcess(1); // kill
 }
+
 
 TCPSocketPtr StartServer()
 {
@@ -147,19 +184,19 @@ void BradsTotallyOriginalServer()
 
 	TCPSocketPtr incomingSocket = StartServer();
 
-	//Greate GameObjects
+	// Game Loop Variables
 	bool exit = false;
 	const int numObjects = 1;
 
-	GameObject objects[numObjects];
+	//Greate GameObjects
+	CircleClass outObjects[numObjects];
 	for (int j = 0; j < numObjects; j++)
 	{
-		objects[j] = GameObject(rand() % 100 + 1, rand() % 100 + 1, rand() % windowWidth + 1, rand() % windowHeight + 1);
+		outObjects[j] = CircleClass(100, 100, 20);
 	}
-	GameObject inObj = GameObject();
 
 	//send data
-	std::thread ServerSendThread([&incomingSocket, &exit, &objects, &numObjects]()
+	std::thread ServerSendThread([&incomingSocket, &exit, &outObjects, &numObjects]()
 		{
 			//send message
 			while (1)
@@ -168,14 +205,16 @@ void BradsTotallyOriginalServer()
 
 				for (int i = 0; i < numObjects; i++)
 				{
-					objects[i].Write(oStream);
+					outObjects[i].Write(oStream);
 				}
+				
 				incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 			}
 		});
 	//ServerSendThread.join();
 
-	thread ServerRecieveThread([&exit, &incomingSocket, &inObj]()
+	RectangleObject inObjects[numObjects];
+	thread ServerRecieveThread([&exit, &incomingSocket, &inObjects, &numObjects]()
 		{		
 			while (1)
 			{
@@ -185,9 +224,10 @@ void BradsTotallyOriginalServer()
 				LOG("%s %s", "server game loop", exit);
 				
 				bytesReceived = incomingSocket->Receive(buffer, 4096);
-
-				inObj.Read(iStream);
-
+				for (int i = 0; i < numObjects; i++)
+				{
+					inObjects[i].Read(iStream);
+				}
 			}
 			incomingSocket->~TCPSocket();
 		});
@@ -258,17 +298,17 @@ void BradsTotallyOriginalServer()
 			}
 		}
 
+		al_clear_to_color(al_map_rgb(0, 0, 0));
 		for (int i = 0; i < numObjects; i++)
 		{
 			if (xMove || yMove)
 			{
-				objects[i].UpdatePos(xAxis, yAxis);
+				outObjects[i].UpdatePos(xAxis, yAxis);
 			}
-			objects[i].Draw();
-			inObj.Draw();
+			inObjects[i].Draw();
+			outObjects[i].Draw();
 		}
 		al_flip_display();
-		al_clear_to_color(al_map_rgb(0, 0, 0));
 	}
 	al_destroy_display(display);
 
@@ -280,9 +320,6 @@ TCPSocketPtr StartClientConnection()
 	if (clientSocket == nullptr)
 		ThrowSocketError("Could not create client socket");
 
-	//std::string port;
-	//port = StringUtils::GetCommandLineArg(2);
-	//std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
 	std::string address = StringUtils::Sprintf("127.0.0.1:8081");
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
@@ -305,18 +342,19 @@ void BradsLessOriginalClient()
 	
 	TCPSocketPtr clientSocket = StartClientConnection();
 
-	//create Game Objects
+	
 	bool exit = false;
 	const int numObjects = 1;
 
-	GameObject objects[numObjects];
+	//create Game Objects
+	RectangleObject outRectangles[numObjects];
+	//Sleep(1000);
 	for (int j = 0; j < numObjects; j++)
 	{
-		objects[j] = GameObject(rand() % 100 + 1, rand() % 100 + 1, rand() % windowWidth + 1, rand() % windowHeight + 1);
+		outRectangles[j] = RectangleObject(20, 20, rand() % windowWidth + 1, rand() % windowHeight + 1);
 	}
-	GameObject inObj = GameObject();
 
-	std::thread ClientSendThread([&clientSocket, &exit, &objects, &numObjects]()
+	thread ClientSendThread([&clientSocket, &exit, &outRectangles, &numObjects]()
 		{
 			//send message
 			while (1)
@@ -325,7 +363,7 @@ void BradsLessOriginalClient()
 
 				for (int i = 0; i < numObjects; i++)
 				{
-					objects[i].Write(oStream);
+					outRectangles[i].Write(oStream);
 				}
 				clientSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 			}
@@ -333,7 +371,10 @@ void BradsLessOriginalClient()
 		});
 	//ClientSendThread.join();
 
-	thread ClientRecieveThread([&exit, &clientSocket, &numObjects,&inObj]()
+	// Read In Objects
+	CircleClass inObjects[numObjects];
+
+	thread ClientRecieveThread([&exit, &clientSocket, &inObjects, &numObjects]()
 		{
 			
 			while (1)
@@ -341,13 +382,13 @@ void BradsLessOriginalClient()
 				char buffer[4096];
 				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
 				int32_t bytesReceived = int32_t();
-				LOG("%s", "server game loop");
+				LOG("%s", "Client game loop");
 				bytesReceived = clientSocket->Receive(buffer, 4096);
 
-				inObj.Read(iStream);
-
-				//al_draw_rectangle(inObj.xPos, inObj.yPos, inObj.xPos + inObj.width, inObj.yPos + inObj.height, al_map_rgb(255, 0, 0), 2);
-
+				for (int i = 0; i < numObjects; i++)
+				{
+					inObjects[i].Read(iStream);
+				}
 			}
 			clientSocket->~TCPSocket();
 		});
@@ -419,20 +460,19 @@ void BradsLessOriginalClient()
 			}
 		}
 
+		al_clear_to_color(al_map_rgb(0, 0, 0));
 		for (int i = 0; i < numObjects; i++)
 		{
 			if (xMove || yMove)
 			{
-				objects[i].UpdatePos(xAxis, yAxis);
+				outRectangles[i].UpdatePos(xAxis, yAxis);
 			}
-			objects[i].Draw();
-			inObj.Draw();
+			outRectangles[i].Draw();
+			inObjects[i].Draw();
 		}
 		al_flip_display();
-		al_clear_to_color(al_map_rgb(0, 0, 0));
 	}
 	al_destroy_display(display);
-	//receive data
 }
 
 
@@ -454,7 +494,7 @@ int main(int argc, const char** argv)
 
 	al_init_primitives_addon();
 	al_install_keyboard();
-	//accept thread
+
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server"; // check if the command on the executable is 'server'
 	if (isServer) // if it is the server
 	{
