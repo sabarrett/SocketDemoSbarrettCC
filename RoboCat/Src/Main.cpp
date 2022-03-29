@@ -99,6 +99,7 @@ void start()
 	currentGameObjectTypeString = "Rock";
 
 	//Spawn player
+	pPlayerController = new PlayerController(gameObjectID, networkID, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
 	gameObjectID++;
 	networkID++;
 
