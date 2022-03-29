@@ -31,6 +31,7 @@ class Game
 	void ProcessLocalInput();
 	void UpdateLocalPaddle();
 	void UpdateBall(ball* ball);
+	void UpdateScore();
 	void Render();
 	void CheckCollisions(ball* ball);
 	void CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2);

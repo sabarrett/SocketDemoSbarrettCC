@@ -9,7 +9,9 @@ Score::Score(int x, int y, ALLEGRO_COLOR c) :
 	mOriginY(y),
 	mColor(c)
 {
-	mFont = al_load_font("OpenSans-SemiboldItalic.ttf", 28, 0);
+	mFont = al_create_builtin_font();
+	
+	assert(mFont);
 }
 
 Score::~Score()
@@ -18,6 +20,8 @@ Score::~Score()
 
 void Score::Render()
 {
+	std::string str = std::to_string(points);
+
 	al_draw_text(mFont, mColor, mOriginX, mOriginY, 0, str.c_str());
 }
 

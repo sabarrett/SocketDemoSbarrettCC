@@ -13,9 +13,10 @@ public:
 	Score(int x, int y, ALLEGRO_COLOR c);
 	~Score();
 
-	std::string str;
+	int points;
 
 	void Render();
 
 	void SetPosition(int x, int y);
+	void IncreasePoints() { points++; };
 };
