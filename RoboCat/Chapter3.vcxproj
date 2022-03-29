@@ -128,11 +128,11 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <AdditionalIncludeDirectories>..\SDL\include;Inc;..\</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LargeAddressAware>true</LargeAddressAware>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -141,6 +141,8 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>..\SDL\lib\win\x86\</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <Manifest>
       <EnableDPIAwareness>true</EnableDPIAwareness>
@@ -150,8 +152,8 @@
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>mkdir "$(TargetDir)Assets\"
+Copy /Y "$(SolutionDir)RoboCat\Assets\*" "$(TargetDir)Assets\"</Command>
       <Message>
       </Message>
     </PostBuildEvent>
@@ -172,6 +174,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <AdditionalIncludeDirectories>..\DirectXTK\inc;Inc;..\</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
@@ -184,6 +187,7 @@
       <TargetMachine>MachineX64</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>..\SDL\lib\win\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>true</EnableDPIAwareness>
@@ -211,12 +215,13 @@
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\SDL\include;Inc;..\</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LargeAddressAware>true</LargeAddressAware>
@@ -225,6 +230,8 @@
       <TargetMachine>MachineX86</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>..\SDL\lib\win\x86\</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <Manifest>
       <EnableDPIAwareness>true</EnableDPIAwareness>
@@ -234,8 +241,8 @@
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>mkdir "$(TargetDir)Assets\"
+Copy /Y "$(SolutionDir)RoboCat\Assets\*" "$(TargetDir)Assets\"</Command>
       <Message>
       </Message>
     </PostBuildEvent>
@@ -256,6 +263,7 @@
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\DirectXTK\inc;Inc;..\</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
@@ -270,6 +278,7 @@
       <TargetMachine>MachineX64</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>..\SDL\lib\win\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>true</EnableDPIAwareness>
@@ -297,12 +306,13 @@
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>WIN32;NDEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\SDL\include;Inc;..\</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LargeAddressAware>true</LargeAddressAware>
@@ -311,6 +321,8 @@
       <TargetMachine>MachineX86</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>..\SDL\lib\win\x86\</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <Manifest>
       <EnableDPIAwareness>true</EnableDPIAwareness>
@@ -320,8 +332,8 @@
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>mkdir "$(TargetDir)Assets\"
+Copy /Y "$(SolutionDir)RoboCat\Assets\*" "$(TargetDir)Assets\"</Command>
       <Message>
       </Message>
     </PostBuildEvent>
@@ -342,6 +354,7 @@
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>WIN32;NDEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\DirectXTK\inc;Inc;..\</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
@@ -356,6 +369,7 @@
       <TargetMachine>MachineX64</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>..\SDL\lib\win\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>true</EnableDPIAwareness>
@@ -370,37 +384,67 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Inc\ByteSwap.h" />
-    <ClInclude Include="Inc\LinkingContext.h" />
-    <ClInclude Include="Inc\MemoryBitStream.h" />
-    <ClInclude Include="Inc\OutputWindow.h" />
-    <ClInclude Include="Inc\RoboMath.h" />
-    <ClInclude Include="Inc\SocketAddress.h" />
-    <ClInclude Include="Inc\SocketAddressFactory.h" />
-    <ClInclude Include="Inc\SocketUtil.h" />
-    <ClInclude Include="Inc\StringUtils.h" />
-    <ClInclude Include="Inc\TCPSocket.h" />
-    <ClInclude Include="Inc\RoboCatPCH.h" />
-    <ClInclude Include="Inc\RoboCatShared.h" />
-    <ClInclude Include="Inc\UDPSocket.h" />
+    <ClCompile Include="Src\Server\Server.cpp" />
+    <ClCompile Include="Src\Client\CollectableGameObject.cpp" />
+    <ClCompile Include="Src\Client\ColorChangerGameObject.cpp" />
+    <ClCompile Include="Src\Util\MemoryBitStream.cpp" />
+    <ClCompile Include="Src\Util\OutputWindow.cpp" />
+    <ClCompile Include="Src\Util\RoboCatPCH.cpp" />
+    <ClCompile Include="Src\Util\SocketAddress.cpp" />
+    <ClCompile Include="Src\Util\SocketAddressFactory.cpp" />
+    <ClCompile Include="Src\Util\SocketUtil.cpp" />
+    <ClCompile Include="Src\Util\StringUtils.cpp" />
+    <ClCompile Include="Src\Util\TCPSocket.cpp" />
+    <ClCompile Include="Src\Util\UDPSocket.cpp" />
+    <ClInclude Include="Inc\Client\CollectableGameObject.h" />
+    <ClInclude Include="Inc\Client\ColorChangerGameObject.h" />
+    <ClInclude Include="Inc\Client\Game.h" />
+    <ClInclude Include="Inc\Client\GameObject.h" />
+    <ClCompile Include="Src\Client\Game.cpp" />
+    <ClCompile Include="Src\Client\GameObject.cpp" />
     <ClCompile Include="Src\Main.cpp" />
-    <ClCompile Include="Src\MemoryBitStream.cpp" />
-    <ClCompile Include="Src\OutputWindow.cpp" />
-    <ClCompile Include="Src\SocketAddress.cpp" />
-    <ClCompile Include="Src\SocketAddressFactory.cpp" />
-    <ClCompile Include="Src\SocketUtil.cpp" />
-    <ClCompile Include="Src\StringUtils.cpp" />
-    <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="Inc\Server\Server.h" />
+    <ClInclude Include="Inc\Util\ByteSwap.h" />
+    <ClInclude Include="Inc\Util\LinkingContext.h" />
+    <ClInclude Include="Inc\Util\MemoryBitStream.h" />
+    <ClInclude Include="Inc\Util\NetworkEnums.h" />
+    <ClInclude Include="Inc\Util\OutputWindow.h" />
+    <ClInclude Include="Inc\Util\RoboCatPCH.h" />
+    <ClInclude Include="Inc\Util\RoboCatShared.h" />
+    <ClInclude Include="Inc\Util\RoboMath.h" />
+    <ClInclude Include="Inc\Util\SocketAddress.h" />
+    <ClInclude Include="Inc\Util\SocketAddressFactory.h" />
+    <ClInclude Include="Inc\Util\SocketUtil.h" />
+    <ClInclude Include="Inc\Util\StringUtils.h" />
+    <ClInclude Include="Inc\Util\TCPSocket.h" />
+    <ClInclude Include="Inc\Util\UDPSocket.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\RoboCatPCH.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RoboCatPCH.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="Src\UDPSocket.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <CopyFileToFolders Include="libpng16-16.dll">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
     <None Include="packages.config" />
+    <CopyFileToFolders Include="SDL2.dll">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="SDL2_image.dll">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="zlib1.dll">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

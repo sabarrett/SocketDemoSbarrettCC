@@ -24,7 +24,7 @@
 	const int SOCKET_ERROR = -1;
 #endif
 
-
+#pragma once
 #include "memory"
 
 #include "vector"
