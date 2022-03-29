@@ -63,6 +63,12 @@ struct InputData
 	}
 };
 
+struct KeyData
+{
+	KeyCode keyCode;
+	bool gotPressed;
+};
+
 class InputSystem
 {
 	//-------------------------Private data-------------------------
@@ -73,8 +79,8 @@ class InputSystem
 	//Event
 	ALLEGRO_EVENT mEvent;
 
-	InputData lastFrameData;
 	InputData currentFrameData;
+	KeyData keyData;
 
 	//-------------------------Public data-------------------------
 public:
@@ -95,5 +101,5 @@ public:
 	void update();
 	InputData getInputData();
 	MouseButton getMouseInput();
-	KeyCode getKeyboardInput();
+	KeyData getKeyboardInput();
 };

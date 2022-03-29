@@ -116,7 +116,7 @@ int main(int argc, const char** argv)
 			end = clock();
 			last_time = ((float)end - start) / CLOCKS_PER_SEC;
 			dt = (float)end / CLOCKS_PER_SEC - last_time;
-			std::cout << dt << std::endl;
+			//std::cout << dt << std::endl;
 
 			// Updates
 			pIS->update();

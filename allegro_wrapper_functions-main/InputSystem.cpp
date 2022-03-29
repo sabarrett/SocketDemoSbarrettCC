@@ -85,45 +85,45 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 //Update
 void InputSystem::update()
 {
-	currentFrameData.clean();
+	// Buttons that don't allow continuous press
+	currentFrameData.keyPressed_ESCAPE = false;
+	currentFrameData.keyPressed_R = false;
+	currentFrameData.keyPressed_SPACE = false;
 
-	switch (getKeyboardInput())
+	switch (getKeyboardInput().keyCode)
 	{
 	case KeyCode::ESCAPE_KEY:
 	{
 		// Doesn't allow continuous press
-		if (!lastFrameData.keyPressed_ESCAPE)
-			currentFrameData.keyPressed_ESCAPE = true;
+		currentFrameData.keyPressed_ESCAPE = keyData.gotPressed;
 		//std::cout << "Escape Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::A_KEY:
 	{
 		// Allows continuous press
-		currentFrameData.keyPressed_A = true;
+		currentFrameData.keyPressed_A = keyData.gotPressed;
 		//std::cout << "A Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::D_KEY:
 	{
 		// Allows continuous press
-		currentFrameData.keyPressed_D = true;
+		currentFrameData.keyPressed_D = keyData.gotPressed;
 		//std::cout << "D Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::R_KEY:
 	{
 		// Doesn't allow continuous press
-		if (!lastFrameData.keyPressed_R)
-			currentFrameData.keyPressed_R = true;
+		currentFrameData.keyPressed_R = keyData.gotPressed;
 		//std::cout << "R Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::SPACE_KEY:
 	{
 		// Doesn't allow continuous press
-		if(!lastFrameData.keyPressed_SPACE)
-			currentFrameData.keyPressed_SPACE = true;
+		currentFrameData.keyPressed_SPACE = keyData.gotPressed;
 		//std::cout << "Space Pressed" << std::endl;
 		break;
 	}
@@ -134,7 +134,6 @@ void InputSystem::update()
 
 InputData InputSystem::getInputData()
 {
-	lastFrameData = currentFrameData;
 	return currentFrameData;
 }
 
@@ -165,39 +164,72 @@ MouseButton InputSystem::getMouseInput()
 	}
 }
 
-KeyCode InputSystem::getKeyboardInput()
+KeyData InputSystem::getKeyboardInput()
 {
 	//If there is an event
 	al_wait_for_event_timed(mpEventQueue, &mEvent, 0.000001);
 
 	if (mEvent.type == InputMode::KeyPressed)
 	{
+		keyData.gotPressed = true;
+
 		//Check the type
 		switch (mEvent.keyboard.keycode)
 		{
 		case KeyCode::ESCAPE_KEY:
-			return KeyCode::ESCAPE_KEY;
+			keyData.keyCode = KeyCode::ESCAPE_KEY;
 			break;
 
 		case KeyCode::R_KEY:
-			return KeyCode::R_KEY;
+			keyData.keyCode = KeyCode::R_KEY;
 			break;
 
 		case KeyCode::A_KEY:
-			return KeyCode::A_KEY;
+			keyData.keyCode = KeyCode::A_KEY;
 			break;
 
 		case KeyCode::D_KEY:
-			return KeyCode::D_KEY;
+			keyData.keyCode = KeyCode::D_KEY;
 			break;
 
 		case KeyCode::SPACE_KEY:
-			return KeyCode::SPACE_KEY;
+			keyData.keyCode = KeyCode::SPACE_KEY;
+			break;
+		default:
+			/*return KeyCode::NONE*/;
+		}
+	}
+	else if (mEvent.type == InputMode::KeyReleased)
+	{
+		keyData.gotPressed = false;
+
+		//Check the type
+		switch (mEvent.keyboard.keycode)
+		{
+		case KeyCode::ESCAPE_KEY:
+			keyData.keyCode = KeyCode::ESCAPE_KEY;
+			break;
+
+		case KeyCode::R_KEY:
+			keyData.keyCode = KeyCode::R_KEY;
+			break;
+
+		case KeyCode::A_KEY:
+			keyData.keyCode = KeyCode::A_KEY;
+			break;
+
+		case KeyCode::D_KEY:
+			keyData.keyCode = KeyCode::D_KEY;
+			break;
+
+		case KeyCode::SPACE_KEY:
+			keyData.keyCode = KeyCode::SPACE_KEY;
 			break;
 		default:
 			/*return KeyCode::NONE*/;
 		}
 	}
 
+	return keyData;
 	//return KeyCode::NONE;
 }
