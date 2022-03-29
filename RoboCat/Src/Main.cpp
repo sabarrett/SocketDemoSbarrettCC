@@ -20,6 +20,10 @@ const string BULLET_SPRITE_FILENAME = "BulletSprite.png";
 const float RESOLUTION_X = 1920.0;
 const float RESOLUTION_Y = 1080.0;
 
+// Sprites sizes
+const float PLAYER_SIZE = 80.0;
+const float BULLET_SIZE = 40.0;
+
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -45,7 +49,7 @@ int main(int argc, const char** argv)
 	start = clock();
 
 	// ---------------------- Temporary Player Stuff ----------------------
-	float playerSpeed = 0.5;
+	float playerSpeed = 0.2;
 	float playerPositionX = RESOLUTION_X / 2;
 	float playerPositionY = RESOLUTION_Y / 10;
 
@@ -105,13 +109,15 @@ int main(int argc, const char** argv)
 	{
 		// Load Images
 		pGL->loadImage(IMAGES_PATH + BACKGROUND_FILENAME, "background");
-		pGL->loadImage(IMAGES_PATH + PLAYER_SPRITE_FILENAME, "player1");
+		pGL->loadImage(IMAGES_PATH + PLAYER_SPRITE_FILENAME, "player");
+		pGL->loadImage(IMAGES_PATH + BULLET_SPRITE_FILENAME, "bullet");
 
 		// Draw Stuff
 		pGL->drawImage("background", 0.0, 0.0);
 		pGL->drawImage("player1", playerPositionX, playerPositionY);
 
-		GameObject* go = new GameObject(0, RESOLUTION_X / 2, RESOLUTION_Y / 10, "player1");
+		GameObject* player1 = new GameObject(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, "player");
+		GameObject* player2 = new GameObject(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, "player");
 
 		// ---------------------- Main Game Loop ----------------------
 		while (isGameRunning)
@@ -149,8 +155,9 @@ int main(int argc, const char** argv)
 			}
 
 			playerPositionX += dt * playerSpeed;
-			go->setPosX(playerPositionX);
-			pGL->drawImage(go->mImageIdentifier, go->getPosX(), go->getPosY());
+			player1->setPosX(playerPositionX);
+			pGL->drawImage(player1->mImageIdentifier, player1->getPosX(), player1->getPosY());
+			pGL->drawImage(player2->mImageIdentifier, player2->getPosX(), player2->getPosY());
 			pGL->render();
 		}
 	}

@@ -10,7 +10,8 @@ enum GameObjectType
 
 class GameObject
 {
-private:
+protected:
+
 	const int mGameID;
 
 	float mPosX;

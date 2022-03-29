@@ -4,18 +4,15 @@
 class Player : public GameObject
 {
 private: 
-	
-	int mGameID;
-
-	float mPosX;
-	float mPosY;
 
 	bool mIsFiring;
 	bool mIsHit;
 
+	float mSpeed;
+
 public:
-	Player(const int gameID);
-	Player(const int gameID, float posX, float posY);
+	Player(const int gameID, float speed);
+	Player(const int gameID, float posX, float posY, float speed);
 
 	~Player();
 

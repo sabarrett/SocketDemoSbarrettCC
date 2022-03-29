@@ -1,22 +1,22 @@
 #include "RoboCatPCH.h"
-#include "Player.h"
+#include "Effect.h"
 
-Player::Player(const int gameID, float speed) : GameObject{ gameID }
+Effect::Effect(const int gameID, bool shouldDisplay) : GameObject{ gameID }
 {
-	mSpeed = speed;
+	mShouldDisplay = shouldDisplay;
 }
 
-Player::Player(const int gameID, float posX, float posY, float speed) : GameObject{ gameID, posX, posY }
+Effect::Effect(const int gameID, float posX, float posY, bool shouldDisplay) : GameObject{ gameID, posX, posY }
 {
-	mSpeed = speed;
+	mShouldDisplay = shouldDisplay;
 }
 
-Player::~Player()
+Effect::~Effect()
 {
 
 }
 
-void Player::Write(OutputMemoryBitStream& inStream) const 
+void Effect::Write(OutputMemoryBitStream& inStream) const
 {
 	// send game id: integer
 	// send position: 2 floats
@@ -28,11 +28,10 @@ void Player::Write(OutputMemoryBitStream& inStream) const
 	inStream.Write(mPosX);
 	inStream.Write(mPosY);
 
-	inStream.Write(mIsFiring);
-	inStream.Write(mIsHit);
+	inStream.Write(mShouldDisplay);
 }
 
-void Player::Read(InputMemoryBitStream& inStream) 
+void Effect::Read(InputMemoryBitStream& inStream)
 {
 	// receive game id: integer
 	// receive position: 2 floats
@@ -44,18 +43,17 @@ void Player::Read(InputMemoryBitStream& inStream)
 	inStream.Read(mPosX);
 	inStream.Read(mPosY);
 
-	inStream.Read(mIsFiring);
-	inStream.Read(mIsHit);
+	inStream.Read(mShouldDisplay);
 }
 
-void Player::SendPlayer(int inSocket, const Player* inPlayer)
+void Effect::SendPlayer(int inSocket, const Effect* inEffect)
 {
 	OutputMemoryBitStream stream;
-	inPlayer->Write(stream);
+	inEffect->Write(stream);
 	send(inSocket, stream.GetBufferPtr(), stream.GetBitLength(), 0);
 }
 
-void Player::ReceivePlayer(int inSocket, Player* outPlayer)
+void Effect::ReceivePlayer(int inSocket, Effect* outEffect)
 {
 	char* temporaryBuffer = static_cast<char*>(std::malloc(kMaxPacketSize));
 	size_t receivedBitCount = recv(inSocket, temporaryBuffer, kMaxPacketSize, 0);
@@ -63,7 +61,7 @@ void Player::ReceivePlayer(int inSocket, Player* outPlayer)
 	if (receivedBitCount > 0) {
 		InputMemoryBitStream stream(temporaryBuffer,
 			static_cast<uint32_t> (receivedBitCount));
-		outPlayer->Read(stream);
+		outEffect->Read(stream);
 	}
 	else {
 		std::free(temporaryBuffer);
