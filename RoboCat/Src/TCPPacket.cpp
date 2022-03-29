@@ -23,6 +23,13 @@ void TCPPacketMove::Write(OutputMemoryBitStream& bitstream) {
 	bitstream.Write(velocity);
 }
 
+void TCPPacketPlayerInfo::Read(InputMemoryBitStream& bitstream) {
+	bitstream.Read(nickname);
+}
+
+void TCPPacketPlayerInfo::Write(OutputMemoryBitStream& bitstream) {
+	bitstream.Write(nickname);
+}
 
 void TCPPacketCreate::Read(InputMemoryBitStream& bitstream) {
 	bitstream.Read(objectID);

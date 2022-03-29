@@ -6,7 +6,8 @@ enum class TCPPacketType {
 	NONE,
 	MOVE,
 	DESTROY,
-	CREATE
+	CREATE,
+	PLAYERINFO
 };
 
 
@@ -108,4 +109,24 @@ public:
 template <>
 static TCPPacket* InternalTCPPacketMaker<TCPPacketCreate>() {
 	return (TCPPacket*)new TCPPacketCreate();
+}
+
+
+class TCPPacketPlayerInfo : public TCPPacket {
+public:
+	std::string nickname;
+
+
+	static const TCPPacketType TYPE = TCPPacketType::PLAYERINFO;
+
+
+	virtual void Read(InputMemoryBitStream& bitstream) override;
+	virtual void Write(OutputMemoryBitStream& bitstream) override;
+};
+
+
+
+template <>
+static TCPPacket* InternalTCPPacketMaker<TCPPacketPlayerInfo>() {
+	return (TCPPacket*)new TCPPacketPlayerInfo();
 }

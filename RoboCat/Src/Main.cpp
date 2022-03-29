@@ -42,6 +42,7 @@ struct Player : PhysObject {
     bool isMe;
     int scoreFrames;
     int bumpFrames;
+    std::string nickname;
 };
 
 struct Ball : PhysObject {
@@ -108,64 +109,108 @@ void HandleMove(TCPPacketMove* move) {
     obj->velocity = move->velocity;
 }
 
-StartupScreenAction StartupScreen(SocketAddress* out_address) {
+void HandlePlayerInfo(TCPPacketPlayerInfo* info) {
+    if (player1.hasAuthority) {
+        player2.nickname = info->nickname;
+    }
+    else {
+        player1.nickname = info->nickname;
+    }
+}
+
+void DrawTextbox(bool active, Rectangle rec, char* text, const char* placeholder, int framesCounter) {
+    Color color = text[0] == 0 ? GRAY : DARKGRAY;
+    const char* msg = text[0] == 0 ? placeholder : text;
+   
+
+    DrawRectangleRec(rec, LIGHTGRAY);
+    DrawRectangleLinesEx(rec, 1.0, DARKGRAY);
+
+    DrawText(msg, rec.x + 10, rec.y + 15, 20, color);
+
+    if (active && (((framesCounter / 30) % 2) == 0))
+     DrawText("|", (int)rec.x + 10 + MeasureText(text, 20), (int)rec.y + 16, 20, MAROON);
+}
+
+StartupScreenAction StartupScreen(SocketAddress* out_address, std::string& nickname) {
     bool complete = false;
     float centerX = screenWidth / 2.0f;
     float btnWidth = 400;
 
-    Rectangle textBox = { centerX - (btnWidth * 0.5f), 180, (btnWidth * 0.7), 50 };
+    Rectangle nickBox = { centerX - (btnWidth * 0.5f), 100, (btnWidth * 0.7), 50 };
+    Rectangle addrBox = { centerX - (btnWidth * 0.5f), 180, (btnWidth * 0.7), 50 };
     Rectangle connectBtn = { centerX + (btnWidth * 0.25f), 180, (btnWidth * 0.25), 50 };
     Rectangle hostBtn = { centerX - (btnWidth * 0.5f), 270, btnWidth, 50 };
 
     const int inputBufferSize = sizeof("000.000.000.000");
     const int inputCountMax = inputBufferSize-1;
-    char inputBuffer[inputBufferSize];
+    char addrBuf[inputBufferSize] = {};
     int inputCount = 0;
+    
+    const int nickBufSize = 20;
+    const int nickCountMax = nickBufSize - 1;
+    char nickBuf[nickBufSize] = {};
+    int nickCount = 0;
+
+
 
     int framesCounter = 0;
 
+    int selectedField = 2;
+
     while (!complete) {
         if (WindowShouldClose()) return StartupScreenAction::QUIT;
-
         framesCounter++;
 
         int key;
         // Check if more characters have been pressed on the same frame
         while ((key = GetKeyPressed()) > 0)
         {
-            if (key == KEY_BACKSPACE) {
-                inputCount--;
-                if (inputCount < 0) inputCount = 0;
-                continue;
-            }
-
-            bool isKeyNum = ((key >= '0') && (key <= '9'));
-            bool isValidChar = isKeyNum || key == '.';
-            if (isValidChar && (inputCount < inputCountMax)) {
-                char afterDot = 0;
-                char dotCount = 0;
-                // get characters since last dot
-                for (int i = 0; i < inputCount; i++) {
-                    if (inputBuffer[i] == '.') {
-                        afterDot = 0;
-                        dotCount++;
-                    }
-                    else afterDot++;
+            if (selectedField == 2) { // IP
+                if (key == KEY_BACKSPACE) {
+                    inputCount--;
+                    if (inputCount < 0) inputCount = 0;
+                    continue;
                 }
 
-                if (dotCount == 3 && afterDot == 3) continue;
-                if (isKeyNum && afterDot == 3)
-                    inputBuffer[inputCount++] = '.';
-                if (!isKeyNum && afterDot == 0) continue; // no 2 dots in a row
-              
+                bool isKeyNum = ((key >= '0') && (key <= '9'));
+                bool isValidChar = isKeyNum || key == '.';
+                if (isValidChar && (inputCount < inputCountMax)) {
+                    char afterDot = 0;
+                    char dotCount = 0;
+                    // get characters since last dot
+                    for (int i = 0; i < inputCount; i++) {
+                        if (addrBuf[i] == '.') {
+                            afterDot = 0;
+                            dotCount++;
+                        }
+                        else afterDot++;
+                    }
 
-                inputBuffer[inputCount++] = (char)key;
+                    if (dotCount == 3 && afterDot == 3) continue;
+                    if (isKeyNum && afterDot == 3)
+                        addrBuf[inputCount++] = '.';
+                    if (!isKeyNum && afterDot == 0) continue; // no 2 dots in a row
+
+
+                    addrBuf[inputCount++] = (char)key;
+                }
             }
-            
+            if (selectedField == 1) { // nickname
+                if (key == KEY_BACKSPACE) {
+                    if (nickCount > 0) nickCount--;
+                    continue;
+                }
+                if (nickCount >= nickCountMax) continue;
+                if ((key >= 'A' && key <= 'Z')) {
+                    nickBuf[nickCount++] = key;
+                }
+            }
         }
 
         // make sure there is a null terminator
-        inputBuffer[inputCount] = 0;
+        addrBuf[inputCount] = 0;
+        nickBuf[nickCount] = 0;
 
         bool connectHvr = CheckCollisionPointRec(GetMousePosition(), connectBtn);
         bool hostHvr = CheckCollisionPointRec(GetMousePosition(), hostBtn);
@@ -174,19 +219,12 @@ StartupScreenAction StartupScreen(SocketAddress* out_address) {
 
         ClearBackground(RAYWHITE);
 
+
+        DrawTextbox(selectedField == 1, nickBox, nickBuf,"Enter Nickname", framesCounter);
+
+        DrawTextbox(selectedField == 2, addrBox, addrBuf, "Type IP", framesCounter);
         
-        DrawRectangleRec(textBox, LIGHTGRAY);
-        DrawRectangleLines((int)textBox.x, (int)textBox.y, (int)textBox.width, (int)textBox.height, DARKGRAY);
-
-
-        if (inputCount == 0)
-            DrawText("Type IP", textBox.x + 10, textBox.y + 15, 20, GRAY);
-        else 
-            DrawText(inputBuffer, textBox.x + 10, textBox.y + 15, 20, DARKGRAY);
-
-        if (((framesCounter / 30) % 2) == 0)
-            DrawText("|", (int)textBox.x + 10 + MeasureText(inputBuffer, 20), (int)textBox.y + 16, 20, MAROON);
-
+       
 
       
         DrawRectangleRec(connectBtn, connectHvr ? DARKGRAY : GRAY);
@@ -201,42 +239,47 @@ StartupScreenAction StartupScreen(SocketAddress* out_address) {
         
         EndDrawing();
 
+        if (IsMouseButtonDown(0)) {
+            if (CheckCollisionPointRec(GetMousePosition(), nickBox)) {
+                selectedField = 1;
+            }
+            else if (CheckCollisionPointRec(GetMousePosition(), addrBox)) {
+                selectedField = 2;
+            }    
+        }
+
         if (IsMouseButtonReleased(0)) {
 
             if (connectHvr) {
-                {
-                  
-                    addrinfo hint;
-                    memset(&hint, 0, sizeof(hint));
-                    hint.ai_family = AF_INET;
-
-                    addrinfo* result;
-                    int error = getaddrinfo(inputBuffer, "1234", &hint, &result);
-                    if (error != 0 && result != nullptr)
-                    {
-                        SocketUtil::ReportError("got an error with addrinfo");
-                        return StartupScreenAction::QUIT;
+                
+                unsigned char addr_sections[4] = {};
+            
+                bool valid = true;
+                int sectionNum = 0;
+                for (int i = 0; i < inputCount; i++) {
+                    char c = addrBuf[i];
+                    if (c == '.') {
+                        sectionNum++;
+                        continue;
                     }
-
-                    while (!result->ai_addr && result->ai_next)
-                    {
-                        result = result->ai_next;
-                    }
-
-                    if (!result->ai_addr)
-                    {
-                        SocketUtil::ReportError("couldnt get ai_addr");
-                        return StartupScreenAction::QUIT;
-                    }
-
-                    *out_address = SocketAddress(*result->ai_addr);
-
-                    freeaddrinfo(result);
+                    unsigned char& ref = addr_sections[sectionNum];
+                    unsigned int copy = ref;
+                    ref *= 10;
+                    copy *= 10;
+                    if (ref != copy) valid = false; // address section overflow
+                    
+                    addr_sections[sectionNum] += c - '0';
                 }
-                return  StartupScreenAction::CONNECT;
+                if (valid) {
+                    uint32_t addr = (addr_sections[0] << 24) + (addr_sections[1] << 16) + (addr_sections[2] << 8) + addr_sections[3];
+                    *out_address = SocketAddress(addr, 1234);
+                    nickname = std::string(nickBuf);
+                    return  StartupScreenAction::CONNECT;
+                }
             }
 
             if (hostHvr) {
+                nickname = std::string(nickBuf);
                 return StartupScreenAction::HOST;
             }
         }
@@ -328,9 +371,11 @@ int main(int argc, const char** argv)
     packetManager.RegisterType<TCPPacketDestroy>();
     packetManager.RegisterType<TCPPacketMove>();
     packetManager.RegisterType<TCPPacketCreate>();
+    packetManager.RegisterType<TCPPacketPlayerInfo>();
 
     packetManager.RegisterHandler<TCPPacketDestroy>(HandleDestroy);
     packetManager.RegisterHandler<TCPPacketMove>(HandleMove);
+    packetManager.RegisterHandler<TCPPacketPlayerInfo>(HandlePlayerInfo);
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
 
@@ -339,8 +384,21 @@ int main(int argc, const char** argv)
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
+    std::string nickname;
     SocketAddress address;
-    StartupScreenAction action = StartupScreen(&address);
+    StartupScreenAction action = StartupScreen(&address, nickname);
+
+    if (nickname.size() == 0) {
+        // user did not pick a nickname, we will pick a random one
+        const char* randNames[] = {
+            "JOE",
+            "JOHN",
+            "EDISON",
+            "TESLA",
+            "GRAM"
+        };
+        nickname = std::string(randNames[GetRandomValue(0, 4)]);
+    }
 
     if (action == StartupScreenAction::QUIT) {
         Shutdown();
@@ -357,6 +415,17 @@ int main(int argc, const char** argv)
        masterSocket = StartConnect(address);
 
     InitGame(action == StartupScreenAction::HOST);
+
+    TCPPacketPlayerInfo playerInfo;
+    playerInfo.type = TCPPacketPlayerInfo::TYPE;
+    playerInfo.nickname = nickname;
+
+    packetManager.SendPacket(masterSocket.get(), &playerInfo);
+
+    if (player1.hasAuthority)
+        player1.nickname = nickname;
+    if (player2.hasAuthority)
+        player2.nickname = nickname;
 
     bool shouldClose = false;
     // Main game loop
@@ -381,6 +450,11 @@ int main(int argc, const char** argv)
 
             ClearBackground(RAYWHITE);
 
+            //Draw Player
+
+            DrawPlayer(player1);
+            DrawPlayer(player2);
+
             //Draw Ball
             if (ball1.active)
                 DrawBall(ball1);
@@ -388,10 +462,6 @@ int main(int argc, const char** argv)
                 DrawBall(ball2);
             
 
-            //Draw Player
-
-            DrawPlayer(player1);
-            DrawPlayer(player2);
 
             //Draw Bricks
             for (int i = 0; i < BRICK_ROWS; i++)
@@ -409,11 +479,17 @@ int main(int argc, const char** argv)
   
             int textsize1 = 20 + player1.scoreFrames;    
             itoa(player1.score, scoreBuf, 10);
-            DrawText(scoreBuf, 20, GetScreenHeight() - textsize1 - 20, textsize1, BLUE);
+            DrawText(scoreBuf, 20, GetScreenHeight() - textsize1 - 45, textsize1, BLUE);
 
             int textsize2 = 20 + player2.scoreFrames;
             itoa(player2.score, scoreBuf, 10);
-            DrawText(scoreBuf, screenWidth - MeasureText(scoreBuf, textsize2) - 20, GetScreenHeight() - textsize2 - 20, textsize2, RED);
+            DrawText(scoreBuf, screenWidth - MeasureText(scoreBuf, textsize2) - 45, GetScreenHeight() - textsize2 - 45, textsize2, RED);
+
+            const char* nick1 = player1.nickname.c_str();
+            DrawText(nick1, 20, GetScreenHeight() - 20, 20, BLUE);
+
+            const char* nick2 = player2.nickname.c_str();
+            DrawText(nick2, screenWidth - MeasureText(nick2, 20) - 20, GetScreenHeight() - 20, 20, RED);
         }
         EndDrawing();
         //----------------------------------------------------------------------------------
