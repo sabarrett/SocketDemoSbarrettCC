@@ -17,14 +17,11 @@ static Vector2 bricks;
 static float RandomFloat(float min, float max);
 static void InitGame();
 static void UpdateGame();
+bool gameOver;
 
-struct Transform {
-    Vector2 size;
-    Vector2 velocity;
-
-};
 struct Player {
     Vector2 position;
+    Vector2 velocity;
     Vector2 size;
     Color playerColor;
     int id;
@@ -56,6 +53,7 @@ static Brick brickList[BRICK_ROWS][BRICK_COLUMNS] = { 0 };
 static Player player;
 static Player player2;
 static Ball ball;
+static Ball ball2;
 
 enum class StartupScreenAction {
     QUIT,
@@ -310,47 +308,55 @@ int main(int argc, const char** argv)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+
         packetManager.HandleInput(socket.get());
-     
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        UpdateGame();
-        //----------------------------------------------------------------------------------
-
-        // Draw
-        //----------------------------------------------------------------------------------
-        BeginDrawing();
-
-        ClearBackground(RAYWHITE);
-
-        //Draw Ball
-        if (ball.isDead == false)
+        if (!gameOver)
         {
-            DrawCircleV(ball.position, ball.radius, ball.ballColor);
-        }
+            // Update
+            //----------------------------------------------------------------------------------
+            // TODO: Update your variables here
+            UpdateGame();
+            //----------------------------------------------------------------------------------
 
-        //Draw Player
-        DrawRectangle(player.position.x - player.size.x / 2, player.position.y - player.size.y / 2, player.size.x, player.size.y, player.playerColor);
 
-        //Draw Bricks
-        for (int i = 0; i < BRICK_ROWS; i++)
-        {
-            for (int j = 0; j < BRICK_COLUMNS; j++)
+            // Draw
+            //----------------------------------------------------------------------------------
+            BeginDrawing();
+
+            ClearBackground(RAYWHITE);
+
+            //Draw Ball
+            if (ball.isDead == false)
             {
-                if (brickList[i][j].isDead == false)
+                DrawCircleV(ball.position, ball.radius, ball.ballColor);
+            }
+            if (ball2.isDead == false)
+            {
+                DrawCircleV(ball2.position, ball2.radius, ball2.ballColor);
+            }
+
+            //Draw Player
+            DrawRectangle(player.position.x - player.size.x / 2, player.position.y - player.size.y / 2, player.size.x, player.size.y, player.playerColor);
+            DrawRectangle(player2.position.x - player2.size.x / 2, player2.position.y - player2.size.y / 2, player2.size.x, player2.size.y, player2.playerColor);
+
+            //Draw Bricks
+            for (int i = 0; i < BRICK_ROWS; i++)
+            {
+                for (int j = 0; j < BRICK_COLUMNS; j++)
                 {
-                    DrawRectangleRec(brickList[i][j].getRectangle(), brickList[i][j].brickColor);
+                    if (brickList[i][j].isDead == false)
+                    {
+                        DrawRectangleRec(brickList[i][j].getRectangle(), brickList[i][j].brickColor);
+                    }
                 }
             }
+
+            ClearBackground(RAYWHITE);
+            string playerScore = "Score: " + std::to_string(player.score);
+            DrawText(playerScore.c_str(), 0, GetScreenHeight() / 2 + 100, 40, BLACK);
+            string playerScore2 = "Score: " + std::to_string(player2.score);
+            DrawText(playerScore2.c_str(), screenWidth - 200, GetScreenHeight() / 2 + 100, 40, BLACK);
         }
-
-        ClearBackground(RAYWHITE);
-        string playerScore = "Score: " + std::to_string(player.score);
-        DrawText(playerScore.c_str(), 0, GetScreenHeight() / 2 + 100, 40, BLACK);
-        string playerScore2 = "Score: " + std::to_string(player2.score);
-        DrawText(playerScore2.c_str(), screenWidth-100, GetScreenHeight() / 2 + 100, 40, BLACK);
-
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
@@ -363,6 +369,8 @@ int main(int argc, const char** argv)
 
 void InitGame()
 {
+    gameOver = false;
+
     //Setting bricks to screen
     bricks = { screenWidth/ BRICK_COLUMNS,40};
 
@@ -378,13 +386,21 @@ void InitGame()
     player2.playerColor = { 255,0,0,255 };
     player2.id = 1;
 
-    //Temp Init Ball
+    //Init Ball
     ball.position = { screenWidth / 2, screenHeight * 7 / 10};
-    ball.velocity = { 0,4 };
+    ball.velocity = { -2,4 };
     ball.ballColor = player.playerColor;
     ball.radius = 7.0;
     ball.id = 0;
     ball.ownerID = player.id;
+
+    //Init Ball 2
+    ball2.position = { screenWidth / 2, screenHeight * 7 / 10 };
+    ball2.velocity = { 2,4 };
+    ball2.ballColor = player2.playerColor;
+    ball2.radius = 7.0;
+    ball2.id = 1;
+    ball2.ownerID = player2.id;
 
     //Init Bricks
     for (int i = 0; i < BRICK_ROWS; i++)
@@ -413,8 +429,21 @@ float RandomFloat(float min, float max)
 
 void UpdateGame()
 {
+    //Ball1 Velocity
     ball.position.x += ball.velocity.x;
     ball.position.y += ball.velocity.y;
+
+    //Ball2 Velocity
+    ball2.position.x += ball2.velocity.x;
+    ball2.position.y += ball2.velocity.y;
+
+    //Player1 Velocity
+    player.position.x += player.velocity.x;
+    player.position.y += player.velocity.y;
+
+    //Player2 Velocity
+    player2.position.x += player2.velocity.x;
+    player2.position.y += player2.velocity.y;
 
     //Spawn Ball after it dies;
     if (ball.isDead)
@@ -422,6 +451,12 @@ void UpdateGame()
         ball.isDead = false;
         ball.position = { screenWidth / 2, screenHeight * 7 / 10 };
         ball.velocity = { 0,-4 };
+    }
+    else if (ball2.isDead)
+    {
+        ball2.isDead = false;
+        ball2.position = { screenWidth / 2, screenHeight * 7 / 10 };
+        ball2.velocity = { 0,-4 };
     }
 
     //Brick Collision
@@ -433,11 +468,22 @@ void UpdateGame()
             {
                 if (brickList[i][j].isDead == false)
                 {
-                    Vector2 normal = { player.position.x - brickList[i][j].position.x, player.position.y - brickList[i][j].position.y };
+                    Vector2 normal = { ball.position.x - brickList[i][j].position.x, ball.position.y - brickList[i][j].position.y };
                     normal = Vector2Normalize(normal);
                     ball.velocity = Vector2Reflect(ball.velocity, normal);
                     brickList[i][j].isDead = true;
                     player.score++;
+                }
+            }
+            else if (CheckCollisionCircleRec(ball2.position, ball2.radius, brickList[i][j].getRectangle()))
+            {
+                if (brickList[i][j].isDead == false)
+                {
+                    Vector2 normal = { ball2.position.x - brickList[i][j].position.x, ball2.position.y - brickList[i][j].position.y };
+                    normal = Vector2Normalize(normal);
+                    ball2.velocity = Vector2Reflect(ball2.velocity, normal);
+                    brickList[i][j].isDead = true;
+                    player2.score++;
                 }
             }
         }
@@ -449,28 +495,44 @@ void UpdateGame()
         ball.velocity.y *= -1;
         ball.velocity.x = (ball.position.x - player.position.x) / (player.size.x / 2) * 5;
     }
-
-    //if(CheckCollisionCircleRec)
+    else if (CheckCollisionCircleRec(ball2.position, ball2.radius, Rectangle{ player2.position.x - player2.size.x / 2, player2.position.y - player2.size.y / 2, player2.size.x, player2.size.y }))
+    {
+        ball2.velocity.y *= -1;
+        ball2.velocity.x = (ball2.position.x - player2.position.x) / (player2.size.x / 2) * 5;
+    }
 
     //Wall Collision
     if (ball.position.x + ball.radius >= screenWidth || ball.position.x - ball.radius <= 0)
     {
         ball.velocity.x *= -1;
     }
+    else if (ball2.position.x + ball2.radius >= screenWidth || ball2.position.x - ball2.radius <= 0)
+    {
+        ball2.velocity.x *= -1;
+    }
     if (ball.position.y - ball.radius <= 0)
     {
         ball.velocity.y *= -1;
+    }
+    else if (ball2.position.y - ball2.radius <= 0)
+    {
+        ball2.velocity.y *= -1;
     }
     if (ball.position.y + ball.radius >= screenHeight)
     {
         ball.velocity = { 0,0 };
         ball.isDead = true;
     }
+    else if (ball2.position.y + ball2.radius >= screenHeight)
+    {
+        ball2.velocity = { 0,0 };
+        ball2.isDead = true;
+    }
 
     //Player Movement
     if (IsKeyDown(KEY_A))
     {
-        player.position.x -= 5;
+        player.velocity.x -= 0.5;
     }
     if (player.position.x - player.size.x / 2 <= 0)
     {
@@ -478,11 +540,43 @@ void UpdateGame()
     }
     if (IsKeyDown(KEY_D))
     {
-        player.position.x += 5;
+        player.velocity.x += 0.5;
     }
     if (player.position.x + player.size.x / 2 >= screenWidth)
     {
         player.position.x = screenWidth - player.size.x / 2;
     }
-    
+    if (IsKeyDown(KEY_LEFT))
+    {
+        player2.velocity.x -= 0.5;
+    }
+    if (player2.position.x - player2.size.x / 2 <= 0)
+    {
+        player2.position.x = player2.size.x / 2;
+    }
+    if (IsKeyDown(KEY_RIGHT))
+    {
+        player2.velocity.x += 0.5;
+    }
+    if (player2.position.x + player2.size.x / 2 >= screenWidth)
+    {
+        player2.position.x = screenWidth - player2.size.x / 2;
+    }
+
+    //Reset
+    gameOver = true;
+    for (int i = 0; i < BRICK_ROWS; i++)
+    {
+        for (int j = 0; j < BRICK_COLUMNS; j++)
+        {
+            if (brickList[i][j].isDead == false)
+            {
+                gameOver = false;
+            }
+        }
+    }
+    if (gameOver)
+    {
+        InitGame();
+    }
 }
