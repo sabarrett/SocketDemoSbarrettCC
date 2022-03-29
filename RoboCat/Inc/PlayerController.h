@@ -15,6 +15,11 @@ class PlayerController : public GameObject
 	//Reference to input system
 	InputSystem* pInput;
 
+	bool bShouldMoveUp = false;
+	bool bShouldMoveDown = false;
+	bool bShouldMoveLeft = false;
+	bool bShouldMoveRight = false;
+
 	//Movement data
 	float mMoveSpeed;
 
