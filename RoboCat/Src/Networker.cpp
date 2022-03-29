@@ -27,10 +27,12 @@ void Networker::initServer(std::string port)
 
 	//Create Socket
 	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	mTCPSocket = sock;	//Setting mTCPSocket breaks it!
-	mTCPSocket->SetNonBlockingMode(true);
+	//mTCPSocket = sock;	//Setting mTCPSocket breaks it!
+	//mTCPSocket->SetNonBlockingMode(true);
+	sock->SetNonBlockingMode(true);
 
-	if (mTCPSocket == nullptr)
+	//if (mTCPSocket == nullptr)
+	if (sock == nullptr)
 	{
 		SocketUtil::ReportError("Creating Listenting Socket");
 		ExitProcess(1);
@@ -45,14 +47,16 @@ void Networker::initServer(std::string port)
 		ExitProcess(1);
 	}
 
-	if (mTCPSocket->Bind(*listenAddress) != NO_ERROR)
+	//if (mTCPSocket->Bind(*listenAddress) != NO_ERROR)
+	if (sock->Bind(*listenAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding listening socket");
 		ExitProcess(1);
 	}
 	std::cout << "Listening Socket Succesfully Binded!\n";
 
-	if (mTCPSocket->Listen() != NO_ERROR)
+	//if (mTCPSocket->Listen() != NO_ERROR)
+	if (sock->Listen() != NO_ERROR)
 	{
 		SocketUtil::ReportError("Listening on socket");
 		ExitProcess(1);
@@ -61,13 +65,16 @@ void Networker::initServer(std::string port)
 
 	//Accept Connection
 	std::cout << "Waiting for connection...\n";
-	mTCPSocket->SetNonBlockingMode(false);
+	//mTCPSocket->SetNonBlockingMode(false);
+	sock->SetNonBlockingMode(false);
 	
 	SocketAddress incomingAddress;
-	TCPSocketPtr connSocket = mTCPSocket->Accept(incomingAddress);
+	//TCPSocketPtr connSocket = mTCPSocket->Accept(incomingAddress);
+	TCPSocketPtr connSocket = sock->Accept(incomingAddress);
 
 	while (connSocket == nullptr)
-		connSocket = mTCPSocket->Accept(incomingAddress);
+		connSocket = sock->Accept(incomingAddress);
+		//connSocket = mTCPSocket->Accept(incomingAddress);
 
 	//mTCPSocket->CleanupSocket();
 	mTCPSocket = connSocket;
