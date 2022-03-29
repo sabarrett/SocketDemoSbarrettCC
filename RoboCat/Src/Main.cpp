@@ -10,6 +10,66 @@ std::string BACKGROUND_PATH = "..//..//Assets//Woods.png"; //I think
 
 #if _WIN32
 
+//maybe dont need these to be bools this time?
+bool TCPServerSendMessages(TCPSocketPtr conn, SocketAddress address)
+{
+	char message[4096];
+	char buffer[4096];
+
+	int32_t bytesRead = conn->Receive(buffer, 4096);
+
+	std::string msgReceived(buffer, bytesRead);
+	LOG("Received message: %s", msgReceived.c_str());
+
+	printf("%s", "Enter your message: ");
+	scanf("%s", &message);
+
+	if (strcmp(message, "&") == 0)
+	{
+		std::string msg("the peer has disconnected");
+		conn->Send(msg.c_str(), msg.length());
+		return false;
+	}
+
+	conn->Send(message, 4096);
+
+	LOG("%s", "Sent message to peer");
+
+	return true;
+}
+
+bool TCPClientSendMessages(TCPSocketPtr connSocket, SocketAddress address)
+{
+	//so i want to send out all the different info each run through here
+
+	char message[4096];
+
+	printf("%s", "Please enter a message to send:");
+
+	scanf("%s", &message);
+
+	if (strcmp(message, "&") == 0)
+	{
+		std::string msg("the peer has disconnected");
+		connSocket->Send(msg.c_str(), msg.length());
+		return false;
+	}
+
+	connSocket->Send(message, 4096);
+
+	LOG("%s", "Sent message to peer");
+
+	char buffer[4096];
+	int32_t bytesRead = connSocket->Receive(buffer, 4096);
+
+	std::string msgReceived(buffer, bytesRead);
+	LOG("Received message: %s", msgReceived.c_str());
+
+	return true;
+
+}
+
+
 void DoTCPServer()
 {
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -60,11 +120,6 @@ void DoTCPServer()
 
 	bool messageOnGoing = true;
 	//messageOnGoing = TCPServerSendMessages(conn, connAddr);
-
-	while (messageOnGoing == true)
-	{
-		//messageOnGoing = TCPServerSendMessages(conn, connAddr);
-	}
 }
 
 void DoTCPClient()
@@ -218,6 +273,7 @@ int main(int argc, const char** argv)
 		for (int i = 0; i < unitCount; i++)
 		{
 			mGameObjects[i].UpdatePosition();
+			mGameObjects[i].DrawObjects();
 		}
 
 		//now i need to move and send this info
