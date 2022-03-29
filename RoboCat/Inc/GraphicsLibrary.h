@@ -76,5 +76,6 @@ public:
 	//Drawing functions
 	void drawText(float posX, float posY, std::string text, TextAlignment alignment);
 	void drawImage(std::string imageIdentifier, float posX, float posY);
+	void drawScaledImage(std::string imageIdentifier, float posX, float posY, float scaleX, float scaleY);
 	void drawTintedImage(std::string imageIdentifier, float posX, float posY, Colour col);
 };

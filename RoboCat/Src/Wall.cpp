@@ -27,5 +27,6 @@ void Wall::update()
 
 void Wall::draw()
 {
-
+	//Draw scaled sprite at mPosition
+	pGraphicsLibrary->drawScaledImage(mSPRITE_IDENTIFIER, mPosition.first, mPosition.second, mSizeX, mSizeY);
 }

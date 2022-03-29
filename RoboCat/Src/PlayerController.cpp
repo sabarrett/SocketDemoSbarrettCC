@@ -69,6 +69,6 @@ void PlayerController::update()
 
 void PlayerController::draw()
 {
-	//Draw sprite in mPosition
-	pGraphicsLibrary->drawImage()
+	//Draw sprite at mPosition
+	pGraphicsLibrary->drawImage(mSPRITE_IDENTIFIER, mPosition.first, mPosition.second);
 }

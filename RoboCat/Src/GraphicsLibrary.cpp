@@ -131,6 +131,20 @@ void GraphicsLibrary::drawImage(std::string imageIdentifier, float posX, float p
 	}
 }
 
+void GraphicsLibrary::drawScaledImage(std::string imageIdentifier, float posX, float posY, float scaleX, float scaleY)
+{
+	//Find the image and draw if it exists
+	std::vector<std::pair<std::string, ALLEGRO_BITMAP*>>::iterator iterator;
+
+	for (iterator = mBitmapPointersVector.begin(); iterator != mBitmapPointersVector.end(); ++iterator)
+	{
+		if (iterator->first == imageIdentifier)
+		{
+			al_draw_scaled_bitmap(iterator->second, posX, posY, 1.0, 1.0, posX, posY, scaleX, scaleY, 0);
+		}
+	}
+}
+
 void GraphicsLibrary::drawTintedImage(std::string imageIdentifier, float posX, float posY, Colour col) 
 {
 	//Find the image and draw if it exists
