@@ -26,7 +26,8 @@ void Networker::initServer(std::string port)
 	SocketUtil::StaticInit();
 
 	//Create Socket
-	mTCPSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	mTCPSocket = sock;	//Setting mTCPSocket breaks it!
 	mTCPSocket->SetNonBlockingMode(true);
 
 	if (mTCPSocket == nullptr)
