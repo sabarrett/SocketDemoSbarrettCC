@@ -35,7 +35,7 @@ public:
 
 	//Starting and connect to server
 	bool initServer(std::string port);
-	bool connect(std::string clientIpAddress, std::string serverIpAddress, std::string port);
+	bool connect(std::string serverIpAddress, std::string port);
 
 	//Update game state
 	void getNewGameObjectState(map<int, GameObject*> gameObjectMap);

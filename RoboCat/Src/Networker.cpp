@@ -79,7 +79,7 @@ bool Networker::initServer(std::string port)
 	return false;
 }
 
-bool Networker::connect(std::string clientIpAddress, std::string serverIpAddress, std::string port)
+bool Networker::connect(std::string serverIpAddress, std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -93,7 +93,7 @@ bool Networker::connect(std::string clientIpAddress, std::string serverIpAddress
 		return false;
 	}
 
-	string address = clientIpAddress + ":0";
+	string address = "0.0.0.0:0";
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
 	{

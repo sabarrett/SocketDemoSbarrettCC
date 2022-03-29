@@ -349,11 +349,6 @@ int main(int argc, const char** argv)
 		{
 			//-------------------------Client code-------------------------
 
-			//Prompt for client IP address
-			std::string clientIP;
-			std::cout << "Enter your IP address: \n";
-			std::cin >> clientIP;
-
 			//Prompt for server IP address
 			std::string serverIP;
 			std::cout << "Enter server IP address: \n";
@@ -364,7 +359,7 @@ int main(int argc, const char** argv)
 			std::cout << "Enter port number: \n";
 			std::cin >> portNumber;
 
-			bHasConnectd = pNetworkManager->connect(clientIP, serverIP, portNumber);
+			bHasConnectd = pNetworkManager->connect(serverIP, portNumber);
 			if (bHasConnectd)
 				std::cout << "main.cpp --> client connected.\n";
 		}
