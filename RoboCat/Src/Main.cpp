@@ -3,6 +3,7 @@
 #include "allegro5.h"
 #include "allegro_primitives.h"
 #include "allegro_color.h"
+#include "MemoryBitStream.h"
 
 #include <thread>
 #include <iostream>
@@ -10,7 +11,18 @@
 #include <sstream>
 
 using namespace std;
-
+/*
+class GameObject
+{
+public:
+	void Read(InputMemoryStream& stream);
+	void Write(OutputMemoryStream& stream) const;
+private:
+	float x;
+	float y;
+	int health;
+};
+*/
 #if _WIN32
 
 void ThrowSocketError(std::string errorMsg)
@@ -145,28 +157,6 @@ void BradsLessOriginalClient()
 	if (clientSocket->Connect(*serverAddress) != NO_ERROR)
 		ThrowSocketError("Connecting to server");
 
-	//LOG("%s", "Connected to server!");
-	/*
-	// input username
-	std::string username;
-	std::cout << "Please Input Your Username: ";
-	std::getline(std::cin, username);
-	std::cout << "Waiting for other user to enter their username..." << std::endl;
-	// send username
-	clientSocket->Send(username.c_str(), username.length());
-	*/
-
-	/*
-	// receive other username
-	char otherUsernameBuffer[40];
-	int32_t otherUsernameBytes = clientSocket->Receive(otherUsernameBuffer, 40);
-	while (otherUsernameBytes < 0)
-	{
-		otherUsernameBytes = clientSocket->Receive(otherUsernameBuffer, 40);
-	}
-	std::string otherUsername(otherUsernameBuffer, otherUsernameBytes);
-	std::cout << "Other user " << otherUsername.c_str() << " has joined the chatroom" << std::endl;
-	*/
 	bool exit = false;
 
 	std::thread SendThread([&clientSocket, &exit]()
@@ -213,6 +203,8 @@ void BradsLessOriginalClient()
 	clientSocket->~TCPSocket();
 }
 
+
+
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -225,6 +217,8 @@ int main(int argc, const char** argv)
 	__argc = argc;
 	__argv = argv;
 #endif
+
+	bool exit = false;
 
 	ALLEGRO_DISPLAY* display;
 	if (!al_init())
@@ -248,32 +242,20 @@ int main(int argc, const char** argv)
 
 	//socket stuff here
 	SocketUtil::StaticInit(); // socket initialization
-
-	/*
-	
-	*/
 	//accept thread
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server"; // check if the command on the executable is 'server'
 	if (isServer) // if it is the server
 	{
 		BradsTotallyOriginalServer();
-		/*
-		bool exit = false;
-		thread AcceptThread([&exit, &listeningSocket]()
-			{
-				while (!exit)
-				{
-					SocketAddress clientAddress;
-					TCPSocketPtr clientSocket = listeningSocket->Accept(clientAddress); // accept blocks				
-				}
-
-			});
-		AcceptThread.join();
-		*/
 	}
 	else
 	{
 		BradsLessOriginalClient();
+	}
+
+	while (!exit)
+	{
+
 	}
 
 	SocketUtil::CleanUp(); // socket cleanup
