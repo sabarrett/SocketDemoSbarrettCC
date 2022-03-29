@@ -374,7 +374,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Networker.cpp" />
+    <ClCompile Include="Src\Networker.cpp" />
     <ClCompile Include="Src\PlayerController.cpp" />
     <ClCompile Include="Src\Wall.cpp" />
     <ClInclude Include="Inc\ByteSwap.h" />
@@ -384,6 +384,7 @@
     <ClInclude Include="Inc\InputSystem.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
+    <ClInclude Include="Inc\Networker.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
     <ClInclude Include="Inc\PlayerController.h" />
     <ClInclude Include="Inc\RoboMath.h" />
@@ -410,7 +411,6 @@
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
     <ClInclude Include="Inc\Wall.h" />
-    <ClInclude Include="Newtorker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">

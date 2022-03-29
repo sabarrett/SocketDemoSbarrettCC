@@ -2,6 +2,7 @@
 
 #include "RoboCatPCH.h"
 #include "MemoryBitStream.h"
+#include "Networker.h"
 
 #include "InputSystem.h"
 #include "GraphicsLibrary.h"
@@ -60,6 +61,7 @@ const std::pair<float, float> STARTING_PLAYER_POSITION = std::make_pair<float, f
 float playerMoveSpeed = 0.5;
 
 //-------------------------Network Data-------------------------
+Networker* pNetworkManager;
 int networkID = 0;
 
 bool init()
@@ -84,6 +86,10 @@ bool init()
 	pInput = new InputSystem();
 	if (bSuccessfulInit)
 		bSuccessfulInit = pInput->init(pGraphics);
+
+	//Setup network manager
+	if (bSuccessfulInit)
+		pNetworkManager = Networker::GetInstance();
 
 	//Setup timer
 	timer = al_create_timer(1.0 / FPS);
@@ -274,6 +280,10 @@ void cleanup()
 	delete pPlayerController;
 	pPlayerController = nullptr;
 
+	//Cleanup network manager
+	pNetworkManager->cleanup();
+	pNetworkManager = nullptr;
+
 	//Cleanup input system
 	delete pInput;
 	pInput = nullptr;
@@ -299,6 +309,21 @@ int main(int argc, const char** argv)
 	__argc = argc;
 	__argv = argv;
 #endif
+
+	//0-indexed
+	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
+
+	//Setup server and client
+	if (isServer)
+	{
+		//Server code
+		pNetworkManager->initServer(StringUtils::GetCommandLineArg(2));	//CommandLineArg(2) for port
+	}
+	else
+	{
+		//Client code
+		pNetworkManager->connect(StringUtils::GetCommandLineArg(2), StringUtils::GetCommandLineArg(3), StringUtils::GetCommandLineArg(4));	//CommandLineArg(2) for client IP address, CommandLineArg(3) for server IP address, CommandLineArg(4) for port
+	}
 
 	if (init())
 	{

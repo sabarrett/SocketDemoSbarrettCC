@@ -1,4 +1,4 @@
-#include "Newtorker.h"
+#include "Networker.h"
 
 //Constructor
 Networker::Networker()
@@ -8,10 +8,17 @@ Networker::Networker()
 
 Networker::~Networker()
 {
+	cleanup();
 	SocketUtil::CleanUp();
 }
 
-void Networker::InitServer(std::string port)
+void Networker::cleanup()
+{
+	delete mInstance;
+	mInstance = nullptr;
+}
+
+void Networker::initServer(std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -59,7 +66,7 @@ void Networker::InitServer(std::string port)
 	LOG("Accpted connection from address: %s", incomingAddress.ToString().c_str());
 }
 
-void Networker::Connect(std::string clientIpAddress, std::string serverIpAddress, std::string port)
+void Networker::connect(std::string clientIpAddress, std::string serverIpAddress, std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -107,7 +114,7 @@ void Networker::Connect(std::string clientIpAddress, std::string serverIpAddress
 }
 
 
-void Networker::GetNewGameObjectState(map<int, GameObject*> gameObjectMap)
+void Networker::getNewGameObjectState(map<int, GameObject*> gameObjectMap)
 {
 	char buffer[1024];
 	int32_t byteRecieve = mTCPSocket->Receive(buffer, 1024);
@@ -160,7 +167,7 @@ void Networker::GetNewGameObjectState(map<int, GameObject*> gameObjectMap)
 }
 
 
-void Networker::SendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID)
+void Networker::sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID)
 {
 	OutputMemoryBitStream OMBStream;
 	OMBStream.Write(gameObjectMap[ID]->getNetworkID());

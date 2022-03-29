@@ -25,19 +25,21 @@ public:
 			mInstance = nullptr;
 		}
 
-		mInstance = new Networker;
+		mInstance = new Networker();
 		return mInstance;
 	};
+
+	void cleanup();
 
 	~Networker();
 
 	//Starting and connect to server
-	void InitServer(std::string port);
-	void Connect(std::string clientIpAddress, std::string serverIpAddress, std::string port);
+	void initServer(std::string port);
+	void connect(std::string clientIpAddress, std::string serverIpAddress, std::string port);
 
 	//Update game state
-	void GetNewGameObjectState(map<int, GameObject*> gameObjectMap);
-	void SendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID);
+	void getNewGameObjectState(map<int, GameObject*> gameObjectMap);
+	void sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID);
 
 private:
 
