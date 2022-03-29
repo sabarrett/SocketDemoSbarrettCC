@@ -18,8 +18,8 @@ class Wall : public GameObject
 public:
 
 	//Constructor(s)
-	Wall(const int gameObjectID, const int networkID);
-	Wall(const int gameObjectID, const int networkID, pair<float, float> position, float sizeX, float sizeY);
+	Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
+	Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY);
 
 	//Destructor
 	~Wall();

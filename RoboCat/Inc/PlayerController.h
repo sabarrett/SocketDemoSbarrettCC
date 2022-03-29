@@ -22,8 +22,8 @@ class PlayerController : public GameObject
 public:
 
 	//Constructor(s)
-	PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem);
-	PlayerController(const int gameObjectID, const int networkID, pair<float, float> position, float moveSpeed, InputSystem* inputSystem);
+	PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem, GraphicsLibrary* graphicsLibrary);
+	PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed);
 
 	//Destructor
 	~PlayerController();

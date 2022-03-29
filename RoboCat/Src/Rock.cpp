@@ -1,14 +1,14 @@
 #include "Rock.h"
 #include "RoboCatPCH.h"
 
-Rock::Rock(const int gameObjectID, const int networkID)
-	: GameObject(gameObjectID, networkID)
+Rock::Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary)
+	: GameObject(gameObjectID, networkID, graphicsLibrary)
 {
 
 }
 
-Rock::Rock(const int gameObjectID, const int networkID, pair<float, float> position)
-	: GameObject(gameObjectID, networkID, position)
+Rock::Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position)
+	: GameObject(gameObjectID, networkID, position, graphicsLibrary)
 {
 
 }

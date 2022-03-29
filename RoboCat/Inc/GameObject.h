@@ -1,5 +1,6 @@
 #pragma once
 #include <utility>
+#include "GraphicsLibrary.h"
 
 using std::pair;
 
@@ -33,9 +34,12 @@ protected:
 	//Position
 	pair<float, float> mPosition;
 
+	//Graphics library
+	GraphicsLibrary* pGraphicsLibrary;
+
 	//Constructor(s)
-	GameObject(const int gameObjectID, const int networkID);
-	GameObject(const int gameObjectID, const int networkID, pair<float, float> position);
+	GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
+	GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position);
 
 	//-------------------------Public data-------------------------
 public:

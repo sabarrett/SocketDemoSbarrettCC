@@ -17,8 +17,8 @@ class Rock : public GameObject
 public:
 
 	//Constructor(s)
-	Rock(const int gameObjectID, const int networkID);
-	Rock(const int gameObjectID, const int networkID, pair<float, float> position);
+	Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
+	Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position);
 
 	//Destructor
 	~Rock();

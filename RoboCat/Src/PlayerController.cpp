@@ -1,15 +1,15 @@
 #include "PlayerController.h"
 #include "RoboCatPCH.h"
 
-PlayerController::PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem)
-	: GameObject(gameObjectID, networkID)
+PlayerController::PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem, GraphicsLibrary* graphicsLibrary)
+	: GameObject(gameObjectID, networkID, graphicsLibrary)
 {
 	pInput = inputSystem;
 	mMoveSpeed = 0.0;
 }
 
-PlayerController::PlayerController(const int gameObjectID, const int networkID, pair<float, float> position, float moveSpeed, InputSystem* inputSystem)
-	: GameObject(gameObjectID, networkID, position)
+PlayerController::PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed)
+	: GameObject(gameObjectID, networkID, graphicsLibrary, position)
 {
 	pInput = inputSystem;
 	mMoveSpeed = moveSpeed;
