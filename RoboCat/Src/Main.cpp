@@ -98,6 +98,7 @@ bool init()
 
 void start()
 {
+	std::cout << "Hitting start()\n";
 	//Default GameObject to spawn
 	currentGameObjectType = GameObjectType::ROCK;
 	currentGameObjectTypeString = "Rock";
@@ -112,6 +113,8 @@ void start()
 
 void update()
 {
+	std::cout << "Hitting update()\n";
+
 	//Get mouse input
 	{
 		MouseButton mouseInput = pInput->getMouseInput();
@@ -231,6 +234,8 @@ void update()
 
 void draw()
 {
+	std::cout << "Hitting draw()\n";
+
 	//Background image
 	pGraphics->drawImage(BACKGROUND_IMAGE_SPRITE_IDENTIFIER, 0, 0);
 
@@ -260,6 +265,8 @@ void draw()
 
 void cleanup()
 {
+	std::cout << "Hitting cleanup()\n";
+
 	//cleanup timer
 	al_destroy_timer(timer);
 	al_destroy_event_queue(eventQueue);
@@ -335,6 +342,8 @@ int main(int argc, const char** argv)
 			std::cin >> portNumber;
 
 			bHasConnectd = pNetworkManager->initServer(portNumber);
+			if (bHasConnectd)
+				std::cout << "main.cpp --> server initted.\n";
 		}
 		else
 		{
@@ -356,6 +365,8 @@ int main(int argc, const char** argv)
 			std::cin >> portNumber;
 
 			bHasConnectd = pNetworkManager->connect(clientIP, serverIP, portNumber);
+			if (bHasConnectd)
+				std::cout << "main.cpp --> client connected.\n";
 		}
 
 		//If the peer has connected
@@ -378,6 +389,8 @@ int main(int argc, const char** argv)
 					//Draw call
 					draw();
 				}
+
+				std::cout << "bGameIsRunning loop\n";
 			}
 
 			//Cleanup when done
