@@ -142,6 +142,7 @@ void InputSystem::Update(bool isCreator, WorldState& gameWorld, vector<JoinerInp
 			if (isCreator)
 			{
 				// create lock
+				gameWorld.CreateLock();
 
 			}
 			else

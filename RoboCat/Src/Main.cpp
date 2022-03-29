@@ -171,8 +171,8 @@ int main(int argc, const char** argv)
 
 	if (userIsCreator)
 	{
-		gameWorld.CreateLock();
-		gameWorld.Create<Key>(SCREEN_X,0);
+		//gameWorld.CreateLock();
+		//gameWorld.Create<Key>(SCREEN_X,0);
 	}
 
 	vector<JoinerInput> joinerInputs;
