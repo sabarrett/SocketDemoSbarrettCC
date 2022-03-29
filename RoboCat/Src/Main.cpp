@@ -71,14 +71,10 @@ bool init()
 	//Setup the graphical window
 	pGraphics = new GraphicsLibrary(screenSizeX, screenSizeY);
 	bSuccessfulInit = pGraphics->init();
-	if (bSuccessfulInit)
-		std::cout << "pGraphics initted.\n";
 
 	//Setup text
 	if (bSuccessfulInit)
 		bSuccessfulInit = pGraphics->initText(ASSET_PATH + ARIAL_FONT_FILE, FONT_SIZE, white);
-	if (bSuccessfulInit)
-		std::cout << "pGraphics text initted.\n";
 
 	//Add images to the graphcis library
 	pGraphics->loadImage(ASSET_PATH + BACKGROUND_IMAGE_FILE, BACKGROUND_IMAGE_SPRITE_IDENTIFIER);
@@ -90,8 +86,6 @@ bool init()
 	pInput = new InputSystem();
 	if (bSuccessfulInit)
 		bSuccessfulInit = pInput->init(pGraphics);
-	if (bSuccessfulInit)
-		std::cout << "pInput initted.\n";
 
 	//Setup timer
 	timer = al_create_timer(1.0 / FPS);
@@ -311,8 +305,6 @@ int main(int argc, const char** argv)
 	__argc = argc;
 	__argv = argv;
 #endif
-
-	std::cout << "Before init().\n";
 
 	if (init())
 	{
