@@ -8,8 +8,8 @@ PlayerController::PlayerController(const int gameObjectID, const int networkID, 
 	mMoveSpeed = 0.0;
 }
 
-PlayerController::PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed)
-	: GameObject(gameObjectID, networkID, graphicsLibrary, position)
+PlayerController::PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier)
+	: GameObject(gameObjectID, networkID, graphicsLibrary, position, spriteIdentifier)
 {
 	pInput = inputSystem;
 	mMoveSpeed = moveSpeed;
@@ -69,5 +69,6 @@ void PlayerController::update()
 
 void PlayerController::draw()
 {
-
+	//Draw sprite at mPosition
+	pGraphicsLibrary->drawImage(mSPRITE_IDENTIFIER, mPosition.first, mPosition.second);
 }

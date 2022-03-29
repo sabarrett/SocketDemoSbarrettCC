@@ -18,7 +18,7 @@ public:
 
 	//Constructor(s)
 	Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
-	Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position);
+	Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier);
 
 	//Destructor
 	~Rock();
