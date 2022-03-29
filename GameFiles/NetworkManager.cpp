@@ -136,9 +136,13 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 	OutputMemoryBitStream outStream;
 	bool allGood = true;
 
+	std::cout << "JoinerOut1\n";
+
+
 	for each (JoinerInput input in joinerInputs)
 	{
 		input.Write(outStream);
+		std::cout << "JoinerOut2\n";
 		if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetBitLength(), *sendingAddress)) < 0)
 		{
 			SocketUtil::ReportError("Sending outgoingPacket");
@@ -146,5 +150,8 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 		}
 	}
 	
+	std::cout << "JoinerOut3\n";
+	joinerInputs.clear();
+
 	return allGood;
 }
