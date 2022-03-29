@@ -29,7 +29,8 @@ public:
 	float getWallSizeY() { return mSizeY; };
 
 	//Mutator(s)
-
+	float setWallSizeX(float sizeX) { mSizeX = sizeX; };
+	float setWallSizeY(float sizeY) { mSizeY = sizeY; };
 
 	//Functions
 	void update();

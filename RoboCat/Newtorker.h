@@ -1,11 +1,15 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 #include "GameObject.h"
+#include "Rock.h"
+#include "Wall.h"
 #include "RoboCatPCH.h"
 
 using std::string;
+using std::map;
 
 //Networker is singleton (we only want one networker at a time)
 class Networker
@@ -31,8 +35,8 @@ public:
 	void Connect(string IPAddress);
 
 	//Update game state
-	void GetNewGameObjectState(GameObject* gameObject);
-	void SendNewGameObjectState(GameObject* gameObject);
+	void GetNewGameObjectState(map<int, GameObject*> gameObjectMap, int gameObjectCount);
+	void SendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID);
 
 private:
 

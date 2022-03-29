@@ -107,51 +107,85 @@ void Networker::Connect(string IPAddress)
 }
 
 //TO DO: FINISH THIS
-void Networker::GetNewGameObjectState(GameObject* gameObject)
+void Networker::GetNewGameObjectState(map<int, GameObject*> gameObjectMap, int gameObjectCount)
 {
 	char buffer[1024];
 	int32_t byteRecieve = mTCPSocket->Receive(buffer, 1024);
 	if (byteRecieve > 0)
 	{
 		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
+		int networkID;
+		IMBStream.Read(networkID);
 
-		GameObjectType recieveType;
-		IMBStream.Read(recieveType);
-
-		switch (recieveType)
+		if (gameObjectMap[networkID] != nullptr)
 		{
-		case GameObjectType::ROCK:
-		case GameObjectType::WALL:
+			GameObjectType recieveType;
+			IMBStream.Read(recieveType);
 
-			float x;
-			IMBStream.Read(x);
-			float y;
-			IMBStream.Read(y);
-			gameObject->setPos(std::make_pair(x, y));
+			switch (recieveType)
+			{
+			case GameObjectType::ROCK:
 
-			break;
+				float x;
+				IMBStream.Read(x);
+				float y;
+				IMBStream.Read(y);
+				gameObjectMap[networkID]->setPos(std::make_pair(x, y));
+				break;
 
-		default:
-			break;
+			case GameObjectType::WALL:
+				Wall* wall = (Wall*)gameObjectMap[networkID];
+				float x;
+				IMBStream.Read(x);
+				float y;
+				IMBStream.Read(y);
+				
+				wall->setPos(std::make_pair(x, y));
+
+				float sizeX;
+				IMBStream.Read(sizeX);
+				float sizeY;
+				IMBStream.Read(sizeY);
+
+				wall->setWallSizeX(sizeX);
+				wall->setWallSizeY(sizeY);
+
+				break;
+
+			default:
+				break;
+			}
 		}
-
+		else
+		{
+			//create new object
+		}
 	}
 }
 
 //TO DO: FINISH THIS
-void Networker::SendNewGameObjectState(GameObject* gameObject)
+void Networker::SendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID)
 {
 	OutputMemoryBitStream OMBStream;
-	OMBStream.Write(gameObject->getGameObjectID());
+	OMBStream.Write(gameObjectMap[ID]->getNetworkID());
+	OMBStream.Write(gameObjectMap[ID]->getGameObjectID());
 	
-	switch (gameObject->getGameObjectID())
+	switch (gameObjectMap[ID]->getGameObjectID())
 	{
 	case GameObjectType::ROCK:
-	case GameObjectType::WALL:
-
-		pair<float, float> pos = gameObject->getPosition();
+		Rock* rock = (Rock*)gameObjectMap[ID];
+		pair<float, float> pos = rock->getPosition();
 		OMBStream.Write(pos.first);
 		OMBStream.Write(pos.second);
+		break;
+
+	case GameObjectType::WALL:
+		Wall* wall = (Wall*)gameObjectMap[ID];
+		pair<float, float> pos = wall->getPosition();
+		OMBStream.Write(pos.first);
+		OMBStream.Write(pos.second);
+		OMBStream.Write(wall->getWallSizeX());
+		OMBStream.Write(wall->getWallSizeY());
 		break;
 
 	default:
