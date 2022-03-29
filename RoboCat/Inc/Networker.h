@@ -11,6 +11,13 @@
 
 using std::map;
 
+enum PacketType
+{
+	PACKET_CREATE,
+	PACKET_UPDATE,
+	PACKET_DELETE
+};
+
 //Networker is singleton (we only want one networker at a time)
 class Networker
 {

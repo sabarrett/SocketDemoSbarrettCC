@@ -37,12 +37,12 @@ void Wall::draw()
 	pGraphicsLibrary->drawRectangle(mPosition.first, mPosition.second, mPosition.first + mSizeX, mPosition.second + mSizeY, mColour, mThickness);
 }
 
-//void Wall::read(InputMemoryBitStream& stream)
-//{
-//
-//}
-//
-//void Wall::write(OutputMemoryBitStream& stream) const
-//{
-//
-//}
+void Wall::read(InputMemoryBitStream& stream)
+{
+
+}
+
+void Wall::write(OutputMemoryBitStream& stream) const
+{
+
+}
