@@ -6,10 +6,25 @@
 
 #include <thread>
 #include <vector>
+#include <map>
 
 using namespace std;
 
 #if _WIN32
+
+enum PacketTypes
+{
+	CREATE,
+	UPDATE,
+	DESTROY
+};
+
+enum ObjectTypes
+{
+	LEFT,
+	RIGHT,
+	UP
+};
 
 UDPSocketPtr CreateBoundSocket(std::string IP)
 {
@@ -36,6 +51,148 @@ class LeftGameObject
 		int getY() { return yPos; };
 		void Update() { xPos--; };
 		string getImageName() { return imageName; };
+		void setX(int x) { xPos = x; };
+		void setY(int y) { yPos = y; };
+};
+
+class GameState
+{
+	private:
+		bool isServer;
+		UDPSocketPtr sock;
+		SocketAddress otherAddr;
+		GraphicsLibrary mLibrary;
+
+		map<int, LeftGameObject*> mLeftGameObjects;
+		int leftObjcounter = 0;
+	public:
+		GameState()
+		{
+		}
+		GameState(bool serverState, string ourAddr, string other)
+		{
+			isServer = serverState;
+			UDPSocketPtr sock = CreateBoundSocket(ourAddr);
+			SocketAddress otherAddr;
+			{
+				SocketAddressPtr tempAddr = SocketAddressFactory::CreateIPv4FromString(other);
+				otherAddr = *tempAddr;
+			}
+			mLibrary = GraphicsLibrary(800, 600);
+			mLibrary.init("../2517597.jpg");
+		}
+		~GameState()
+		{
+		}
+		void Update()
+		{
+			InputSystem mInputSystem;
+			mInputSystem.init(&mLibrary);
+
+			mLibrary.loadImage("../2517597.jpg", "background");
+			mLibrary.drawImage("background", 0, 0);
+			mLibrary.render();
+
+			bool escapePressed = false;
+
+			while (!escapePressed)
+			{
+				for (auto& item : mLeftGameObjects)
+				{
+					LeftGameObject* obj = item.second;
+					if (isServer)
+					{
+						obj->Update();
+						SendPacket(sock, otherAddr, PacketTypes::UPDATE, ObjectTypes::LEFT, obj->getX(), obj->getY(), item.first);
+					}
+					ReceivePacket(sock, otherAddr);
+					mLibrary.drawImage("LeftObject", obj->getX(), obj->getY());
+				}
+				int mousePress = mInputSystem.getMouseInput();
+				int keyPress = mInputSystem.getKeyboardInput();
+
+				if (keyPress == KeyCode::KeyEscape)
+					escapePressed = true;
+
+				switch (mousePress)
+				{
+				case MouseButton::LeftMouse:
+				{
+					mLibrary.loadImage("../output-onlinepngtools.png", "LeftObject");
+					mLeftGameObjects.emplace(leftObjcounter++, new LeftGameObject((int)mInputSystem.getMouseX(), (int)mInputSystem.getMouseY(), "../output-onlinepngtools.png"));
+					break;
+				}
+				}
+				mLibrary.render();
+				mLibrary.drawImage("background", 0, 0);
+			}
+		}
+		void SendPacket(UDPSocketPtr ptr, SocketAddress addr, int packetType, int objectType,
+			int pos_x, int pos_y, int ID)
+		{
+			int packet[5];
+			packet[0] = packetType;
+			packet[1] = objectType;
+			packet[2] = ID;
+			packet[3] = pos_x;
+			packet[4] = pos_y;
+
+			char* bytePacket = (char*)packet;
+
+			ptr->SendTo(bytePacket, 20, addr);
+		}
+		void ReceivePacket(UDPSocketPtr ptr, SocketAddress addr)
+		{
+			char buffer[20];
+			while (true)
+			{
+				int bytesReceived = ptr->ReceiveFrom(buffer, 20, addr);
+				if (bytesReceived < 0)
+				{
+					SocketUtil::ReportError("Error receiving packet");
+					break;
+				}
+				else if (bytesReceived == 0)
+					break;
+				else
+				{
+					int* packet = (int*)buffer;
+					switch (packet[0])
+					{
+						case PacketTypes::CREATE:
+						{
+							break;
+						}
+						case PacketTypes::DESTROY:
+						{
+							break;
+						}
+						case PacketTypes::UPDATE:
+						{
+							switch (packet[1])
+							{
+								case ObjectTypes::LEFT:
+								{
+									LeftGameObject* obj = mLeftGameObjects.find(packet[2])->second;
+									obj->setX(packet[3]);
+									obj->setY(packet[4]);
+									break;
+								}
+								case ObjectTypes::RIGHT:
+								{
+									break;
+								}
+								case ObjectTypes::UP:
+								{
+									break;
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
 };
 
 int main(int argc, const char** argv)
@@ -51,84 +208,25 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	/*/SocketUtil::StaticInit();
+	SocketUtil::StaticInit();
 
+	//DoThreadExample();
+	GameState state;
 
-	UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-	UDPSocketPtr cliSock = CreateBoundSocket("127.0.0.1:9000");
-	srvSock->SetNonBlockingMode(true);
+	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
+
+	if (isServer)
 	{
-		SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
-		if (srvAddr == nullptr)
-		{
-			SocketUtil::ReportError("Create Server Socket");
-		}
-		srvSock->Bind(*srvAddr);
-
-		string msg("Hello server!");
-		int bytesSent = cliSock->SendTo(msg.c_str(), msg.length(), *srvAddr);
-		if (bytesSent <= 0)
-		{
-			SocketUtil::ReportError("Client SendTo");
-		}
-		cout << "sent " << bytesSent << " bytes\n";
-	}*/
-
-	GraphicsLibrary mLibrary(800, 600);
-	mLibrary.init("../2517597.jpg");
-	mLibrary.loadImage("../2517597.jpg", "background");
-	mLibrary.drawImage("background", 0, 0);
-	mLibrary.render();
-
-	InputSystem mInputSystem;
-	mInputSystem.init(&mLibrary);
-
-	vector<LeftGameObject*> vLeftGameObjects;
-
-
-	bool escapePressed = false;
-
-	while (!escapePressed)
-	{
-		for (LeftGameObject* obj : vLeftGameObjects)
-		{
-			obj->Update();
-			mLibrary.drawImage("LeftObject", obj->getX(), obj->getY());
-		}
-		int mousePress = mInputSystem.getMouseInput();
-		int keyPress = mInputSystem.getKeyboardInput();
-
-		if (keyPress == KeyCode::KeyEscape)
-			escapePressed = true;
-
-		switch (mousePress)
-		{
-			case MouseButton::LeftMouse:
-			{
-				mLibrary.loadImage("../output-onlinepngtools.png", "LeftObject");
-				vLeftGameObjects.push_back(new LeftGameObject((int)mInputSystem.getMouseX(), (int)mInputSystem.getMouseY(), "../output-onlinepngtools.png"));
-			}
-		}
-		mLibrary.render();
-		mLibrary.drawImage("background", 0, 0);
+		state = GameState(true, "127.0.0.1:9000", "127.0.0.1:9001");
 	}
-	
-	//scott recommends no threads
+	else
+	{
+		state = GameState(true, "127.0.0.1:9001", "127.0.0.1:9000");
+	}
 
-	/*std::thread srvThread([&srvSock]() {
-		char buffer[4096];
-		SocketAddress fromAddr;
-		int bytesReceived = srvSock->ReceiveFrom(buffer, 4096, fromAddr);
-		if (bytesReceived <= 0)
-		{
-			SocketUtil::ReportError("Server ReceiveFrom");
-			return;
-		}
-		std::string msg(buffer, bytesReceived);
-		std::cout << "Received message from " << fromAddr.ToString() << ": " << msg << std::endl;
-		});
+	state.Update();
 
-	srvThread.join();*/
+	cin.get();
 
 	SocketUtil::CleanUp();
 

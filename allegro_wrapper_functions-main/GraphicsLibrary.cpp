@@ -10,6 +10,10 @@ GraphicsLibrary.cpp
 #include <iostream>
 #include <algorithm>
 
+GraphicsLibrary::GraphicsLibrary()
+{
+}
+
 //Constructor
 GraphicsLibrary::GraphicsLibrary(float screenSizeX, float screenSizeY)
 {

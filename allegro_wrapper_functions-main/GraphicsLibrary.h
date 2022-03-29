@@ -45,6 +45,7 @@ class GraphicsLibrary
 public:
 
 	//Constructor(s)
+	GraphicsLibrary();
 	GraphicsLibrary(float screenSizeX, float screenSizeY);
 
 	//Destructor
