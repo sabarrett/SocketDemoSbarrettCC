@@ -1,16 +1,9 @@
 #include "Client/Game.h"
 #include "Client/GameObject.h"
-#include "Client/ArrayOfPointersGameObject.h"
+#include "Client/ColorChangerGameObject.h"
+#include "Client/CollectableGameObject.h"
 
 #include <iostream>
-
-Game::Game()
-{
-}
-
-Game::~Game()
-{
-}
 
 void Game::Init(char* title, int width, int height)
 {
@@ -19,39 +12,15 @@ void Game::Init(char* title, int width, int height)
 	CreateGameWindow(title, width, height);
 	m_isRunning = true;
 
-	SDL_Surface* tmpSurface = IMG_Load("Assets/Player.png");
-	printf(" %s\n", SDL_GetError());
-	m_textures[0] = SDL_CreateTextureFromSurface(m_renderer, tmpSurface);
-	SDL_FreeSurface(tmpSurface);
-
-	tmpSurface = IMG_Load("Assets/PlayerScheming.png");
-	printf(" %s\n", SDL_GetError());
-	m_textures[1] = SDL_CreateTextureFromSurface(m_renderer, tmpSurface);
-	SDL_FreeSurface(tmpSurface);
-
-	tmpSurface = IMG_Load("Assets/PlayerRed.png");
-	printf(" %s\n", SDL_GetError());
-	m_textures[2] = SDL_CreateTextureFromSurface(m_renderer, tmpSurface);
-	SDL_FreeSurface(tmpSurface);
-
-	tmpSurface = IMG_Load("Assets/PlayerGreen.png");
-	printf(" %s\n", SDL_GetError());
-	m_textures[3] = SDL_CreateTextureFromSurface(m_renderer, tmpSurface);
-	SDL_FreeSurface(tmpSurface);
-
-	tmpSurface = IMG_Load("Assets/PlayerBlue.png");
-	printf(" %s\n", SDL_GetError());
-	m_textures[4] = SDL_CreateTextureFromSurface(m_renderer, tmpSurface);
-	SDL_FreeSurface(tmpSurface);
-
-	tmpSurface = IMG_Load("Assets/Cat.png");
-	printf(" %s\n", SDL_GetError());
-	m_textures[5] = SDL_CreateTextureFromSurface(m_renderer, tmpSurface);
-	SDL_FreeSurface(tmpSurface);
-
-	//CreateObject(0, 0);
+	LoadTexture("Assets/Player.png");
+	LoadTexture("Assets/PlayerScheming.png");
+	LoadTexture("Assets/PlayerRed.png");
+	LoadTexture("Assets/PlayerGreen.png");
+	LoadTexture("Assets/PlayerBlue.png");
+	LoadTexture("Assets/Cat.png");
+	LoadTexture("Assets/Coin.png");
+	LoadTexture("Assets/Background.png");
 }
-
 void Game::CreateGameWindow(char* title, int width, int height)
 {
 	m_window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
@@ -60,8 +29,21 @@ void Game::CreateGameWindow(char* title, int width, int height)
 	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
 }
 
+void Game::LoadTexture(std::string assetPath)
+{
+	int i = 0;
+	while (m_textures[i] != 0)
+	{
+		i++;
+	}
+	SDL_Surface* tmpSurface = IMG_Load(assetPath.c_str());
+	m_textures[i] = SDL_CreateTextureFromSurface(m_renderer, tmpSurface);
+	SDL_FreeSurface(tmpSurface);
+}
+
 void Game::Update()
 {
+	// Handle events
 	SDL_Event sdlEvent;
 	while (SDL_PollEvent(&sdlEvent) != 0)
 	{
@@ -74,6 +56,8 @@ void Game::Update()
 			break;
 		}
 	}
+
+	// Handle keyboard input
 	m_keyStates = SDL_GetKeyboardState(NULL);
 	m_moveInput = 0;
 	if (m_keyStates[SDL_SCANCODE_W])
@@ -92,13 +76,20 @@ void Game::Update()
 	{
 		m_moveInput += MOVE_RIGHT;
 	}
-
 	
-
+	// Handle mouse input
+	m_leftClickDown = false;
+	if (SDL_GetMouseState(&m_mouseX, &m_mouseY) == SDL_BUTTON_LMASK)
+	{
+		m_leftClickDown = true;
+	}
+	
+	// Delete want-to-die objects
 	for (size_t i = 0; i < m_allObjects.size(); i++)
 	{
 		if (m_allObjects[i]->GetShouldDestroy())
 		{
+			m_allObjects[i]->CleanUp();
 			m_allObjects.erase(m_allObjects.begin() + i);
 		}
 	}
@@ -106,29 +97,30 @@ void Game::Update()
 
 void Game::DoNetworking()
 {
-	ReceiveUDP();
-	ReceiveTCP();
+	ReceiveTCP(); // Check TCP socket for data
+	ReceiveUDP(); // Check UDP socket for data -> WORLD UPDATES
 
+	// Send move update
 	if (m_moveInput != 0)
 	{
-		uint32_t OutPacketType = PKTTYPE_MOVEOBJECT;
 		OutputMemoryBitStream inputPacket;
+		uint32_t OutPacketType = PKTTYPE_MOVEOBJECT;
 		inputPacket.Write(OutPacketType);
-		inputPacket.Write(m_myPlayerUID); // TARGET OBJECT ID
+		inputPacket.Write(m_myPlayerUID);
 		inputPacket.Write(m_moveInput);
 		clientSocketUDP->SendTo(inputPacket.GetBufferPtr(), inputPacket.GetByteLength(), *serverAddress);
 	}
 
-	int mouseX;
-	int mouseY;
-	if (SDL_GetMouseState(&mouseX, &mouseY) == SDL_BUTTON_LMASK)
+	// Send create object update
+	if (m_leftClickDown)
 	{
-		uint32_t OutPacketType = PKTTYPE_CREATEOBJECT;
 		OutputMemoryBitStream inputPacket;
+		uint32_t OutPacketType = PKTTYPE_CREATEOBJECT;
+		uint8_t textureID = 6;
 		inputPacket.Write(OutPacketType);
-		inputPacket.Write(0);
-		inputPacket.Write(mouseX);
-		inputPacket.Write(mouseY);
+		inputPacket.Write(textureID);
+		inputPacket.Write(m_mouseX);
+		inputPacket.Write(m_mouseY);
 		clientSocketUDP->SendTo(inputPacket.GetBufferPtr(), inputPacket.GetByteLength(), *serverAddress);
 	}
 }
@@ -150,7 +142,6 @@ void Game::ReceiveTCP()
 			int UID;
 			inStream.Read(UID);
 			m_myPlayerUID = UID;
-			std::cout << "\n\n\n" << m_myPlayerUID;
 			break;
 		}
 	}
@@ -170,58 +161,90 @@ void Game::ReceiveUDP()
 		inStream.Read(packetType);
 		switch (packetType)
 		{
-		case PKTTYPE_WORLDSTATE: // MOVE
-			int totalObjects;
-			int UID;
-			uint8_t objectType;
-			inStream.Read(totalObjects);
-			for (int i = 0; i < totalObjects; i++)
-			{
-				inStream.Read(UID);
-				inStream.Read(objectType);
-				if (objectType == 0)
-				{
-					GameObject* targetObject = GetObjectByUID(UID);
-					if (targetObject == nullptr)
-					{
-						targetObject = CreateObject(0, UID, 0);
-					}
-					targetObject->Read(&inStream);
-					targetObject->SetShouldDestroy(false);
-				}
-				if (objectType == 1)
-				{
-					ArrayOfPointersGameObject* targetObject = (ArrayOfPointersGameObject*)GetObjectByUID(UID);
-					if (targetObject == nullptr)
-					{
-						targetObject = (ArrayOfPointersGameObject*)CreateObject(1 , UID, 0);
-					}
-					bool readMore;
-					inStream.Read(readMore);
-					if (readMore)
-					{
-						targetObject->Read(&inStream);
-						size_t count = 0;
-						inStream.Read(count);
-						for (size_t j = 0; j < count; j++)
-						{
-							int targetUID;
-							inStream.Read(targetUID);
-							targetObject->AddTargetObject(GetObjectByUID(targetUID));
-						}
-					}
-					targetObject->SetShouldDestroy(false);
-				}
-				
-			}
+		case PKTTYPE_WORLDSTATE: 
+			HandleWorldStatePacket(&inStream);
 			break;
+		}
+	}
+}
+void Game::HandleWorldStatePacket(InputMemoryBitStream* inStream)
+{
+	// Set objects to be destroyed if not contained in the following update
+	for (size_t i = 0; i < m_allObjects.size(); i++)
+	{
+		m_allObjects[i]->SetShouldDestroy(true); 
+	}
+
+	// Packets always start with these three:
+	int totalObjects;
+	int UID;
+	uint8_t objectType;
+	inStream->Read(totalObjects);
+	for (int i = 0; i < totalObjects; i++)
+	{
+		inStream->Read(UID);
+		inStream->Read(objectType);
+		switch (objectType)
+		{
+			case GAMEOBJECT_BASE:
+			{
+				GameObject* targetObject = GetObjectByUID(UID);
+				if (targetObject == nullptr)
+				{
+					targetObject = CreateObject(objectType, UID, 0);
+				}
+				targetObject->Read(inStream);
+				targetObject->SetShouldDestroy(false);
+				break;
+			}
+			case GAMEOBJECT_COLORCHANGER:
+			{
+				ColorChangerGameObject* targetObject = (ColorChangerGameObject*)GetObjectByUID(UID);
+				if (targetObject == nullptr)
+				{
+					targetObject = (ColorChangerGameObject*)CreateObject(objectType, UID, 0);
+				}
+				// Where other objects are very simple to read and write,
+				// due to the need to getObjects by UID, this object's read is handled specially here.
+				bool readMore;
+				inStream->Read(readMore);
+				if (readMore)
+				{
+					targetObject->Read(inStream);
+					size_t count = 0;
+					inStream->Read(count);
+					for (size_t j = 0; j < count; j++)
+					{
+						int targetUID;
+						inStream->Read(targetUID);
+						targetObject->AddTargetObject(GetObjectByUID(targetUID));
+					}
+				}
+				targetObject->SetShouldDestroy(false);
+				break;
+			}
+			case GAMEOBJECT_COLLECTABLE:
+			{
+				CollectableGameObject* targetObject = (CollectableGameObject*)GetObjectByUID(UID);
+				if (targetObject == nullptr)
+				{
+					targetObject = (CollectableGameObject*)CreateObject(objectType, UID, 0);
+				}
+				targetObject->Read(inStream);
+				targetObject->SetShouldDestroy(false);
+				break;
+			}
 		}
 	}
 }
 
 void Game::Draw()
 {
+	// Clear + background
 	SDL_RenderClear(m_renderer);
+	SDL_RenderCopy(m_renderer, m_textures[7], NULL, NULL);
+
+	// Draw all objects
 	for (size_t i = 0; i < m_allObjects.size(); i++)
 	{
 		int texID = m_allObjects[i]->GetTextureID();
@@ -327,22 +350,28 @@ GameObject* Game::GetObjectByUID(int UID)
 	return nullptr;
 }
 
-GameObject* Game::CreateObject(int type, int UID, int textureID)
+GameObject* Game::CreateObject(int type, int UID, uint8_t textureID)
 {
-	if (type == 0)
+	GameObject* gameObject;
+	switch (type)
 	{
-		GameObject* gameObject = new GameObject;
-		gameObject->Init(UID, textureID);
-		m_allObjects.push_back(gameObject);
-		return gameObject;
+	case GAMEOBJECT_BASE:
+		gameObject = new GameObject;
+		break;
+	case GAMEOBJECT_COLORCHANGER:
+		gameObject = new ColorChangerGameObject;
+		break;
+	case GAMEOBJECT_COLLECTABLE:
+		gameObject = new CollectableGameObject;
+		break;
+	default:
+		gameObject = new GameObject;
+		break;
 	}
-	if (type == 1)
-	{
-		ArrayOfPointersGameObject* gameObject = new ArrayOfPointersGameObject;
-		gameObject->Init(UID, textureID);
-		m_allObjects.push_back(gameObject);
-		return gameObject;
-	}
+
+	gameObject->Init(UID, textureID);
+	m_allObjects.push_back(gameObject);
+	return gameObject;
 }
 
 void Game::DestroyObject(GameObject* gameObject)

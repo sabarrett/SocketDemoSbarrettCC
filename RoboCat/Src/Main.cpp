@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning (disable : 4996)
 
 #include "Client/Game.h"
 #include "Server/Server.h"
@@ -39,43 +40,46 @@ int main(int argc, const char** argv)
 
 	game->Init("Network Game", 1600, 900);
 
-	std::cout
-		<< "TYPE \"/connect x.x.x.x portNumber\" to connect to server\n"
-		<< "TYPE \"/host portNumber\" to host server\n";
-	std::string launchCommand;
-	std::getline(std::cin, launchCommand);
-	char* inputC = new char[launchCommand.length() + 1];
-	strcpy(inputC, launchCommand.c_str());
-	char delim[] = " ";
-	char* ptr = strtok(inputC, delim);
-	while (ptr != NULL)
+	bool enteredValidCommand = false;
+	while (!enteredValidCommand)
 	{
-		if (strcmp(ptr, "/connect") == 0)
+		std::cout
+			<< "TYPE \"/connect x.x.x.x portNumber\" to connect to server\n"
+			<< "TYPE \"/host to host server\n";
+		std::string launchCommand;
+		std::getline(std::cin, launchCommand);
+		char* inputC = new char[launchCommand.length() + 1];
+		strcpy(inputC, launchCommand.c_str());
+		char delim[] = " ";
+		char* ptr = strtok(inputC, delim);
+		while (ptr != NULL)
 		{
-			ptr = strtok(NULL, delim);
-			std::string newAddress(ptr);
+			if (strcmp(ptr, "/connect") == 0)
+			{
+				ptr = strtok(NULL, delim);
+				std::string newAddress(ptr);
+				ptr = strtok(NULL, delim);
+				std::string newPort(ptr);
 
-			ptr = strtok(NULL, delim);
-			std::string newPort(ptr);
+				game->ConnectToServer(newAddress, newPort);
 
-			game->ConnectToServer(newAddress, newPort);
+				ptr = NULL;
+				enteredValidCommand = true;
+			}
+			else if (ptr != NULL && strcmp(ptr, "/host") == 0)
+			{
+				server = new Server;
+				int port = server->Init();
 
-			ptr = NULL;
-		}
-		if (ptr != NULL && strcmp(ptr, "/host") == 0)
-		{
-			server = new Server;
-			int port = server->Init();
+				game->ConnectToServer("127.0.0.1", StringUtils::Sprintf("%d", port));
 
-			/*ptr = strtok(NULL, delim);
-			std::string newAddress(ptr);*/
-
-			/*ptr = strtok(NULL, delim);
-			std::string newPort(ptr);*/
-			
-			game->ConnectToServer("127.0.0.1", StringUtils::Sprintf("%d", port));
-
-			ptr = NULL;
+				ptr = NULL;
+				enteredValidCommand = true;
+			}
+			else
+			{
+				ptr = NULL;
+			}
 		}
 	}
 

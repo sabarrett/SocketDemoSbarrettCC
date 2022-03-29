@@ -16,5 +16,12 @@ enum PacketTypes// : uint8_t
 	PKTTYPE_CREATEOBJECT,
 	PKTTYPE_DESTROYOBJECT,
 };
+
+enum GameObjectTypes// : uint8_t
+{
+	GAMEOBJECT_BASE,
+	GAMEOBJECT_COLORCHANGER,
+	GAMEOBJECT_COLLECTABLE,
+};
 #endif // !ENUMS
 
