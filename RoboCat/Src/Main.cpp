@@ -9,8 +9,6 @@
 #include "Wall.h"
 #include "PlayerController.h"
 
-using namespace StringUtils;
-
 //-------------------------Graphics Data-------------------------
 GraphicsLibrary* pGraphics;
 float screenSizeX = 1600.0;
@@ -311,6 +309,7 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
+	//Prompt for isServer or not
 	std::string input;
 	std::cout << "Are you the server? Type 'y' for yes, anything else for no.\n";
 	std::cin >> input;
@@ -331,7 +330,7 @@ int main(int argc, const char** argv)
 		std::cout << "Enter port number: \n";
 		std::cin >> portNumber;
 
-		pNetworkManager->initServer(portNumber);	//CommandLineArg(2) for port
+		pNetworkManager->initServer(portNumber);
 	}
 	else
 	{

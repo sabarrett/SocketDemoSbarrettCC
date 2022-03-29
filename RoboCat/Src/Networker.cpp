@@ -32,7 +32,7 @@ void Networker::initServer(std::string port)
 		SocketUtil::ReportError("Creating Listenting Socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "Listening Socket Succesfully Created!");
+	std::cout << "Listening Socket Succesfully Created!\n";
 
 	//Create and Bind Address
 	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);
@@ -47,17 +47,17 @@ void Networker::initServer(std::string port)
 		SocketUtil::ReportError("Binding listening socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "Listening Socket Succesfully Binded!");
+	std::cout << "Listening Socket Succesfully Binded!\n";
 
 	if (mTCPSocket->Listen() != NO_ERROR)
 	{
 		SocketUtil::ReportError("Listening on socket");
 		ExitProcess(1);
 	}
-	LOG("%s", "Listening Socket Listening");
+	std::cout << "Listening Socket Listening\n";
 
 	//Accept Connection
-	LOG("%s", "Waiting for connection...");
+	std::cout << "Waiting for connection...\n";
 	//mTCPSocket->SetNonBlockingMode(false);
 	
 	SocketAddress incomingAddress;
@@ -69,7 +69,7 @@ void Networker::initServer(std::string port)
 	//mTCPSocket->CleanupSocket();
 	mTCPSocket = connSocket;
 	//mTCPSocket->SetNonBlockingMode(false);
-	LOG("Accepted connection from address: %s", incomingAddress.ToString().c_str());
+	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
 }
 
 void Networker::connect(std::string clientIpAddress, std::string serverIpAddress, std::string port)
