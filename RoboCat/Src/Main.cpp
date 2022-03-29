@@ -62,6 +62,7 @@ class GameState
 		UDPSocketPtr sock;
 		SocketAddress otherAddr;
 		GraphicsLibrary* mLibrary;
+		InputSystem* mInputSystem;
 
 		map<int, LeftGameObject*> mLeftGameObjects;
 		int leftObjcounter = 0;
@@ -71,17 +72,21 @@ class GameState
 		}
 		GameState(bool serverState, string ourAddr, string other)
 		{
-			cout << "construction initiated" << endl;
+			//cout << "construction initiated" << endl;
 			isServer = serverState;
-			UDPSocketPtr sock = CreateBoundSocket(ourAddr);
-			sock->SetNonBlockingMode(true);
+			cout << serverState << endl;
+			sock = CreateBoundSocket(ourAddr);
+			//if (isServer)
+				sock->SetNonBlockingMode(true);
 			SocketAddress otherAddr;
 			{
 				SocketAddressPtr tempAddr = SocketAddressFactory::CreateIPv4FromString(other);
 				otherAddr = *tempAddr;
 			}
 			mLibrary = new GraphicsLibrary(800, 600);
-			cout << mLibrary->init("../2517597.jpg") << endl;
+			mLibrary->init("../2517597.jpg");
+			mInputSystem = new InputSystem();
+			mInputSystem->init(mLibrary);
 			//cout << "construction successful" << endl;
 		}
 		~GameState()
@@ -90,50 +95,49 @@ class GameState
 		}
 		void Update()
 		{
-			//cout << "Begin update" << endl;
-			InputSystem mInputSystem;
-			//cout << "made input system" << endl;
-			cout << mInputSystem.init(mLibrary) << endl;
-
 			mLibrary->loadImage("../2517597.jpg", "background");
+			mLibrary->loadImage("../output-onlinepngtools.png", "LeftObject");
 			mLibrary->drawImage("background", 0, 0);
 			mLibrary->render();
-
-			cout << "display is rendered" << endl;
 
 			bool escapePressed = false;
 
 			while (!escapePressed)
 			{
+				//cout << "entering loop" << endl;
 				for (auto& item : mLeftGameObjects)
 				{
 					LeftGameObject* obj = item.second;
 					if (isServer)
 					{
 						obj->Update();
-						//SendPacket(sock, otherAddr, PacketTypes::UPDATE, ObjectTypes::LEFT, obj->getX(), obj->getY(), item.first);
+						SendPacket(sock, otherAddr, PacketTypes::UPDATE, ObjectTypes::LEFT, obj->getX(), obj->getY(), item.first);
 					}
-					//ReceivePacket(sock, otherAddr);
+					ReceivePacket(sock, otherAddr, mInputSystem);
 					mLibrary->drawImage("LeftObject", obj->getX(), obj->getY());
 				}
-				int mousePress = mInputSystem.getMouseInput();
-				int keyPress = mInputSystem.getKeyboardInput();
+
+				//cout << "Done updating each game object" << endl;
+				int mousePress = mInputSystem->getMouseInput();
+				int keyPress = mInputSystem->getKeyboardInput();
 
 				if (keyPress == KeyCode::KeyEscape)
 					escapePressed = true;
 
 				switch (mousePress)
 				{
-				case MouseButton::LeftMouse:
-				{
-					mLibrary->loadImage("../output-onlinepngtools.png", "LeftObject");
-					mLeftGameObjects.emplace(leftObjcounter++, new LeftGameObject((int)mInputSystem.getMouseX(), (int)mInputSystem.getMouseY(), "../output-onlinepngtools.png"));
-					break;
-				}
+					case MouseButton::LeftMouse:
+					{
+						mLeftGameObjects.emplace(leftObjcounter, new LeftGameObject((int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), "../output-onlinepngtools.png"));
+						SendPacket(sock, otherAddr, PacketTypes::CREATE, ObjectTypes::LEFT, (int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), leftObjcounter++);
+						break;
+					}
 				}
 				mLibrary->render();
 				mLibrary->drawImage("background", 0, 0);
+				//cout << "one round of update done" << endl;
 			}
+			cout << "end update" << endl;
 		}
 		void SendPacket(UDPSocketPtr ptr, SocketAddress addr, int packetType, int objectType,
 			int pos_x, int pos_y, int ID)
@@ -147,11 +151,17 @@ class GameState
 
 			char* bytePacket = (char*)packet;
 
-			ptr->SendTo(bytePacket, 20, addr);
+			cout << "attempting to send packet" << endl;
+
+			int bytesSent = ptr->SendTo(bytePacket, 20, addr);
+			if (bytesSent <= 0)
+			{
+				SocketUtil::ReportError("Client SendTo");
+			}
 
 			cout << "Sent packet" << endl;
 		}
-		void ReceivePacket(UDPSocketPtr ptr, SocketAddress addr)
+		void ReceivePacket(UDPSocketPtr ptr, SocketAddress addr, InputSystem* mInputSystem)
 		{
 			char buffer[20];
 			while (true)
@@ -172,6 +182,7 @@ class GameState
 					{
 						case PacketTypes::CREATE:
 						{
+							mLeftGameObjects.emplace(leftObjcounter++, new LeftGameObject((int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), "../output-onlinepngtools.png"));
 							break;
 						}
 						case PacketTypes::DESTROY:
@@ -232,7 +243,7 @@ int main(int argc, const char** argv)
 	}
 	else
 	{
-		state = new GameState(true, "127.0.0.1:9001", "127.0.0.1:9000");
+		state = new GameState(false, "127.0.0.1:9001", "127.0.0.1:9000");
 	}
 
 	state->Update();
