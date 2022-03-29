@@ -82,6 +82,56 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 	return true;
 }
 
+//Update
+void InputSystem::update()
+{
+	switch (getKeyboardInput())
+	{
+	case KeyCode::ESCAPE_KEY:
+	{
+		// Doesn't allow continuous press
+		if (!lastFrameData.keyPressed_ESCAPE)
+			currentFrameData.keyPressed_ESCAPE = true;
+		break;
+	}
+	case KeyCode::A_KEY:
+	{
+		// Allows continuous press
+		currentFrameData.keyPressed_A = true;
+		break;
+	}
+	case KeyCode::D_KEY:
+	{
+		// Allows continuous press
+		currentFrameData.keyPressed_D = true;
+		break;
+	}
+	case KeyCode::R_KEY:
+	{
+		// Doesn't allow continuous press
+		if (!lastFrameData.keyPressed_R)
+			currentFrameData.keyPressed_R = true;
+		break;
+	}
+	case KeyCode::SPACE_KEY:
+	{
+		// Doesn't allow continuous press
+		if(!lastFrameData.keyPressed_SPACE)
+			currentFrameData.keyPressed_SPACE = true;
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+InputData InputSystem::getInputData()
+{
+	lastFrameData = currentFrameData;
+	currentFrameData.clean();
+	return currentFrameData;
+}
+
 MouseButton InputSystem::getMouseInput()
 {
 	//If there is an event
@@ -113,7 +163,7 @@ KeyCode InputSystem::getKeyboardInput()
 {
 	//If there is an event
 	al_wait_for_event(mpEventQueue, &mEvent);
-	
+
 	if (mEvent.type == InputMode::KeyPressed)
 	{
 		//Check the type
@@ -127,6 +177,17 @@ KeyCode InputSystem::getKeyboardInput()
 			return KeyCode::R_KEY;
 			break;
 
+		case KeyCode::A_KEY:
+			return KeyCode::A_KEY;
+			break;
+
+		case KeyCode::D_KEY:
+			return KeyCode::D_KEY;
+			break;
+
+		case KeyCode::SPACE_KEY:
+			return KeyCode::SPACE_KEY;
+			break;
 		default:
 			/*return KeyCode::NONE*/;
 		}
