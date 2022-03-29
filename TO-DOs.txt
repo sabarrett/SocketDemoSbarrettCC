@@ -12,6 +12,7 @@ Requirements:
 
 TO-DOs:
 . Destroy GameObjects somehow (probably press backspace and a random one will delete, or right-click something)
+. Figure out how to send sprite identifiers for creating game objects and move speed for player --> network manager could hold default values, messy but works
 
 Replicating pointers, replicate the data they point to.
 Replicating vectors, replicate their size and data.
