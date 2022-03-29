@@ -5,9 +5,10 @@ class Bullet : public GameObject
 {
 private:
 
-	bool mIsGoingUpwards;
+	bool mIsGoingUpwards = true;
 
 	float mSpeed;
+
 
 public:
 	Bullet(const int gameID, float speed, bool isGoingUpwards);
@@ -19,8 +20,10 @@ public:
 	void Write(OutputMemoryBitStream& inStream)const;
 	void Read(InputMemoryBitStream& inStream);
 
-	void SendBullet(int inSocket, const Bullet* inBullet);
-	void ReceiveBullet(int inSocket, Bullet* outBullet);
+	void SendBullet(TCPSocketPtr inSocket);
+	void ReceiveBullet(TCPSocketPtr inSocket);
 
 	void Update(float dt);
+
+	bool gotDestroyed;
 };

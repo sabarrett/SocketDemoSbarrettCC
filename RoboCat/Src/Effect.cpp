@@ -1,20 +1,25 @@
 #include "RoboCatPCH.h"
 #include "Effect.h"
 
-Effect::Effect(const int gameID, bool shouldDisplay) : GameObject{ gameID }
-{
-	mShouldDisplay = shouldDisplay;
-}
-
-Effect::Effect(const int gameID, float posX, float posY, bool shouldDisplay) : GameObject{ gameID, posX, posY }
-{
-	mShouldDisplay = shouldDisplay;
-}
-
-Effect::Effect(const int gameID, float posX, float posY, string imageIdentifier, bool shouldDisplay) : GameObject{ gameID, posX, posY, imageIdentifier }
+Effect::Effect(const int gameID, bool shouldDisplay) : GameObject{ GameObjectType::EFFECT, gameID }
 {
 	mShouldDisplay = shouldDisplay;
 	mTimer = 0.0;
+	mImageIdentifier = "effect";
+}
+
+Effect::Effect(const int gameID, float posX, float posY, bool shouldDisplay) : GameObject{ GameObjectType::EFFECT, gameID, posX, posY }
+{
+	mShouldDisplay = shouldDisplay;
+	mTimer = 0.0;
+	mImageIdentifier = "effect";
+}
+
+Effect::Effect(const int gameID, float posX, float posY, string imageIdentifier, bool shouldDisplay) : GameObject{ GameObjectType::EFFECT, gameID, posX, posY, imageIdentifier }
+{
+	mShouldDisplay = shouldDisplay;
+	mTimer = 0.0;
+	mImageIdentifier = "effect";
 }
 
 Effect::~Effect()
@@ -29,7 +34,9 @@ void Effect::Write(OutputMemoryBitStream& inStream) const
 	// send if bullet was shot: bool
 	// send if bullet hits: bool
 
-	inStream.Write(mGameID);
+
+	inStream.Write(mGameObjType);
+	inStream.Write(mIngameID);
 
 	inStream.Write(mPosX);
 	inStream.Write(mPosY);
@@ -44,7 +51,9 @@ void Effect::Read(InputMemoryBitStream& inStream)
 	// receive if bullet was shot: bool
 	// receive if bullet hits: bool
 
-	inStream.Read(mGameID);
+
+	inStream.Read(mGameObjType);
+	inStream.Read(mIngameID);
 
 	inStream.Read(mPosX);
 	inStream.Read(mPosY);
@@ -52,25 +61,22 @@ void Effect::Read(InputMemoryBitStream& inStream)
 	inStream.Read(mShouldDisplay);
 }
 
-void Effect::SendPlayer(int inSocket, const Effect* inEffect)
+void Effect::SendEffect(TCPSocketPtr inSocket)
 {
 	OutputMemoryBitStream stream;
-	inEffect->Write(stream);
-	send(inSocket, stream.GetBufferPtr(), stream.GetBitLength(), 0);
+	Write(stream);
+	inSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
 }
 
-void Effect::ReceivePlayer(int inSocket, Effect* outEffect)
+void Effect::ReceiveEffect(TCPSocketPtr inSocket)
 {
-	char* temporaryBuffer = static_cast<char*>(std::malloc(kMaxPacketSize));
-	size_t receivedBitCount = recv(inSocket, temporaryBuffer, kMaxPacketSize, 0);
+	char buffer[1024];
+	int32_t bytesReceived = inSocket->Receive(buffer, 1024);
 
-	if (receivedBitCount > 0) {
-		InputMemoryBitStream stream(temporaryBuffer,
-			static_cast<uint32_t> (receivedBitCount));
-		outEffect->Read(stream);
-	}
-	else {
-		std::free(temporaryBuffer);
+	if (bytesReceived > 0)
+	{
+		InputMemoryBitStream stream(buffer, 1024);
+		Read(stream);
 	}
 
 }

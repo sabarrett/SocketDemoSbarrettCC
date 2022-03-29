@@ -1,22 +1,28 @@
 #include "RoboCatPCH.h"
 #include "Bullet.h"
 
-Bullet::Bullet(const int gameID, float speed, bool isGoingUpwards) : GameObject{ gameID }
+Bullet::Bullet(const int gameID, float speed, bool isGoingUpwards) : GameObject{ GameObjectType::BULLET, gameID }
 {
 	mSpeed = speed;
 	mIsGoingUpwards = isGoingUpwards;
+	gotDestroyed = false;
+	mImageIdentifier = "button";
 }
 
-Bullet::Bullet(const int gameID, float posX, float posY, float speed, bool isGoingUpwards) : GameObject{ gameID, posX, posY }
+Bullet::Bullet(const int gameID, float posX, float posY, float speed, bool isGoingUpwards) : GameObject{ GameObjectType::BULLET, gameID, posX, posY }
 {
 	mSpeed = speed;
 	mIsGoingUpwards = isGoingUpwards;
+	gotDestroyed = false;
+	mImageIdentifier = "button";
 }
 
-Bullet::Bullet(const int gameID, float posX, float posY, string imageIdentifier, float speed, bool isGoingUpwards) : GameObject{ gameID, posX, posY, imageIdentifier }
+Bullet::Bullet(const int gameID, float posX, float posY, string imageIdentifier, float speed, bool isGoingUpwards) : GameObject{ GameObjectType::BULLET, gameID, posX, posY, imageIdentifier }
 {
 	mSpeed = speed;
 	mIsGoingUpwards = isGoingUpwards;
+	gotDestroyed = false;
+	mImageIdentifier = "button";
 }
 
 Bullet::~Bullet()
@@ -31,12 +37,14 @@ void Bullet::Write(OutputMemoryBitStream& inStream) const
 	// send if bullet was shot: bool
 	// send if bullet hits: bool
 
-	inStream.Write(mGameID);
+	inStream.Write(mGameObjType);
+	inStream.Write(mIngameID);
 
 	inStream.Write(mPosX);
 	inStream.Write(mPosY);
 
 	inStream.Write(mIsGoingUpwards);
+	inStream.Write(gotDestroyed);
 }
 
 void Bullet::Read(InputMemoryBitStream& inStream)
@@ -46,33 +54,34 @@ void Bullet::Read(InputMemoryBitStream& inStream)
 	// receive if bullet was shot: bool
 	// receive if bullet hits: bool
 
-	inStream.Read(mGameID);
+
+	inStream.Read(mGameObjType);
+	inStream.Read(mIngameID);
 
 	inStream.Read(mPosX);
 	inStream.Read(mPosY);
 
 	inStream.Read(mIsGoingUpwards);
+	inStream.Read(gotDestroyed);
 }
 
-void Bullet::SendBullet(int inSocket, const Bullet* inBullet)
+void Bullet::SendBullet(TCPSocketPtr inSocket)
 {
 	OutputMemoryBitStream stream;
-	inBullet->Write(stream);
-	send(inSocket, stream.GetBufferPtr(), stream.GetBitLength(), 0);
+	Write(stream);
+	inSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
+	//send(inSocket, stream.GetBufferPtr(), stream.GetBitLength(), 0);
 }
 
-void Bullet::ReceiveBullet(int inSocket, Bullet* outBullet)
+void Bullet::ReceiveBullet(TCPSocketPtr inSocket)
 {
-	char* temporaryBuffer = static_cast<char*>(std::malloc(kMaxPacketSize));
-	size_t receivedBitCount = recv(inSocket, temporaryBuffer, kMaxPacketSize, 0);
+	char buffer[1024];
+	int32_t bytesReceived = inSocket->Receive(buffer, 1024);
 
-	if (receivedBitCount > 0) {
-		InputMemoryBitStream stream(temporaryBuffer,
-			static_cast<uint32_t> (receivedBitCount));
-		outBullet->Read(stream);
-	}
-	else {
-		std::free(temporaryBuffer);
+	if (bytesReceived > 0)
+	{
+		InputMemoryBitStream stream(buffer, 1024);
+		Read(stream);
 	}
 }
 

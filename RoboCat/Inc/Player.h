@@ -7,9 +7,9 @@ private:
 
 	bool mIsFiring;
 	bool mIsHit;
+	float mSpeed;
 
 public:
-	float mSpeed;
 
 	Player(const int gameID, float speed);
 	Player(const int gameID, float posX, float posY, float speed);
@@ -20,8 +20,14 @@ public:
 	void Write(OutputMemoryBitStream& inStream)const;
 	void Read(InputMemoryBitStream& inStream);
 
-	void SendPlayer(int inSocket, const Player* inPlayer);
-	void ReceivePlayer(int inSocket, Player* outPlayer);
+	void SendPlayer(TCPSocketPtr inSocket);
+	void ReceivePlayer(TCPSocketPtr inSocket);
+
+	void SetIsFiring(bool isFiring);
+	void SetIsHit(bool isHit);
+	bool GetIsFiring();
+	bool GetIsHit();
+	float GetSpeed();
 
 	void Move(float deltaX);
 };

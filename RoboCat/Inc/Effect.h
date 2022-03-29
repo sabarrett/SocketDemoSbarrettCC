@@ -8,8 +8,6 @@ private:
 	bool mShouldDisplay;
 
 public:
-	float mTimer;
-	float mMaxTime;
 
 	Effect(const int gameID, bool shouldDisplay);
 	Effect(const int gameID, float posX, float posY, bool shouldDisplay);
@@ -20,8 +18,10 @@ public:
 	void Write(OutputMemoryBitStream& inStream)const;
 	void Read(InputMemoryBitStream& inStream);
 
-	void SendPlayer(int inSocket, const Effect* inEffect);
-	void ReceivePlayer(int inSocket, Effect* outEffect);
+	void SendEffect(TCPSocketPtr inSocket);
+	void ReceiveEffect(TCPSocketPtr inSocket);
 
 	void Update(float dt);
+
+	float mTimer;
 };

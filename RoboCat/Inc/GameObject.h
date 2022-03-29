@@ -12,22 +12,23 @@ class GameObject
 {
 protected:
 
-	int mGameID;
+	int mIngameID;
 
-	float mPosX;
-	float mPosY;
+	float mPosX = 0.0;
+	float mPosY = 0.0;
 
+	GameObjectType mGameObjType;
 
 public:
 
 	string mImageIdentifier;
-	GameObject(const int gameID);
-	GameObject(const int gameID, float posX, float posY);
-	GameObject(const int gameID, float posX, float posY, string imageIdentifier);
+	GameObject(GameObjectType gameObjType, const int gameID);
+	GameObject(GameObjectType gameObjType, const int gameID, float posX, float posY);
+	GameObject(GameObjectType gameObjType, const int gameID, float posX, float posY, string imageIdentifier);
 
 	~GameObject();
 
-	const int getGameID() { return mGameID; };
+	const int getGameID() { return mIngameID; };
 
 	float getPosX() { return mPosX; };
 	void setPosX(float newPosX) { mPosX = newPosX; };

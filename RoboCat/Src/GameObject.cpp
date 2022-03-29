@@ -1,19 +1,19 @@
 #include "RoboCatPCH.h"
 #include "GameObject.h"
 
-GameObject::GameObject(const int gameID) : mGameID{ gameID }
+GameObject::GameObject(GameObjectType gameObjType, const int gameID) : mIngameID{ gameID }, mGameObjType{ gameObjType }
 {
 	mPosX = 0.0;
 	mPosY = 0.0;
 }
 
-GameObject::GameObject(const int gameID, float posX, float posY) : mGameID{ gameID }
+GameObject::GameObject(GameObjectType gameObjType, const int gameID, float posX, float posY) : mIngameID{ gameID }, mGameObjType{ gameObjType }
 {
 	mPosX = posX;
 	mPosY = posY;
 }
 
-GameObject::GameObject(const int gameID, float posX, float posY, string imageIdentifier) : mGameID{ gameID }
+GameObject::GameObject(GameObjectType gameObjType, const int gameID, float posX, float posY, string imageIdentifier) : mIngameID{ gameID }, mGameObjType{ gameObjType }
 {
 	mPosX = posX;
 	mPosY = posY;

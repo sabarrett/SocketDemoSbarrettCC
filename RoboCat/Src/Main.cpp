@@ -44,186 +44,112 @@ const float PLAYER_SPEED = 0.2;
 const string HOST_PORT_NUMBER = "8081";
 const string CLIENT_PORT_NUMBER = "8084";
 
-//void DoTcpServer(bool& shouldClose)
-//{
-//	
-//
-//	std::thread receiveThread([&quit, &connSocket, &connectedUsername]() {
-//		while (!quit)
-//		{
-//			if (connSocket != nullptr)
-//			{
-//				char buffer[4096];
-//				int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-//				if (bytesReceived == 0)
-//				{
-//					LOG("%s", " Connection gracefully closed. Press enter to exit!");
-//					quit = true;
-//					connSocket->Close();
-//					connSocket = nullptr;
-//					return;
-//				}
-//				if (bytesReceived < 0)
-//				{
-//					LOG("%s", " Connection forcefully closed. Press enter to exit!");
-//					quit = true;
-//					connSocket->Close();
-//					connSocket = nullptr;
-//					return;
-//				}
-//				std::string receivedMsg(buffer, bytesReceived);
-//				if (receivedMsg == "---")
-//				{
-//					LOG(" User %s left chat room. Press enter to exit!", connectedUsername.c_str());
-//					quit = true;
-//					connSocket->Close();
-//					connSocket = nullptr;
-//					return;
-//				}
-//				else
-//				{
-//					LOG("%s", " Connection gracefully closed. Press enter to exit!");
-//					LOG(" %s: %s", connectedUsername.c_str(), receivedMsg.c_str());
-//				}
-//			}
-//		}
-//		});
-//
-//	std::thread sendThread([&quit, &connSocket, &win]()
-//		{
-//			while (!quit)
-//			{
-//				if (connSocket != nullptr)
-//				{
-//					std::string input;
-//					std::getline(std::cin, input);
-//					if (!quit)
-//						win.WriteFromStdin(" You: " + input);
-//
-//					if (input != "/exit")
-//					{
-//						connSocket->Send(input.c_str(), input.length());
-//					}
-//					else
-//					{
-//						std::string message("---");
-//						connSocket->Send(message.c_str(), message.length());
-//
-//						LOG("%s", " Connection gracefully closed.  Press enter to exit!");
-//						connSocket->Close();
-//						connSocket = nullptr;
-//						quit = true;
-//					}
-//				}
-//			}
-//		});
-//
-//	std::cout << " Type '/exit' and press Enter to exit!\n";
-//
-//	sendThread.join();
-//	receiveThread.join();
-//}
-//
-//
-//
-//void DoTcpClient()
-//{
-//	char buffer[4096];
-//	int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
-//	if (bytesReceived == 0)
-//	{
-//		LOG("%s", " Connection gracefully closed. Press enter to exit!");
-//		quit = true;
-//		return;
-//	}
-//	if (bytesReceived < 0)
-//	{
-//		LOG("%s", " Connection forcefully closed. Press enter to exit!");
-//		quit = true;
-//		return;
-//	}
-//
-//	std::string connectedUsername(buffer, bytesReceived);
-//	LOG(" User %s joined chat room", connectedUsername.c_str());
-//
-//	std::thread receiveThread([&quit, &clientSocket, &connectedUsername]() {
-//		while (!quit)
-//		{
-//			if (clientSocket != nullptr)
-//			{
-//				char buffer[4096];
-//				int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
-//				if (bytesReceived == 0)
-//				{
-//					LOG("%s", " Connection gracefully closed. Press enter to exit!");
-//					quit = true;
-//					clientSocket->Close();
-//					clientSocket = nullptr;
-//					return;
-//				}
-//				if (bytesReceived < 0)
-//				{
-//					LOG("%s", " Connection forcefully closed. Press enter to exit!");
-//					quit = true;
-//					clientSocket->Close();
-//					clientSocket = nullptr;
-//					return;
-//				}
-//				std::string receivedMsg(buffer, bytesReceived);
-//				if (receivedMsg == "---")
-//				{
-//					quit = true;
-//					clientSocket->Close();
-//					clientSocket = nullptr;
-//					LOG(" User %s left chat room. Press any button to exit. Press enter to exit!", connectedUsername.c_str());
-//					return;
-//				}
-//				else
-//				{
-//					LOG(" %s: %s", connectedUsername.c_str(), receivedMsg.c_str());
-//				}
-//			}
-//		}
-//		});
-//
-//	std::thread sendThread([&quit, &clientSocket, &win]()
-//		{
-//			while (!quit)
-//			{
-//				if (clientSocket != nullptr)
-//				{
-//					std::string input;
-//					std::getline(std::cin, input);
-//
-//					if (!quit)
-//						win.WriteFromStdin(" You: " + input);
-//
-//					if (input != "/exit")
-//					{
-//						clientSocket->Send(input.c_str(), input.length());
-//					}
-//					else
-//					{
-//						std::string message("---");
-//						clientSocket->Send(message.c_str(), message.length());
-//
-//						LOG("%s", " Connection gracefully closed. Press enter to exit!");
-//						quit = true;
-//						clientSocket->Close();
-//						clientSocket = nullptr;
-//					}
-//				}
-//			}
-//		});
-//
-//	std::cout << " Type '/exit' and press Enter to exit!\n";
-//
-//	sendThread.join();
-//	receiveThread.join();
-//}
-
 // Effect duration
 const float MAX_EFFECT_TIME = 700;
+
+GameObjectType ReceivePacket(TCPSocketPtr inSocket, int currentMaxID, Player* player2, vector<Bullet*> bulletsVector, vector<Effect*> effectsVector, bool &shouldExit)
+{
+	GameObjectType type;
+	int id;
+	float x;
+	float y;
+
+	char buffer[1024];
+	int32_t bytesReceived = inSocket->Receive(buffer, 1024);
+
+	if (bytesReceived == 0)
+	{
+		LOG("%s", " Connection gracefully closed. Press enter to exit!");
+		shouldExit = false;
+	}
+	if (bytesReceived < 0)
+	{
+		LOG("%s", " Connection forcefully closed. Press enter to exit!");
+		shouldExit = false;
+	}
+	if (bytesReceived > 0)
+	{
+		InputMemoryBitStream stream(buffer, 1024);
+		stream.Read(type);
+		stream.Read(id);
+
+		std::cout << type << std::endl;
+
+		if (id >= currentMaxID)
+		{
+			switch (type)
+			{
+				case GameObjectType::BULLET:
+				{
+					bool isGoingUpwards;
+
+					stream.Read(x);
+					stream.Read(y);
+					stream.Read(isGoingUpwards);
+
+					Bullet* bullet = new Bullet(id, x, y, BULLET_SPEED ,isGoingUpwards);
+					bulletsVector.push_back(bullet);
+					break;
+				}
+				case GameObjectType::EFFECT: 
+				{
+					bool shouldDisplay;
+
+					stream.Read(x);
+					stream.Read(y);
+					stream.Read(shouldDisplay);
+
+					Effect* effect = new Effect(id, x, y, shouldDisplay);
+					effectsVector.push_back(effect);
+					break;
+				}
+			}
+		}
+		else
+		{
+			switch (type)
+			{
+				case GameObjectType::PLAYER:
+				{
+					bool isFiring;
+					bool isHit;
+
+					stream.Read(x);
+					stream.Read(y);
+					stream.Read(isFiring);
+					stream.Read(isHit);
+
+					player2->setPosX(x);
+					player2->setPosY(y);
+					player2->SetIsFiring(isFiring);
+					player2->SetIsHit(isHit);
+					break;
+				}
+				case GameObjectType::BULLET:
+				{
+					stream.Read(x);
+					stream.Read(y);
+
+					if (!effectsVector.empty())
+					{
+						for (auto& bullet : bulletsVector)
+						{
+							if (bullet->getGameID() == id)
+							{
+								bullet->setPosX(x);
+								bullet->setPosY(y);
+							}
+						}
+					}
+					break;
+				}
+			}
+		}
+
+		return type;
+	}
+}
+
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -243,6 +169,7 @@ int main(int argc, const char** argv)
 	bool isGameRunning = true;
 	std::vector<Bullet*> bulletsVector;
 	std::vector<Effect*> effectsVector;
+	int gameObjectIDs = 2;
 
 	// ---------------------- Time related ----------------------
 	clock_t start, end;
@@ -365,8 +292,30 @@ int main(int argc, const char** argv)
 
 			Player* player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			Player* player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
+			pGL->drawImage(player2->mImageIdentifier, player2->getPosX(), player2->getPosY());
 
-			player1->SendPlayer(listenSocket, player1);
+			std::thread receiveThread([&isGameRunning, &connSocket, &bulletsVector, &gameObjectIDs, &player2, &effectsVector, &pGL]()
+				{
+					while (isGameRunning)
+					{
+						if (connSocket != nullptr)
+						{							
+							switch (ReceivePacket(connSocket, gameObjectIDs, player2, bulletsVector, effectsVector, isGameRunning))
+							{
+								case GameObjectType::PLAYER:
+								{
+									if (player2->GetIsFiring())
+									{
+										Bullet* newBullet = new Bullet(gameObjectIDs, player2->getPosX() + PLAYER_SIZE / 2 - BULLET_SIZE / 2, player2->getPosY() + PLAYER_SIZE * 3 / 2, "bullet", BULLET_SPEED, false);
+										gameObjectIDs++;
+										bulletsVector.push_back(newBullet);
+									}
+									break;
+								}
+							}
+						}
+					}
+				});
 
 			// ---------------------- Main Game Loop ----------------------
 			while (isGameRunning)
@@ -380,10 +329,15 @@ int main(int argc, const char** argv)
 				// Updates
 				pIS->update();
 				inputData = pIS->getInputData();
-				for (auto& bullet : bulletsVector)
+				
+				if (!bulletsVector.empty())
 				{
-					bullet->Update(dt);
-					pGL->drawImage(bullet->mImageIdentifier, bullet->getPosX(), bullet->getPosY());
+					for (auto& bullet : bulletsVector)
+					{
+						bullet->Update(dt);
+						bullet->SendBullet(connSocket);
+						pGL->drawImage(bullet->mImageIdentifier, bullet->getPosX(), bullet->getPosY());
+					}
 				}
 
 				if (inputData.keyPressed_ESCAPE)
@@ -398,50 +352,82 @@ int main(int argc, const char** argv)
 				if (inputData.keyPressed_A)
 				{
 					//std::cout << "A Pressed" << std::endl;
-					player1->Move(-dt * player1->mSpeed);
+					player1->Move(-dt * player1->GetSpeed());
+					player1->SendPlayer(connSocket);
 				}
 				if (inputData.keyPressed_D)
 				{
 					//std::cout << "D Pressed" << std::endl;				
-					player1->Move(dt * player1->mSpeed);
+					player1->Move(dt * player1->GetSpeed());
+					player1->SendPlayer(connSocket);
 
 				}
 				if (inputData.keyPressed_SPACE)
 				{
-					Bullet* newBullet = new Bullet(0, player1->getPosX() + PLAYER_SIZE / 2 - BULLET_SIZE / 2, player1->getPosY() - PLAYER_SIZE / 2, "bullet", BULLET_SPEED, true);
+					Bullet* newBullet = new Bullet(gameObjectIDs, player1->getPosX() + PLAYER_SIZE / 2 - BULLET_SIZE / 2, player1->getPosY() - PLAYER_SIZE / 2, "bullet", BULLET_SPEED, true);
+					gameObjectIDs++;
 					pGL->drawImage(newBullet->mImageIdentifier, newBullet->getPosX(), newBullet->getPosY());
 					bulletsVector.push_back(newBullet);
-					std::cout << "Space Pressed" << std::endl;
+					//std::cout << "Space Pressed" << std::endl;
 				}
 
-				for (auto& bullet : bulletsVector)
+				if (!bulletsVector.empty())
 				{
-					//check bullet y is <= player y + playersize
-					//check bullet x is >= player x - bulletsize / 2 and <= player x + playersize
-					if (bullet->getPosY() <= player2->getPosY() + PLAYER_SIZE + OFFSET_HIT &&
-						bullet->getPosX() >= player2->getPosX() - BULLET_SIZE &&
-						bullet->getPosX() <= player2->getPosX() + PLAYER_SIZE &&
-						bullet->getPosY() >= player2->getPosY() - BULLET_SIZE / 2)
+					for (auto& bullet : bulletsVector)
 					{
-						std::cout << "BULLET HIT";
-						pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
+						//check bullet y is <= player y + playersize
+						//check bullet x is >= player x - bulletsize / 2 and <= player x + playersize
+						if (bullet->getPosY() <= player2->getPosY() + PLAYER_SIZE + OFFSET_HIT &&
+							bullet->getPosX() >= player2->getPosX() - BULLET_SIZE &&
+							bullet->getPosX() <= player2->getPosX() + PLAYER_SIZE &&
+							bullet->getPosY() >= player2->getPosY() - BULLET_SIZE / 2)
+						{
+							//std::cout << "BULLET HIT";
+							pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
 
-						Effect* newEffect = new Effect(0, bullet->getPosX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getPosY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
-						pGL->drawImage(newEffect->mImageIdentifier, newEffect->getPosX(), newEffect->getPosY());
-						effectsVector.push_back(newEffect);
+							Effect* newEffect = new Effect(gameObjectIDs, bullet->getPosX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getPosY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
+							newEffect->SendEffect(connSocket);
+							gameObjectIDs++;
+							pGL->drawImage(newEffect->mImageIdentifier, newEffect->getPosX(), newEffect->getPosY());
+							effectsVector.push_back(newEffect);
 
-						bullet = nullptr;
-						bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
+							bullet = nullptr;
+							bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
+						}
+						else if (bullet->getPosY() <= player1->getPosY() + PLAYER_SIZE &&
+							bullet->getPosX() >= player1->getPosX() - BULLET_SIZE &&
+							bullet->getPosX() <= player1->getPosX() + PLAYER_SIZE &&
+							bullet->getPosY() >= player1->getPosY() - BULLET_SIZE / 2 - OFFSET_HIT)
+						{
+							//std::cout << "BULLET HIT";
+							pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
+
+							Effect* newEffect = new Effect(gameObjectIDs, bullet->getPosX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getPosY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
+							newEffect->SendEffect(connSocket);
+							gameObjectIDs++;
+							pGL->drawImage(newEffect->mImageIdentifier, newEffect->getPosX(), newEffect->getPosY());
+							effectsVector.push_back(newEffect);
+
+							bullet->gotDestroyed = true;
+							bullet->SendBullet(connSocket);
+
+							bullet = nullptr;
+							bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
+						}
 					}
 				}
-				for (auto& effect : effectsVector)
+
+				if (!effectsVector.empty())
 				{
-					effect->Update(dt);
-					if (effect->mTimer >= MAX_EFFECT_TIME)
+					for (auto& effect : effectsVector)
 					{
-						pGL->drawImage("effectCover", effect->getPosX(), effect->getPosY());
-						effect = nullptr;
-						effectsVector.erase(std::remove(effectsVector.begin(), effectsVector.end(), effect), effectsVector.end());
+						effect->Update(dt);
+						if (effect->mTimer >= MAX_EFFECT_TIME)
+						{
+							pGL->drawImage("effectCover", effect->getPosX(), effect->getPosY());
+							effect = nullptr;
+							effectsVector.erase(std::remove(effectsVector.begin(), effectsVector.end(), effect), effectsVector.end());
+						}
 					}
 				}
 
@@ -450,6 +436,10 @@ int main(int argc, const char** argv)
 				pGL->render();
 			}
 		}
+		connSocket->Close();
+		listenSocket->Close();
+		connSocket = nullptr;
+		listenSocket = nullptr;
 	}
 	else // ------------------------------------------------------------------ CLIENT ------------------------------------------------------------------
 	{
@@ -494,7 +484,124 @@ int main(int argc, const char** argv)
 			ExitProcess(1);
 		}
 		LOG("%s", " Connected to server!");
+
+		// If Graphics and Input initialized correctly
+		if (isGameRunning)
+		{
+			// Load Images
+			pGL->loadImage(IMAGES_PATH + BACKGROUND_FILENAME, "background");
+			pGL->loadImage(IMAGES_PATH + PLAYER_SPRITE_FILENAME, "player");
+			pGL->loadImage(IMAGES_PATH + BULLET_SPRITE_FILENAME, "bullet");
+			pGL->loadImage(IMAGES_PATH + BULLET_COVER_FILENAME, "bulletCover");
+			pGL->loadImage(IMAGES_PATH + EFFECT_SPRITE_FILENAME, "effect");
+			pGL->loadImage(IMAGES_PATH + EFFECT_COVER_FILENAME, "effectCover");
+			// Draw Stuff
+			pGL->drawImage("background", 0.0, 0.0);
+
+			Player* player1 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
+			Player* player2 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
+			pGL->drawImage(player2->mImageIdentifier, player2->getPosX(), player2->getPosY());
+
+			std::thread receiveThread([&isGameRunning, &clientSocket, &bulletsVector, &gameObjectIDs, &player2, &effectsVector, &pGL]()
+				{
+					while (isGameRunning)
+					{
+						if (clientSocket != nullptr)
+						{
+							switch (ReceivePacket(clientSocket, gameObjectIDs, player2, bulletsVector, effectsVector, isGameRunning))
+							{
+							case GameObjectType::BULLET:
+							{
+								if (!bulletsVector.empty())
+								{
+									for (auto& bullet : bulletsVector)
+									{
+										if (bullet->gotDestroyed)
+										{
+											//pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
+											bullet = nullptr;
+											bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
+										}
+										else
+										{
+											bullet->mImageIdentifier = "bullet";
+										}
+									}
+								}
+							}
+							}
+						}
+					}
+				});
+
+			// ---------------------- Main Game Loop ----------------------
+			while (isGameRunning)
+			{
+				// Updates
+				pIS->update();
+				inputData = pIS->getInputData();
+
+				if (!bulletsVector.empty())
+				{
+					for (auto& bullet : bulletsVector)
+					{
+						pGL->drawImage("bullet", bullet->getPosX(), bullet->getPosY());
+					}
+				}
+
+				if (inputData.keyPressed_ESCAPE)
+				{
+					isGameRunning = false;
+					//std::cout << "Escape Pressed" << std::endl;
+				}
+				if (inputData.keyPressed_R)
+				{
+					//std::cout << "R Pressed" << std::endl;
+				}
+				if (inputData.keyPressed_A)
+				{
+					//std::cout << "A Pressed" << std::endl;
+					player1->Move(-dt * player1->GetSpeed());
+					player1->SendPlayer(clientSocket);
+				}
+				if (inputData.keyPressed_D)
+				{
+					//std::cout << "D Pressed" << std::endl;				
+					player1->Move(dt * player1->GetSpeed());
+					player1->SendPlayer(clientSocket);
+				}
+				if (inputData.keyPressed_SPACE)
+				{
+					player1->SetIsFiring(true);
+					player1->SendPlayer(clientSocket);
+					player1->SetIsFiring(false);
+					//std::cout << "Space Pressed" << std::endl;
+				}
+
+				if (!effectsVector.empty())
+				{
+					for (auto& effect : effectsVector)
+					{
+						pGL->drawImage("effect", effect->getPosX(), effect->getPosY());
+						effect->Update(dt);
+						if (effect->mTimer >= MAX_EFFECT_TIME)
+						{
+							pGL->drawImage("effectCover", effect->getPosX(), effect->getPosY());
+							effect = nullptr;
+							effectsVector.erase(std::remove(effectsVector.begin(), effectsVector.end(), effect), effectsVector.end());
+						}
+					}
+				}
+
+				pGL->drawImage(player1->mImageIdentifier, player1->getPosX(), player1->getPosY());
+				pGL->drawImage(player2->mImageIdentifier, player2->getPosX(), player2->getPosY());
+				pGL->render();
+			}
+			clientSocket->Close();
+		}
 	}
+
+	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DONT FORGET TO CLEANUP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	SocketUtil::CleanUp();
 
