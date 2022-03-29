@@ -564,8 +564,57 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\DeanLib\DataRepository.cpp" />
+    <ClCompile Include="..\common\DeanLib\DeanLibUtilities.cpp" />
+    <ClCompile Include="..\common\DeanLib\DeanMath.cpp" />
+    <ClCompile Include="..\common\DeanLib\MemoryPool.cpp" />
+    <ClCompile Include="..\common\DeanLib\MemoryTracker.cpp" />
+    <ClCompile Include="..\common\DeanLib\PerformanceTracker.cpp" />
+    <ClCompile Include="..\common\DeanLib\RayCaster.cpp" />
+    <ClCompile Include="..\common\DeanLib\Timer.cpp" />
+    <ClCompile Include="..\common\DeanLib\Trackable.cpp" />
+    <ClCompile Include="..\common\DeanLib\Vector2D.cpp" />
+    <ClCompile Include="..\GraphicsLib\Animation.cpp" />
+    <ClCompile Include="..\GraphicsLib\Color.cpp" />
+    <ClCompile Include="..\GraphicsLib\Event.cpp" />
+    <ClCompile Include="..\GraphicsLib\EventListener.cpp" />
+    <ClCompile Include="..\GraphicsLib\EventSystem.cpp" />
+    <ClCompile Include="..\GraphicsLib\Font.cpp" />
+    <ClCompile Include="..\GraphicsLib\GraphicsBuffer.cpp" />
+    <ClCompile Include="..\GraphicsLib\GraphicsBufferManager.cpp" />
+    <ClCompile Include="..\GraphicsLib\GraphicsSystem.cpp" />
+    <ClCompile Include="..\GraphicsLib\InputSystem.cpp" />
+    <ClCompile Include="..\GraphicsLib\Sprite.cpp" />
+    <ClCompile Include="..\GraphicsLib\System.cpp" />
     <ClCompile Include="Unit.cpp" />
     <ClCompile Include="UnitManager.cpp" />
+    <ClInclude Include="..\common\DeanLib\include\CircularQueue.h" />
+    <ClInclude Include="..\common\DeanLib\include\ConditionalCallback.h" />
+    <ClInclude Include="..\common\DeanLib\include\DataRepository.h" />
+    <ClInclude Include="..\common\DeanLib\include\DeanLibDefines.h" />
+    <ClInclude Include="..\common\DeanLib\include\DeanLibUtilities.h" />
+    <ClInclude Include="..\common\DeanLib\include\DeanMath.h" />
+    <ClInclude Include="..\common\DeanLib\include\MemoryPool.h" />
+    <ClInclude Include="..\common\DeanLib\include\MemoryTracker.h" />
+    <ClInclude Include="..\common\DeanLib\include\MultiDimensionalArray.h" />
+    <ClInclude Include="..\common\DeanLib\include\PerformanceTracker.h" />
+    <ClInclude Include="..\common\DeanLib\include\RayCaster.h" />
+    <ClInclude Include="..\common\DeanLib\include\TimedCallback.h" />
+    <ClInclude Include="..\common\DeanLib\include\Timer.h" />
+    <ClInclude Include="..\common\DeanLib\include\Trackable.h" />
+    <ClInclude Include="..\common\DeanLib\include\Vector2D.h" />
+    <ClInclude Include="..\GraphicsLib\Animation.h" />
+    <ClInclude Include="..\GraphicsLib\Color.h" />
+    <ClInclude Include="..\GraphicsLib\Event.h" />
+    <ClInclude Include="..\GraphicsLib\EventListener.h" />
+    <ClInclude Include="..\GraphicsLib\EventSystem.h" />
+    <ClInclude Include="..\GraphicsLib\Font.h" />
+    <ClInclude Include="..\GraphicsLib\GraphicsBuffer.h" />
+    <ClInclude Include="..\GraphicsLib\GraphicsBufferManager.h" />
+    <ClInclude Include="..\GraphicsLib\GraphicsSystem.h" />
+    <ClInclude Include="..\GraphicsLib\InputSystem.h" />
+    <ClInclude Include="..\GraphicsLib\Sprite.h" />
+    <ClInclude Include="..\GraphicsLib\System.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameEvent.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
@@ -606,6 +655,7 @@
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\common\DeanLib\DeanLib.sln" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

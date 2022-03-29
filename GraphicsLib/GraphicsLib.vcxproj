@@ -184,34 +184,6 @@
       </AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Animation.cpp" />
-    <ClCompile Include="Color.cpp" />
-    <ClCompile Include="Event.cpp" />
-    <ClCompile Include="EventListener.cpp" />
-    <ClCompile Include="EventSystem.cpp" />
-    <ClCompile Include="Font.cpp" />
-    <ClCompile Include="GraphicsBuffer.cpp" />
-    <ClCompile Include="GraphicsBufferManager.cpp" />
-    <ClCompile Include="GraphicsSystem.cpp" />
-    <ClCompile Include="InputSystem.cpp" />
-    <ClCompile Include="Sprite.cpp" />
-    <ClCompile Include="System.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Animation.h" />
-    <ClInclude Include="Color.h" />
-    <ClInclude Include="Event.h" />
-    <ClInclude Include="EventListener.h" />
-    <ClInclude Include="EventSystem.h" />
-    <ClInclude Include="Font.h" />
-    <ClInclude Include="GraphicsBuffer.h" />
-    <ClInclude Include="GraphicsBufferManager.h" />
-    <ClInclude Include="GraphicsSystem.h" />
-    <ClInclude Include="InputSystem.h" />
-    <ClInclude Include="Sprite.h" />
-    <ClInclude Include="System.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

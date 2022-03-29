@@ -132,38 +132,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="DataRepository.cpp" />
-    <ClCompile Include="DeanLibUtilities.cpp" />
-    <ClCompile Include="DeanMath.cpp" />
-    <ClCompile Include="MemoryPool.cpp" />
-    <ClCompile Include="MemoryTracker.cpp" />
-    <ClCompile Include="PerformanceTracker.cpp" />
-    <ClCompile Include="RayCaster.cpp" />
-    <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="Trackable.cpp" />
-    <ClCompile Include="Vector2D.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\ConditionalCallback.h" />
-    <ClInclude Include="include\DeanMath.h" />
-    <ClInclude Include="include\RayCaster.h" />
-    <ClInclude Include="include\TimedCallback.h" />
-    <ClInclude Include="include\CircularQueue.h" />
-    <ClInclude Include="include\DataRepository.h" />
-    <ClInclude Include="include\DeanLibDefines.h" />
-    <ClInclude Include="include\DeanLibUtilities.h" />
-    <ClInclude Include="include\MemoryPool.h" />
-    <ClInclude Include="include\MemoryTracker.h" />
-    <ClInclude Include="include\MultiDimensionalArray.h" />
-    <ClInclude Include="include\PerformanceTracker.h" />
-    <ClInclude Include="include\Timer.h" />
-    <ClInclude Include="include\Trackable.h" />
-    <ClInclude Include="include\Vector2D.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="DeanLib.sln" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

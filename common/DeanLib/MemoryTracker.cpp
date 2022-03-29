@@ -1,7 +1,7 @@
 #include <iostream>
 #include <map>
-#include "MemoryTracker.h"
-#include "Trackable.h"
+#include "common/DeanLib/include/MemoryTracker.h"
+#include "common/DeanLib/include/Trackable.h"
 
 using namespace std;
 

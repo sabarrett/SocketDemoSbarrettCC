@@ -1,5 +1,5 @@
-#include "DeanMath.h"
-#include "Vector2D.h"
+#include "common/DeanLib/include/DeanMath.h"
+#include "common/DeanLib/include/Vector2D.h"
 
 double calcDotProduct(const Vector2D& vector1, const Vector2D& vector2)
 {
