@@ -40,7 +40,10 @@ bool TCPServerSendMessages(TCPSocketPtr conn, SocketAddress address)
 
 bool TCPClientSendMessages(TCPSocketPtr connSocket, SocketAddress address)
 {
-	//so i want to send out all the different info each run through here
+	//so i want to send out and receive all the different info each run through here
+		//object count
+		//object type
+		//object position
 
 	char message[4096];
 
