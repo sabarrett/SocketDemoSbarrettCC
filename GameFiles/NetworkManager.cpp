@@ -118,7 +118,7 @@ bool NetworkManager::HandleIncomingInputPackets()
 	return true;
 }
 
-bool NetworkManager::HandleOutgoingWorldStatePackets(vector<JoinerInput>& joinerInputs)
+bool NetworkManager::HandleOutgoingWorldStatePackets()
 {
 	std::cout << "HandlingCreatorOutgoing\n";
 	return true;
@@ -131,7 +131,7 @@ bool NetworkManager::HandleIncomingWorldStatePackets()
 	return true;
 }
 
-bool NetworkManager::HandleOutgoingInputPackets()
+bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs)
 {
 	std::cout << "HandlingJoinerOutgoing\n";
 	return true;

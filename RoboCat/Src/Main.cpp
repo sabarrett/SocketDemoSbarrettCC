@@ -181,14 +181,14 @@ int main(int argc, const char** argv)
 			gameWorld.Update();
 			//ProcessWorldState();
 
-			NetworkManager::HandleOutgoingWorldStatePackets(std::ref(joinerInputs));
+			NetworkManager::HandleOutgoingWorldStatePackets();
 		}
 		else
 		{
 			gameWorld.Update();
 			//ProcessWorldState();
 			NetworkManager::HandleIncomingWorldStatePackets();
-			NetworkManager::HandleOutgoingInputPackets();
+			NetworkManager::HandleOutgoingInputPackets(std::ref(joinerInputs));
 		}
 
 

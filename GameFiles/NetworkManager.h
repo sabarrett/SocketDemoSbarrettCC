@@ -18,10 +18,10 @@ namespace NetworkManager
         // Derived Connection Functions for in-game use
     // creator
     bool HandleIncomingInputPackets();
-    bool HandleOutgoingWorldStatePackets(vector<JoinerInput>& joinerInputs);
+    bool HandleOutgoingWorldStatePackets();
     // joiner
     bool HandleIncomingWorldStatePackets();
-    bool HandleOutgoingInputPackets();
+    bool HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs);
 }
 
 
