@@ -57,7 +57,7 @@ void WorldState::CreateLock()
 void WorldState::CreateLock(int posX, int posY)
 {
 	GameObject* createdGameObject = Lock::CreateInstance();
-	createdGameObject->SetPostion(posX, posY);
+	createdGameObject->SetPostion(posX, 375); // quick fix so it's in middle
 	mpGameObjectLinker->GetNetworkId(createdGameObject,true);
 	mGameObjects.push_back(createdGameObject);
 }
@@ -65,7 +65,7 @@ void WorldState::CreateLock(int posX, int posY)
 void WorldState::CreateKey(int posX, int posY)
 {
 	GameObject* createdGameObject = Key::CreateInstance();
-	createdGameObject->SetPostion(posX, posY);
+	createdGameObject->SetPostion(posX, 375); // quick fix so it's in the middle
 	mpGameObjectLinker->GetNetworkId(createdGameObject,true);
 	mGameObjects.push_back(createdGameObject);
 }

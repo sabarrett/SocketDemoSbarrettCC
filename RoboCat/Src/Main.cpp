@@ -20,11 +20,11 @@
 ///
 ///          TODO
 ///  O - Synchronize game objects over a socket.
-///  X - Create a two-player networked game with shared world state.
-///  X - Use Memory Streams and different Packet Header types to synchronize the state between the two instances.
-///  X - At least 10 synchronized objects in the world at once.
-///  X - At least 3 different kinds of game objects.
-///  X - Involve creating and destroying objects, which is then synchronized between clients.
+///  O - Create a two-player networked game with shared world state.
+///  O - Use Memory Streams and different Packet Header types to synchronize the state between the two instances.
+///  O - At least 10 synchronized objects in the world at once.
+///  O - At least 3 different kinds of game objects.
+///  O - Involve creating and destroying objects, which is then synchronized between clients.
 ///  O - Use TCP and UDP appropriately, (for deltas and world state respectively) 
 ///    X - if using UDP, there is a chance of things arriving out of order, so note the time of last remote update and send the time of the update with it, discarding old ones
 ///  X - when user wants to quit, set  closingConnections = true; (to clean things up)
