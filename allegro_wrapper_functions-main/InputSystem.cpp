@@ -5,9 +5,9 @@ InputSystem.cpp
 */
 #include "RoboCatPCH.h"
 
-#include "InputSystem.h"
-
 #include <iostream>
+
+#include "InputSystem.h"
 
 //Constructor
 InputSystem::InputSystem()
@@ -129,7 +129,7 @@ KeyCode InputSystem::getKeyboardInput()
 	//return KeyCode::NONE;
 }
 
-void InputSystem::Update(bool isCreator)
+void InputSystem::Update(bool isCreator, WorldState& gameWorld)
 {
 	switch (GetMouseInput())
 	{
@@ -138,6 +138,11 @@ void InputSystem::Update(bool isCreator)
 		{
 			wasHoldingLeftMouseLastFrame = true;
 			std::cout << "\nLeft Clicked\n";
+
+			if (isCreator)
+			{
+				// create lock
+			}
 		}
 		break;
 	case MouseButton::MiddleMouse:

@@ -64,4 +64,7 @@ public:
 	//Drawing functions
 	void drawImage(std::string imageIdentifier, float posX, float posY);
 	void drawTintedImage(std::string imageIdentifier, float posX, float posY, Colour col);
+
+	//bb and Nick added these!
+	bool HandleDrawImages();
 };

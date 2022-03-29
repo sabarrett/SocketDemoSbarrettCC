@@ -30,8 +30,8 @@
 
 
 
-const float SCREEN_X = 1000;
-const float SCREEN_Y = 500;
+const float SCREEN_X = 1500;
+const float SCREEN_Y = 750;
 const string FILE_PATH = "\\..\\..\\images\\";
 const string BACKGROUND = "background.jpg";
 const int CREATOR_PORT = 8080;
@@ -170,7 +170,7 @@ int main(int argc, const char** argv)
 	// `````````````````````````  main game loop  ``````````````````````````` 
 	while (true)
 	{
-		inputSys.Update(userIsCreator);
+		inputSys.Update(userIsCreator, std::ref(gameWorld));
 
 		if (userIsCreator)
 		{

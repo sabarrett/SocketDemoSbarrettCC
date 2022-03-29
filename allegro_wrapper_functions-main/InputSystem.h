@@ -15,6 +15,10 @@ InputSystem.h
 //Include allegro libraries for input
 #include <allegro5/allegro.h>
 
+
+#include "GameFiles/WorldState.h"
+
+
 enum KeyCode
 {
 	ESCAPE_KEY = ALLEGRO_KEY_ESCAPE,
@@ -40,7 +44,7 @@ enum InputMode
 
 enum InputActionTypes
 {
-	CREATOR_LOCK_SPAWN
+	JOINER_LOCK_SPAWN
 };
 
 struct Location
@@ -90,5 +94,5 @@ public:
 	bool wasHoldingRightMouseLastFrame = false;
 
 	// custom function to handle the game's input - bb
-	void Update(bool isCreator);
+	void Update(bool isCreator, WorldState& gameWorld);
 };
