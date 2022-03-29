@@ -100,10 +100,12 @@ bool GraphicsLibrary::initText(std::string fontFilePath, int fontSize, Colour te
 	mpFont = al_load_ttf_font(fontFilePath.c_str(), fontSize, 0);
 	mColour = al_map_rgba(textColour.getR(), textColour.getG(), textColour.getB(), textColour.getA());
 
-	if (mpFont == nullptr)
-	{
-		return false;
-	}
+	//Okay this is nullptr but it draws... what?
+	//if (mpFont == nullptr)
+	//{
+	//	std::cout << "mpFont == nullptr\n";
+	//	return false;
+	//}
 
 	return true;
 }
