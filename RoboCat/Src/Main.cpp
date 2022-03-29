@@ -18,13 +18,17 @@ static float RandomFloat(float min, float max);
 static void InitGame();
 static void UpdateGame();
 
+struct Transform {
+    Vector2 size;
+    Vector2 velocity;
+
+};
 struct Player {
     Vector2 position;
     Vector2 size;
     Color playerColor;
     int id;
     int score;
-    int life;
 };
 
 struct Ball {
@@ -47,8 +51,10 @@ struct Brick {
         return Rectangle{ position.x - bricks.x / 2, position.y - bricks.y / 2, screenWidth / BRICK_COLUMNS, 40 };
     }
 };
+
 static Brick brickList[BRICK_ROWS][BRICK_COLUMNS] = { 0 };
 static Player player;
+static Player player2;
 static Ball ball;
 
 enum class StartupScreenAction {
@@ -305,53 +311,48 @@ int main(int argc, const char** argv)
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         packetManager.HandleInput(socket.get());
-        if (player.life > 0)
+     
+        // Update
+        //----------------------------------------------------------------------------------
+        // TODO: Update your variables here
+        UpdateGame();
+        //----------------------------------------------------------------------------------
+
+        // Draw
+        //----------------------------------------------------------------------------------
+        BeginDrawing();
+
+        ClearBackground(RAYWHITE);
+
+        //Draw Ball
+        if (ball.isDead == false)
         {
-            // Update
-            //----------------------------------------------------------------------------------
-            // TODO: Update your variables here
-            UpdateGame();
-            //----------------------------------------------------------------------------------
+            DrawCircleV(ball.position, ball.radius, ball.ballColor);
+        }
 
-            // Draw
-            //----------------------------------------------------------------------------------
-            BeginDrawing();
+        //Draw Player
+        DrawRectangle(player.position.x - player.size.x / 2, player.position.y - player.size.y / 2, player.size.x, player.size.y, player.playerColor);
 
-            ClearBackground(RAYWHITE);
-
-            //Draw Ball
-            if (ball.isDead == false)
+        //Draw Bricks
+        for (int i = 0; i < BRICK_ROWS; i++)
+        {
+            for (int j = 0; j < BRICK_COLUMNS; j++)
             {
-                DrawCircleV(ball.position, ball.radius, ball.ballColor);
-            }
-
-            //Draw Player
-            DrawRectangle(player.position.x - player.size.x / 2, player.position.y - player.size.y / 2, player.size.x, player.size.y, player.playerColor);
-
-            //Draw Bricks
-            for (int i = 0; i < BRICK_ROWS; i++)
-            {
-                for (int j = 0; j < BRICK_COLUMNS; j++)
+                if (brickList[i][j].isDead == false)
                 {
-                    if (brickList[i][j].isDead == false)
-                    {
-                        DrawRectangleRec(brickList[i][j].getRectangle(), brickList[i][j].brickColor);
-                    }
+                    DrawRectangleRec(brickList[i][j].getRectangle(), brickList[i][j].brickColor);
                 }
             }
         }
 
         ClearBackground(RAYWHITE);
-
-        if (player.life <= 0)
-        {
-            string playerScore = "Score: " + std::to_string(player.score);
-            DrawText(playerScore.c_str(), GetScreenWidth() / 2 - MeasureText(playerScore.c_str(), 40)/2, GetScreenHeight() / 2 - 50, 40, BLACK);
-        }
+        string playerScore = "Score: " + std::to_string(player.score);
+        DrawText(playerScore.c_str(), 0, GetScreenHeight() / 2 + 100, 40, BLACK);
+        string playerScore2 = "Score: " + std::to_string(player2.score);
+        DrawText(playerScore2.c_str(), screenWidth-100, GetScreenHeight() / 2 + 100, 40, BLACK);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
-
     }
 
     Shutdown();
@@ -365,12 +366,17 @@ void InitGame()
     //Setting bricks to screen
     bricks = { screenWidth/ BRICK_COLUMNS,40};
 
-    //Temp Init Player
+    //Init Player
     player.position = { screenWidth / 2, screenHeight * 7 / 8 };
     player.size = { screenWidth / 10, 20 };
     player.playerColor = { 0,0,255,255 };
     player.id = 0;
-    player.life = 3;
+
+    //Init Player 2
+    player2.position = { screenWidth / 2, screenHeight * 7 / 8 };
+    player2.size = { screenWidth / 10, 20 };
+    player2.playerColor = { 255,0,0,255 };
+    player2.id = 1;
 
     //Temp Init Ball
     ball.position = { screenWidth / 2, screenHeight * 7 / 10};
@@ -444,6 +450,8 @@ void UpdateGame()
         ball.velocity.x = (ball.position.x - player.position.x) / (player.size.x / 2) * 5;
     }
 
+    //if(CheckCollisionCircleRec)
+
     //Wall Collision
     if (ball.position.x + ball.radius >= screenWidth || ball.position.x - ball.radius <= 0)
     {
@@ -457,8 +465,6 @@ void UpdateGame()
     {
         ball.velocity = { 0,0 };
         ball.isDead = true;
-
-        player.life--;
     }
 
     //Player Movement
