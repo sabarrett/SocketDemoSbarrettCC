@@ -16,17 +16,21 @@ private:
 	float mPosX;
 	float mPosY;
 
+
 public:
+
+	string mImageIdentifier;
 	GameObject(const int gameID);
-	GameObject(const int gameID, float postX, float PosY);
+	GameObject(const int gameID, float posX, float posY);
+	GameObject(const int gameID, float posX, float posY, string imageIdentifier);
 
 	~GameObject();
 
 	const int getGameID() { return mGameID; };
 
 	float getPosX() { return mPosX; };
-	float setPosX(float newPosX) { mPosX = newPosX; };
+	void setPosX(float newPosX) { mPosX = newPosX; };
 
 	float getPosY() { return mPosY; };
-	float setPosY(float newPosY) { mPosY = newPosY; };
+	void setPosY(float newPosY) { mPosY = newPosY; };
 };

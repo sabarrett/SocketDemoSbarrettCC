@@ -110,6 +110,8 @@ int main(int argc, const char** argv)
 		pGL->drawImage("background", 0.0, 0.0);
 		pGL->drawImage("player1", playerPositionX, playerPositionY);
 
+		GameObject* go = new GameObject(0, RESOLUTION_X / 2, RESOLUTION_Y / 10, "player1");
+
 		while (isGameRunning)
 		{
 			// Calculating delta time since last update
@@ -145,7 +147,8 @@ int main(int argc, const char** argv)
 			}
 
 			playerPositionX += dt * playerSpeed;
-			pGL->drawImage("player1", playerPositionX, playerPositionY);
+			go->setPosX(playerPositionX);
+			pGL->drawImage(go->mImageIdentifier, go->getPosX(), go->getPosY());
 			pGL->render();
 		}
 	}
