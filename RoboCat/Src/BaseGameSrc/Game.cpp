@@ -183,7 +183,7 @@ void Game::getInput()
 		if (mpSystem->isMouseButtonPressed(System::LEFT))
 		{
 			Vector2D mousePos = mpSystem->getCurrentMousePos();
-			createUnit(mousePos);
+			createUnit(mousePos, UnitTypes::BASE_UNIT);
 			mpNetworkManager->addAction(ActionTypes::CreateUnit, mousePos, -1);
 		}
 		if (mpSystem->isMouseButtonPressed(System::RIGHT))
@@ -191,6 +191,12 @@ void Game::getInput()
 			Vector2D mousePos = mpSystem->getCurrentMousePos();
 			mpUnitManager->deleteAllUnitsAt2DPosition(mousePos);
 			mpNetworkManager->addAction(ActionTypes::DestroyUnit, mousePos, -1);
+		}
+		if (mpSystem->isKeyPressed(System::ONE_KEY))
+		{
+			Vector2D mousePos = mpSystem->getCurrentMousePos();
+			createUnit(mousePos, UnitTypes::RAND_DIR);
+			mpNetworkManager->addAction(ActionTypes::CreateUnit, mousePos, -1);
 		}
 	}
 	if (mpSystem->isKeyPressed(System::S_KEY) && !gameStarted && mpNetworkManager->IsMasterPeer())
@@ -223,10 +229,12 @@ void Game::loadBuffers()
 	const string BACKGROUND_FILENAME = "woods.png";
 	const string SMURF_FILENAME = "smurf_sprites.png";
 	const string DEAN_FILENAME = "dean_sprites.png";
+	const string QUIMBY_FILENAME = "Mayor_Quimby.png";
 
 	mpGraphicsBufferManager->createBuffer(WOODS, ASSET_PATH + BACKGROUND_FILENAME);
 	mpGraphicsBufferManager->createBuffer(SMURFS, ASSET_PATH + SMURF_FILENAME);
 	mpGraphicsBufferManager->createBuffer(DEAN, ASSET_PATH + DEAN_FILENAME);
+	mpGraphicsBufferManager->createBuffer(QUIMBY, ASSET_PATH + QUIMBY_FILENAME);
 
 }
 
@@ -236,16 +244,29 @@ const int SPRITES_ACROSS = 4;
 const int SPRITES_DOWN = 4;
 const float TIME_PER_FRAME_MULTIPLE = 5;
 
-void Game::createUnit(const Vector2D& pos)
+void Game::createUnit(const Vector2D& pos, UnitTypes type)
 {
-	float timePerFrame = (float)mTargetTimePerFrame * TIME_PER_FRAME_MULTIPLE;
-	const GraphicsBuffer* pSmurfs = mpGraphicsBufferManager->getBuffer(SMURFS);
-	assert(pSmurfs);
-	const GraphicsBuffer* pDean = mpGraphicsBufferManager->getBuffer(DEAN);
-	Animation smurfAnimation(*pSmurfs, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
-	Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
+	switch (type)
+	{
+	case UnitTypes::BASE_UNIT:
+	{
+		float timePerFrame = (float)mTargetTimePerFrame * TIME_PER_FRAME_MULTIPLE;
+		const GraphicsBuffer* pSmurfs = mpGraphicsBufferManager->getBuffer(SMURFS);
+		assert(pSmurfs);
+		const GraphicsBuffer* pDean = mpGraphicsBufferManager->getBuffer(DEAN);
+		Animation smurfAnimation(*pSmurfs, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
+		Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 
-	mpUnitManager->createUnit(pos, smurfAnimation, deanAnimation);
+		mpUnitManager->createUnit(pos, smurfAnimation, deanAnimation);
+	}
+	case UnitTypes::RAND_DIR:
+	{
+		const GraphicsBuffer* pQuimby = mpGraphicsBufferManager->getBuffer(QUIMBY);
+		Sprite quimby(pQuimby, Vector2D(0, 0), 264, 399);
+		mpUnitManager->createUnit(pos, quimby);
+	}
+	}
+	
 }
 
 void Game::HandleAction(ActionTypes type, Vector2D pos, uint32_t id)
@@ -268,7 +289,7 @@ void Game::HandleAction(ActionTypes type, Vector2D pos, uint32_t id)
 	}
 	case CreateUnit:
 	{
-		createUnit(pos);
+		createUnit(pos, UnitTypes::BASE_UNIT);
 		break;
 	}
 	case DestroyUnit:

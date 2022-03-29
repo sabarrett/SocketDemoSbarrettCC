@@ -122,3 +122,50 @@ Vector2D Unit::getLRPosition() const
 	return center + Vector2D(currSprite.getWidth() / 2.0f, currSprite.getHeight() / 2.0f);
 }
 
+
+
+
+
+RandomDirUnit::RandomDirUnit(const Vector2D& position, Sprite& sprite)
+	:mPos(position)
+	, mNetworkID(-1)
+	, mSprite(sprite)
+{
+
+}
+
+void RandomDirUnit::update(double dt)
+{
+
+}
+
+void RandomDirUnit::draw()
+{
+	const Sprite& currSprite = mSprite;
+	Vector2D offset = currSprite.getCenterOffset();
+	Vector2D centerPos = mPos - offset;
+
+	Game::getInstance()->getSystem()->getGraphicsSystem()->draw(centerPos, currSprite);
+}
+
+RandomSpawnedUnit::RandomSpawnedUnit(const Vector2D& position, Sprite& sprite)
+	:mPos(position)
+	, mNetworkID(-1)
+	, mSprite(sprite)
+{
+
+}
+
+void RandomSpawnedUnit::update(double dt)
+{
+
+}
+
+void RandomSpawnedUnit::draw()
+{
+	const Sprite& currSprite = mSprite;
+	Vector2D offset = currSprite.getCenterOffset();
+	Vector2D centerPos = mPos - offset;
+
+	Game::getInstance()->getSystem()->getGraphicsSystem()->draw(centerPos, currSprite);
+}

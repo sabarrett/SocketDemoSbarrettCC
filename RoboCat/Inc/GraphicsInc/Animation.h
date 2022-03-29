@@ -17,6 +17,9 @@ public:
 		float timePerFrame,
 		bool mIsPaused = false,
 		bool looping = true);
+
+	Animation();
+
 	~Animation() {};
 
 	void addSprite(const Sprite& theSprite);

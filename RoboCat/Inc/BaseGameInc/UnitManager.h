@@ -6,6 +6,7 @@
 
 class Unit;
 class Animation;
+class Sprite;
 
 class UnitManager : public Trackable
 {
@@ -19,6 +20,7 @@ public:
 	void draw() const;
 
 	Unit* createUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
+	Unit* createUnit(const Vector2D& position, Sprite& sprite);
 
 	void deleteAllUnitsAt2DPosition(const Vector2D& position);
 	bool deleteUnitAt2DPosition(const Vector2D& position);//return true if unit found and deleted - false otherwise

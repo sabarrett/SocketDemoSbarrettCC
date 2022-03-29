@@ -25,6 +25,11 @@ Animation::Animation(const GraphicsBuffer& buffer, int spriteW, int spriteH, int
 	}
 }
 
+Animation::Animation()
+{
+
+}
+
 void Animation::addSprite(const Sprite& theSprite)
 {
 	mSprites.push_back(theSprite);

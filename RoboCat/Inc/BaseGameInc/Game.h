@@ -43,7 +43,12 @@ public:
 		ToggleAnimSingle,
 		ToggleAnimAll
 	};
-
+	enum UnitTypes
+	{
+		BASE_UNIT,
+		RAND_DIR,
+		RAND_SPAWN
+	};
 	void HandleAction(ActionTypes, Vector2D, uint32_t);
 
 private:
@@ -75,7 +80,7 @@ private:
 	void render();
 
 	void loadBuffers();
-	void createUnit(const Vector2D& pos);
+	void createUnit(const Vector2D& pos, UnitTypes type);
 
 	
 };
@@ -85,3 +90,5 @@ private:
 const GBKey WOODS("woods");
 const GBKey SMURFS("smurfs");
 const GBKey DEAN("dean");
+const GBKey QUIMBY("quimby");
+

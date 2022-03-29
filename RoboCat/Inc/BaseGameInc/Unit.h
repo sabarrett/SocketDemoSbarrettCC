@@ -8,14 +8,20 @@
 
 class UnitManager;
 
+
+
 class Unit : public Trackable
 {
 	friend class UnitManager;
 public:
 
-	void update(double dt);
-	void draw();
-	void setPosition(const Vector2D& newPos) { mPos = newPos; };
+	Unit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
+	Unit() { mMainAnimation = NULL; mAltAnimation = NULL; mpCurrentAnimation = nullptr; };
+	~Unit() {};
+
+	virtual void update(double dt);
+	virtual void draw();
+	virtual void setPosition(const Vector2D& newPos) { mPos = newPos; };
 	void toggleAnimation();
 	void speedUpAnimation();
 	void slowDownAnimation();
@@ -36,7 +42,50 @@ private:
 
 	uint32_t mNetworkID;
 
-	Unit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
-	~Unit() {};
+	
 
+};
+
+class RandomDirUnit : public Unit
+{
+public:
+	RandomDirUnit(const Vector2D& position, Sprite& sprite);
+
+	~RandomDirUnit() {};
+
+	virtual void update(double dt);
+	virtual void draw();
+	virtual void setPosition(const Vector2D& newPos) { mPos = newPos; };
+	
+	Vector2D getCenterPosition() const { return mPos; };
+
+	uint32_t getNetworkID() { return mNetworkID; }
+	void setNetworkID(uint32_t id) { mNetworkID = id; };
+private:
+	Vector2D mPos;
+	Sprite& mSprite;
+	//seed for rand
+
+	uint32_t mNetworkID;
+};
+
+class RandomSpawnedUnit : public Unit
+{
+public:
+	RandomSpawnedUnit(const Vector2D& position, Sprite& sprite);
+
+	~RandomSpawnedUnit() {};
+
+	virtual void update(double dt);
+	virtual void draw();
+	virtual void setPosition(const Vector2D& newPos) { mPos = newPos; };
+
+	Vector2D getCenterPosition() const { return mPos; };
+
+	uint32_t getNetworkID() { return mNetworkID; }
+	void setNetworkID(uint32_t id) { mNetworkID = id; };
+private:
+	Vector2D mPos;
+	Sprite& mSprite;
+	uint32_t mNetworkID;
 };

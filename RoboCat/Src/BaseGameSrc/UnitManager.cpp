@@ -3,6 +3,7 @@
 #include "Game.h"
 
 #include <Animation.h>
+
 #include <cassert>
 #include "MemoryManager.h"
 
@@ -60,6 +61,21 @@ Unit* UnitManager::createUnit(const Vector2D& position, const Animation& mainAni
 	Byte* ptr = pMemoryManager->allocate(sizeof(Unit));
 
 	Unit* pUnit = new(ptr)Unit(position, mainAnimation, altAnimation);//placement new create the unit.
+
+
+
+	mUnits.push_back(pUnit);//put the unit into the vector
+	nextID += 1;
+	return pUnit;//return the newly created Unit (for convenience)
+}
+
+Unit* UnitManager::createUnit(const Vector2D& position, Sprite& sprite)
+{
+	MemoryManager* pMemoryManager = Game::getInstance()->getMemoryManager();
+
+	Byte* ptr = pMemoryManager->allocate(sizeof(Unit));
+
+	Unit* pUnit = new(ptr)RandomDirUnit(position, sprite);//placement new create the unit.
 
 
 
