@@ -168,7 +168,7 @@ MouseButton InputSystem::getMouseInput()
 KeyCode InputSystem::getKeyboardInput()
 {
 	//If there is an event
-	al_wait_for_event(mpEventQueue, &mEvent);
+	al_wait_for_event_timed(mpEventQueue, &mEvent, 0.000001);
 
 	if (mEvent.type == InputMode::KeyPressed)
 	{

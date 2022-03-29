@@ -45,7 +45,7 @@ int main(int argc, const char** argv)
 	start = clock();
 
 	// ---------------------- Temporary Player Stuff ----------------------
-	float playerSpeed = 0.1;
+	float playerSpeed = 0.5;
 	float playerPositionX = RESOLUTION_X / 2;
 	float playerPositionY = RESOLUTION_Y / 10;
 
@@ -119,8 +119,8 @@ int main(int argc, const char** argv)
 			std::cout << dt << std::endl;
 
 			// Updates
-			//pIS->update();
-			//inputData = pIS->getInputData();
+			pIS->update();
+			inputData = pIS->getInputData();
 
 			if (inputData.keyPressed_ESCAPE)
 			{
