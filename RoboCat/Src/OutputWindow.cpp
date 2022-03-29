@@ -46,6 +46,7 @@ void OutputWindow::ClearLine(int y)
         std::cout << " ";
     }
     SetConsoleCursorPosition(output, conInfo.dwCursorPosition);
+    MoveBackwards();
 }
 
 int OutputWindow::Scroll(int lines)
