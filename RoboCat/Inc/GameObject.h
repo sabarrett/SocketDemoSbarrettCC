@@ -12,7 +12,7 @@ class GameObject
 {
 protected:
 
-	const int mGameID;
+	int mGameID;
 
 	float mPosX;
 	float mPosY;
