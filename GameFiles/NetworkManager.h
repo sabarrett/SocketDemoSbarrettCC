@@ -1,5 +1,6 @@
 #pragma once
-extern class JoinerInput;
+
+#include "GameFiles/JoinerInput.h"
 
 namespace NetworkManager
 {
@@ -17,11 +18,11 @@ namespace NetworkManager
     
         // Derived Connection Functions for in-game use
     // creator
-    bool HandleIncomingInputPackets();
+    bool HandleIncomingInputPackets(vector<std::pair<int, void*>>& unprocessedData);
     bool HandleOutgoingWorldStatePackets();
     // joiner
     bool HandleIncomingWorldStatePackets();
-    bool HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs);
+    bool HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress);
 }
 
 

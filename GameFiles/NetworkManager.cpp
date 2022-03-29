@@ -53,7 +53,7 @@ void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr listeni
 		char buffer[BUFFER_SIZE];
 		listeningSocket->ReceiveFrom(buffer, BUFFER_SIZE, *(addressRecievedFrom));
 
-		//LOG("%s", "In handleListening aft	er Recieve\n");
+		LOG("%s", "In handleListening after Recieve\n");
 
 
 		if (buffer != nullptr)
@@ -67,8 +67,8 @@ void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr listeni
 
 void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress)
 {
-	UDPSocketPtr newSendingSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-	if (newSendingSocket == nullptr)
+	sendingSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
+	if (sendingSocket == nullptr)
 	{
 		SocketUtil::ReportError("Error Creating Sending Socket");
 		ExitProcess(1);
@@ -86,7 +86,7 @@ void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPS
 	//LOG("%s", "created connection socket address");
 
 	//LOG("%s", "binding the connection socket");
-	while (newSendingSocket->Bind(*a) != NO_ERROR)
+	while (sendingSocket->Bind(*a) != NO_ERROR)
 	{
 		a = SocketAddressFactory::CreateIPv4FromString((HOME_ADDRESS + std::to_string(++portUsedForSending)));
 	}
@@ -102,7 +102,7 @@ void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPS
 	}
 
 	string msg("Let's start a game?");
-	if ((newSendingSocket->SendTo(msg.c_str(), BUFFER_SIZE, *sendingAddress)) < 0)
+	if ((sendingSocket->SendTo(msg.c_str(), BUFFER_SIZE, *sendingAddress)) < 0)
 	{
 		SocketUtil::ReportError("Sending First Message");
 	}
@@ -112,27 +112,39 @@ void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPS
 
 
 // updates
-bool NetworkManager::HandleIncomingInputPackets()
+bool NetworkManager::HandleIncomingInputPackets(vector<std::pair<int, void*>>& unprocessedData)
 {
-	std::cout << "HandlingCreatorIncoming\n";
+	//std::cout << "Unprocessed Data count = " << unprocessedData.size() << '\n';
 	return true;
 }
 
 bool NetworkManager::HandleOutgoingWorldStatePackets()
 {
-	std::cout << "HandlingCreatorOutgoing\n";
+	//std::cout << "HandlingCreatorOutgoing\n";
 	return true;
 }
 
 
 bool NetworkManager::HandleIncomingWorldStatePackets()
 {
-	std::cout << "HandlingJoinerOutgoing\n";
+	std::cout << "HandlingJoinerIncoming\n";
 	return true;
 }
 
-bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs)
+bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress)
 {
-	std::cout << "HandlingJoinerOutgoing\n";
-	return true;
+	OutputMemoryBitStream outStream;
+	bool allGood = true;
+
+	for each (JoinerInput input in joinerInputs)
+	{
+		input.Write(outStream);
+		if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetBitLength(), *sendingAddress)) < 0)
+		{
+			SocketUtil::ReportError("Sending outgoingPacket");
+			allGood = false;
+		}
+	}
+	
+	return allGood;
 }

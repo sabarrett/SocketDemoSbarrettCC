@@ -177,7 +177,7 @@ int main(int argc, const char** argv)
 
 		if (userIsCreator)
 		{
-			NetworkManager::HandleIncomingInputPackets(); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
+			NetworkManager::HandleIncomingInputPackets(std::ref(unprocessedData)); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
 			gameWorld.Update();
 			//ProcessWorldState();
 
@@ -188,7 +188,7 @@ int main(int argc, const char** argv)
 			gameWorld.Update();
 			//ProcessWorldState();
 			NetworkManager::HandleIncomingWorldStatePackets();
-			NetworkManager::HandleOutgoingInputPackets(std::ref(joinerInputs));
+			NetworkManager::HandleOutgoingInputPackets(std::ref(joinerInputs), sendingSocket, addressToSendTo);
 		}
 
 
