@@ -107,11 +107,8 @@ void ThrowSocketError(std::string errorMsg)
 	ExitProcess(1); // kill
 }
 
-
-
-void BradsTotallyOriginalServer()
+TCPSocketPtr StartServer()
 {
-
 	// listening socket to take in new clients
 	TCPSocketPtr listeningSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (listeningSocket == nullptr)
@@ -140,11 +137,17 @@ void BradsTotallyOriginalServer()
 	{
 		incomingSocket = listeningSocket->Accept(incomingAddress);
 	}
+	LOG("Request accepted from: %s", incomingAddress.ToString().c_str());
 
-	// CONECTION ACCEPTED WE HAVE CONTACT ==============================
-	LOG("Request accepted from: %s", incomingAddress.ToString().c_str());	
+	return incomingSocket;
+}
 
-	//GAMELOOP
+void BradsTotallyOriginalServer()
+{
+
+	TCPSocketPtr incomingSocket = StartServer();
+
+	//Greate GameObjects
 	bool exit = false;
 	const int numObjects = 1;
 
@@ -153,8 +156,10 @@ void BradsTotallyOriginalServer()
 	{
 		objects[j] = GameObject(rand() % 100 + 1, rand() % 100 + 1, rand() % windowWidth + 1, rand() % windowHeight + 1);
 	}
+	GameObject inObj = GameObject();
+
 	//send data
-	std::thread SendThread([&incomingSocket, &exit, &objects, &numObjects]()
+	std::thread ServerSendThread([&incomingSocket, &exit, &objects, &numObjects]()
 		{
 			//send message
 			while (1)
@@ -168,17 +173,17 @@ void BradsTotallyOriginalServer()
 				incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 			}
 		});
-	//SendThread.join();
+	//ServerSendThread.join();
 
-	GameObject inObj = GameObject();
-	thread RecieveThread([&exit, &incomingSocket, &inObj]()
-		{
-			char buffer[4096];
-			int32_t bytesReceived = int32_t(); // get username
-			InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
+	thread ServerRecieveThread([&exit, &incomingSocket, &inObj]()
+		{		
 			while (1)
 			{
+				char buffer[4096];
+				int32_t bytesReceived = int32_t(); // get username
+				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
 				LOG("%s %s", "server game loop", exit);
+				
 				bytesReceived = incomingSocket->Receive(buffer, 4096);
 
 				inObj.Read(iStream);
@@ -186,99 +191,90 @@ void BradsTotallyOriginalServer()
 			}
 			incomingSocket->~TCPSocket();
 		});
-	//SendThread.join();
-	//UpdateThread.join();
-	//RecieveThread.join();
-
-	std::thread ServerUpdateThread([&objects, &numObjects, &exit, &inObj]()
-		{
-			ALLEGRO_DISPLAY* display;
-			display = al_create_display(windowWidth, windowHeight);
-
-			ALLEGRO_KEYBOARD_STATE keyState;
-			ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
-			al_register_event_source(eventQueue, al_get_keyboard_event_source());
-
-			int xAxis = 0;
-			int yAxis = 0;
-
-			bool xMove = true;
-			bool yMove = true;
-
-			while (!exit) //GameLoop
-			{
-				//Get keyboardInput
-				ALLEGRO_EVENT events;
-
-				al_get_next_event(eventQueue, &events);
-				if (events.type == ALLEGRO_EVENT_KEY_UP)
-				{
-					switch (events.keyboard.keycode)
-					{
-					case ALLEGRO_KEY_ESCAPE:
-						exit = true;
-					case ALLEGRO_KEY_UP:
-						yMove = false;
-						yAxis = 0;
-					case ALLEGRO_KEY_DOWN:
-						yMove = false;
-						yAxis = 0;
-					case ALLEGRO_KEY_RIGHT:
-						xAxis = 0;
-						xMove = false;
-					case ALLEGRO_KEY_LEFT:
-						xAxis = 0;
-						xMove = false;
-					}
-				}
-				if (events.type == ALLEGRO_EVENT_KEY_DOWN)
-				{
-					al_get_keyboard_state(&keyState);
-					if (al_key_down(&keyState, ALLEGRO_KEY_UP))
-					{
-						yMove = true;
-						yAxis = -1;
-					}
-					else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
-					{
-						yMove = true;
-						yAxis = 1;
-					}
-					else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
-					{
-						xAxis = 1;
-						xMove = true;
-					}
-
-					else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
-					{
-						xAxis = -1;
-						xMove = true;
-					}
-				}
-
-				for (int i = 0; i < numObjects; i++)
-				{
-					if (xMove || yMove)
-					{
-						objects[i].UpdatePos(xAxis, yAxis);
-					}
-					objects[i].Draw();
-					inObj.Draw();
-				}
-				al_flip_display();
-				al_clear_to_color(al_map_rgb(0, 0, 0));
-			}
-			//al_destroy_display(display);
-
-		});
-	//ServerUpdateThread.join();
-	//receive data
+	//ServerRecieveThread.join();
 	
+	ALLEGRO_DISPLAY* display;
+	display = al_create_display(windowWidth, windowHeight);
+
+	ALLEGRO_KEYBOARD_STATE keyState;
+	ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
+	al_register_event_source(eventQueue, al_get_keyboard_event_source());
+
+	int xAxis = 0;
+	int yAxis = 0;
+
+	bool xMove = true;
+	bool yMove = true;
+
+	while (!exit) //GameLoop
+	{
+		//Get keyboardInput
+		ALLEGRO_EVENT events;
+
+		al_get_next_event(eventQueue, &events);
+		if (events.type == ALLEGRO_EVENT_KEY_UP)
+		{
+			switch (events.keyboard.keycode)
+			{
+			case ALLEGRO_KEY_ESCAPE:
+				exit = true;
+			case ALLEGRO_KEY_UP:
+				yMove = false;
+				yAxis = 0;
+			case ALLEGRO_KEY_DOWN:
+				yMove = false;
+				yAxis = 0;
+			case ALLEGRO_KEY_RIGHT:
+				xAxis = 0;
+				xMove = false;
+			case ALLEGRO_KEY_LEFT:
+				xAxis = 0;
+				xMove = false;
+			}
+		}
+		if (events.type == ALLEGRO_EVENT_KEY_DOWN)
+		{
+			al_get_keyboard_state(&keyState);
+			if (al_key_down(&keyState, ALLEGRO_KEY_UP))
+			{
+				yMove = true;
+				yAxis = -1;
+			}
+			else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
+			{
+				yMove = true;
+				yAxis = 1;
+			}
+			else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
+			{
+				xAxis = 1;
+				xMove = true;
+			}
+
+			else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
+			{
+				xAxis = -1;
+				xMove = true;
+			}
+		}
+
+		for (int i = 0; i < numObjects; i++)
+		{
+			if (xMove || yMove)
+			{
+				objects[i].UpdatePos(xAxis, yAxis);
+			}
+			objects[i].Draw();
+			inObj.Draw();
+		}
+		al_flip_display();
+		al_clear_to_color(al_map_rgb(0, 0, 0));
+	}
+	al_destroy_display(display);
 
 }
 
-void BradsLessOriginalClient()
+TCPSocketPtr StartClientConnection()
 {
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (clientSocket == nullptr)
@@ -302,7 +298,14 @@ void BradsLessOriginalClient()
 	if (clientSocket->Connect(*serverAddress) != NO_ERROR)
 		ThrowSocketError("Connecting to server");
 
-	//GameLoop
+	return clientSocket;
+}
+void BradsLessOriginalClient()
+{
+	
+	TCPSocketPtr clientSocket = StartClientConnection();
+
+	//create Game Objects
 	bool exit = false;
 	const int numObjects = 1;
 
@@ -311,6 +314,7 @@ void BradsLessOriginalClient()
 	{
 		objects[j] = GameObject(rand() % 100 + 1, rand() % 100 + 1, rand() % windowWidth + 1, rand() % windowHeight + 1);
 	}
+	GameObject inObj = GameObject();
 
 	std::thread ClientSendThread([&clientSocket, &exit, &objects, &numObjects]()
 		{
@@ -329,14 +333,14 @@ void BradsLessOriginalClient()
 		});
 	//ClientSendThread.join();
 
-	GameObject inObj = GameObject();
 	thread ClientRecieveThread([&exit, &clientSocket, &numObjects,&inObj]()
 		{
-			char buffer[4096];
-			InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
-			int32_t bytesReceived = int32_t();
+			
 			while (1)
 			{
+				char buffer[4096];
+				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
+				int32_t bytesReceived = int32_t();
 				LOG("%s", "server game loop");
 				bytesReceived = clientSocket->Receive(buffer, 4096);
 
@@ -347,95 +351,88 @@ void BradsLessOriginalClient()
 			}
 			clientSocket->~TCPSocket();
 		});
-	//SendThread.join();
-	//UpdateThread.join();
 	//ClientRecieveThread.join();
-	
-	std::thread ClientUpdateThread([&objects, &numObjects, &exit, &inObj]()
+
+	// Main Game Loop
+	ALLEGRO_DISPLAY* display;
+	display = al_create_display(windowWidth, windowHeight);
+
+	ALLEGRO_KEYBOARD_STATE keyState;
+	ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
+	al_register_event_source(eventQueue, al_get_keyboard_event_source());
+
+	int xAxis = 0;
+	int yAxis = 0;
+
+	bool xMove = true;
+	bool yMove = true;
+
+	while (!exit) //GameLoop
+	{
+		//Get keyboardInput
+		ALLEGRO_EVENT events;
+
+		al_get_next_event(eventQueue, &events);
+		if (events.type == ALLEGRO_EVENT_KEY_UP)
 		{
-			ALLEGRO_DISPLAY* display;
-			display = al_create_display(windowWidth, windowHeight);
-
-			ALLEGRO_KEYBOARD_STATE keyState;
-			ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
-			al_register_event_source(eventQueue, al_get_keyboard_event_source());
-
-			int xAxis = 0;
-			int yAxis = 0;
-
-			bool xMove = true;
-			bool yMove = true;
-
-			while (!exit) //GameLoop
+			switch (events.keyboard.keycode)
 			{
-				//Get keyboardInput
-				ALLEGRO_EVENT events;
-
-				al_get_next_event(eventQueue, &events);
-				if (events.type == ALLEGRO_EVENT_KEY_UP)
-				{
-					switch (events.keyboard.keycode)
-					{
-					case ALLEGRO_KEY_ESCAPE:
-						exit = true;
-					case ALLEGRO_KEY_UP:
-						yMove = false;
-						yAxis = 0;
-					case ALLEGRO_KEY_DOWN:
-						yMove = false;
-						yAxis = 0;
-					case ALLEGRO_KEY_RIGHT:
-						xAxis = 0;
-						xMove = false;
-					case ALLEGRO_KEY_LEFT:
-						xAxis = 0;
-						xMove = false;
-					}
-				}
-				if (events.type == ALLEGRO_EVENT_KEY_DOWN)
-				{
-					al_get_keyboard_state(&keyState);
-					if (al_key_down(&keyState, ALLEGRO_KEY_UP))
-					{
-						yMove = true;
-						yAxis = -1;
-					}
-					else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
-					{
-						yMove = true;
-						yAxis = 1;
-					}
-					else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
-					{
-						xAxis = 1;
-						xMove = true;
-					}
-
-					else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
-					{
-						xAxis = -1;
-						xMove = true;
-					}
-				}
-
-				for (int i = 0; i < numObjects; i++)
-				{
-					if (xMove || yMove)
-					{
-						objects[i].UpdatePos(xAxis, yAxis);
-					}
-					objects[i].Draw();
-					inObj.Draw();
-				}
-				al_flip_display();
-				al_clear_to_color(al_map_rgb(0, 0, 0));
+			case ALLEGRO_KEY_ESCAPE:
+				exit = true;
+			case ALLEGRO_KEY_UP:
+				yMove = false;
+				yAxis = 0;
+			case ALLEGRO_KEY_DOWN:
+				yMove = false;
+				yAxis = 0;
+			case ALLEGRO_KEY_RIGHT:
+				xAxis = 0;
+				xMove = false;
+			case ALLEGRO_KEY_LEFT:
+				xAxis = 0;
+				xMove = false;
 			}
-			//al_destroy_display(display);
-			//al_destroy_display(display);
-		});
-	//ClientUpdateThread.join();
+		}
+		if (events.type == ALLEGRO_EVENT_KEY_DOWN)
+		{
+			al_get_keyboard_state(&keyState);
+			if (al_key_down(&keyState, ALLEGRO_KEY_UP))
+			{
+				yMove = true;
+				yAxis = -1;
+			}
+			else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
+			{
+				yMove = true;
+				yAxis = 1;
+			}
+			else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
+			{
+				xAxis = 1;
+				xMove = true;
+			}
+
+			else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
+			{
+				xAxis = -1;
+				xMove = true;
+			}
+		}
+
+		for (int i = 0; i < numObjects; i++)
+		{
+			if (xMove || yMove)
+			{
+				objects[i].UpdatePos(xAxis, yAxis);
+			}
+			objects[i].Draw();
+			inObj.Draw();
+		}
+		al_flip_display();
+		al_clear_to_color(al_map_rgb(0, 0, 0));
+	}
+	al_destroy_display(display);
 	//receive data
-	
 }
 
 
