@@ -69,5 +69,5 @@ public:
 	//Functions
 	bool init(GraphicsLibrary* pGraphicsLib);
 	MouseButton getMouseInput();
-	KeyCode getKeyboardInput();
+	KeyCode getKeyboardInput(InputMode inputMode);
 };

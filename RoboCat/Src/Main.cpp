@@ -149,7 +149,7 @@ void update()
 
 	//Get keyboard input
 	{
-		KeyCode keyCode = pInput->getKeyboardInput();
+		KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyPressed);
 
 		switch (keyCode)
 		{
