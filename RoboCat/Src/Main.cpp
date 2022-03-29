@@ -222,10 +222,7 @@ void update()
 	}
 
 	//Update player controller
-	if (pPlayerController != nullptr)
-	{
-		pPlayerController->update();
-	}
+	pPlayerController->update();
 }
 
 void draw()
@@ -240,10 +237,7 @@ void draw()
 	}
 
 	//Draw player controller
-	if (pPlayerController != nullptr)
-	{
-		pPlayerController->draw();
-	}
+	pPlayerController->draw();
 
 	//Text indicator of current GameObject Type
 	pGraphics->drawText(100, 50, "Current Object to Spawn: " + currentGameObjectTypeString, TextAlignment::ALIGN_LEFT);
@@ -313,7 +307,7 @@ int main(int argc, const char** argv)
 		while (bGameIsRunning)
 		{
 			ALLEGRO_EVENT ev;
-			al_wait_for_event(eventQueue, &ev);
+			al_get_next_event(eventQueue, &ev);
 
 			if (ev.type == ALLEGRO_EVENT_TIMER)
 			{
