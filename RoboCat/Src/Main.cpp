@@ -11,7 +11,7 @@
 const string GAME_NAME = "temporary name";
 
 // Filenames and paths
-const string IMAGES_PATH = "images/";
+const string IMAGES_PATH = "Images/";
 const string BACKGROUND_FILENAME = "Background.png";
 const string PLAYER_SPRITE_FILENAME = "PlayerSprite.png";
 const string BULLET_SPRITE_FILENAME = "BulletSprite.png";
@@ -98,7 +98,7 @@ int main(int argc, const char** argv)
 		std::cout << "Can't initialize Input System" << std::endl;
 		isGameRunning = false;
 	}
-	InputData inputData;
+	InputData inputData = InputData();
 
 	if (isGameRunning)
 	{

@@ -21,7 +21,8 @@ enum KeyCode
 	R_KEY = ALLEGRO_KEY_R,
 	A_KEY = ALLEGRO_KEY_A,
 	D_KEY = ALLEGRO_KEY_D,
-	SPACE_KEY = ALLEGRO_KEY_SPACE
+	SPACE_KEY = ALLEGRO_KEY_SPACE,
+	NO_KEY = -1
 };
 
 enum MouseButton
@@ -67,6 +68,12 @@ struct KeyData
 {
 	KeyCode keyCode;
 	bool gotPressed;
+
+	KeyData()
+	{
+		keyCode = KeyCode::NO_KEY;
+		gotPressed = false;
+	}
 };
 
 class InputSystem
@@ -80,7 +87,6 @@ class InputSystem
 	ALLEGRO_EVENT mEvent;
 
 	InputData currentFrameData;
-	KeyData keyData;
 
 	//-------------------------Public data-------------------------
 public:

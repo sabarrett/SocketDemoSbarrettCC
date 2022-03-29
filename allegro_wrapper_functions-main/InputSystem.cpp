@@ -90,11 +90,12 @@ void InputSystem::update()
 	currentFrameData.keyPressed_R = false;
 	currentFrameData.keyPressed_SPACE = false;
 
-	switch (getKeyboardInput().keyCode)
+	KeyData keyData = getKeyboardInput();
+
+	switch (keyData.keyCode)
 	{
 	case KeyCode::ESCAPE_KEY:
 	{
-		// Doesn't allow continuous press
 		currentFrameData.keyPressed_ESCAPE = keyData.gotPressed;
 		//std::cout << "Escape Pressed" << std::endl;
 		break;
@@ -115,14 +116,12 @@ void InputSystem::update()
 	}
 	case KeyCode::R_KEY:
 	{
-		// Doesn't allow continuous press
 		currentFrameData.keyPressed_R = keyData.gotPressed;
 		//std::cout << "R Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::SPACE_KEY:
 	{
-		// Doesn't allow continuous press
 		currentFrameData.keyPressed_SPACE = keyData.gotPressed;
 		//std::cout << "Space Pressed" << std::endl;
 		break;
@@ -168,6 +167,8 @@ KeyData InputSystem::getKeyboardInput()
 {
 	//If there is an event
 	al_wait_for_event_timed(mpEventQueue, &mEvent, 0.000001);
+
+	KeyData keyData = KeyData();
 
 	if (mEvent.type == InputMode::KeyPressed)
 	{
