@@ -2,6 +2,7 @@
 class GameObject;
 class LinkingContext;
 class GraphicsLibrary;
+struct Location;
 //class InputSystem;
 
 class WorldState
@@ -19,6 +20,10 @@ class WorldState
 
 		void CreateLock();
 		void CreateLock(int posX, int posY);
+
+		void CreateKey();
+		void CreateKey(Location loc);
+
 	protected:
 	private:
 		vector<GameObject*> mGameObjects;

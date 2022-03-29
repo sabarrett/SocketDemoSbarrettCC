@@ -19,8 +19,11 @@ class GameObject
 		void SetPostion(int posX, int posY);
 		~GameObject();
 };
-
-
+struct Location
+{
+	float x;
+	float y;
+};
 #define CLASS_IDENTIFICATION( inCode, inClass ) \
 enum{ mClassId = inCode }; \
 virtual uint32_t GetClassId() const { return mClassId; } \

@@ -42,7 +42,7 @@ float InputSystem::getMouseY()
 	return mouseState.y;
 }
 
-Location InputSystem::getMousePosition()
+Location InputSystem::GetMousePosition()
 {
 	//Update mouse state
 	ALLEGRO_MOUSE_STATE mouseState;
@@ -129,7 +129,7 @@ KeyCode InputSystem::getKeyboardInput()
 	//return KeyCode::NONE;
 }
 
-void InputSystem::Update(bool isCreator, WorldState& gameWorld)
+void InputSystem::Update(bool isCreator, WorldState& gameWorld, vector<JoinerInput>& joinerInputs)
 {
 	switch (GetMouseInput())
 	{
@@ -142,6 +142,13 @@ void InputSystem::Update(bool isCreator, WorldState& gameWorld)
 			if (isCreator)
 			{
 				// create lock
+
+			}
+			else
+			{
+				// create key
+				gameWorld.CreateKey(GetMousePosition());
+				joinerInputs.push_back(JoinerInput(JoinerInput::JOINER_KEY_SPAWN, GetMousePosition()));
 			}
 		}
 		break;

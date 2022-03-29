@@ -15,8 +15,8 @@ InputSystem.h
 //Include allegro libraries for input
 #include <allegro5/allegro.h>
 
-
 #include "GameFiles/WorldState.h"
+#include "GameFiles/JoinerInput.h"
 
 
 enum KeyCode
@@ -42,24 +42,6 @@ enum InputMode
 	MouseUp = ALLEGRO_EVENT_MOUSE_BUTTON_UP
 };
 
-enum InputActionTypes
-{
-	JOINER_LOCK_SPAWN
-};
-
-struct Location
-{
-	float x;
-	float y;
-};
-
-struct InputAction
-{
-	time_t time;
-	InputActionTypes type;
-	Location location;
-};
-
 class InputSystem
 {
 	//-------------------------Private data-------------------------
@@ -82,7 +64,7 @@ public:
 	//Accessor(s)
 	float getMouseX();
 	float getMouseY();
-	Location getMousePosition();
+	Location GetMousePosition();
 
 	//Functions
 	bool init(GraphicsLibrary* pGraphicsLib);
@@ -94,5 +76,5 @@ public:
 	bool wasHoldingRightMouseLastFrame = false;
 
 	// custom function to handle the game's input - bb
-	void Update(bool isCreator, WorldState& gameWorld);
+	void Update(bool isCreator, WorldState& gameWorld, vector<JoinerInput>& joinerInputs);
 };

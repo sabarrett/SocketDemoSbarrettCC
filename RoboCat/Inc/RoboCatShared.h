@@ -37,7 +37,8 @@
 #include "cassert"
 #include <thread>
 #include <stack>
-	
+#include <typeinfo>
+
 using std::stack;
 using std::thread;
 using std::shared_ptr;

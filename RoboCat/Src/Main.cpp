@@ -167,10 +167,13 @@ int main(int argc, const char** argv)
 	WorldState gameWorld = WorldState(&gl);
 	gameWorld.CreateLock();
 
+	vector<JoinerInput> joinerInputs;
+
+
 	// `````````````````````````  main game loop  ``````````````````````````` 
 	while (true)
 	{
-		inputSys.Update(userIsCreator, std::ref(gameWorld));
+		inputSys.Update(userIsCreator, std::ref(gameWorld), std::ref(joinerInputs));
 
 		if (userIsCreator)
 		{
@@ -178,7 +181,7 @@ int main(int argc, const char** argv)
 			gameWorld.Update();
 			//ProcessWorldState();
 
-			NetworkManager::HandleOutgoingWorldStatePackets();
+			NetworkManager::HandleOutgoingWorldStatePackets(std::ref(joinerInputs));
 		}
 		else
 		{
