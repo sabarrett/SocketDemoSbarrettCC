@@ -58,7 +58,7 @@ public:
 	//Mutator(s)
 	float setPosX(float posX) { mPosition.first = posX; };
 	float setPosY(float posY) { mPosition.second = posY; };
-	pair<float, float> setPos(pair<float, float> newPos) { mPosition = newPos; };
+	void setPos(pair<float, float> newPos) { mPosition = newPos; };
 
 	//Functions
 	virtual void update() = 0;

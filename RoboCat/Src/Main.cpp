@@ -19,9 +19,9 @@ InputSystem* pInput;
 //-------------------------Assets-------------------------
 const std::string ASSET_PATH = "Assets\\";
 const std::string BACKGROUND_IMAGE_FILE = "Background_Image.jpg";
-const std::string ROCK_IMAGE_FILE = "Rock_Image.jpg";
-const std::string WALL_IMAGE_FILE = "Wall_Image.jpg";
-const std::string PLAYER_IMAGE_FILE = "Player_Image.jpg";
+const std::string ROCK_IMAGE_FILE = "Rock_Image.png";
+const std::string WALL_IMAGE_FILE = "Square_Image.png";
+const std::string PLAYER_IMAGE_FILE = "Player_Image.png";
 const std::string ARIAL_FONT_FILE = "ARIBL0.ttf";
 const int FONT_SIZE = 32;
 
