@@ -139,24 +139,24 @@ void Networker::GetNewGameObjectState(GameObject* gameObject)
 }
 
 //TO DO: FINISH THIS
-void Networker::SendNewGameObjectState(GameObject* gameObject)
-{
-	OutputMemoryBitStream OMBStream;
-	OMBStream.Write(gameObject->getGameObjectID());
-	
-	switch (gameObject->getGameObjectID())
-	{
-	case GameObjectType::ROCK:
-	case GameObjectType::WALL:
-
-		pair<float, float> pos = gameObject->getPosition();
-		OMBStream.Write(pos.first);
-		OMBStream.Write(pos.second);
-		break;
-
-	default:
-		break;
-	}
-
-	mTCPSocket->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
-}
+//void Networker::SendNewGameObjectState(GameObject* gameObject)
+//{
+//	OutputMemoryBitStream OMBStream;
+//	OMBStream.Write(gameObject->getGameObjectID());
+//	
+//	switch (gameObject->getGameObjectID())
+//	{
+//	case GameObjectType::ROCK:
+//	case GameObjectType::WALL:
+//
+//		pair<float, float> pos = gameObject->getPosition();
+//		OMBStream.Write(pos.first);
+//		OMBStream.Write(pos.second);
+//		break;
+//
+//	default:
+//		break;
+//	}
+//
+//	mTCPSocket->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
+//}

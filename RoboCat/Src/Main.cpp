@@ -50,7 +50,7 @@ int gameObjectID = 0;
 //-------------------------Player Data-------------------------
 PlayerController* pPlayerController;
 const std::pair<float, float> STARTING_PLAYER_POSITION = std::make_pair<float, float>(300.0, 300.0);
-float playerMoveSpeed = 5.0;
+float playerMoveSpeed = 50.0;
 
 //-------------------------Network Data-------------------------
 int networkID = 0;
@@ -90,6 +90,8 @@ void start()
 
 	//Spawn player
 	pPlayerController = new PlayerController(gameObjectID, networkID, pInput, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+	gameObjectID++;
+	networkID++;
 }
 
 void update()
@@ -207,6 +209,9 @@ void update()
 	{
 		x.second->update();
 	}
+
+	//Update player controller
+	pPlayerController->update();
 }
 
 void draw()
@@ -220,10 +225,8 @@ void draw()
 		x.second->draw();
 	}
 
-	//for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
-	//{
-	//	gameObjectsVec[i]->draw();
-	//}
+	//Draw player controller
+	pPlayerController->draw();
 
 	//Text indicator of current GameObject Type
 	pGraphics->drawText(100, 50, "Current Object to Spawn: " + currentGameObjectTypeString, TextAlignment::ALIGN_LEFT);

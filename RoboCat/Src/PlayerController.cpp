@@ -32,7 +32,7 @@ void PlayerController::update()
 		case KeyCode::W:
 		{
 			//Move up
-			mPosition.first -= mMoveSpeed;
+			mPosition.second -= mMoveSpeed;
 
 			break;
 		}
@@ -40,7 +40,7 @@ void PlayerController::update()
 		case KeyCode::A:
 		{
 			//Move left
-			mPosition.second -= mMoveSpeed;
+			mPosition.first -= mMoveSpeed;
 
 			break;
 		}
@@ -48,7 +48,7 @@ void PlayerController::update()
 		case KeyCode::S:
 		{
 			//Move down
-			mPosition.first += mMoveSpeed;
+			mPosition.second += mMoveSpeed;
 
 			break;
 		}
@@ -56,7 +56,7 @@ void PlayerController::update()
 		case KeyCode::D:
 		{
 			//Move right
-			mPosition.second += mMoveSpeed;
+			mPosition.first += mMoveSpeed;
 
 			break;
 		}
