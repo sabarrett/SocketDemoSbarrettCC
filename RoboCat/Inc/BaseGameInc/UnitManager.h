@@ -21,6 +21,7 @@ public:
 
 	Unit* createUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
 	Unit* createUnit(const Vector2D& position, Sprite& sprite);
+	Unit* createUnit(const Animation& mainAnimation, const Animation& altAnimation, int seed);
 
 	void deleteAllUnitsAt2DPosition(const Vector2D& position);
 	bool deleteUnitAt2DPosition(const Vector2D& position);//return true if unit found and deleted - false otherwise

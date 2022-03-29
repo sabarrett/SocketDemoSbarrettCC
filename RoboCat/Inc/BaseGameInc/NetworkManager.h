@@ -22,7 +22,7 @@ public:
 	static const uint32_t	kStartCC = 'STRT';
 	static const int		kMaxPacketsPerFrameCount = 10;
 
-	enum NetworkManagerState
+	enum class NetworkManagerState
 	{
 		NMS_Unitialized,
 		NMS_Hello,
@@ -94,7 +94,7 @@ public:
 
 	NetworkManagerState GetState() { return mState; };
 
-	void addAction(Game::ActionTypes type, Vector2D pos, uint32_t id);
+	void addAction(Game::ActionTypes type, Vector2D pos);
 
 private:
 	
@@ -121,7 +121,6 @@ private:
 		void Read(InputMemoryBitStream& inInputStream);
 		Game::ActionTypes type;
 		Vector2D postion;
-		uint32_t unitNetID;
 	};
 
 	void	UpdateBytesSentLastFrame();

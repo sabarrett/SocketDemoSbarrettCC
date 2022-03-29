@@ -36,20 +36,20 @@ public:
 
 	void startGame() { gameStarted = true; };
 
-	enum ActionTypes
+	enum class ActionTypes
 	{
 		CreateUnit,
 		DestroyUnit,
 		ToggleAnimSingle,
 		ToggleAnimAll
 	};
-	enum UnitTypes
+	enum class UnitTypes
 	{
 		BASE_UNIT,
 		RAND_DIR,
 		RAND_SPAWN
 	};
-	void HandleAction(ActionTypes, Vector2D, uint32_t);
+	void HandleAction(ActionTypes, Vector2D);
 
 private:
 	static Game* mspInstance;
@@ -80,7 +80,8 @@ private:
 	void render();
 
 	void loadBuffers();
-	void createUnit(const Vector2D& pos, UnitTypes type);
+	void createUnit(const Vector2D& pos);
+	void createUnit(int seed);
 
 	
 };

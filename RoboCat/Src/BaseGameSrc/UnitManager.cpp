@@ -84,6 +84,25 @@ Unit* UnitManager::createUnit(const Vector2D& position, Sprite& sprite)
 	return pUnit;//return the newly created Unit (for convenience)
 }
 
+Unit* UnitManager::createUnit(const Animation& mainAnimation, const Animation& altAnimation, int seed)
+{
+	MemoryManager* pMemoryManager = Game::getInstance()->getMemoryManager();
+
+	Byte* ptr = pMemoryManager->allocate(sizeof(RandomSpawnedUnit));
+
+	srand(seed);
+	int randX = rand() % 800;
+	int randY = rand() % 600;
+	Vector2D position(randX, randY);
+	Unit* pUnit = new(ptr)RandomSpawnedUnit(position, mainAnimation, altAnimation, seed);//placement new create the unit.
+	assert(pUnit);
+
+	mUnits.push_back(pUnit);//put the unit into the vector
+	nextID += 1;
+;
+	return pUnit;//return the newly created Unit (for convenience)
+}
+
 void UnitManager::deleteAllUnitsAt2DPosition(const Vector2D& position)
 {
 	while (deleteUnitAt2DPosition(position));

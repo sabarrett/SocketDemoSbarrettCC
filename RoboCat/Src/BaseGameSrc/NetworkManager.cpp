@@ -6,7 +6,6 @@ namespace
 	const int	kSubTurnsPerTurn = 3;
 	const int	kMaxPlayerCount = 4;
 }
-
 NetworkManager::NetworkManager() :
 	mBytesSentThisFrame(0),
 	mDropPacketChance(0.f),
@@ -20,7 +19,7 @@ NetworkManager::NetworkManager() :
 	mHighestPlayerId(0),
 	mTimeOfLastHello(0.0f),
 	mTimeToStart(-1.0f),
-	mState(NMS_Unitialized)
+	mState(NetworkManagerState::NMS_Unitialized)
 {
 }
 
@@ -42,7 +41,7 @@ bool NetworkManager::InitAsMasterPeer(uint16_t inPort, const string& inName)
 	mPlayerCount = 1;
 
 	//in lobby cause we don't need to ask the master peer (since we are the master peer)
-	mState = NMS_Lobby;
+	mState = NetworkManagerState::NMS_Lobby;
 
 	//add myself to the player name map
 	mName = inName;
@@ -61,7 +60,7 @@ bool NetworkManager::InitAsPeer(const SocketAddress& inMPAddress, const string& 
 	mMasterPeerAddr = inMPAddress;
 
 	//we're going to have to ask the master peer
-	mState = NMS_Hello;
+	mState = NetworkManagerState::NMS_Hello;
 
 	//set my name
 	mName = inName;
@@ -106,14 +105,14 @@ void NetworkManager::SendOutgoingPackets()
 {
 	switch (mState)
 	{
-	case NMS_Hello:
+	case NetworkManagerState::NMS_Hello:
 		UpdateSayingHello();
 		break;
-	case NMS_Starting:
+	case NetworkManagerState::NMS_Starting:
 		//std::cout << "Starting" << std::endl;
 		UpdateStarting();
 		break;
-	case NMS_Playing:
+	case NetworkManagerState::NMS_Playing:
 		//std::cout << "Playing" << std::endl;
 		UpdateSendActionPacket();
 		break;
@@ -177,16 +176,16 @@ void NetworkManager::ProcessPacket(InputMemoryBitStream& inInputStream, const So
 {
 	switch (mState)
 	{
-	case NMS_Hello:
+	case NetworkManagerState::NMS_Hello:
 		ProcessPacketsHello(inInputStream, inFromAddress);
 		break;
-	case NMS_Lobby:
+	case NetworkManagerState::NMS_Lobby:
 		ProcessPacketsLobby(inInputStream, inFromAddress);
 		break;
-	case NMS_Playing:
+	case NetworkManagerState::NMS_Playing:
 		ProcessPacketsPlaying(inInputStream, inFromAddress);
 		break;
-	case NMS_Delay:
+	case NetworkManagerState::NMS_Delay:
 		ProcessPacketsDelay(inInputStream, inFromAddress);
 		break;
 	default:
@@ -283,7 +282,7 @@ void NetworkManager::HandleWelcomePacket(InputMemoryBitStream& inInputStream)
 	}
 
 	//I've been welcomed, so I'm in the lobby now
-	mState = NMS_Lobby;
+	mState = NetworkManagerState::NMS_Lobby;
 }
 
 void NetworkManager::ProcessPacketsLobby(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress)
@@ -409,7 +408,7 @@ void NetworkManager::HandleStartPacket(InputMemoryBitStream& inInputStream, cons
 		
 		//for now, assume that we're one frame off, but ideally we would RTT to adjust
 		//the time to start, based on latency/jitter
-		mState = NMS_Starting;
+		mState = NetworkManagerState::NMS_Starting;
 		mTimeToStart = kStartDelay - Timing::sInstance.GetDeltaTime();
 		Game::getInstance()->startGame();
 	}
@@ -454,7 +453,7 @@ void NetworkManager::HandleUpdatePacket(InputMemoryBitStream& inInputStream, con
 		{
 			ActionData data;
 			data.Read(inInputStream);
-			Game::getInstance()->HandleAction(data.type, data.postion, data.unitNetID);
+			Game::getInstance()->HandleAction(data.type, data.postion);
 			
 		}
 
@@ -505,7 +504,7 @@ void NetworkManager::HandleConnectionReset(const SocketAddress& inFromAddress)
 		}
 
 		//if we were in delay, then let's see if we can continue now that this player DC'd?
-		if (mState == NMS_Delay)
+		if (mState == NetworkManagerState::NMS_Delay)
 		{
 			//TryAdvanceTurn();
 		}
@@ -599,7 +598,7 @@ void NetworkManager::UpdateHighestPlayerId(uint32_t inId)
 
 void NetworkManager::EnterPlayingState()
 {
-	mState = NMS_Playing;
+	mState = NetworkManagerState::NMS_Playing;
 }
 
 void NetworkManager::SendPacket(const OutputMemoryBitStream& inOutputStream, const SocketAddress& inToAddress)
@@ -613,7 +612,7 @@ void NetworkManager::SendPacket(const OutputMemoryBitStream& inOutputStream, con
 
 void NetworkManager::TryStartGame()
 {
-	if (mState < NMS_Starting && IsMasterPeer())
+	if (mState < NetworkManagerState::NMS_Starting && IsMasterPeer())
 	{
 		LOG("Master peer starting the game!");
 
@@ -627,7 +626,7 @@ void NetworkManager::TryStartGame()
 		}
 
 		mTimeToStart = kStartDelay;
-		mState = NMS_Starting;
+		mState = NetworkManagerState::NMS_Starting;
 	}
 }
 
@@ -650,13 +649,12 @@ NetworkManager::ReceivedPacket::ReceivedPacket(float inReceivedTime, InputMemory
 {
 }
 
-void NetworkManager::addAction(Game::ActionTypes type, Vector2D pos, uint32_t id)
+void NetworkManager::addAction(Game::ActionTypes type, Vector2D pos)
 {
 	ActionData action;
 	action.type = type;
 	action.postion = pos;
-	action.unitNetID = id;
-
+	
 	mActionVec.push_back(action);
 }
 
@@ -665,7 +663,6 @@ void NetworkManager::ActionData::Write(OutputMemoryBitStream& inOutputStream)
 	inOutputStream.Write(type);
 	inOutputStream.Write(postion.getX());
 	inOutputStream.Write(postion.getY());
-	inOutputStream.Write(unitNetID);
 }
 
 void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
@@ -675,5 +672,4 @@ void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
 	inInputStream.Read(x);
 	inInputStream.Read(y);
 	postion = Vector2D(x, y);
-	inInputStream.Read(unitNetID);
 }

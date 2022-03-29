@@ -17,33 +17,26 @@ public:
 
 	Unit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
 	Unit() { mMainAnimation = NULL; mAltAnimation = NULL; mpCurrentAnimation = nullptr; };
-	~Unit() {};
+	virtual ~Unit() {};
 
 	virtual void update(double dt);
 	virtual void draw();
 	virtual void setPosition(const Vector2D& newPos) { mPos = newPos; };
-	void toggleAnimation();
+	virtual void toggleAnimation();
 	void speedUpAnimation();
 	void slowDownAnimation();
-	void setAnimationPauseState(bool shouldPause);
-	void toggleAnimationPauseState();
-	bool doesPointIntersect(const Vector2D& point) const;
-	Vector2D getULPosition() const;
-	Vector2D getCenterPosition() const { return mPos; };
-	Vector2D getLRPosition() const;
+	virtual void setAnimationPauseState(bool shouldPause);
+	virtual void toggleAnimationPauseState();
+	virtual bool doesPointIntersect(const Vector2D& point) const;
+	virtual Vector2D getULPosition() const;
+	virtual Vector2D getCenterPosition() const { return mPos; };
+	virtual Vector2D getLRPosition() const;
 
-	uint32_t getNetworkID() { return mNetworkID; }
-	void setNetworkID(uint32_t id) { mNetworkID = id; };
 private:
 	Animation mMainAnimation;
 	Animation mAltAnimation;
 	Animation* mpCurrentAnimation;
 	Vector2D mPos;
-
-	uint32_t mNetworkID;
-
-	
-
 };
 
 class RandomDirUnit : public Unit
@@ -51,7 +44,7 @@ class RandomDirUnit : public Unit
 public:
 	RandomDirUnit(const Vector2D& position, Sprite& sprite);
 
-	~RandomDirUnit() {};
+	virtual ~RandomDirUnit() {};
 
 	virtual void update(double dt);
 	virtual void draw();
@@ -59,33 +52,38 @@ public:
 	
 	Vector2D getCenterPosition() const { return mPos; };
 
-	uint32_t getNetworkID() { return mNetworkID; }
-	void setNetworkID(uint32_t id) { mNetworkID = id; };
 private:
+	Animation mMainAnimation;
+	Animation mAltAnimation;
+	Animation* mpCurrentAnimation;
 	Vector2D mPos;
 	Sprite& mSprite;
 	//seed for rand
 
-	uint32_t mNetworkID;
 };
 
 class RandomSpawnedUnit : public Unit
 {
 public:
-	RandomSpawnedUnit(const Vector2D& position, Sprite& sprite);
+	RandomSpawnedUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed);
 
-	~RandomSpawnedUnit() {};
+	virtual ~RandomSpawnedUnit() {};
 
 	virtual void update(double dt);
 	virtual void draw();
 	virtual void setPosition(const Vector2D& newPos) { mPos = newPos; };
+	virtual void toggleAnimation();
+	virtual bool doesPointIntersect(const Vector2D& point) const;
+	virtual Vector2D getULPosition() const;
+	virtual Vector2D getCenterPosition() const { return mPos; };
+	virtual Vector2D getLRPosition() const;
+	virtual void setAnimationPauseState(bool shouldPause);
+	virtual void toggleAnimationPauseState();
 
-	Vector2D getCenterPosition() const { return mPos; };
-
-	uint32_t getNetworkID() { return mNetworkID; }
-	void setNetworkID(uint32_t id) { mNetworkID = id; };
 private:
+	Animation mMainAnimation;
+	Animation mAltAnimation;
+	Animation* mpCurrentAnimation;
 	Vector2D mPos;
-	Sprite& mSprite;
-	uint32_t mNetworkID;
+	int mSeed;
 };

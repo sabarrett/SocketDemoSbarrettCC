@@ -9,7 +9,6 @@ Unit::Unit(const Vector2D& position, const Animation& mainAnimation, const Anima
 	,mMainAnimation(mainAnimation)
 	,mAltAnimation(altAnimation)
 	,mpCurrentAnimation(NULL)
-	,mNetworkID(-1)
 {
 	mpCurrentAnimation = &mMainAnimation;
 }
@@ -128,7 +127,6 @@ Vector2D Unit::getLRPosition() const
 
 RandomDirUnit::RandomDirUnit(const Vector2D& position, Sprite& sprite)
 	:mPos(position)
-	, mNetworkID(-1)
 	, mSprite(sprite)
 {
 
@@ -136,7 +134,7 @@ RandomDirUnit::RandomDirUnit(const Vector2D& position, Sprite& sprite)
 
 void RandomDirUnit::update(double dt)
 {
-
+	mpCurrentAnimation->update(dt);
 }
 
 void RandomDirUnit::draw()
@@ -148,24 +146,98 @@ void RandomDirUnit::draw()
 	Game::getInstance()->getSystem()->getGraphicsSystem()->draw(centerPos, currSprite);
 }
 
-RandomSpawnedUnit::RandomSpawnedUnit(const Vector2D& position, Sprite& sprite)
-	:mPos(position)
-	, mNetworkID(-1)
-	, mSprite(sprite)
-{
 
+
+RandomSpawnedUnit::RandomSpawnedUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed)
+	:mPos(position)
+	, mMainAnimation(mainAnimation)
+	, mAltAnimation(altAnimation)
+	, mpCurrentAnimation(NULL)
+	, mSeed(seed)
+{
+	mpCurrentAnimation = &mMainAnimation;
 }
 
 void RandomSpawnedUnit::update(double dt)
 {
-
+	
+	mpCurrentAnimation->update(dt);
+	
 }
 
 void RandomSpawnedUnit::draw()
 {
-	const Sprite& currSprite = mSprite;
+	
+	const Sprite& currSprite = mpCurrentAnimation->getCurrentSprite();
 	Vector2D offset = currSprite.getCenterOffset();
 	Vector2D centerPos = mPos - offset;
 
 	Game::getInstance()->getSystem()->getGraphicsSystem()->draw(centerPos, currSprite);
+	
+}
+
+bool RandomSpawnedUnit::doesPointIntersect(const Vector2D& point) const
+{
+	Vector2D ul = getULPosition();
+	Vector2D lr = getLRPosition();
+
+	if (point.getX() < ul.getX())
+	{
+		return false;
+	}
+	else if (point.getY() < ul.getY())
+	{
+		return false;
+	}
+
+	else if (point.getX() > lr.getX())
+	{
+		return false;
+	}
+	else if (point.getY() > lr.getY())
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void RandomSpawnedUnit::toggleAnimation()
+{
+	Animation* pOldAnimation = mpCurrentAnimation;
+	if (mpCurrentAnimation == &mMainAnimation)
+	{
+		mpCurrentAnimation = &mAltAnimation;
+	}
+	else
+	{
+		mpCurrentAnimation = &mMainAnimation;
+	}
+
+	mpCurrentAnimation->synch(*pOldAnimation);
+
+}
+
+Vector2D RandomSpawnedUnit::getULPosition() const
+{
+	Vector2D center = getCenterPosition();
+	const Sprite& currSprite = mpCurrentAnimation->getCurrentSprite();
+	return center - Vector2D(currSprite.getWidth() / 2.0f, currSprite.getHeight() / 2.0f);
+}
+
+Vector2D RandomSpawnedUnit::getLRPosition() const
+{
+	Vector2D center = getCenterPosition();
+	const Sprite& currSprite = mpCurrentAnimation->getCurrentSprite();
+	return center + Vector2D(currSprite.getWidth() / 2.0f, currSprite.getHeight() / 2.0f);
+}
+
+void RandomSpawnedUnit::setAnimationPauseState(bool shouldPause)
+{
+	mpCurrentAnimation->setPauseState(shouldPause);
+}
+
+void RandomSpawnedUnit::toggleAnimationPauseState()
+{
+	mpCurrentAnimation->togglePause();
 }
