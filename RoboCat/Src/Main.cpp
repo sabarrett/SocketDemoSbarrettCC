@@ -11,7 +11,7 @@
 const string GAME_NAME = "temporary name";
 
 // Filenames and paths
-const string IMAGES_PATH = "images/";
+const string IMAGES_PATH = "Images/";
 const string BACKGROUND_FILENAME = "Background.png";
 const string PLAYER_SPRITE_FILENAME = "PlayerSprite.png";
 const string BULLET_SPRITE_FILENAME = "BulletSprite.png";
@@ -109,6 +109,8 @@ int main(int argc, const char** argv)
 		// Draw Stuff
 		pGL->drawImage("background", 0.0, 0.0);
 		pGL->drawImage("player1", playerPositionX, playerPositionY);
+
+		GameObject* go = new GameObject(0, RESOLUTION_X / 2, RESOLUTION_Y / 10, "player1");
 
 		while (isGameRunning)
 		{

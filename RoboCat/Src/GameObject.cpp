@@ -13,6 +13,14 @@ GameObject::GameObject(const int gameID, float posX, float posY) : mGameID(gameI
 	mPosY = posY;
 }
 
+GameObject::GameObject(const int gameID, float posX, float posY, string imageIdentifier) : mGameID(gameID)
+{
+	mPosX = posX;
+	mPosY = posY;
+
+	mImageIdentifier = imageIdentifier;
+}
+
 GameObject::~GameObject()
 {
 

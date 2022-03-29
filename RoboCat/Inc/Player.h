@@ -14,8 +14,8 @@ private:
 	bool mIsHit;
 
 public:
-	Player(const int gameID, const int netID);
-	Player(const int gameID, const int netID, float posX, float posY);
+	Player(const int gameID);
+	Player(const int gameID, float posX, float posY);
 
 	~Player();
 

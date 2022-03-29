@@ -16,9 +16,13 @@ private:
 	float mPosX;
 	float mPosY;
 
+
 public:
+
+	string mImageIdentifier;
 	GameObject(const int gameID);
-	GameObject(const int gameID, float postX, float PosY);
+	GameObject(const int gameID, float posX, float posY);
+	GameObject(const int gameID, float posX, float posY, string imageIdentifier);
 
 	~GameObject();
 
