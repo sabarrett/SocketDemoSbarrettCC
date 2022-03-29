@@ -105,8 +105,10 @@ void start()
 
 	//Spawn player
 	pPlayerController = new PlayerController(gameObjectID, networkID, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+	gameObjectMap[gameObjectID] = pPlayerController;
 	gameObjectID++;
 	networkID++;
+
 
 	al_start_timer(timer);
 }
@@ -133,6 +135,9 @@ void update()
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(gameObjectID, networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
+				gameObjectMap[gameObjectID] = gameObjectToSpawn;
+				gameObjectID++;
+				networkID++;
 
 				break;
 			}
@@ -140,6 +145,9 @@ void update()
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, pGraphics, mousePos, wallSizeX, wallSizeY, white, wallBorderThickness));
+				gameObjectMap[gameObjectID] = gameObjectToSpawn;
+				gameObjectID++;
+				networkID++;
 
 				break;
 			}
@@ -152,12 +160,7 @@ void update()
 			}
 			}
 
-			gameObjectMap[gameObjectID] = gameObjectToSpawn;
 			gameObjectToSpawn = nullptr;
-
-			//Increment identifiers
-			gameObjectID++;
-			networkID++;
 		}
 
 		default:
@@ -222,10 +225,10 @@ void update()
 		}
 	}
 
-	//Update GameObjects
-	for (const auto& x : gameObjectMap)
+	map<int, GameObject*>::iterator it;
+	for (it = gameObjectMap.begin(); it != gameObjectMap.end(); ++it)
 	{
-		x.second->update();
+		it->second->update();
 	}
 
 	//Update player controller
@@ -240,9 +243,10 @@ void draw()
 	pGraphics->drawImage(BACKGROUND_IMAGE_SPRITE_IDENTIFIER, 0, 0);
 
 	//Draw GameObjects
-	for (const auto& x : gameObjectMap)
+	map<int, GameObject*>::iterator it;
+	for (it = gameObjectMap.begin(); it != gameObjectMap.end(); ++it)
 	{
-		x.second->draw();
+		it->second->draw();
 	}
 
 	//Draw player controller
@@ -272,10 +276,12 @@ void cleanup()
 	al_destroy_event_queue(eventQueue);
 
 	//Cleanup GameObjects
-	for (const auto& x : gameObjectMap)
+	map<int, GameObject*>::iterator it;
+	for (it = gameObjectMap.begin(); it != gameObjectMap.end(); ++it)
 	{
-		delete x.second;
-		gameObjectMap.erase(x.first);
+		delete it->second;
+		it->second = nullptr;
+		gameObjectMap.erase(it->first);
 	}
 	gameObjectMap.clear();
 
