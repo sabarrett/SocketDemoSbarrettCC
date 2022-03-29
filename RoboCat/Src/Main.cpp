@@ -82,7 +82,6 @@ enum class StartupScreenAction {
 };
 
 void HandleDestroy(TCPPacketDestroy* destroy) {
-    printf("got destroy packet %i\n", destroy->X);
     brickList[destroy->X][destroy->Y].isDead = true;
     if (player1.hasAuthority) {
         player2.score++;
@@ -102,8 +101,7 @@ void HandleMove(TCPPacketMove* move) {
         return;
     }
 
-    printf("got move %i, ( %hf, %hf ) ( %hf, %hf)\n", move->objectID, move->position.x, move->position.y, move->velocity.x, move->velocity.y);
-   
+ 
 
     obj->position = move->position;
     obj->velocity = move->velocity;
