@@ -13,16 +13,14 @@ enum GameObjectType
 	INVALID = -1,
 	ROCK,
 	WALL,
+	PLAYER,
 	ENUM_SIZE
 };
 
 class GameObject
 {
-	////-------------------------Private data-------------------------
+	//-------------------------Private data-------------------------
 
-	////Identifiers
-	//const int mID;
-	//const int mNetworkID;
 
 	//-------------------------Protected data-------------------------
 

@@ -131,6 +131,22 @@ KeyCode InputSystem::getKeyboardInput()
 			return KeyCode::Tab;
 			break;
 
+		case KeyCode::W:
+			return KeyCode::W;
+			break;
+
+		case KeyCode::A:
+			return KeyCode::A;
+			break;
+
+		case KeyCode::S:
+			return KeyCode::S;
+			break;
+
+		case KeyCode::D:
+			return KeyCode::D;
+			break;
+
 		default:
 			/*return KeyCode::NONE*/;
 		}

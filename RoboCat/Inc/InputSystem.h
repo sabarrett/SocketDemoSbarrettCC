@@ -19,7 +19,11 @@ enum KeyCode
 {
 	Esc = ALLEGRO_KEY_ESCAPE,
 	R = ALLEGRO_KEY_R,
-	Tab = ALLEGRO_KEY_TAB
+	Tab = ALLEGRO_KEY_TAB,
+	W = ALLEGRO_KEY_W,
+	A = ALLEGRO_KEY_A,
+	S = ALLEGRO_KEY_S,
+	D = ALLEGRO_KEY_D
 };
 
 enum MouseButton
