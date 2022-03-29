@@ -1,3 +1,4 @@
+#include <map>
 
 #include "RoboCatPCH.h"
 #include "InputSystem.h"
@@ -29,6 +30,7 @@ const std::string backgroundImageSprite = "background_image";
 //-------------------------Game Data-------------------------
 bool bGameIsRunning = true;
 std::vector<GameObject*> gameObjectsVec;
+std::map<int, GameObject*> gameObjectMap;
 
 float wallSizeX = 150;
 float wallSizeY = 15;
@@ -114,7 +116,8 @@ void update()
 			}
 			}
 
-			gameObjectsVec.push_back(gameObjectToSpawn);
+			gameObjectMap[gameObjectID] = gameObjectToSpawn;
+			//gameObjectsVec.push_back(gameObjectToSpawn);
 			gameObjectToSpawn = nullptr;
 
 			//Increment identifiers
@@ -181,10 +184,15 @@ void update()
 	}
 
 	//Update GameObjects
-	for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
+	for (const auto& x : gameObjectMap)
 	{
-		gameObjectsVec[i]->update();
+		x.second->update();
 	}
+
+	//for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
+	//{
+	//	gameObjectsVec[i]->update();
+	//}
 }
 
 void draw()
@@ -193,10 +201,15 @@ void draw()
 	pGraphics->drawImage(backgroundImageSprite, 0, 0);
 
 	//Draw GameObjects
-	for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
+	for (const auto& x : gameObjectMap)
 	{
-		gameObjectsVec[i]->draw();
+		x.second->draw();
 	}
+
+	//for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
+	//{
+	//	gameObjectsVec[i]->draw();
+	//}
 
 	//Text indicator of current GameObject Type
 	pGraphics->drawText(100, 50, "Current Object to Spawn: " + currentGameObjectTypeString, TextAlignment::ALIGN_LEFT);
@@ -215,12 +228,19 @@ void draw()
 void cleanup()
 {
 	//Cleanup GameObjects
-	for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
+	for (const auto& x : gameObjectMap)
 	{
-		delete gameObjectsVec[i];
-		gameObjectsVec[i] = nullptr;
+		delete x.second;
+		gameObjectMap.erase(x.first);
 	}
-	
+	gameObjectMap.clear();
+
+	//for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
+	//{
+	//	delete gameObjectsVec[i];
+	//	gameObjectsVec[i] = nullptr;
+	//}
+	//
 	//Cleanup input system
 	delete pInput;
 	pInput = nullptr;
