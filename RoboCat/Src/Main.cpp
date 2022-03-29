@@ -147,7 +147,8 @@ int main(int argc, const char** argv)
 			}
 
 			playerPositionX += dt * playerSpeed;
-			pGL->drawImage("player1", playerPositionX, playerPositionY);
+			go->setPosX(playerPositionX);
+			pGL->drawImage(go->mImageIdentifier, go->getPosX(), go->getPosY());
 			pGL->render();
 		}
 	}
