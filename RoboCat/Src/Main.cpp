@@ -1,7 +1,5 @@
 #include <map>
 
-//#include "RoboCatPCH.h"
-//#include "MemoryBitStream.h"
 #include "Networker.h"
 
 #include "InputSystem.h"
@@ -10,6 +8,8 @@
 #include "Rock.h"
 #include "Wall.h"
 #include "PlayerController.h"
+
+using namespace StringUtils;
 
 //-------------------------Graphics Data-------------------------
 GraphicsLibrary* pGraphics;
@@ -311,19 +311,48 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	//0-indexed
-	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
+	std::string input;
+	std::cout << "Are you the server? Type 'y' for yes, anything else for no.\n";
+	std::cin >> input;
+	bool bIsServer = false;
+
+	if (input == "y")
+	{
+		bIsServer = true;
+	}
 
 	//Setup server and client
-	if (isServer)
+	if (bIsServer)
 	{
-		//Server code
-		pNetworkManager->initServer(StringUtils::GetCommandLineArg(2));	//CommandLineArg(2) for port
+		//-------------------------Server code-------------------------
+
+		//Prompt for port number
+		std::string portNumber;
+		std::cout << "Enter port number: \n";
+		std::cin >> portNumber;
+
+		pNetworkManager->initServer(portNumber);	//CommandLineArg(2) for port
 	}
 	else
 	{
-		//Client code
-		pNetworkManager->connect(StringUtils::GetCommandLineArg(2), StringUtils::GetCommandLineArg(3), StringUtils::GetCommandLineArg(4));	//CommandLineArg(2) for client IP address, CommandLineArg(3) for server IP address, CommandLineArg(4) for port
+		//-------------------------Client code-------------------------
+
+		//Prompt for client IP address
+		std::string clientIP;
+		std::cout << "Enter your IP address: \n";
+		std::cin >> clientIP;
+
+		//Prompt for server IP address
+		std::string serverIP;
+		std::cout << "Enter server IP address: \n";
+		std::cin >> serverIP;
+
+		//Prompt for port number
+		std::string portNumber;
+		std::cout << "Enter port number: \n";
+		std::cin >> portNumber;
+
+		pNetworkManager->connect(clientIP, serverIP, portNumber);
 	}
 
 	if (init())

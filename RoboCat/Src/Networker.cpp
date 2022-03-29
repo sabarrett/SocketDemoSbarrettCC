@@ -16,6 +16,8 @@ void Networker::cleanup()
 {
 	delete mInstance;
 	mInstance = nullptr;
+
+	mTCPSocket->CleanupSocket();
 }
 
 void Networker::initServer(std::string port)
@@ -24,6 +26,7 @@ void Networker::initServer(std::string port)
 
 	//Create Socket
 	mTCPSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	//mTCPSocket->SetNonBlockingMode(true);
 	if (mTCPSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating Listenting Socket");
@@ -55,15 +58,18 @@ void Networker::initServer(std::string port)
 
 	//Accept Connection
 	LOG("%s", "Waiting for connection...");
-	mTCPSocket->SetNonBlockingMode(false);
+	//mTCPSocket->SetNonBlockingMode(false);
 	
 	SocketAddress incomingAddress;
 	TCPSocketPtr connSocket = mTCPSocket->Accept(incomingAddress);
 
-	mTCPSocket->CleanupSocket();
+	while (connSocket == nullptr)
+		connSocket = mTCPSocket->Accept(incomingAddress);
+
+	//mTCPSocket->CleanupSocket();
 	mTCPSocket = connSocket;
-	mTCPSocket->SetNonBlockingMode(false);
-	LOG("Accpted connection from address: %s", incomingAddress.ToString().c_str());
+	//mTCPSocket->SetNonBlockingMode(false);
+	LOG("Accepted connection from address: %s", incomingAddress.ToString().c_str());
 }
 
 void Networker::connect(std::string clientIpAddress, std::string serverIpAddress, std::string port)
