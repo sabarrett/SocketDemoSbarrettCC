@@ -376,8 +376,10 @@
     <ClInclude Include="..\allegro_wrapper_functions-main\Colour.h" />
     <ClInclude Include="..\allegro_wrapper_functions-main\GraphicsLibrary.h" />
     <ClInclude Include="..\allegro_wrapper_functions-main\InputSystem.h" />
+    <ClInclude Include="..\GameFiles\GameObject.h" />
     <ClInclude Include="..\GameFiles\Lock.h" />
     <ClInclude Include="..\GameFiles\NetworkManager.h" />
+    <ClInclude Include="..\GameFiles\WorldState.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
@@ -394,8 +396,10 @@
     <ClCompile Include="..\allegro_wrapper_functions-main\Colour.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\GraphicsLibrary.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\InputSystem.cpp" />
+    <ClCompile Include="..\GameFiles\GameObject.cpp" />
     <ClCompile Include="..\GameFiles\Lock.cpp" />
     <ClCompile Include="..\GameFiles\NetworkManager.cpp" />
+    <ClCompile Include="..\GameFiles\WorldState.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />

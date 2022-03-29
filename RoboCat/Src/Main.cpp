@@ -12,6 +12,7 @@
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 #include "allegro_wrapper_functions-main/InputSystem.h"
 #include "GameFiles/Lock.h"
+#include "GameFiles/WorldState.h"
 #include "GameFiles/NetworkManager.h"
 
 
@@ -161,6 +162,11 @@ int main(int argc, const char** argv)
 	gl.drawImage(BACKGROUND, 0, 0);
 	gl.render();
 
+	gl.loadImage(FILE_PATH, "lock_blue.png");
+
+	WorldState gameWorld = WorldState(&gl);
+	gameWorld.CreateLock();
+
 	// `````````````````````````  main game loop  ``````````````````````````` 
 	while (true)
 	{
@@ -169,11 +175,14 @@ int main(int argc, const char** argv)
 		if (userIsCreator)
 		{
 			NetworkManager::HandleIncomingInputPackets(); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
+			gameWorld.Update();
 			//ProcessWorldState();
+
 			NetworkManager::HandleOutgoingWorldStatePackets();
 		}
 		else
 		{
+			gameWorld.Update();
 			//ProcessWorldState();
 			NetworkManager::HandleIncomingWorldStatePackets();
 			NetworkManager::HandleOutgoingInputPackets();
@@ -182,7 +191,7 @@ int main(int argc, const char** argv)
 
 		//  Render
 
-
+		gameWorld.Render();
 
 		;
 	}
