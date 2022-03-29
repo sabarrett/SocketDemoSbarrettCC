@@ -103,3 +103,12 @@ TCPSocket::~TCPSocket()
 	close( mSocket );
 #endif
 }
+
+void TCPSocket::Close()
+{
+#if _WIN32
+	closesocket(mSocket);
+#else
+	close(mSocket);
+#endif
+}
