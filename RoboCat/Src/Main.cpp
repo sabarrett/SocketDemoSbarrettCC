@@ -100,6 +100,7 @@ int main(int argc, const char** argv)
 	}
 	InputData inputData = InputData();
 
+	// If Graphics and Input initialized correctly
 	if (isGameRunning)
 	{
 		// Load Images
@@ -112,6 +113,7 @@ int main(int argc, const char** argv)
 
 		GameObject* go = new GameObject(0, RESOLUTION_X / 2, RESOLUTION_Y / 10, "player1");
 
+		// ---------------------- Main Game Loop ----------------------
 		while (isGameRunning)
 		{
 			// Calculating delta time since last update
