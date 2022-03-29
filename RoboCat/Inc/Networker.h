@@ -25,7 +25,7 @@ public:
 			mInstance = nullptr;
 		}
 
-		mInstance = new Networker();
+		mInstance = new Networker;
 		return mInstance;
 	};
 

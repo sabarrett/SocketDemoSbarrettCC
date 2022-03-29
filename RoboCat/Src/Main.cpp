@@ -1,7 +1,7 @@
 #include <map>
 
-#include "RoboCatPCH.h"
-#include "MemoryBitStream.h"
+//#include "RoboCatPCH.h"
+//#include "MemoryBitStream.h"
 #include "Networker.h"
 
 #include "InputSystem.h"
@@ -61,6 +61,7 @@ const std::pair<float, float> STARTING_PLAYER_POSITION = std::make_pair<float, f
 float playerMoveSpeed = 0.5;
 
 //-------------------------Network Data-------------------------
+Networker* Networker::mInstance = 0;
 Networker* pNetworkManager;
 int networkID = 0;
 
@@ -89,7 +90,7 @@ bool init()
 
 	//Setup network manager
 	if (bSuccessfulInit)
-		pNetworkManager = Networker::GetInstance();
+		pNetworkManager = pNetworkManager->GetInstance();
 
 	//Setup timer
 	timer = al_create_timer(1.0 / FPS);
