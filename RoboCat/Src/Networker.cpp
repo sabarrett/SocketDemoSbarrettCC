@@ -151,6 +151,7 @@ void Networker::getNewGameObjectState(map<int, GameObject*> gameObjectMap)
 			float y;
 			float sizeX;
 			float sizeY;
+			float thiccness;
 			switch (recieveType)
 			{
 			case GameObjectType::ROCK:
@@ -170,9 +171,11 @@ void Networker::getNewGameObjectState(map<int, GameObject*> gameObjectMap)
 
 				IMBStream.Read(sizeX);
 				IMBStream.Read(sizeY);
+				IMBStream.Read(thiccness);
 
 				wall->setWallSizeX(sizeX);
 				wall->setWallSizeY(sizeY);
+				wall->setWallThickness(thiccness);
 
 				break;
 			}
@@ -205,6 +208,7 @@ void Networker::sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int 
 		OMBStream.Write(wall->getPosition().second);
 		OMBStream.Write(wall->getWallSizeX());
 		OMBStream.Write(wall->getWallSizeY());
+		OMBStream.Write(wall->getWallThickness());
 		break;
 	}
 

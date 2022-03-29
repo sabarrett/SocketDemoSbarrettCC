@@ -30,10 +30,12 @@ public:
 	//Accessor(s)
 	float getWallSizeX() { return mSizeX; };
 	float getWallSizeY() { return mSizeY; };
+	float getWallThickness() { return mThickness; };
 
 	//Mutator(s)
 	void setWallSizeX(float sizeX) { mSizeX = sizeX; };
 	void setWallSizeY(float sizeY) { mSizeY = sizeY; };
+	void setWallThickness(float thiccc) { mThickness = thiccc; };
 
 	//Functions
 	void update();
