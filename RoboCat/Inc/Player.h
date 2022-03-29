@@ -3,13 +3,11 @@
 
 class Player : public GameObject
 {
-private: 
-
-	bool mIsFiring;
-	bool mIsHit;
-	float mSpeed;
-
 public:
+
+	bool mIsFiring = false;
+	bool mIsHit = false;
+	float mSpeed = 0.02;
 
 	Player(const int gameID, float speed);
 	Player(const int gameID, float posX, float posY, float speed);

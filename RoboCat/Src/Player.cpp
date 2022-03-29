@@ -63,6 +63,7 @@ void Player::SendPlayer(TCPSocketPtr socketPtr)
 	OutputMemoryBitStream stream;
 	Write(stream);
 	socketPtr->Send(stream.GetBufferPtr(), stream.GetBitLength());
+	mIsFiring = false;
 	//send(inSocket, stream.GetBufferPtr(), stream.GetBitLength(), 0);
 }
 
@@ -105,5 +106,6 @@ float Player::GetSpeed()
 
 void Player::Move(float deltaX)
 {
+	//std::cout << "delta = " << deltaX << std::endl;
 	mPosX += deltaX;
 }

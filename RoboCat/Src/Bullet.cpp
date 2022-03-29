@@ -6,7 +6,7 @@ Bullet::Bullet(const int gameID, float speed, bool isGoingUpwards) : GameObject{
 	mSpeed = speed;
 	mIsGoingUpwards = isGoingUpwards;
 	gotDestroyed = false;
-	mImageIdentifier = "button";
+	mImageIdentifier = "bullet";
 }
 
 Bullet::Bullet(const int gameID, float posX, float posY, float speed, bool isGoingUpwards) : GameObject{ GameObjectType::BULLET, gameID, posX, posY }
@@ -14,7 +14,7 @@ Bullet::Bullet(const int gameID, float posX, float posY, float speed, bool isGoi
 	mSpeed = speed;
 	mIsGoingUpwards = isGoingUpwards;
 	gotDestroyed = false;
-	mImageIdentifier = "button";
+	mImageIdentifier = "bullet";
 }
 
 Bullet::Bullet(const int gameID, float posX, float posY, string imageIdentifier, float speed, bool isGoingUpwards) : GameObject{ GameObjectType::BULLET, gameID, posX, posY, imageIdentifier }
@@ -22,7 +22,7 @@ Bullet::Bullet(const int gameID, float posX, float posY, string imageIdentifier,
 	mSpeed = speed;
 	mIsGoingUpwards = isGoingUpwards;
 	gotDestroyed = false;
-	mImageIdentifier = "button";
+	mImageIdentifier = "bullet";
 }
 
 Bullet::~Bullet()
@@ -87,8 +87,11 @@ void Bullet::ReceiveBullet(TCPSocketPtr inSocket)
 
 void Bullet::Update(float dt)
 {
-	if(mIsGoingUpwards)
-		mPosY -= dt * mSpeed;
-	else
-		mPosY += dt * mSpeed;
+	if (mIsGoingUpwards != NULL)
+	{
+		if (mIsGoingUpwards)
+			mPosY -= dt * mSpeed;
+		else
+			mPosY += dt * mSpeed;
+	}
 }

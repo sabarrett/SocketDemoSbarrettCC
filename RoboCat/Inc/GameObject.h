@@ -10,18 +10,18 @@ enum GameObjectType
 
 class GameObject
 {
-protected:
+	public:
 
-	int mIngameID;
+	int mIngameID = -1;
 
 	float mPosX = 0.0;
 	float mPosY = 0.0;
 
-	GameObjectType mGameObjType;
+	GameObjectType mGameObjType = GameObjectType::ENUM_SIZE;
 
-public:
 
-	string mImageIdentifier;
+
+	string mImageIdentifier = "";
 	GameObject(GameObjectType gameObjType, const int gameID);
 	GameObject(GameObjectType gameObjType, const int gameID, float posX, float posY);
 	GameObject(GameObjectType gameObjType, const int gameID, float posX, float posY, string imageIdentifier);
@@ -29,10 +29,4 @@ public:
 	~GameObject();
 
 	const int getGameID() { return mIngameID; };
-
-	float getPosX() { return mPosX; };
-	void setPosX(float newPosX) { mPosX = newPosX; };
-
-	float getPosY() { return mPosY; };
-	void setPosY(float newPosY) { mPosY = newPosY; };
 };

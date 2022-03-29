@@ -3,12 +3,9 @@
 
 class Effect : public GameObject
 {
-private:
-
-	bool mShouldDisplay;
-
 public:
 
+	bool mShouldDisplay = true;
 	Effect(const int gameID, bool shouldDisplay);
 	Effect(const int gameID, float posX, float posY, bool shouldDisplay);
 	Effect(const int gameID, float posX, float posY, string imageIdentifier, bool shouldDisplay);
@@ -23,5 +20,5 @@ public:
 
 	void Update(float dt);
 
-	float mTimer;
+	float mTimer = 0.0;
 };

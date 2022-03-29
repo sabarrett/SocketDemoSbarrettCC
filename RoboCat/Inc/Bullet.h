@@ -3,14 +3,10 @@
 
 class Bullet : public GameObject
 {
-private:
-
-	bool mIsGoingUpwards = true;
-
-	float mSpeed;
-
 
 public:
+	bool mIsGoingUpwards = true;
+	float mSpeed = 0.02;
 	Bullet(const int gameID, float speed, bool isGoingUpwards);
 	Bullet(const int gameID, float posX, float posY, float speed, bool isGoingUpwards);
 	Bullet(const int gameID, float posX, float posY, string imageIdentifier, float speed, bool isGoingUpwards);
@@ -25,5 +21,5 @@ public:
 
 	void Update(float dt);
 
-	bool gotDestroyed;
+	bool gotDestroyed = false;
 };
