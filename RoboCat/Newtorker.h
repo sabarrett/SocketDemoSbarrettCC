@@ -6,6 +6,7 @@
 #include "GameObject.h"
 #include "Rock.h"
 #include "Wall.h"
+#include "PlayerController.h"
 #include "RoboCatPCH.h"
 
 using std::string;
@@ -35,7 +36,7 @@ public:
 	void Connect(string IPAddress);
 
 	//Update game state
-	void GetNewGameObjectState(map<int, GameObject*> gameObjectMap, int gameObjectCount);
+	void GetNewGameObjectState(map<int, GameObject*> gameObjectMap);
 	void SendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID);
 
 private:
