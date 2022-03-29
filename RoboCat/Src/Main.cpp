@@ -19,18 +19,16 @@ int FPS = 30;
 class GameObject
 {
 public:
-	
+	int width;
+	int height;
+	int xPos;
+	int yPos;
 	void Read(InputMemoryBitStream& stream);
 	void Write(OutputMemoryBitStream& stream) const;
 	GameObject::GameObject(int newWidth, int newHeight, int startPosX, int startPosY);
 	GameObject::GameObject();
 	void UpdatePos(int xChange, int yChange);
 	void Draw();
-private:
-	int width;
-	int height;
-	int xPos;
-	int yPos;
 };
 
 
