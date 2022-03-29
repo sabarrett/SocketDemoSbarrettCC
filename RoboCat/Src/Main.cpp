@@ -45,6 +45,7 @@ ALLEGRO_EVENT_QUEUE* eventQueue = nullptr;
 
 float wallSizeX = 150;
 float wallSizeY = 15;
+float wallBorderThickness = 5.0;
 
 //-------------------------GameObject Data-------------------------
 GameObjectType currentGameObjectType;
@@ -130,8 +131,7 @@ void update()
 			case GameObjectType::WALL:
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
-				//gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, pGraphics, mousePos, wallSizeX, wallSizeY, WALL_SPRITE_IDENTIFIER));
-				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, pGraphics, mousePos, wallSizeX, wallSizeY, white, 1.0));
+				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, pGraphics, mousePos, wallSizeX, wallSizeY, white, wallBorderThickness));
 
 				break;
 			}
