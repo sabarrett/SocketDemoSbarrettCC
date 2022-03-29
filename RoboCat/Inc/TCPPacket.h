@@ -51,7 +51,7 @@ public:
 		handlers[i-1] = (TCPPacketHandler)handler;
 	}
 
-	void HandleInput(TCPSocket* socket);
+	bool HandleInput(TCPSocket* socket);
 	void SendPacket(TCPSocket* socket, TCPPacket* packet);
 };
 
@@ -62,7 +62,7 @@ public:
 class TCPPacketDestroy : public TCPPacket {
 public:
 	static const TCPPacketType TYPE = TCPPacketType::DESTROY;
-	int objectID;
+	int X, Y;
 
 	virtual void Read(InputMemoryBitStream& bitstream) override;
 	virtual void Write(OutputMemoryBitStream& bitstream) override;

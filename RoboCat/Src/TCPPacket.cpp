@@ -3,10 +3,12 @@
 
 
 void TCPPacketDestroy::Read(InputMemoryBitStream& bitstream) {
-	bitstream.Read(objectID);
+	bitstream.Read(X);
+	bitstream.Read(Y);
 }
 void TCPPacketDestroy::Write(OutputMemoryBitStream& bitstream) {
-	bitstream.Write(objectID);
+	bitstream.Write(X);
+	bitstream.Write(Y);
 }
 
 void TCPPacketMove::Read(InputMemoryBitStream& bitstream) {
@@ -31,11 +33,14 @@ void TCPPacketCreate::Write(OutputMemoryBitStream& bitstream) {
 
 
 
-void TCPPacketManager::HandleInput(TCPSocket* socket) {
-	if (!socket->HasRead()) return;
+bool TCPPacketManager::HandleInput(TCPSocket* socket) {
+	if (!socket->HasRead()) return true;
 
 	char buffer[1024];
 	int byteCount = socket->Receive(buffer, 1024);
+	if (byteCount < 0) {
+		return false;
+	}
 
 	std::vector<TCPPacket*> packets;
 
@@ -56,6 +61,7 @@ void TCPPacketManager::HandleInput(TCPSocket* socket) {
 
 		delete packet;
 	}
+	return true;
 }
 
 
