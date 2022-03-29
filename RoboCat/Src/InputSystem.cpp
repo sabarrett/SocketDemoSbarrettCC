@@ -152,6 +152,7 @@ KeyCode InputSystem::getKeyboardInput(InputMode inputMode)
 			break;
 
 		default:
+			break;
 		}
 	}
 

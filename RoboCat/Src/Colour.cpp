@@ -7,6 +7,15 @@ Colour.cpp
 #include "RoboCatPCH.h"
 #include "Colour.h"
 
+//Base constructor
+Colour::Colour()
+{
+	mR = 255;
+	mG = 255;
+	mB = 255;
+	mA = 255;
+}
+
 //Constructor - without alpha
 Colour::Colour(unsigned __int8 r, unsigned __int8 g, unsigned __int8 b)
 {

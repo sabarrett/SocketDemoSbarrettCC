@@ -29,6 +29,7 @@ class Colour
 public:
 
 	//Constructor(s)
+	Colour();
 	Colour(unsigned __int8 r, unsigned __int8 g, unsigned __int8 b);
 	Colour(unsigned __int8 r, unsigned __int8 g, unsigned __int8 b, unsigned __int8 a);
 

@@ -42,7 +42,7 @@ protected:
 
 	//Constructor(s)
 	GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
-	GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier);
+	GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier = "");
 
 	//-------------------------Public data-------------------------
 public:

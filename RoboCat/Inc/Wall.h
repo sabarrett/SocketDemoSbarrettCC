@@ -6,20 +6,24 @@
 */
 
 #include "GameObject.h"
+#include "Colour.h"
 
 class Wall : public GameObject
 {
 	//-------------------------Private data-------------------------
 	float mSizeX;
 	float mSizeY;
+	float mThickness;
 
+	Colour mColour;
 
 	//-------------------------Public data-------------------------
 public:
 
 	//Constructor(s)
 	Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
-	Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, const std::string spriteIdentifier);
+	//Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, const std::string spriteIdentifier);
+	Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, Colour colour, float thickness);
 
 	//Destructor
 	~Wall();

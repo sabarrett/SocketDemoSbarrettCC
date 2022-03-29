@@ -88,6 +88,14 @@ bool GraphicsLibrary::initText(std::string fontFilePath, int fontSize, Colour te
 		return false;
 	}
 
+	//Init primitives
+	if (!al_init_primitives_addon())
+	{
+		std::cout << "error initting primitives add-on\n";
+		system("pause");
+		return false;
+	}
+
 	//Init font
 	mpFont = al_load_ttf_font(fontFilePath.c_str(), fontSize, 0);
 	mColour = al_map_rgba(textColour.getR(), textColour.getG(), textColour.getB(), textColour.getA());
@@ -115,6 +123,13 @@ void GraphicsLibrary::loadImage(std::string imageFilePath, std::string imageIden
 void GraphicsLibrary::drawText(float posX, float posY, std::string text, TextAlignment alignment)
 {
 	al_draw_text(mpFont, mColour, posX, posY, alignment, text.c_str());
+}
+
+void GraphicsLibrary::drawRectangle(float topLeftX, float topLeftY, float bottomRightX, float bottomRightY, Colour colour, float thickness)
+{
+	//Set colour
+	ALLEGRO_COLOR col = al_map_rgba(colour.getR(), colour.getG(), colour.getB(), colour.getA());
+	al_draw_rectangle(topLeftX, topLeftY, bottomRightX, bottomRightY, col, thickness);
 }
 
 void GraphicsLibrary::drawImage(std::string imageIdentifier, float posX, float posY)
