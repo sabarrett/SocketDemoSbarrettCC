@@ -12,8 +12,9 @@ const string GAME_NAME = "temporary name";
 
 // Filenames and paths
 const string IMAGES_PATH = "images/";
-const string BACKGROUND_FILENAME = "BackgroundWhite.jpg";
-const string PLAYER_FILENAME = "PlayerSquare.png";
+const string BACKGROUND_FILENAME = "Background.png";
+const string PLAYER_SPRITE_FILENAME = "PlayerSprite.png";
+const string BULLET_SPRITE_FILENAME = "BulletSprite.png";
 
 // Screen Resolution
 const float RESOLUTION_X = 1920.0;
@@ -103,13 +104,11 @@ int main(int argc, const char** argv)
 	{
 		// Load Images
 		pGL->loadImage(IMAGES_PATH + BACKGROUND_FILENAME, "background");
-		pGL->loadImage(IMAGES_PATH + PLAYER_FILENAME, "player1");
+		pGL->loadImage(IMAGES_PATH + PLAYER_SPRITE_FILENAME, "player1");
 
 		// Draw Stuff
 		pGL->drawImage("background", 0.0, 0.0);
 		pGL->drawImage("player1", playerPositionX, playerPositionY);
-
-		pGL->render();
 
 		while (isGameRunning)
 		{
@@ -120,8 +119,8 @@ int main(int argc, const char** argv)
 			std::cout << dt << std::endl;
 
 			// Updates
-			pIS->update();
-			inputData = pIS->getInputData();
+			//pIS->update();
+			//inputData = pIS->getInputData();
 
 			if (inputData.keyPressed_ESCAPE)
 			{
@@ -144,6 +143,10 @@ int main(int argc, const char** argv)
 			{
 				std::cout << "Space Pressed" << std::endl;
 			}
+
+			playerPositionX += dt * playerSpeed;
+			pGL->drawImage("player1", playerPositionX, playerPositionY);
+			pGL->render();
 		}
 	}
 
