@@ -22,10 +22,7 @@ GameObject::GameObject(std::string graphicsID, int width, int height)
 
 void GameObject::Render(GraphicsLibrary* gl)
 {
-	//gl->drawImage(*mpGraphicsID, mGraphicsData.mX, mGraphicsData.mY);
 	gl->drawImage(*mpGraphicsID, mGraphicsData.mX - (mGraphicsData.mZ / 2.0f), mGraphicsData.mY - (mGraphicsData.mW / 2.0f));
-	//gl->drawImage(*mpGraphicsID, -35,-35);
-	//gl->drawImage(*mpGraphicsID, 0,0);
 }
 
 void GameObject::SetPostion(int posX, int posY)
