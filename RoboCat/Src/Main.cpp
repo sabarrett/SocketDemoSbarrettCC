@@ -39,6 +39,10 @@ bool bGameIsRunning = true;
 std::vector<GameObject*> gameObjectsVec;
 std::map<int, GameObject*> gameObjectMap;
 
+float FPS = 60;
+ALLEGRO_TIMER* timer = nullptr;
+ALLEGRO_EVENT_QUEUE* eventQueue = nullptr;
+
 float wallSizeX = 150;
 float wallSizeY = 15;
 
@@ -78,6 +82,11 @@ bool init()
 	if (bSuccessfulInit)
 		bSuccessfulInit = pInput->init(pGraphics);
 
+	//Setup timer
+	timer = al_create_timer(1.0 / FPS);
+	eventQueue = al_create_event_queue();
+	al_register_event_source(eventQueue, al_get_timer_event_source(timer));
+
 	//Init and return if it succeeded or not
 	return bSuccessfulInit;
 }
@@ -89,9 +98,10 @@ void start()
 	currentGameObjectTypeString = "Rock";
 
 	//Spawn player
-	pPlayerController = new PlayerController(gameObjectID, networkID,/* pInput,*/ pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
 	gameObjectID++;
 	networkID++;
+
+	al_start_timer(timer);
 }
 
 void update()
@@ -134,7 +144,6 @@ void update()
 			}
 
 			gameObjectMap[gameObjectID] = gameObjectToSpawn;
-			//gameObjectsVec.push_back(gameObjectToSpawn);
 			gameObjectToSpawn = nullptr;
 
 			//Increment identifiers
@@ -211,7 +220,10 @@ void update()
 	}
 
 	//Update player controller
-	pPlayerController->update();
+	if (pPlayerController != nullptr)
+	{
+		pPlayerController->update();
+	}
 }
 
 void draw()
@@ -226,7 +238,10 @@ void draw()
 	}
 
 	//Draw player controller
-	pPlayerController->draw();
+	if (pPlayerController != nullptr)
+	{
+		pPlayerController->draw();
+	}
 
 	//Text indicator of current GameObject Type
 	pGraphics->drawText(100, 50, "Current Object to Spawn: " + currentGameObjectTypeString, TextAlignment::ALIGN_LEFT);
@@ -245,6 +260,10 @@ void draw()
 
 void cleanup()
 {
+	//cleanup timer
+	al_destroy_timer(timer);
+	al_destroy_event_queue(eventQueue);
+
 	//Cleanup GameObjects
 	for (const auto& x : gameObjectMap)
 	{
@@ -291,16 +310,21 @@ int main(int argc, const char** argv)
 		//Loop the game
 		while (bGameIsRunning)
 		{
-			//Update call
-			update();
+			ALLEGRO_EVENT ev;
+			al_wait_for_event(eventQueue, &ev);
 
-			//Draw call
-			draw();
+			if (ev.type == ALLEGRO_EVENT_TIMER)
+			{
+				//Update call
+				update();
+
+				//Draw call
+				draw();
+			}
 		}
 
 		//Cleanup when done
 		cleanup();
-		//SocketUtil::CleanUp();
 	}
 
 	return 0;
