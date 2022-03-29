@@ -95,11 +95,16 @@ int TCPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
 	}
 }
 
-TCPSocket::~TCPSocket()
+void TCPSocket::CleanupSocket()
 {
 #if _WIN32
-	closesocket( mSocket );
+	closesocket(mSocket);
 #else
-	close( mSocket );
+	close(mSocket);
 #endif
+}
+
+TCPSocket::~TCPSocket()
+{
+	CleanupSocket();
 }

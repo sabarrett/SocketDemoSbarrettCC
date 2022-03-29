@@ -22,3 +22,8 @@ TO-DOs:
 . Networker::InitServer() --> don't call destructors
 . Networker::InitServer() --> set non blockign mode true
 . Networker::Connect() --> don't hard-code address
+
+Replicating pointers, replicate the data they point to.
+Replicating vectors, replicate their size and data.
+Replicating objects with virtual methods, replicate identifiers to hook up proper virtual function tables.
+Replicating large arrays, omit unused elements.

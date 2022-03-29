@@ -1,8 +1,10 @@
 #include <map>
 
 #include "RoboCatPCH.h"
+#include "MemoryBitStream.h"
+
 #include "InputSystem.h"
-#include "GraphicsLibrary.h"	//This itself includes Colour
+#include "GraphicsLibrary.h"
 #include "GameObject.h"
 #include "Rock.h"
 #include "Wall.h"

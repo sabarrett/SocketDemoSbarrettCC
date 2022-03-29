@@ -32,8 +32,8 @@ public:
 	~Networker();
 
 	//Starting and connect to server
-	void InitServer();
-	void Connect(string IPAddress);
+	void InitServer(std::string port);
+	void Connect(std::string clientIpAddress, std::string serverIpAddress, std::string port);
 
 	//Update game state
 	void GetNewGameObjectState(map<int, GameObject*> gameObjectMap);

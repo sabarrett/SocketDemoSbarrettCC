@@ -11,7 +11,7 @@ Networker::~Networker()
 	SocketUtil::CleanUp();
 }
 
-void Networker::InitServer()
+void Networker::InitServer(std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -25,7 +25,7 @@ void Networker::InitServer()
 	LOG("%s", "Listening Socket Succesfully Created!");
 
 	//Create and Bind Address
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Listening Address");
@@ -53,13 +53,13 @@ void Networker::InitServer()
 	SocketAddress incomingAddress;
 	TCPSocketPtr connSocket = mTCPSocket->Accept(incomingAddress);
 
-	mTCPSocket->~TCPSocket();
+	mTCPSocket->CleanupSocket();
 	mTCPSocket = connSocket;
 	mTCPSocket->SetNonBlockingMode(false);
 	LOG("Accpted connection from address: %s", incomingAddress.ToString().c_str());
 }
 
-void Networker::Connect(string IPAddress)
+void Networker::Connect(std::string clientIpAddress, std::string serverIpAddress, std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -72,7 +72,7 @@ void Networker::Connect(string IPAddress)
 		return;
 	}
 
-	string address = "127.0.0.2:8080";
+	string address = clientIpAddress + ":0";
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
 	{
@@ -88,7 +88,7 @@ void Networker::Connect(string IPAddress)
 	}
 	LOG("%s", "Client Socket Succesfully Binded!");
 
-	SocketAddressPtr srvAddress = SocketAddressFactory::CreateIPv4FromString(IPAddress);
+	SocketAddressPtr srvAddress = SocketAddressFactory::CreateIPv4FromString(serverIpAddress + ":" + port);
 	if (srvAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
