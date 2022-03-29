@@ -47,10 +47,12 @@ class InputSystem
 	//-------------------------Private data-------------------------
 
 	//Event queue
-	ALLEGRO_EVENT_QUEUE* mpEventQueue;
+	ALLEGRO_EVENT_QUEUE* mpMouseEventQueue;
+	ALLEGRO_EVENT_QUEUE* mpKeyboardEventQueue;
 
 	//Event
-	ALLEGRO_EVENT mEvent;
+	ALLEGRO_EVENT mMouseEvent;
+	ALLEGRO_EVENT mKeyboardEvent;
 
 	//-------------------------Public data-------------------------
 public:
@@ -69,5 +71,5 @@ public:
 	//Functions
 	bool init(GraphicsLibrary* pGraphicsLib);
 	MouseButton getMouseInput();
-	KeyCode getKeyboardInput(/*InputMode inputMode*/);
+	KeyCode getKeyboardInput(InputMode inputMode);
 };

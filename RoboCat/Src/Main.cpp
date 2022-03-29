@@ -50,7 +50,7 @@ int gameObjectID = 0;
 //-------------------------Player Data-------------------------
 PlayerController* pPlayerController;
 const std::pair<float, float> STARTING_PLAYER_POSITION = std::make_pair<float, float>(300.0, 300.0);
-float playerMoveSpeed = 50.0;
+float playerMoveSpeed = 0.5;
 
 //-------------------------Network Data-------------------------
 int networkID = 0;
@@ -89,7 +89,7 @@ void start()
 	currentGameObjectTypeString = "Rock";
 
 	//Spawn player
-	pPlayerController = new PlayerController(gameObjectID, networkID, pInput, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+	pPlayerController = new PlayerController(gameObjectID, networkID,/* pInput,*/ pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
 	gameObjectID++;
 	networkID++;
 }
@@ -149,7 +149,7 @@ void update()
 
 	//Get keyboard input
 	{
-		KeyCode keyCode = pInput->getKeyboardInput(/*InputMode::KeyPressed*/);
+		KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyPressed);
 
 		switch (keyCode)
 		{

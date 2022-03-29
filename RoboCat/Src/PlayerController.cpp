@@ -1,63 +1,78 @@
 #include "PlayerController.h"
 #include "RoboCatPCH.h"
 
-PlayerController::PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem, GraphicsLibrary* graphicsLibrary)
+PlayerController::PlayerController(const int gameObjectID, const int networkID/*, InputSystem* inputSystem*/, GraphicsLibrary* graphicsLibrary)
 	: GameObject(gameObjectID, networkID, graphicsLibrary)
 {
-	pInput = inputSystem;
+	//Key down
+	pInputKeyDown = new InputSystem();
+	pInputKeyDown->init(graphicsLibrary);
+
+	//Key up
+	pInputKeyUp = new InputSystem();
+	pInputKeyUp->init(graphicsLibrary);
+
 	mMoveSpeed = 0.0;
 }
 
-PlayerController::PlayerController(const int gameObjectID, const int networkID, InputSystem* inputSystem, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier)
+PlayerController::PlayerController(const int gameObjectID, const int networkID/*, InputSystem* inputSystem*/, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier)
 	: GameObject(gameObjectID, networkID, graphicsLibrary, position, spriteIdentifier)
 {
-	pInput = inputSystem;
+	//Key down
+	pInputKeyDown = new InputSystem();
+	pInputKeyDown->init(graphicsLibrary);
+
+	//Key up
+	pInputKeyUp = new InputSystem();
+	pInputKeyUp->init(graphicsLibrary);
+
 	mMoveSpeed = moveSpeed;
 }
 
 PlayerController::~PlayerController()
 {
-	//This gets deleted in main.cpp, only de-reference it here
-	pInput = nullptr;
+	//Key down
+	delete pInputKeyDown;
+	pInputKeyDown = nullptr;
+
+	//Key up
+	delete pInputKeyUp;
+	pInputKeyUp = nullptr;
 }
 
 void PlayerController::update()
 {
 	//Get keyboard input - KeyPressed
 	{
-		KeyCode keyCode = pInput->getKeyboardInput(/*InputMode::KeyPressed*/);
+		KeyCode keyCode = pInputKeyDown->getKeyboardInput(InputMode::KeyPressed);
 
 		switch (keyCode)
 		{
 		case KeyCode::W:
 		{
 			//Move up
-			mPosition.second -= mMoveSpeed;
-
+			bShouldMoveUp = true;
 			break;
 		}
 
 		case KeyCode::A:
 		{
 			//Move left
-			mPosition.first -= mMoveSpeed;
-
+			bShouldMoveLeft = true;
 			break;
 		}
 
 		case KeyCode::S:
 		{
 			//Move down
-			mPosition.second += mMoveSpeed;
-
+			bShouldMoveDown = true;
 			break;
 		}
 
 		case KeyCode::D:
 		{
 			//Move right
-			mPosition.first += mMoveSpeed;
-
+			bShouldMoveRight = true;
 			break;
 		}
 
@@ -66,60 +81,54 @@ void PlayerController::update()
 		}
 	}
 
-	////Get keyboard input - KeyReleased
-	//{
-	//	KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyReleased);
+	//Get keyboard input - KeyReleased
+	{
+		KeyCode keyCode = pInputKeyUp->getKeyboardInput(InputMode::KeyReleased);
 
-	//	switch (keyCode)
-	//	{
-	//	case KeyCode::W:
-	//	{
-	//		//Move up
-	//		bShouldMoveUp = false;
+		switch (keyCode)
+		{
+		case KeyCode::W:
+		{
+			//Stop moving up
+			bShouldMoveUp = false;
+			break;
+		}
 
-	//		break;
-	//	}
+		case KeyCode::A:
+		{
+			//Stop moving left
+			bShouldMoveLeft = false;
+			break;
+		}
 
-	//	case KeyCode::A:
-	//	{
-	//		//Move left
-	//		bShouldMoveLeft = false;
+		case KeyCode::S:
+		{
+			//Stop moving down
+			bShouldMoveDown = false;
+			break;
+		}
 
-	//		break;
-	//	}
+		case KeyCode::D:
+		{
+			//Stop moving right
+			bShouldMoveRight = false;
+			break;
+		}
 
-	//	case KeyCode::S:
-	//	{
-	//		//Move down
-	//		bShouldMoveDown = false;
+		default:
+			break;
+		}
+	}
 
-	//		break;
-	//	}
-
-	//	case KeyCode::D:
-	//	{
-	//		//Move right
-	//		bShouldMoveRight = false;
-
-	//		break;
-	//	}
-
-	//	default:
-	//		break;
-	//	}
-	//}
-
-	//if (bShouldMoveUp)
-	//	mPosition.second -= mMoveSpeed;
-
-	//if (bShouldMoveDown)
-	//	mPosition.second += mMoveSpeed;
-
-	//if (bShouldMoveLeft)
-	//	mPosition.first -= mMoveSpeed;
-
-	//if (bShouldMoveRight)
-	//	mPosition.first += mMoveSpeed;
+	//Apply move based on holding keys
+	if (bShouldMoveUp)
+		mPosition.second -= mMoveSpeed;
+	if (bShouldMoveDown)
+		mPosition.second += mMoveSpeed;
+	if (bShouldMoveLeft)
+		mPosition.first -= mMoveSpeed;
+	if (bShouldMoveRight)
+		mPosition.first += mMoveSpeed;
 }
 
 void PlayerController::draw()

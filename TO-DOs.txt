@@ -14,5 +14,11 @@ Requirements:
 Scott's Recommendations
 For the game, I recommend you make something simple. For example, each player can press S to spawn an object and D to remove a random object, each of which floats around the screen randomly.
 
-Adel's ideas:
-. 
+
+TO-DOs:
+. Destroy GameObjects somehow (probably press backspace and a random one will delete, or right-click something)
+. Have 10 gameobjects be there by default
+. Networker::InitServer() --> change IP string to not be hard-coded (Adel had this in the last assignment, consult it) 
+. Networker::InitServer() --> don't call destructors
+. Networker::InitServer() --> set non blockign mode true
+. Networker::Connect() --> don't hard-code address
