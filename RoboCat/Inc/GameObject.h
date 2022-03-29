@@ -10,18 +10,23 @@ enum GameObjectType
 
 class GameObject
 {
-
+private:
 	const int mGameID;
-	const int mNetID;
 
 	float mPosX;
 	float mPosY;
+
 public:
-	GameObject(const int gameID, const int netID);
-	GameObject(const int gameID, const int netID, float postX, float PosY);
+	GameObject(const int gameID);
+	GameObject(const int gameID, float postX, float PosY);
 
 	~GameObject();
 
 	const int getGameID() { return mGameID; };
-	const int getNetId() { return mNetID; };
+
+	float getPosX() { return mPosX; };
+	float setPosX(float newPosX) { mPosX = newPosX; };
+
+	float getPosY() { return mPosY; };
+	float setPosY(float newPosY) { mPosY = newPosY; };
 };
