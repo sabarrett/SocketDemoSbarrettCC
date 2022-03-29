@@ -6,6 +6,7 @@
 #include "GameObject.h"
 #include "Rock.h"
 #include "Wall.h"
+#include "PlayerController.h"
 
 //-------------------------Graphics Data-------------------------
 GraphicsLibrary* pGraphics;
@@ -18,6 +19,9 @@ InputSystem* pInput;
 //-------------------------Assets-------------------------
 const std::string ASSET_PATH = "Assets\\";
 const std::string BACKGROUND_IMAGE_FILE = "Background_Image.jpg";
+const std::string ROCK_IMAGE_FILE = "Rock_Image.jpg";
+const std::string WALL_IMAGE_FILE = "Wall_Image.jpg";
+const std::string PLAYER_IMAGE_FILE = "Player_Image.jpg";
 const std::string ARIAL_FONT_FILE = "ARIBL0.ttf";
 const int FONT_SIZE = 32;
 
@@ -25,7 +29,10 @@ const int FONT_SIZE = 32;
 Colour white(255, 255, 255, 255);
 
 //-------------------------Asset Identifiers-------------------------
-const std::string backgroundImageSprite = "background_image";
+const std::string BACKGROUND_IMAGE_SPRITE_IDENTIFIER = "background_image";
+const std::string ROCK_SPRITE_IDENTIFIER = "rock_image";
+const std::string WALL_SPRITE_IDENTIFIER = "wall_image";
+const std::string PLAYER_SPRITE_IDENTIFIER = "player_image";
 
 //-------------------------Game Data-------------------------
 bool bGameIsRunning = true;
@@ -39,6 +46,11 @@ float wallSizeY = 15;
 GameObjectType currentGameObjectType;
 std::string currentGameObjectTypeString;
 int gameObjectID = 0;
+
+//-------------------------Player Data-------------------------
+PlayerController* pPlayerController;
+const std::pair<float, float> STARTING_PLAYER_POSITION = std::make_pair<float, float>(300.0, 300.0);
+float playerMoveSpeed = 5.0;
 
 //-------------------------Network Data-------------------------
 int networkID = 0;
@@ -56,15 +68,15 @@ bool init()
 		bSuccessfulInit = pGraphics->initText(ASSET_PATH + ARIAL_FONT_FILE, FONT_SIZE, white);
 
 	//Add images to the graphcis library
-	pGraphics->loadImage(ASSET_PATH + BACKGROUND_IMAGE_FILE, backgroundImageSprite);
+	pGraphics->loadImage(ASSET_PATH + BACKGROUND_IMAGE_FILE, BACKGROUND_IMAGE_SPRITE_IDENTIFIER);
+	pGraphics->loadImage(ASSET_PATH + ROCK_IMAGE_FILE, ROCK_SPRITE_IDENTIFIER);
+	pGraphics->loadImage(ASSET_PATH + WALL_IMAGE_FILE, WALL_SPRITE_IDENTIFIER);
+	pGraphics->loadImage(ASSET_PATH + PLAYER_IMAGE_FILE, PLAYER_SPRITE_IDENTIFIER);
 
 	//Setup the input system
 	pInput = new InputSystem();
 	if (bSuccessfulInit)
 		bSuccessfulInit = pInput->init(pGraphics);
-
-	//Init socket utils
-	//SocketUtil::StaticInit();
 
 	//Init and return if it succeeded or not
 	return bSuccessfulInit;
@@ -75,6 +87,9 @@ void start()
 	//Default GameObject to spawn
 	currentGameObjectType = GameObjectType::ROCK;
 	currentGameObjectTypeString = "Rock";
+
+	//Spawn player
+	pPlayerController = new PlayerController(gameObjectID, networkID, pInput, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
 }
 
 void update()
@@ -96,14 +111,14 @@ void update()
 			case GameObjectType::ROCK:
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
-				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(gameObjectID, networkID, mousePos));
+				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(gameObjectID, networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
 
 				break;
 			}
 			case GameObjectType::WALL:
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
-				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, mousePos, wallSizeX, wallSizeY));
+				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(gameObjectID, networkID, pGraphics, mousePos, wallSizeX, wallSizeY, WALL_SPRITE_IDENTIFIER));
 
 				break;
 			}
@@ -148,6 +163,10 @@ void update()
 			//Cycle throught GameObject types
 			currentGameObjectType = static_cast<GameObjectType>((currentGameObjectType + 1) % GameObjectType::ENUM_SIZE);
 
+			//DO NOT SPAWN A PLAYER
+			if (currentGameObjectType == GameObjectType::PLAYER)
+				currentGameObjectType = static_cast<GameObjectType>((currentGameObjectType + 1) % GameObjectType::ENUM_SIZE);
+
 			switch (currentGameObjectType)
 			{
 			case GameObjectType::INVALID:
@@ -188,17 +207,12 @@ void update()
 	{
 		x.second->update();
 	}
-
-	//for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
-	//{
-	//	gameObjectsVec[i]->update();
-	//}
 }
 
 void draw()
 {
 	//Background image
-	pGraphics->drawImage(backgroundImageSprite, 0, 0);
+	pGraphics->drawImage(BACKGROUND_IMAGE_SPRITE_IDENTIFIER, 0, 0);
 
 	//Draw GameObjects
 	for (const auto& x : gameObjectMap)
@@ -235,12 +249,10 @@ void cleanup()
 	}
 	gameObjectMap.clear();
 
-	//for (unsigned int i = 0; i < gameObjectsVec.size(); i++)
-	//{
-	//	delete gameObjectsVec[i];
-	//	gameObjectsVec[i] = nullptr;
-	//}
-	//
+	//Cleanup player
+	delete pPlayerController;
+	pPlayerController = nullptr;
+
 	//Cleanup input system
 	delete pInput;
 	pInput = nullptr;
