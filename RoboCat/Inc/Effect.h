@@ -8,9 +8,12 @@ private:
 	bool mShouldDisplay;
 
 public:
-	string mImageIdentifierCover;
+	float mTimer;
+	float mMaxTime;
+
 	Effect(const int gameID, bool shouldDisplay);
 	Effect(const int gameID, float posX, float posY, bool shouldDisplay);
+	Effect(const int gameID, float posX, float posY, string imageIdentifier, bool shouldDisplay);
 
 	~Effect();
 
@@ -19,4 +22,6 @@ public:
 
 	void SendPlayer(int inSocket, const Effect* inEffect);
 	void ReceivePlayer(int inSocket, Effect* outEffect);
+
+	void Update(float dt);
 };

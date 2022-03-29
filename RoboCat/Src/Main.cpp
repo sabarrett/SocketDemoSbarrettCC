@@ -3,6 +3,7 @@
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 #include "allegro_wrapper_functions-main/InputSystem.h"
 #include "Bullet.h"
+#include "Effect.h"
 #include <chrono>
 #include "Player.h"
 #include <algorithm>
@@ -17,6 +18,9 @@ const string IMAGES_PATH = "Images/";
 const string BACKGROUND_FILENAME = "Background.png";
 const string PLAYER_SPRITE_FILENAME = "PlayerSprite.png";
 const string BULLET_SPRITE_FILENAME = "BulletSprite.png";
+const string BULLET_COVER_FILENAME = "BulletCover.png";
+const string EFFECT_SPRITE_FILENAME = "Effect.png";
+const string EFFECT_COVER_FILENAME = "EffectCover.png";
 
 // Screen Resolution
 const float RESOLUTION_X = 1920.0;
@@ -24,12 +28,17 @@ const float RESOLUTION_Y = 1080.0;
 
 // Sprites sizes
 const float PLAYER_SIZE = 80.0;
-const float BULLET_SIZE = 40.0;
-const float OFFSET_HIT = 3.0;
+const float BULLET_SIZE = 30.0;
+const float EFFECT_SIZE_X = 120.0;
+const float EFFECT_SIZE_Y = 30.0;
+const float OFFSET_HIT = 1.0;
 
 // Objects speed
-const float BULLET_SPEED = 0.3;
+const float BULLET_SPEED = 0.5;
+const float PLAYER_SPEED = 0.2;
 
+// Effect duration
+const float MAX_EFFECT_TIME = 700;
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -48,19 +57,14 @@ int main(int argc, const char** argv)
 	// ---------------------- General Game Data ----------------------
 	bool isGameRunning = true;
 	std::vector<Bullet*> bulletsVector;
+	std::vector<Effect*> effectsVector;
 
 	// ---------------------- Time related ----------------------
 	clock_t start, end;
 	float last_time = 0.0;
 	float dt = 0.0;
 	start = clock();
-
-	// ---------------------- Temporary Player Stuff ----------------------
-	float playerSpeed = 0.05;
-	float playerPositionX = RESOLUTION_X / 2;
-	float playerPositionY = RESOLUTION_Y / 10;
-
-
+	
 	// ---------------------- Intro Screen ----------------------
 	string input = "";
 	bool isHosting = false;
@@ -118,12 +122,15 @@ int main(int argc, const char** argv)
 		pGL->loadImage(IMAGES_PATH + BACKGROUND_FILENAME, "background");
 		pGL->loadImage(IMAGES_PATH + PLAYER_SPRITE_FILENAME, "player");
 		pGL->loadImage(IMAGES_PATH + BULLET_SPRITE_FILENAME, "bullet");
+		pGL->loadImage(IMAGES_PATH + BULLET_COVER_FILENAME, "bulletCover");
+		pGL->loadImage(IMAGES_PATH + EFFECT_SPRITE_FILENAME, "effect");
+		pGL->loadImage(IMAGES_PATH + EFFECT_COVER_FILENAME , "effectCover");
 
 		// Draw Stuff
 		pGL->drawImage("background", 0.0, 0.0);
 
-		Player* player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, playerSpeed, "player");
-		Player* player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, playerSpeed, "player");
+		Player* player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
+		Player* player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 
 		// ---------------------- Main Game Loop ----------------------
 		while (isGameRunning)
@@ -155,17 +162,17 @@ int main(int argc, const char** argv)
 			if (inputData.keyPressed_A)
 			{
 				//std::cout << "A Pressed" << std::endl;
-				player1->Move(-dt * playerSpeed);
+				player1->Move(-dt * player1->mSpeed);
 			}
 			if (inputData.keyPressed_D)
 			{
 				//std::cout << "D Pressed" << std::endl;				
-				player1->Move(dt * playerSpeed);
+				player1->Move(dt * player1->mSpeed);
 
 			}
 			if (inputData.keyPressed_SPACE)
 			{
-				Bullet* newBullet = new Bullet(0, player1->getPosX() + PLAYER_SIZE / 2 - BULLET_SIZE / 2, RESOLUTION_Y * 8 / 10, "bullet", BULLET_SPEED, true);
+				Bullet* newBullet = new Bullet(0, player1->getPosX() + PLAYER_SIZE / 2 - BULLET_SIZE / 2, player1->getPosY() - PLAYER_SIZE / 2, "bullet", BULLET_SPEED, true);
 				pGL->drawImage(newBullet->mImageIdentifier, newBullet->getPosX(), newBullet->getPosY());
 				bulletsVector.push_back(newBullet);
 				std::cout << "Space Pressed" << std::endl;
@@ -175,13 +182,30 @@ int main(int argc, const char** argv)
 			{
 				//check bullet y is <= player y + playersize
 				//check bullet x is >= player x - bulletsize / 2 and <= player x + playersize
-				if (bullet->getPosY() <= player2->getPosY() + PLAYER_SIZE + OFFSET_HIT && 
-					bullet->getPosX() >= player2->getPosX() - BULLET_SIZE && 
-					bullet->getPosX() <= player2->getPosX() + PLAYER_SIZE && 
+				if (bullet->getPosY() <= player2->getPosY() + PLAYER_SIZE + OFFSET_HIT &&
+					bullet->getPosX() >= player2->getPosX() - BULLET_SIZE &&
+					bullet->getPosX() <= player2->getPosX() + PLAYER_SIZE &&
 					bullet->getPosY() >= player2->getPosY() - BULLET_SIZE / 2)
 				{
 					std::cout << "BULLET HIT";
+					pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
+
+					Effect* newEffect = new Effect(0, bullet->getPosX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getPosY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
+					pGL->drawImage(newEffect->mImageIdentifier, newEffect->getPosX(), newEffect->getPosY());
+					effectsVector.push_back(newEffect);
+
+					bullet = nullptr;
 					bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
+				}
+			}
+			for (auto& effect : effectsVector)
+			{
+				effect->Update(dt);
+				if (effect->mTimer >= MAX_EFFECT_TIME)
+				{
+					pGL->drawImage("effectCover", effect->getPosX(), effect->getPosY());
+					effect = nullptr;
+					effectsVector.erase(std::remove(effectsVector.begin(), effectsVector.end(), effect), effectsVector.end());
 				}
 			}
 

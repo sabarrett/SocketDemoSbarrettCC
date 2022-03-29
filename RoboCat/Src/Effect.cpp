@@ -11,6 +11,12 @@ Effect::Effect(const int gameID, float posX, float posY, bool shouldDisplay) : G
 	mShouldDisplay = shouldDisplay;
 }
 
+Effect::Effect(const int gameID, float posX, float posY, string imageIdentifier, bool shouldDisplay) : GameObject{ gameID, posX, posY, imageIdentifier }
+{
+	mShouldDisplay = shouldDisplay;
+	mTimer = 0.0;
+}
+
 Effect::~Effect()
 {
 
@@ -67,4 +73,9 @@ void Effect::ReceivePlayer(int inSocket, Effect* outEffect)
 		std::free(temporaryBuffer);
 	}
 
+}
+
+void Effect::Update(float dt)
+{
+	mTimer += dt;
 }
