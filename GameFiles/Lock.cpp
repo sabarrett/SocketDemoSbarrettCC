@@ -20,13 +20,13 @@ Lock::~Lock()
 void Lock::Write(OutputMemoryBitStream& stream)
 {
 	stream.Write(mGraphicsData);
-	stream.Write(mpGraphicsID);
+	stream.Write(*mpGraphicsID);
 }
 
 void Lock::Read(InputMemoryBitStream& stream)
 {
 	stream.Read(mGraphicsData);
-	stream.Read(mpGraphicsID);
+	stream.Read(*mpGraphicsID);
 }
 
 void Lock::Update()
