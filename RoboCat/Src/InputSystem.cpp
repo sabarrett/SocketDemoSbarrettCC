@@ -109,13 +109,13 @@ MouseButton InputSystem::getMouseInput()
 	}
 }
 
-KeyCode InputSystem::getKeyboardInput(InputMode inputMode)
+KeyCode InputSystem::getKeyboardInput(/*InputMode inputMode*/)
 {
 	//If there is an event
 	al_wait_for_event(mpEventQueue, &mEvent);
 	
-	//if (mEvent.type == InputMode::KeyPressed)
-	if (mEvent.type == inputMode)
+	if (mEvent.type == InputMode::KeyPressed)
+	//if (mEvent.type == inputMode)
 	{
 		//Check the type
 		switch (mEvent.keyboard.keycode)

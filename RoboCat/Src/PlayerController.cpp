@@ -25,14 +25,14 @@ void PlayerController::update()
 {
 	//Get keyboard input - KeyPressed
 	{
-		KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyPressed);
+		KeyCode keyCode = pInput->getKeyboardInput(/*InputMode::KeyPressed*/);
 
 		switch (keyCode)
 		{
 		case KeyCode::W:
 		{
 			//Move up
-			bShouldMoveUp = true;
+			mPosition.second -= mMoveSpeed;
 
 			break;
 		}
@@ -40,7 +40,7 @@ void PlayerController::update()
 		case KeyCode::A:
 		{
 			//Move left
-			bShouldMoveLeft = true;
+			mPosition.first -= mMoveSpeed;
 
 			break;
 		}
@@ -48,7 +48,7 @@ void PlayerController::update()
 		case KeyCode::S:
 		{
 			//Move down
-			bShouldMoveDown = true;
+			mPosition.second += mMoveSpeed;
 
 			break;
 		}
@@ -56,7 +56,7 @@ void PlayerController::update()
 		case KeyCode::D:
 		{
 			//Move right
-			bShouldMoveRight = true;
+			mPosition.first += mMoveSpeed;
 
 			break;
 		}
@@ -66,60 +66,60 @@ void PlayerController::update()
 		}
 	}
 
-	//Get keyboard input - KeyReleased
-	{
-		KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyReleased);
+	////Get keyboard input - KeyReleased
+	//{
+	//	KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyReleased);
 
-		switch (keyCode)
-		{
-		case KeyCode::W:
-		{
-			//Move up
-			bShouldMoveUp = false;
+	//	switch (keyCode)
+	//	{
+	//	case KeyCode::W:
+	//	{
+	//		//Move up
+	//		bShouldMoveUp = false;
 
-			break;
-		}
+	//		break;
+	//	}
 
-		case KeyCode::A:
-		{
-			//Move left
-			bShouldMoveLeft = false;
+	//	case KeyCode::A:
+	//	{
+	//		//Move left
+	//		bShouldMoveLeft = false;
 
-			break;
-		}
+	//		break;
+	//	}
 
-		case KeyCode::S:
-		{
-			//Move down
-			bShouldMoveDown = false;
+	//	case KeyCode::S:
+	//	{
+	//		//Move down
+	//		bShouldMoveDown = false;
 
-			break;
-		}
+	//		break;
+	//	}
 
-		case KeyCode::D:
-		{
-			//Move right
-			bShouldMoveRight = false;
+	//	case KeyCode::D:
+	//	{
+	//		//Move right
+	//		bShouldMoveRight = false;
 
-			break;
-		}
+	//		break;
+	//	}
 
-		default:
-			break;
-		}
-	}
+	//	default:
+	//		break;
+	//	}
+	//}
 
-	if (bShouldMoveUp)
-		mPosition.second -= mMoveSpeed;
+	//if (bShouldMoveUp)
+	//	mPosition.second -= mMoveSpeed;
 
-	if (bShouldMoveDown)
-		mPosition.second += mMoveSpeed;
+	//if (bShouldMoveDown)
+	//	mPosition.second += mMoveSpeed;
 
-	if (bShouldMoveLeft)
-		mPosition.first -= mMoveSpeed;
+	//if (bShouldMoveLeft)
+	//	mPosition.first -= mMoveSpeed;
 
-	if (bShouldMoveRight)
-		mPosition.first += mMoveSpeed;
+	//if (bShouldMoveRight)
+	//	mPosition.first += mMoveSpeed;
 }
 
 void PlayerController::draw()
