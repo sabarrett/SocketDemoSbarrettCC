@@ -85,6 +85,8 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 //Update
 void InputSystem::update()
 {
+	currentFrameData.clean();
+
 	switch (getKeyboardInput())
 	{
 	case KeyCode::ESCAPE_KEY:
@@ -92,18 +94,21 @@ void InputSystem::update()
 		// Doesn't allow continuous press
 		if (!lastFrameData.keyPressed_ESCAPE)
 			currentFrameData.keyPressed_ESCAPE = true;
+		//std::cout << "Escape Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::A_KEY:
 	{
 		// Allows continuous press
 		currentFrameData.keyPressed_A = true;
+		//std::cout << "A Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::D_KEY:
 	{
 		// Allows continuous press
 		currentFrameData.keyPressed_D = true;
+		//std::cout << "D Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::R_KEY:
@@ -111,6 +116,7 @@ void InputSystem::update()
 		// Doesn't allow continuous press
 		if (!lastFrameData.keyPressed_R)
 			currentFrameData.keyPressed_R = true;
+		//std::cout << "R Pressed" << std::endl;
 		break;
 	}
 	case KeyCode::SPACE_KEY:
@@ -118,6 +124,7 @@ void InputSystem::update()
 		// Doesn't allow continuous press
 		if(!lastFrameData.keyPressed_SPACE)
 			currentFrameData.keyPressed_SPACE = true;
+		//std::cout << "Space Pressed" << std::endl;
 		break;
 	}
 	default:
@@ -128,7 +135,6 @@ void InputSystem::update()
 InputData InputSystem::getInputData()
 {
 	lastFrameData = currentFrameData;
-	currentFrameData.clean();
 	return currentFrameData;
 }
 

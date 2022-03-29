@@ -149,5 +149,7 @@ int main(int argc, const char** argv)
 
 	SocketUtil::CleanUp();
 
+	std::cout << "Thank you for playing! Goodbye!" << std::endl;
+
 	return 0;
 }
