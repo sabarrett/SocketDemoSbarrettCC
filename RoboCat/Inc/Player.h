@@ -22,4 +22,6 @@ public:
 
 	void SendPlayer(int inSocket, const Player* inPlayer);
 	void ReceivePlayer(int inSocket, Player* outPlayer);
+
+	void Move(float deltaX);
 };

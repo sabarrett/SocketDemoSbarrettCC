@@ -144,21 +144,21 @@ int main(int argc, const char** argv)
 			if (inputData.keyPressed_ESCAPE)
 			{
 				isGameRunning = false;
-				std::cout << "Escape Pressed" << std::endl;
+				//std::cout << "Escape Pressed" << std::endl;
 			}
 			if (inputData.keyPressed_R)
 			{
-				std::cout << "R Pressed" << std::endl;
+				//std::cout << "R Pressed" << std::endl;
 			}
 			if (inputData.keyPressed_A)
 			{
-				std::cout << "A Pressed" << std::endl;
-				playerPositionX -= dt * playerSpeed;
+				//std::cout << "A Pressed" << std::endl;
+				player1->Move(-dt * playerSpeed);
 			}
 			if (inputData.keyPressed_D)
 			{
-				std::cout << "D Pressed" << std::endl;				
-				playerPositionX += dt * playerSpeed;
+				//std::cout << "D Pressed" << std::endl;				
+				player1->Move(dt * playerSpeed);
 
 			}
 			if (inputData.keyPressed_SPACE)
@@ -169,7 +169,6 @@ int main(int argc, const char** argv)
 				std::cout << "Space Pressed" << std::endl;
 			}
 
-			player1->setPosX(playerPositionX);
 			pGL->drawImage(player1->mImageIdentifier, player1->getPosX(), player1->getPosY());
 			pGL->drawImage(player2->mImageIdentifier, player2->getPosX(), player2->getPosY());
 			pGL->render();

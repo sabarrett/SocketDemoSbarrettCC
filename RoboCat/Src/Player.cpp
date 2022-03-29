@@ -75,3 +75,8 @@ void Player::ReceivePlayer(int inSocket, Player* outPlayer)
 	}
 
 }
+
+void Player::Move(float deltaX)
+{
+	mPosX += deltaX;
+}
