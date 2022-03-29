@@ -1,7 +1,7 @@
 #include "PlayerController.h"
 #include "RoboCatPCH.h"
 
-PlayerController::PlayerController(const int gameObjectID, const int networkID/*, InputSystem* inputSystem*/, GraphicsLibrary* graphicsLibrary)
+PlayerController::PlayerController(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary)
 	: GameObject(gameObjectID, networkID, graphicsLibrary)
 {
 	//Key down
@@ -15,7 +15,7 @@ PlayerController::PlayerController(const int gameObjectID, const int networkID/*
 	mMoveSpeed = 0.0;
 }
 
-PlayerController::PlayerController(const int gameObjectID, const int networkID/*, InputSystem* inputSystem*/, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier)
+PlayerController::PlayerController(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier)
 	: GameObject(gameObjectID, networkID, graphicsLibrary, position, spriteIdentifier)
 {
 	//Key down
