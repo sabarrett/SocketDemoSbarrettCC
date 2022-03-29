@@ -36,14 +36,6 @@ const string BACKGROUND = "background.jpg";
 const int CREATOR_PORT = 8080;
 const int JOINER_PORT = 8100;
 
-
-// ~~~~~~~~~~~~~~~~~~~~~   Listening   ~~~~~~~~~~~~~~~~~~~~~~~
-
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~ Sending ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 #if _WIN32
 int main(int argc, const char** argv)
 {
@@ -151,7 +143,7 @@ int main(int argc, const char** argv)
 		} while (unprocessedData.size() < 1);
 	}
 
-	// we don't need the welcome message
+	// we don't need the starting messages stored
 	unprocessedData.clear();
 
 	//  Graphics init
@@ -174,18 +166,18 @@ int main(int argc, const char** argv)
 	{
 		inputSys.Update(userIsCreator);
 
-		//if (userIsCreator)
-		//{
-		//	HandleIncomingInputPackets(); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
-		//	ProcessWorldState();
-		//	HandleOutgoingWorldStatePackets();
-		//}
-		//else
-		//{
-		//	ProcessWorldState();
-		//	HandleIncomingWorldStatePackets();
-		//	HandleOutgoingInputs();
-		//}
+		if (userIsCreator)
+		{
+			NetworkManager::HandleIncomingInputPackets(); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
+			//ProcessWorldState();
+			NetworkManager::HandleOutgoingWorldStatePackets();
+		}
+		else
+		{
+			//ProcessWorldState();
+			NetworkManager::HandleIncomingWorldStatePackets();
+			NetworkManager::HandleOutgoingInputPackets();
+		}
 
 
 		//  Render

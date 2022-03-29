@@ -1,6 +1,8 @@
 #include "RoboCatPCH.h"
 #include "NetworkManager.h"
 
+
+// inits
 void NetworkManager::SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress)
 {
 	// here we can select which IPV we're using, and IPV6 is a bit wild for these purposes so, we go with IPV4
@@ -40,7 +42,6 @@ void NetworkManager::SetUpInitialListening(int& port, UDPSocketPtr& listeningSoc
 	LOG("Your port is %i\n", static_cast<int>(port));
 	//LOG("%s", "socket is now listening");
 }
-
 void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr listeningSocket, SocketAddressPtr addressRecievedFrom, vector<std::pair<int, void*>>& unprocessedData)
 {
 	std::cout << "Listening Now!";
@@ -63,7 +64,6 @@ void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr listeni
 		}
 	}
 }
-
 
 void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress)
 {
@@ -111,17 +111,28 @@ void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPS
 }
 
 
-
-bool NetworkManager::HandleUnprocessedIncomingPackets()
+// updates
+bool NetworkManager::HandleIncomingInputPackets()
 {
-	std::cout << "HandlingIncoming";
+	std::cout << "HandlingCreatorIncoming\n";
 	return true;
 }
 
-bool NetworkManager::HandleOutGoingWorldState()
+bool NetworkManager::HandleOutgoingWorldStatePackets()
 {
-	std::cout << "HandlingOutgoing";
+	std::cout << "HandlingCreatorOutgoing\n";
 	return true;
 }
 
 
+bool NetworkManager::HandleIncomingWorldStatePackets()
+{
+	std::cout << "HandlingJoinerOutgoing\n";
+	return true;
+}
+
+bool NetworkManager::HandleOutgoingInputPackets()
+{
+	std::cout << "HandlingJoinerOutgoing\n";
+	return true;
+}

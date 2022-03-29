@@ -14,8 +14,12 @@ namespace NetworkManager
     void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr sendingSocket, SocketAddressPtr sendingAddress);
     
         // Derived Connection Functions for in-game use
-    bool HandleUnprocessedIncomingPackets();
-    bool HandleOutGoingWorldState();
+    // creator
+    bool HandleIncomingInputPackets();
+    bool HandleOutgoingWorldStatePackets();
+    // joiner
+    bool HandleIncomingWorldStatePackets();
+    bool HandleOutgoingInputPackets();
 }
 
 

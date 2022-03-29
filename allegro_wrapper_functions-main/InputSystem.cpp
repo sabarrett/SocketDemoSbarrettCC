@@ -137,21 +137,21 @@ void InputSystem::Update(bool isCreator)
 		if (!wasHoldingLeftMouseLastFrame)
 		{
 			wasHoldingLeftMouseLastFrame = true;
-			std::cout << "\nLeft Clicked";
+			std::cout << "\nLeft Clicked\n";
 		}
 		break;
 	case MouseButton::MiddleMouse:
 		if (!wasHoldingMiddleMouseLastFrame)
 		{
 			wasHoldingMiddleMouseLastFrame = true;
-			std::cout << "\nMiddle Clicked";
+			std::cout << "\nMiddle Clicked\n";
 		}
 		break;
 	case MouseButton::RightMouse:
 		if (!wasHoldingRightMouseLastFrame)
 		{
 			wasHoldingRightMouseLastFrame = true;
-			std::cout << "\nRight Clicked";
+			std::cout << "\nRight Clicked\n";
 		}
 		break;
 	case MouseButton::None:
