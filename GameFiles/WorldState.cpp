@@ -26,7 +26,7 @@ void WorldState::Update()
 
 void WorldState::Render()
 {
-	//mpGraphicsLibrary->drawImage(BACKGROUND, 0, 0);
+	mpGraphicsLibrary->drawImage(BACKGROUND, 0, 0);
 
 	for each (GameObject * var in mGameObjects)
 	{
@@ -47,4 +47,49 @@ void WorldState::CreateLock(int posX, int posY)
 	createdGameObject->SetPostion(posX, posY);
 	mpGameObjectLinker->GetNetworkId(createdGameObject,true);
 	mGameObjects.push_back(createdGameObject);
+}
+
+void WorldState::Write(OutputMemoryBitStream& stream)
+{
+	int count = mGameObjects.size();
+	GameObject* tempObj;
+	stream.Write(count);
+	for (int i = 0; i < count; i++)
+	{
+		tempObj = mGameObjects[i];
+		stream.Write(mpGameObjectLinker->GetNetworkId(tempObj,true));
+		stream.Write(tempObj->GetClassId());
+		tempObj->Write(stream);
+	}
+}
+
+void WorldState::Read(InputMemoryBitStream& stream)
+{
+	int count;
+	uint32_t networkID;
+	uint32_t classID;
+	GameObject* tempObj;
+	stream.Read(count);
+	for (int i = 0; i < count; i++)
+	{
+		stream.Read(networkID);
+		stream.Read(classID);
+		
+		tempObj = mpGameObjectLinker->GetGameObject(networkID);
+
+		if (tempObj == nullptr)
+		{
+			switch (classID)
+			{
+				case 'LOCK':
+					tempObj = Lock::CreateInstance();
+					break;
+				default:
+					break;
+			}
+			mpGameObjectLinker->AddGameObject(tempObj, networkID);
+		}
+		
+		tempObj->Read(stream);
+	}
 }

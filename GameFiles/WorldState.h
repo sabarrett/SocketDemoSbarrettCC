@@ -19,6 +19,9 @@ class WorldState
 
 		void CreateLock();
 		void CreateLock(int posX, int posY);
+
+		void Write(OutputMemoryBitStream& stream);
+		virtual void Read(InputMemoryBitStream& stream);
 	protected:
 	private:
 		vector<GameObject*> mGameObjects;
