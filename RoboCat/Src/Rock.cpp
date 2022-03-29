@@ -29,12 +29,12 @@ void Rock::draw()
 	pGraphicsLibrary->drawImage(mSPRITE_IDENTIFIER, mPosition.first, mPosition.second);
 }
 
-void Rock::read(InputMemoryBitStream& stream)
-{
-	stream.ReadBytes();
-}
-
-void Rock::write(OutputMemoryBitStream& stream) const
-{
-
-}
+//void Rock::read(InputMemoryBitStream& stream)
+//{
+//	//stream.ReadBytes();
+//}
+//
+//void Rock::write(OutputMemoryBitStream& stream) const
+//{
+//
+//}

@@ -136,3 +136,13 @@ void PlayerController::draw()
 	//Draw sprite at mPosition
 	pGraphicsLibrary->drawImage(mSPRITE_IDENTIFIER, mPosition.first, mPosition.second);
 }
+
+//void PlayerController::read(InputMemoryBitStream& stream)
+//{
+//
+//}
+//
+//void PlayerController::write(OutputMemoryBitStream& stream) const
+//{
+//
+//}

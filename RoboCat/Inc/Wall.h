@@ -38,6 +38,6 @@ public:
 	//Functions
 	void update();
 	void draw();
-	void read(InputMemoryBitStream& stream);
-	void write(OutputMemoryBitStream& stream) const;
+	//void read(InputMemoryBitStream& stream);
+	//void write(OutputMemoryBitStream& stream) const;
 };
