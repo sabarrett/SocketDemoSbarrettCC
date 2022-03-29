@@ -28,13 +28,14 @@ public:
 		return mInstance;
 	};
 
+	void init();
 	void cleanup();
 
 	~Networker();
 
 	//Starting and connect to server
-	void initServer(std::string port);
-	void connect(std::string clientIpAddress, std::string serverIpAddress, std::string port);
+	bool initServer(std::string port);
+	bool connect(std::string clientIpAddress, std::string serverIpAddress, std::string port);
 
 	//Update game state
 	void getNewGameObjectState(map<int, GameObject*> gameObjectMap);
@@ -43,8 +44,9 @@ public:
 private:
 
 	Networker();
+
 	static Networker* mInstance;
 
 	//Data
-	TCPSocketPtr mTCPSocket;
+	TCPSocketPtr* mpTCPSocket;
 };

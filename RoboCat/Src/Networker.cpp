@@ -4,7 +4,7 @@
 //Constructor
 Networker::Networker()
 {
-	mTCPSocket = nullptr;
+	init();
 }
 
 Networker::~Networker()
@@ -13,15 +13,20 @@ Networker::~Networker()
 	SocketUtil::CleanUp();
 }
 
+void Networker::init()
+{
+	mpTCPSocket = new TCPSocketPtr;
+}
+
 void Networker::cleanup()
 {
 	delete mInstance;
 	mInstance = nullptr;
 
-	mTCPSocket->CleanupSocket();
+	(*mpTCPSocket)->CleanupSocket();
 }
 
-void Networker::initServer(std::string port)
+bool Networker::initServer(std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -66,11 +71,15 @@ void Networker::initServer(std::string port)
 	while (connSocket == nullptr)
 		connSocket = sock->Accept(incomingAddress);
 
-	mTCPSocket = connSocket;
+	mpTCPSocket = &connSocket;
 	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
+	
+	if (mpTCPSocket != nullptr)
+		return true;
+	return false;
 }
 
-void Networker::connect(std::string clientIpAddress, std::string serverIpAddress, std::string port)
+bool Networker::connect(std::string clientIpAddress, std::string serverIpAddress, std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -81,7 +90,7 @@ void Networker::connect(std::string clientIpAddress, std::string serverIpAddress
 	{
 		SocketUtil::ReportError("Creating Client Socket");
 		ExitProcess(1);
-		return;
+		return false;
 	}
 
 	string address = clientIpAddress + ":0";
@@ -90,7 +99,7 @@ void Networker::connect(std::string clientIpAddress, std::string serverIpAddress
 	{
 		SocketUtil::ReportError("Creating Client Address");
 		ExitProcess(1);
-		return;
+		return false;
 	}
 
 	if (sock->Bind(*clientAddress) != NO_ERROR)
@@ -114,14 +123,18 @@ void Networker::connect(std::string clientIpAddress, std::string serverIpAddress
 	}
 	LOG("%s", "Succesfully Connect to the Server!");
 
-	mTCPSocket = sock;
+	mpTCPSocket = &sock;
+
+	if (mpTCPSocket != nullptr)
+		return true;
+	return false;
 }
 
 
 void Networker::getNewGameObjectState(map<int, GameObject*> gameObjectMap)
 {
 	char buffer[1024];
-	int32_t byteRecieve = mTCPSocket->Receive(buffer, 1024);
+	int32_t byteRecieve = (*mpTCPSocket)->Receive(buffer, 1024);
 	if (byteRecieve > 0)
 	{
 		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
@@ -194,5 +207,5 @@ void Networker::sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int 
 		break;
 	}
 
-	mTCPSocket->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
+	(*mpTCPSocket)->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
 }

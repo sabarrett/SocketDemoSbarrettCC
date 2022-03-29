@@ -89,6 +89,7 @@ bool init()
 	//Setup network manager
 	if (bSuccessfulInit)
 		pNetworkManager = pNetworkManager->GetInstance();
+	pNetworkManager->init();
 
 	//Setup timer
 	timer = al_create_timer(1.0 / FPS);
@@ -309,74 +310,79 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	//Prompt for isServer or not
-	std::string input;
-	std::cout << "Are you the server? Type 'y' for yes, anything else for no.\n";
-	std::cin >> input;
-	bool bIsServer = false;
-
-	if (input == "y")
-	{
-		bIsServer = true;
-	}
-
-	//Setup server and client
-	if (bIsServer)
-	{
-		//-------------------------Server code-------------------------
-
-		//Prompt for port number
-		std::string portNumber;
-		std::cout << "Enter port number: \n";
-		std::cin >> portNumber;
-
-		pNetworkManager->initServer(portNumber);
-	}
-	else
-	{
-		//-------------------------Client code-------------------------
-
-		//Prompt for client IP address
-		std::string clientIP;
-		std::cout << "Enter your IP address: \n";
-		std::cin >> clientIP;
-
-		//Prompt for server IP address
-		std::string serverIP;
-		std::cout << "Enter server IP address: \n";
-		std::cin >> serverIP;
-
-		//Prompt for port number
-		std::string portNumber;
-		std::cout << "Enter port number: \n";
-		std::cin >> portNumber;
-
-		pNetworkManager->connect(clientIP, serverIP, portNumber);
-	}
-
 	if (init())
 	{
-		//Setup
-		start();
+		//Prompt for isServer or not
+		std::string input;
+		std::cout << "Are you the server? Type 'y' for yes, anything else for no.\n";
+		std::cin >> input;
+		bool bIsServer = false;
+		bool bHasConnectd = false;
 
-		//Loop the game
-		while (bGameIsRunning)
+		if (input == "y")
 		{
-			ALLEGRO_EVENT ev;
-			al_get_next_event(eventQueue, &ev);
-
-			if (ev.type == ALLEGRO_EVENT_TIMER)
-			{
-				//Update call
-				update();
-
-				//Draw call
-				draw();
-			}
+			bIsServer = true;
 		}
 
-		//Cleanup when done
-		cleanup();
+		//Setup server and client
+		if (bIsServer)
+		{
+			//-------------------------Server code-------------------------
+
+			//Prompt for port number
+			std::string portNumber;
+			std::cout << "Enter port number: \n";
+			std::cin >> portNumber;
+
+			bHasConnectd = pNetworkManager->initServer(portNumber);
+		}
+		else
+		{
+			//-------------------------Client code-------------------------
+
+			//Prompt for client IP address
+			std::string clientIP;
+			std::cout << "Enter your IP address: \n";
+			std::cin >> clientIP;
+
+			//Prompt for server IP address
+			std::string serverIP;
+			std::cout << "Enter server IP address: \n";
+			std::cin >> serverIP;
+
+			//Prompt for port number
+			std::string portNumber;
+			std::cout << "Enter port number: \n";
+			std::cin >> portNumber;
+
+			bHasConnectd = pNetworkManager->connect(clientIP, serverIP, portNumber);
+		}
+
+		//If the peer has connected
+		if (bHasConnectd)
+		{
+			//Setup
+			start();
+
+			//Loop the game
+			while (bGameIsRunning)
+			{
+				ALLEGRO_EVENT ev;
+				al_get_next_event(eventQueue, &ev);
+
+				if (ev.type == ALLEGRO_EVENT_TIMER)
+				{
+					//Update call
+					update();
+
+					//Draw call
+					draw();
+				}
+			}
+
+			//Cleanup when done
+			cleanup();
+		}
 	}
 
 	return 0;
