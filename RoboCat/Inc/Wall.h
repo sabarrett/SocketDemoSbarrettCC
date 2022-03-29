@@ -21,8 +21,8 @@ class Wall : public GameObject
 public:
 
 	//Constructor(s)
-	Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
-	Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, Colour colour, float thickness);
+	Wall(const int networkID, GraphicsLibrary* graphicsLibrary);
+	Wall(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, Colour colour, float thickness);
 
 	//Destructor
 	~Wall();
@@ -38,6 +38,4 @@ public:
 	//Functions
 	void update();
 	void draw();
-	void read(InputMemoryBitStream& stream);
-	void write(OutputMemoryBitStream& stream) const;
 };

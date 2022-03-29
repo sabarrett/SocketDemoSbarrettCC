@@ -2,7 +2,6 @@
 . Make use of Memory Streams and different Packet Header types to synchronize the state between the two instances.
 . Your game must have at least 10 synchronized objects in the world at once, with at least 3 different kinds of game objects.
 . Gameplay must involve creating and destroying objects, which is then synchronized between clients.
-. For this assignment, your "game" does not need to have an end state or a victory condition, or even much real "gameplay" at all. The point is just to synchronize game objects over a socket.
 
 Requirements:
 
@@ -11,14 +10,8 @@ Requirements:
 . It must be possible for two players to connect to the game.
 --> The above requirements are mandatory. If any of them are not met, your assignment will receive a 0.
 
-Scott's Recommendations
-For the game, I recommend you make something simple. For example, each player can press S to spawn an object and D to remove a random object, each of which floats around the screen randomly.
-
-
 TO-DOs:
 . Destroy GameObjects somehow (probably press backspace and a random one will delete, or right-click something)
-. Implement GameObject::read() and GameObject::write()
-. Call ^^ in Networker::read() and Networker::write() or wherever we read and write MemoryBitStreams
 
 Replicating pointers, replicate the data they point to.
 Replicating vectors, replicate their size and data.

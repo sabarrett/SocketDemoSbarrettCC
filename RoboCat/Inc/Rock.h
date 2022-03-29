@@ -16,8 +16,8 @@ class Rock : public GameObject
 public:
 
 	//Constructor(s)
-	Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
-	Rock(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier);
+	Rock(const int networkID, GraphicsLibrary* graphicsLibrary);
+	Rock(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier);
 
 	//Destructor
 	~Rock();
@@ -31,6 +31,4 @@ public:
 	//Functions
 	void update();
 	void draw();
-	void read(InputMemoryBitStream& stream);
-	void write(OutputMemoryBitStream& stream) const;
 };

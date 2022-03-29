@@ -28,8 +28,8 @@ class PlayerController : public GameObject
 public:
 
 	//Constructor(s)
-	PlayerController(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
-	PlayerController(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier);
+	PlayerController(const int networkID, GraphicsLibrary* graphicsLibrary);
+	PlayerController(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier);
 
 	//Destructor
 	~PlayerController();
@@ -43,6 +43,4 @@ public:
 	//Functions
 	void update();
 	void draw();
-	void read(InputMemoryBitStream& stream);
-	void write(OutputMemoryBitStream& stream) const;
 };

@@ -1,8 +1,8 @@
 #include "GameObject.h"
 #include "RoboCatPCH.h"
 
-GameObject::GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary)
-	: mID(gameObjectID), mNetworkID(networkID)
+GameObject::GameObject(GameObjectType gameObjectType, const int networkID, GraphicsLibrary* graphicsLibrary)
+	: mGameObjectType(gameObjectType), mNetworkID(networkID)
 {
 	//Graphics library
 	pGraphicsLibrary = graphicsLibrary;
@@ -12,8 +12,8 @@ GameObject::GameObject(const int gameObjectID, const int networkID, GraphicsLibr
 	mPosition.second = 0.0;
 }
 
-GameObject::GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier)
-	: mID(gameObjectID), mNetworkID(networkID), mSPRITE_IDENTIFIER(spriteIdentifier)
+GameObject::GameObject(GameObjectType gameObjectType, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier)
+	: mGameObjectType(gameObjectType), mNetworkID(networkID), mSPRITE_IDENTIFIER(spriteIdentifier)
 {
 	//Graphics library
 	pGraphicsLibrary = graphicsLibrary;

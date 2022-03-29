@@ -1,8 +1,8 @@
 #include "Wall.h"
 #include "RoboCatPCH.h"
 
-Wall::Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary)
-	: GameObject(gameObjectID, networkID, graphicsLibrary)
+Wall::Wall(const int networkID, GraphicsLibrary* graphicsLibrary)
+	: GameObject(GameObjectType::WALL, networkID, graphicsLibrary)
 {
 	mSizeX = 1.0;
 	mSizeY = 2.0;
@@ -11,8 +11,8 @@ Wall::Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphic
 	mThickness = 1.0;
 }
 
-Wall::Wall(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, Colour colour, float thickness)
-	: GameObject(gameObjectID, networkID, graphicsLibrary, position)
+Wall::Wall(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, Colour colour, float thickness)
+	: GameObject(GameObjectType::WALL, networkID, graphicsLibrary, position)
 {
 	mSizeX = sizeX;
 	mSizeY = sizeY;
@@ -35,14 +35,4 @@ void Wall::draw()
 {
 	//Draw scaled sprite at mPosition
 	pGraphicsLibrary->drawRectangle(mPosition.first, mPosition.second, mPosition.first + mSizeX, mPosition.second + mSizeY, mColour, mThickness);
-}
-
-void Wall::read(InputMemoryBitStream& stream)
-{
-
-}
-
-void Wall::write(OutputMemoryBitStream& stream) const
-{
-
 }

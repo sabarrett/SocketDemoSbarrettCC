@@ -28,7 +28,7 @@ class GameObject
 protected:
 
 	//Identifiers
-	const int mID;
+	const GameObjectType mGameObjectType = GameObjectType::INVALID;
 	const int mNetworkID;
 
 	//Position
@@ -41,8 +41,8 @@ protected:
 	const std::string mSPRITE_IDENTIFIER;
 
 	//Constructor(s)
-	GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary);
-	GameObject(const int gameObjectID, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier = "");
+	GameObject(GameObjectType gameObjectType, const int networkID, GraphicsLibrary* graphicsLibrary);
+	GameObject(GameObjectType gameObjectType, const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier = "");
 
 	//-------------------------Public data-------------------------
 public:
@@ -51,8 +51,8 @@ public:
 	virtual ~GameObject();
 
 	//Accessor(s)
-	const int getGameObjectID() { return mID; };
-	const int getNetworkID() { return mID; };
+	const GameObjectType getGameObjectType() { return mGameObjectType; };
+	const int getNetworkID() { return mNetworkID; };
 	const pair<float, float> getPosition() { return mPosition; };
 
 	//Mutator(s)
@@ -63,6 +63,4 @@ public:
 	//Functions
 	virtual void update() = 0;
 	virtual void draw() = 0;
-	virtual void read(InputMemoryBitStream& stream) = 0;
-	virtual void write(OutputMemoryBitStream& stream) const = 0;
 };
