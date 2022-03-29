@@ -18,10 +18,7 @@ For the game, I recommend you make something simple. For example, each player ca
 TO-DOs:
 . Destroy GameObjects somehow (probably press backspace and a random one will delete, or right-click something)
 . Have 10 gameobjects be there by default
-. Networker::InitServer() --> change IP string to not be hard-coded (Adel had this in the last assignment, consult it) 
-. Networker::InitServer() --> don't call destructors
-. Networker::InitServer() --> set non blockign mode true
-. Networker::Connect() --> don't hard-code address
+. Replicate objects --> I'm confused: do we do this in read() adn write() in each GameObject type, or in Networker? Slides show both options, but I like Alex's approach better.
 
 Replicating pointers, replicate the data they point to.
 Replicating vectors, replicate their size and data.

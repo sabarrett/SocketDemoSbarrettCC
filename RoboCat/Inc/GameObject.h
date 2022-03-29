@@ -63,4 +63,6 @@ public:
 	//Functions
 	virtual void update() = 0;
 	virtual void draw() = 0;
+	virtual void read(InputMemoryBitStream& stream) = 0;
+	virtual void write(OutputMemoryBitStream& stream) const = 0;
 };

@@ -28,3 +28,13 @@ void Rock::draw()
 	//Draw sprite at mPosition
 	pGraphicsLibrary->drawImage(mSPRITE_IDENTIFIER, mPosition.first, mPosition.second);
 }
+
+void Rock::read(InputMemoryBitStream& stream)
+{
+	stream.ReadBytes();
+}
+
+void Rock::write(OutputMemoryBitStream& stream) const
+{
+
+}
