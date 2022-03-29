@@ -9,11 +9,13 @@
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_primitives.h>
 #include <thread>
+#include "Score.h"
 
 enum class PacketType
 {
 	PT_PADDLE,
-	PT_BALL
+	PT_BALL,
+	PT_SCORE
 };
 
 Game::Game()
@@ -29,11 +31,26 @@ Game::Game()
 		mPaddleTwo = new Paddle(20, 100, paddleColor);
 		mPaddleTwo->SetPosition(al_get_display_width(mDisplay) - 50, 100);
 
-		mBall = new ball(-0.05, -0.05f, 15, paddleColor);
-		mBall->SetPosition(al_get_display_width(mDisplay)/2, al_get_display_height(mDisplay) / 2);
+		mBalls = new ball*[10];
+		srand(static_cast <unsigned> (time(0)));
+		float random = -0.5 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (0.5 - (-0.5))));
+		for (int i = 0; i < 10; i++) {
+			mBalls[i] = new ball(-0.05f + random, -0.05f, 15 + 1, paddleColor);
+			mBalls[i]->id = i;
+			mBalls[i]->pos = new position();
+			mBalls[i]->pos->y = al_get_display_height(mDisplay) / 2 + i * 25;
+			mBalls[i]->pos->x = al_get_display_width(mDisplay) / 2;
+		}
+
+		//mScoreOne = new Score(al_get_display_width(mDisplay) / 2 - 50, al_get_display_height(mDisplay) - 100, paddleColor);
+		//mScoreTwo = new Score(al_get_display_width(mDisplay) / 2 + 50, al_get_display_height(mDisplay) - 100, paddleColor);
+		//mScoreOne->str = "1";
+		//mScoreTwo->str = "2";
+
 		keyboardState = new ALLEGRO_KEYBOARD_STATE();
 		mRunning = true;
 	}
+
 
 	mIsServer = true;
 	mLocalLeft = mIsServer;
@@ -43,8 +60,6 @@ Game::Game()
 
 Game::Game(std::string IP)
 {
-
-
 	if (InitAllegro())
 	{
 		ALLEGRO_COLOR paddleColor = al_map_rgb(255, 255, 255);
@@ -56,8 +71,17 @@ Game::Game(std::string IP)
 
 		keyboardState = new ALLEGRO_KEYBOARD_STATE();
 
-		mBall = new ball(-0.05, -0.05f, 15, paddleColor);
-		mBall->SetPosition(al_get_display_width(mDisplay) / 2, al_get_display_height(mDisplay) / 2);
+		mBalls = new ball*[10];
+		for (int i = 0; i < 10; i++) {
+			mBalls[i] = new ball(0.0f, 0.0f, 15, paddleColor);
+			mBalls[i]->id = i;
+			mBalls[i]->pos = new position();
+			mBalls[i]->pos->y = al_get_display_height(mDisplay) / 2 + i * 15;
+			mBalls[i]->pos->x = al_get_display_width(mDisplay) / 2;
+		}
+
+		//mScoreOne = new Score(al_get_display_width(mDisplay) / 2 - 50, al_get_display_height(mDisplay) - 100, paddleColor);
+		//mScoreTwo = new Score(al_get_display_width(mDisplay) / 2 + 50, al_get_display_height(mDisplay) - 100, paddleColor);
 
 		mRunning = true;
 	}
@@ -141,35 +165,32 @@ void Game::UpdateLocalPaddle()
 	}
 }
 
-void Game::UpdateBall()
+void Game::UpdateBall(ball* ball)
 {
-	mBall->SetPosition(mBall->GetPosX() + mBall->GetDirX(), mBall->GetPosY() + mBall->GetDirY());
-	float ballPos[2] = { mBall->GetPosX(), mBall->GetPosY() };
+	ball->pos->x = ball->GetPosX() + ball->GetDirX();
+	ball->pos->y = ball->GetPosY() + ball->GetDirY();
 
 	OutputMemoryBitStream oStream;
 	oStream.Write(PacketType::PT_BALL);
-	oStream.Write(ballPos[0]);
-	oStream.Write(ballPos[1]);
+	oStream.Write(ball->id);
+	oStream.Write(ball->pos->x);
+	oStream.Write(ball->pos->y);
 
 	TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 }
 
-void Game::CheckCollisions(ball* ball, Paddle* paddle)
+//This math is for sure off, but this isn't a game physics class so I don't want to spend too much time
+void Game::CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2)
 {
-	if (ball->GetPosY() + ball->GetRadius() >= al_get_display_height(mDisplay) || ball->GetPosY() - ball->GetRadius() <= 0) 
+	if (ball->GetPosX() + ball->GetRadius() <= paddle1->GetPosX()) 
 	{
-		mBall->SetMovementVector(ball->GetDirX(), ball->GetDirY() * -1);
+		if(ball->GetPosY() >= (float)(paddle1->GetPosY() - paddle1->GetDimsL() / 2) && ball->GetPosY() <= (float)(paddle1->GetPosY() + paddle1->GetDimsL() / 2))
+			ball->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
 	}
-
-	if (ball->GetPosX() <= mPaddleOne->GetPosX()) 
+	if (ball->GetPosX() - ball->GetRadius() >= paddle2->GetPosX())
 	{
-		if(ball->GetPosY() >= mPaddleOne->GetPosY() - mPaddleOne->GetDimsL()/2 && ball->GetPosY() <= mPaddleOne->GetPosY() + mPaddleOne->GetDimsL() / 2)
-			mBall->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
-	}
-	if (ball->GetPosX() >= mPaddleTwo->GetPosX())
-	{
-		if (ball->GetPosY() >= mPaddleTwo->GetPosY() - mPaddleTwo->GetDimsL() / 2 && ball->GetPosY() <= mPaddleTwo->GetPosY() + mPaddleTwo->GetDimsL() / 2)
-			mBall->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
+		if (ball->GetPosY() >= paddle2->GetPosY() - paddle2->GetDimsL() / 2 && ball->GetPosY() <= paddle2->GetPosY() + paddle2->GetDimsL() / 2)
+			ball->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
 	}
 }
 
@@ -209,8 +230,6 @@ void Game::Receive()
 			PacketType type;
 			iStream.Read(type);
 
-			float ballPosX, 
-				  ballPosY;
 
 			if (type == PacketType::PT_PADDLE)
 			{
@@ -221,10 +240,10 @@ void Game::Receive()
 			}
 			if (type == PacketType::PT_BALL) 
 			{
-				iStream.Read(ballPosX);
-				iStream.Read(ballPosY);
-				ball* networkedBall = mBall;
-				networkedBall->SetPosition(ballPosX, ballPosY);
+				int tempID;
+				iStream.Read(tempID);
+				iStream.Read(mBalls[tempID]->pos->x);
+				iStream.Read(mBalls[tempID]->pos->y);
 			}
 		}
 		else  if (bytesReceived < 0)
@@ -250,9 +269,26 @@ void Game::Render()
 
 	mPaddleOne->Render();
 	mPaddleTwo->Render();
-	mBall->Render();
-
+	mScoreOne->Render();
+	//mScoreTwo->Render();
+	for (int i = 0; i < 10; i++) {
+		mBalls[i]->Render();
+	}
 	al_flip_display();
+}
+
+void Game::CheckCollisions(ball* ball)
+{
+	if (ball->GetPosY() + ball->GetRadius() >= al_get_display_height(mDisplay) || ball->GetPosY() - ball->GetRadius() <= 0)
+	{
+		ball->SetMovementVector(ball->GetDirX(), ball->GetDirY() * -1);
+	}
+
+	if (ball->GetPosX() + ball->GetRadius() >= al_get_display_width(mDisplay) || ball->GetPosX() - ball->GetRadius() <= 0)
+	{
+		ball->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
+	}
+
 }
 
 void Game::Update()
@@ -267,8 +303,11 @@ void Game::Update()
 
 		if (mIsServer)
 		{
-			CheckCollisions(mBall, mPaddleOne);
-			UpdateBall();
+			for (int i = 0; i < 10; i++) {
+				CheckCollisions(mBalls[i]);
+				CheckCollisionsPaddle(mBalls[i], mPaddleOne, mPaddleTwo);
+				UpdateBall(mBalls[i]);
+			}
 			SendUpdatedStates();
 		}
 		else
@@ -296,12 +335,6 @@ void Game::UpdateNetworkedPaddle(int y)
 
 
 	networkedPaddle->SetPosition(y);
-}
-
-void Game::UpdateNetworkedBall(int x, int y)
-{
-	ball* networkedBall = mBall;
-	networkedBall->SetPosition(x, y);
 }
 
 

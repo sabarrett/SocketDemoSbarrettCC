@@ -4,6 +4,11 @@
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_primitives.h>
 
+ball::ball()
+{
+
+}
+
 ball::ball(float movX, float movY, int r, ALLEGRO_COLOR c) :
 	mRadius(r),
 	mColor(c),
@@ -20,14 +25,9 @@ ball::~ball()
 
 void ball::Render()
 {
-	al_draw_filled_circle(mOriginX, mOriginY, mRadius, mColor);
+	al_draw_filled_circle(pos->x, pos->y, mRadius, mColor);
 }
 
-void ball::SetPosition(float x, float y)
-{
-	mOriginX = x;
-	mOriginY = y;
-}
 
 void ball::SetMovementVector(float x, float y)
 {

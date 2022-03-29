@@ -5,6 +5,7 @@
 
 class Paddle;
 class ball;
+class Score;
 
 class Game
 {
@@ -12,7 +13,9 @@ class Game
 	ALLEGRO_DISPLAY* mDisplay;
 	Paddle* mPaddleOne;
 	Paddle* mPaddleTwo;
-	ball* mBall;
+	Score* mScoreOne;
+	Score* mScoreTwo;
+	ball** mBalls;
 
 	ALLEGRO_KEYBOARD_STATE* keyboardState;
 	TCPSocketPtr TCPSocket;
@@ -27,9 +30,10 @@ class Game
 	void ConnectToServer(std::string ip);
 	void ProcessLocalInput();
 	void UpdateLocalPaddle();
-	void UpdateBall();
+	void UpdateBall(ball* ball);
 	void Render();
-	void CheckCollisions(ball* ball, Paddle* paddle);
+	void CheckCollisions(ball* ball);
+	void CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2);
 	void SendUpdatedStates();
 	void Receive(); 
 
@@ -42,7 +46,6 @@ public:
 	~Game();
 	void Update();
 	void UpdateNetworkedPaddle(int y);
-	void UpdateNetworkedBall(int x, int y);
 	
 
 };
