@@ -1,4 +1,5 @@
 #include "Networker.h"
+#include <iostream>
 
 //Constructor
 Networker::Networker()
@@ -26,7 +27,8 @@ void Networker::initServer(std::string port)
 
 	//Create Socket
 	mTCPSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	//mTCPSocket->SetNonBlockingMode(true);
+	mTCPSocket->SetNonBlockingMode(true);
+
 	if (mTCPSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating Listenting Socket");
@@ -58,7 +60,7 @@ void Networker::initServer(std::string port)
 
 	//Accept Connection
 	std::cout << "Waiting for connection...\n";
-	//mTCPSocket->SetNonBlockingMode(false);
+	mTCPSocket->SetNonBlockingMode(false);
 	
 	SocketAddress incomingAddress;
 	TCPSocketPtr connSocket = mTCPSocket->Accept(incomingAddress);
@@ -68,7 +70,7 @@ void Networker::initServer(std::string port)
 
 	//mTCPSocket->CleanupSocket();
 	mTCPSocket = connSocket;
-	//mTCPSocket->SetNonBlockingMode(false);
+	mTCPSocket->SetNonBlockingMode(false);
 	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
 }
 

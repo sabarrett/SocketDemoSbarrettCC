@@ -9,7 +9,6 @@
 #include "PlayerController.h"
 #include "RoboCatPCH.h"
 
-using std::string;
 using std::map;
 
 //Networker is singleton (we only want one networker at a time)
