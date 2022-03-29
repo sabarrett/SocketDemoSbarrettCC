@@ -2,7 +2,7 @@
 #include "RoboCatPCH.h"
 #include "JoinerInput.h"
 
-JoinerInput::JoinerInput(InputActionTypes initalType, Location loc)
+JoinerInput::JoinerInput(InputActionIDs initalType, Location loc)
 {
 	timeOfCreation = time(0);
 	initalType = type;
@@ -11,16 +11,34 @@ JoinerInput::JoinerInput(InputActionTypes initalType, Location loc)
 
 void JoinerInput::Write(OutputMemoryBitStream& stream)
 {
-	stream.Write(timeOfCreation);
 	stream.Write(type);
+	stream.Write(timeOfCreation);
 	stream.Write(location.x);
 	stream.Write(location.y);
 }
 
-void JoinerInput::Read(InputMemoryBitStream& stream)
+void JoinerInput::Write(OutputMemoryBitStream& stream, vector<JoinerInput>& joinerInputs)
 {
-	stream.Read(timeOfCreation);
-	stream.Read(type);
-	stream.Read(location.x);
-	stream.Read(location.y);
+	GameObject* tempObj;
+	stream.Write(joinerInputs.size());
+	for (int i = 0; i < joinerInputs.size(); i++)
+	{
+		joinerInputs[i].Write(stream);
+	}
+}
+
+void JoinerInput::Read(InputMemoryBitStream& stream, vector<JoinerInput>& joinerInputs)
+{
+	int count; 
+	stream.Read(count);
+	for (int i = 0; i < count; i++)
+	{
+		JoinerInput current;
+		stream.Read(current.type);
+		stream.Read(current.timeOfCreation);
+		stream.Read(current.location.x);
+		stream.Read(current.location.y);
+
+		joinerInputs.push_back(current);
+	}
 }

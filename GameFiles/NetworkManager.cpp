@@ -112,9 +112,24 @@ void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPS
 
 
 // updates
-bool NetworkManager::HandleIncomingInputPackets(vector<std::pair<int, void*>>& unprocessedData)
+bool NetworkManager::HandleIncomingInputPackets(vector<std::pair<int, void*>>& unprocessedData, vector<JoinerInput>& joinerInputs)
 {
-	//std::cout << "Unprocessed Data count = " << unprocessedData.size() << '\n';
+
+	std::cout << "Input count before = " << joinerInputs.size() << '\n';
+
+	for(std::pair<int, void*> dataPacket : unprocessedData)
+	{
+		char buffer[BUFFER_SIZE]{ *(static_cast<char*>(dataPacket.second)) };
+		InputMemoryBitStream inStream = InputMemoryBitStream(buffer, BUFFER_SIZE * 8);
+		JoinerInput::Read(inStream, joinerInputs);
+	}
+
+	if (unprocessedData.size() > 0)
+	{
+		std::cout << "Input count after = " << joinerInputs.size() << '\n';
+		unprocessedData.clear();
+	}
+
 	return true;
 }
 
@@ -129,7 +144,7 @@ bool NetworkManager::HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPS
 
 bool NetworkManager::HandleIncomingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom)
 {
-	std::cout << "HandlingJoinerIncoming\n";
+	//std::cout << "HandlingJoinerIncoming\n";
 
 	char buffer[BUFFER_SIZE];
 	InputMemoryBitStream stream = InputMemoryBitStream(buffer, BUFFER_SIZE*8);
@@ -145,13 +160,13 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 	OutputMemoryBitStream outStream;
 	bool allGood = true;
 
-	std::cout << "JoinerOut1\n";
+	 //std::cout << "JoinerOut1\n";
 
-
-	for each (JoinerInput input in joinerInputs)
+	if (joinerInputs.size() > 0)
 	{
-		input.Write(outStream);
-		std::cout << "JoinerOut2\n";
+		
+		JoinerInput::Write(outStream, joinerInputs);
+
 		if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), *sendingAddress)) < 0)
 		{
 			SocketUtil::ReportError("Sending outgoingPacket");
@@ -159,7 +174,7 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 		}
 	}
 	
-	std::cout << "JoinerOut3\n";
+	//std::cout << "JoinerOut3\n";
 	joinerInputs.clear();
 
 	return allGood;

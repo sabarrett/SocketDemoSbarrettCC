@@ -1,22 +1,32 @@
 #pragma once
 #include <stdlib.h>
 #include "GameObject.h"
+#include "GameFiles/WorldState.h"
 
 class JoinerInput 
 {
 	public:
 
-	enum InputActionTypes
+	enum InputActionIDs
 	{
 		JOINER_KEY_SPAWN
 	};
 
 	time_t timeOfCreation;
-	InputActionTypes type;
+	InputActionIDs type;
 	Location location;
 
-	JoinerInput(InputActionTypes initalType, Location loc);
+	JoinerInput(InputActionIDs initalType, Location loc);
 
+	static void Write(OutputMemoryBitStream& stream, vector<JoinerInput>& joinerInputs);
+
+	static void Read(InputMemoryBitStream& stream, vector<JoinerInput>& joinerInputs);
+
+	private:
 	void Write(OutputMemoryBitStream& stream);
-	void Read(InputMemoryBitStream& stream);
+	JoinerInput()
+	{
+		;
+	}
+
 };

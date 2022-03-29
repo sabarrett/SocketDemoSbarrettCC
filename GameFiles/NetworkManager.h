@@ -19,7 +19,7 @@ namespace NetworkManager
     
         // Derived Connection Functions for in-game use
     // creator
-    bool HandleIncomingInputPackets(vector<std::pair<int, void*>>& unprocessedData);
+    bool HandleIncomingInputPackets(vector<std::pair<int, void*>>& unprocessedData, vector<JoinerInput>& joinerInputs);
     bool HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
     // joiner
     bool HandleIncomingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom);

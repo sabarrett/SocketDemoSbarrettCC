@@ -18,8 +18,13 @@ WorldState::~WorldState()
 	mpGraphicsLibrary = nullptr;
 }
 
-void WorldState::Update()
+void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInput)
 {
+	if (isCreator)
+	{
+		// 
+	}
+
 	for each (GameObject* var in mGameObjects)
 	{
 		var->Update();

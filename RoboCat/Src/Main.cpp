@@ -18,7 +18,7 @@
 
 ///
 ///          TODO
-///  X - Synchronize game objects over a socket.
+///  O - Synchronize game objects over a socket.
 ///  X - Create a two-player networked game with shared world state.
 ///  X - Use Memory Streams and different Packet Header types to synchronize the state between the two instances.
 ///  X - At least 10 synchronized objects in the world at once.
@@ -181,8 +181,8 @@ int main(int argc, const char** argv)
 
 		if (userIsCreator)
 		{
-			NetworkManager::HandleIncomingInputPackets(std::ref(unprocessedData)); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
-			gameWorld.Update();
+			NetworkManager::HandleIncomingInputPackets(std::ref(unprocessedData), std::ref(joinerInputs)); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
+			gameWorld.Update(userIsCreator, std::ref(joinerInputs));
 			//ProcessWorldState();
 
 			NetworkManager::HandleOutgoingWorldStatePackets(std::ref(gameWorld), sendingSocket, addressToSendTo);

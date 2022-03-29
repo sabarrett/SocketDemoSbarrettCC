@@ -1,9 +1,13 @@
 #pragma once
+#include "GameFiles/JoinerInput.h"
+
 class GameObject;
 class LinkingContext;
 class GraphicsLibrary;
-//class InputSystem;
+class JoinerInput;
+
 struct Location;
+
 class WorldState
 {
 	const float SCREEN_X = 1000;
@@ -14,7 +18,7 @@ class WorldState
 	public:
 		WorldState(GraphicsLibrary* gl);
 		~WorldState();
-		void Update();
+		void Update(bool isCreator, vector<JoinerInput>& joinerInput);
 		void Render();
 
 		void CreateLock();
