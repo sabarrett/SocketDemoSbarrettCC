@@ -16,12 +16,13 @@ Networker::~Networker()
 void Networker::init()
 {
 	mpTCPSocket = new TCPSocketPtr;
+	mGameObjectMap = map<int, GameObject*>();
 }
 
 void Networker::cleanup()
 {
-	delete mInstance;
-	mInstance = nullptr;
+	//delete mInstance;
+	//mInstance = nullptr;
 
 	(*mpTCPSocket)->CleanupSocket();
 }
@@ -188,9 +189,9 @@ void Networker::sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int 
 {
 	OutputMemoryBitStream OMBStream;
 	OMBStream.Write(gameObjectMap[ID]->getNetworkID());
-	OMBStream.Write(gameObjectMap[ID]->getGameObjectID());
+	OMBStream.Write(gameObjectMap[ID]->getGameObjectType());
 	
-	switch (gameObjectMap[ID]->getGameObjectID())
+	switch (gameObjectMap[ID]->getGameObjectType())
 	{
 	case GameObjectType::ROCK:
 	case GameObjectType::PLAYER:
@@ -217,7 +218,6 @@ void Networker::CleanupMap()
 	{
 		delete it->second;
 		it->second = nullptr;
-		mGameObjectMap.erase(it->first);
 	}
 	mGameObjectMap.clear();
 }
