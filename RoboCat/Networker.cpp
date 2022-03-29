@@ -8,6 +8,7 @@ Networker::Networker()
 
 Networker::~Networker()
 {
+	SocketUtil::CleanUp();
 }
 
 void Networker::InitServer()

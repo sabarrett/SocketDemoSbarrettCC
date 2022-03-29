@@ -62,7 +62,7 @@ bool init()
 		bSuccessfulInit = pInput->init(pGraphics);
 
 	//Init socket utils
-	SocketUtil::StaticInit();
+	//SocketUtil::StaticInit();
 
 	//Init and return if it succeeded or not
 	return bSuccessfulInit;
@@ -264,7 +264,7 @@ int main(int argc, const char** argv)
 
 		//Cleanup when done
 		cleanup();
-		SocketUtil::CleanUp();
+		//SocketUtil::CleanUp();
 	}
 
 	return 0;
