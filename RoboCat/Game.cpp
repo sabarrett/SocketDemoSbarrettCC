@@ -31,11 +31,10 @@ Game::Game()
 		mPaddleTwo = new Paddle(20, 100, paddleColor);
 		mPaddleTwo->SetPosition(al_get_display_width(mDisplay) - 50, 100);
 
-		mBalls = new ball*[1];
-		srand(static_cast <unsigned> (time(0)));
-		float random = -0.5 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (0.5 - (-0.5))));
-		for (int i = 0; i < 1; i++) {
-			mBalls[i] = new ball(-0.05f + random, -0.05f, 15 + i, paddleColor);
+		mBalls = new ball*[10];
+		
+		for (int i = 0; i < 10; i++) {
+			mBalls[i] = new ball(-1.0f, -1.0f, 15, paddleColor);
 			mBalls[i]->id = i;
 			mBalls[i]->pos = new position();
 			mBalls[i]->pos->y = al_get_display_height(mDisplay) / 2 + i * 25;
@@ -71,8 +70,8 @@ Game::Game(std::string IP)
 
 		keyboardState = new ALLEGRO_KEYBOARD_STATE();
 
-		mBalls = new ball*[1];
-		for (int i = 0; i < 1; i++) {
+		mBalls = new ball*[10];
+		for (int i = 0; i < 10; i++) {
 			mBalls[i] = new ball(0.0f, 0.0f, 15, paddleColor);
 			mBalls[i]->id = i;
 			mBalls[i]->pos = new position();
@@ -194,17 +193,17 @@ void Game::UpdateScore()
 //This math is for sure off, but this isn't a game physics class so I don't want to spend too much time
 void Game::CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2)
 {
-	if (ball->GetPosX() - ball->GetRadius() <= paddle1->GetPosX() && ball->GetDirX() < 0) 
+	if (ball->GetPosX() <= paddle1->GetPosX() + paddle1->GetDimsL() && ball->GetDirX() < 0) 
 	{
-		if (ball->GetPosY() >= (float)(paddle1->GetPosY() - paddle1->GetDimsL() / 2) && ball->GetPosY() <= (float)(paddle1->GetPosY() + paddle1->GetDimsL() / 2))
+		if (ball->GetPosY() >= (paddle1->GetPosY()) && ball->GetPosY() <= (paddle1->GetPosY() + paddle1->GetDimsW()))
 		{
 			ball->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
 			mScoreOne->IncreasePoints();
 		}
 	} 
-	if (ball->GetPosX() + ball->GetRadius() >= paddle2->GetPosX() && ball->GetDirX() > 0)
+	if (ball->GetPosX() >= paddle2->GetPosX() && ball->GetDirX() > 0)
 	{
-		if (ball->GetPosY() >= paddle2->GetPosY() - paddle2->GetDimsL() / 2 && ball->GetPosY() <= paddle2->GetPosY() + paddle2->GetDimsL() / 2)
+		if (ball->GetPosY() >= paddle2->GetPosY() && ball->GetPosY() <= paddle2->GetPosY() + paddle2->GetDimsW())
 		{
 			ball->SetMovementVector(ball->GetDirX() * -1, ball->GetDirY());
 			mScoreTwo->IncreasePoints();
@@ -294,7 +293,7 @@ void Game::Render()
 	mPaddleTwo->Render();
 	mScoreOne->Render();
 	mScoreTwo->Render();
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 10; i++) {
 		mBalls[i]->Render();
 	}
 	al_flip_display();
@@ -327,7 +326,7 @@ void Game::Update()
 		if (mIsServer)
 		{
 			UpdateScore();
-			for (int i = 0; i < 1; i++) {
+			for (int i = 0; i < 10; i++) {
 				UpdateBall(mBalls[i]);
 				CheckCollisions(mBalls[i]);
 				CheckCollisionsPaddle(mBalls[i], mPaddleOne, mPaddleTwo);
