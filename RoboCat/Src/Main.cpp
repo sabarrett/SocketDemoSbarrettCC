@@ -233,9 +233,10 @@ void draw()
 
 	//Text indicators for instructions
 	{
-		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 50, "TAB - Change GameObject to Spawn.", TextAlignment::ALIGN_LEFT);
-		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 100, "Left Mouse - Spawn GameObject.", TextAlignment::ALIGN_LEFT);
-		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 150, "ESC - Quit.", TextAlignment::ALIGN_LEFT);
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 50, "WASD - Move Player.", TextAlignment::ALIGN_LEFT);
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 100, "TAB - Change GameObject to Spawn.", TextAlignment::ALIGN_LEFT);
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 150, "Left Mouse - Spawn GameObject.", TextAlignment::ALIGN_LEFT);
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 200, "ESC - Quit.", TextAlignment::ALIGN_LEFT);
 	}
 
 	//Render it all
