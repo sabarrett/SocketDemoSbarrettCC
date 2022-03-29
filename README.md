@@ -16,4 +16,4 @@ When a player connects, they will spawn in the top left corner.
 Players can move with WASD, and spawn coins by left-clicking.
 If a player touches a coin, they "collect" (destroy) it.
 
-In the middle of the game, there is вжух. If a player touches вжух, he adds them to his list of magicked fellows, who's colors are changed by вжух approximately every second.
+In the middle of the game, there is вжух. If a player touches вжух, he adds them to his list of magicked fellows, whose colors are changed by вжух approximately every second.
