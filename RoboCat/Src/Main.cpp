@@ -40,6 +40,8 @@ struct Player : PhysObject {
         return Rectangle{ position.x - size.x / 2, position.y - size.y / 2, size.x, size.y };
     }
     bool isMe;
+    int scoreFrames;
+    int bumpFrames;
 };
 
 struct Ball : PhysObject {
@@ -49,6 +51,7 @@ struct Ball : PhysObject {
     bool isDead;
     Vector2 trail[4];
     int framesTillRefresh;
+    int bounceFrames;
 };
 
 struct Brick {
@@ -80,10 +83,15 @@ enum class StartupScreenAction {
 void HandleDestroy(TCPPacketDestroy* destroy) {
     printf("got destroy packet %i\n", destroy->X);
     brickList[destroy->X][destroy->Y].isDead = true;
-    if (player1.hasAuthority)
+    if (player1.hasAuthority) {
         player2.score++;
-    else
+        player2.scoreFrames += 10;
+    }
+    else {
         player1.score++;
+        player2.scoreFrames += 10;
+    }
+      
 }
 
 void HandleMove(TCPPacketMove* move) {
@@ -197,6 +205,7 @@ StartupScreenAction StartupScreen(SocketAddress* out_address) {
 
             if (connectHvr) {
                 {
+                  
                     addrinfo hint;
                     memset(&hint, 0, sizeof(hint));
                     hint.ai_family = AF_INET;
@@ -293,6 +302,10 @@ void DrawBall(Ball ball);
 
 TCPSocketPtr masterSocket;
 TCPPacketManager packetManager;
+
+void frame_countdown(int& count) {
+    if (count > 0) count--;
+}
 
 #if _WIN32
 int main(int argc, const char** argv)
@@ -391,11 +404,16 @@ int main(int argc, const char** argv)
                 }
             }
 
-            
-            string playerScore = "P1 Score: " + std::to_string(player1.score);
-            DrawText(playerScore.c_str(), 0, GetScreenHeight() / 2 + 100, 20, BLACK);
-            string playerScore2 = "P2 Score: " + std::to_string(player2.score);
-            DrawText(playerScore2.c_str(), screenWidth - 200, GetScreenHeight() / 2 + 100, 20, BLACK);
+
+            char scoreBuf[20];
+  
+            int textsize1 = 20 + player1.scoreFrames;    
+            itoa(player1.score, scoreBuf, 10);
+            DrawText(scoreBuf, 20, GetScreenHeight() - textsize1 - 20, textsize1, BLUE);
+
+            int textsize2 = 20 + player2.scoreFrames;
+            itoa(player2.score, scoreBuf, 10);
+            DrawText(scoreBuf, screenWidth - MeasureText(scoreBuf, textsize2) - 20, GetScreenHeight() - textsize2 - 20, textsize2, RED);
         }
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -419,7 +437,8 @@ int main(int argc, const char** argv)
 }
 
 void DrawBall(Ball ball) {
-    DrawCircleV(ball.position, ball.radius, ball.ballColor);
+    float radius = ball.radius + (float)ball.bounceFrames * ball.bounceFrames;
+    DrawCircleV(ball.position, radius, ball.ballColor);
     Vector2 start = ball.position;
     for (int i = 0; i < 4; i++) {
         DrawLineEx(start, ball.trail[i], 4 / (i + 1), ball.ballColor);
@@ -449,6 +468,12 @@ void DrawBrick(Brick brick) {
 
 void DrawPlayer(Player player) {
     Rectangle rect = player.rect();
+    float bumpShrink = (float)player.bumpFrames;
+    rect.x += bumpShrink;
+    rect.y += bumpShrink;
+    rect.width -= bumpShrink;
+    rect.height -= bumpShrink;
+
     DrawRectangleRec(rect, player.playerColor);
     Vector2 btmL = { rect.x, rect.y + rect.height };
     Vector2 topR = { rect.x + rect.width, rect.y };
@@ -573,6 +598,7 @@ void UpdateBall(Player& owner, Ball& ball) {
                 brickList[i][j].isDead = true;
                 if (ball.hasAuthority) {
                     owner.score++;
+                    owner.scoreFrames += 10;
 
                     TCPPacketDestroy testDestroy;
                     testDestroy.type = TCPPacketType::DESTROY;
@@ -592,6 +618,7 @@ void UpdateBall(Player& owner, Ball& ball) {
         ball.velocity.y *= -1;
         ball.velocity.x = (ball.position.x - owner.position.x) / (owner.size.x / 2) * 5;
         ball.position.y = owner.position.y - ball.radius - owner.size.x/2;
+        owner.bumpFrames = 10;
     }
 
     //Wall Collision
@@ -631,6 +658,12 @@ void UpdateBall(Player& owner, Ball& ball) {
     }
     ball.framesTillRefresh--;
 
+    Vector2 velDelta = Vector2Subtract(startVel, ball.velocity);
+
+    if (velDelta.x != 0 || velDelta.y != 0) {
+        ball.bounceFrames = 5;
+    }
+
     if (ball.hasAuthority && (startVel.x != ball.velocity.x || startVel.y != ball.velocity.y) ) {
         TCPPacketMove movePacket;
         movePacket.type = TCPPacketMove::TYPE;
@@ -640,7 +673,10 @@ void UpdateBall(Player& owner, Ball& ball) {
 
         packetManager.SendPacket(masterSocket.get(), &movePacket);
     }
+
+    if (ball.bounceFrames > 0) ball.bounceFrames--;
 }
+
 
 void UpdatePlayer(Player& player) {
     float startX = player.velocity.x;
@@ -660,8 +696,8 @@ void UpdatePlayer(Player& player) {
 
 
         player.velocity.x = Clamp(player.velocity.x, -20, 20);
-      
-       
+
+
 
         if (player.velocity.x != startX) {
             TCPPacketMove movePacket;
@@ -687,6 +723,9 @@ void UpdatePlayer(Player& player) {
         player.velocity.x = 0;
     }
 
+
+    if (player.bumpFrames > 0)  player.bumpFrames--;
+    if (player.scoreFrames > 0) player.scoreFrames--;
 }
 
 void UpdateGame()
