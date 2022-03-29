@@ -39,6 +39,8 @@ public:
 	enum class ActionTypes
 	{
 		CreateUnit,
+		CreateUnitRand,
+		CreateUnitMove,
 		DestroyUnit,
 		ToggleAnimSingle,
 		ToggleAnimAll
@@ -49,7 +51,7 @@ public:
 		RAND_DIR,
 		RAND_SPAWN
 	};
-	void HandleAction(ActionTypes, Vector2D);
+	void HandleAction(ActionTypes, Vector2D, int);
 
 private:
 	static Game* mspInstance;
@@ -82,6 +84,7 @@ private:
 	void loadBuffers();
 	void createUnit(const Vector2D& pos);
 	void createUnit(int seed);
+	void createUnit(const Vector2D& pos, int seed);
 
 	
 };
@@ -91,5 +94,5 @@ private:
 const GBKey WOODS("woods");
 const GBKey SMURFS("smurfs");
 const GBKey DEAN("dean");
-const GBKey QUIMBY("quimby");
+const GBKey NUMBERED("numbered");
 

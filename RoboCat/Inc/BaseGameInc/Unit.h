@@ -39,29 +39,6 @@ private:
 	Vector2D mPos;
 };
 
-class RandomDirUnit : public Unit
-{
-public:
-	RandomDirUnit(const Vector2D& position, Sprite& sprite);
-
-	virtual ~RandomDirUnit() {};
-
-	virtual void update(double dt);
-	virtual void draw();
-	virtual void setPosition(const Vector2D& newPos) { mPos = newPos; };
-	
-	Vector2D getCenterPosition() const { return mPos; };
-
-private:
-	Animation mMainAnimation;
-	Animation mAltAnimation;
-	Animation* mpCurrentAnimation;
-	Vector2D mPos;
-	Sprite& mSprite;
-	//seed for rand
-
-};
-
 class RandomSpawnedUnit : public Unit
 {
 public:
@@ -86,4 +63,31 @@ private:
 	Animation* mpCurrentAnimation;
 	Vector2D mPos;
 	int mSeed;
+};
+
+class RandomPosUnit : public Unit
+{
+public:
+	RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed);
+
+	virtual ~RandomPosUnit() {};
+
+	virtual void update(double dt);
+	virtual void draw();
+	virtual void setPosition(const Vector2D& newPos) { mPos = newPos; };
+	virtual void toggleAnimation();
+	virtual bool doesPointIntersect(const Vector2D& point) const;
+	virtual Vector2D getULPosition() const;
+	virtual Vector2D getCenterPosition() const { return mPos; };
+	virtual Vector2D getLRPosition() const;
+	virtual void setAnimationPauseState(bool shouldPause);
+	virtual void toggleAnimationPauseState();
+
+private:
+	Animation mMainAnimation;
+	Animation mAltAnimation;
+	Animation* mpCurrentAnimation;
+	Vector2D mPos;
+	int mSeed;
+	double timer = 3;
 };

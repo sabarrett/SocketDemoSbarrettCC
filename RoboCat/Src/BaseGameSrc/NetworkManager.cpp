@@ -1,4 +1,5 @@
 #include "NetworkManager.h"
+#include <time.h>
 namespace
 {
 	const float kTimeBetweenHellos = 1.f;
@@ -158,7 +159,7 @@ void NetworkManager::UpdateSendActionPacket()
 		packet.Write(kUpdateCC);
 		packet.Write(mPlayerId);
 		packet.Write(mActionVec.size());
-		for (int i = 0; i < mActionVec.size(); i++)
+		for (uint32_t i = 0; i < mActionVec.size(); i++)
 		{
 			mActionVec[i].Write(packet);
 		}
@@ -195,6 +196,7 @@ void NetworkManager::ProcessPacket(InputMemoryBitStream& inInputStream, const So
 
 void NetworkManager::ProcessPacketsHello(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress)
 {
+	UNREFERENCED_PARAMETER(inFromAddress);
 	//only time we're in hello state is when we are not the master peer and trying to join
 	uint32_t	packetType;
 	inInputStream.Read(packetType);
@@ -276,6 +278,7 @@ void NetworkManager::HandleWelcomePacket(InputMemoryBitStream& inInputStream)
 	outPacket.Write(kIntroCC);
 	outPacket.Write(mPlayerId);
 	outPacket.Write(mName);
+
 	for (auto& iter : mPlayerToSocketMap)
 	{
 		SendPacket(outPacket, iter.second);
@@ -384,12 +387,9 @@ void NetworkManager::HandleIntroPacket(InputMemoryBitStream& inInputStream, cons
 		//just contains player's id and name
 		int playerId;
 		string name;
-
 		inInputStream.Read(playerId);
 		inInputStream.Read(name);
-
 		UpdateHighestPlayerId(playerId);
-
 		mPlayerCount++;
 
 		//add the new player to our maps
@@ -401,6 +401,7 @@ void NetworkManager::HandleIntroPacket(InputMemoryBitStream& inInputStream, cons
 
 void NetworkManager::HandleStartPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress)
 {
+	UNREFERENCED_PARAMETER(inInputStream);
 	//make sure this is the master peer, cause we don't want any funny business
 	if (inFromAddress == mMasterPeerAddr)
 	{
@@ -453,7 +454,7 @@ void NetworkManager::HandleUpdatePacket(InputMemoryBitStream& inInputStream, con
 		{
 			ActionData data;
 			data.Read(inInputStream);
-			Game::getInstance()->HandleAction(data.type, data.postion);
+			Game::getInstance()->HandleAction(data.type, data.postion, data.seed);
 			
 		}
 
@@ -649,12 +650,12 @@ NetworkManager::ReceivedPacket::ReceivedPacket(float inReceivedTime, InputMemory
 {
 }
 
-void NetworkManager::addAction(Game::ActionTypes type, Vector2D pos)
+void NetworkManager::addAction(Game::ActionTypes type, Vector2D pos, int seed)
 {
 	ActionData action;
 	action.type = type;
 	action.postion = pos;
-	
+	action.seed = seed;
 	mActionVec.push_back(action);
 }
 
@@ -663,6 +664,10 @@ void NetworkManager::ActionData::Write(OutputMemoryBitStream& inOutputStream)
 	inOutputStream.Write(type);
 	inOutputStream.Write(postion.getX());
 	inOutputStream.Write(postion.getY());
+	if (type == Game::ActionTypes::CreateUnitRand || type == Game::ActionTypes::CreateUnitMove)
+	{
+		inOutputStream.Write(seed);
+	}
 }
 
 void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
@@ -672,4 +677,8 @@ void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
 	inInputStream.Read(x);
 	inInputStream.Read(y);
 	postion = Vector2D(x, y);
+	if (type == Game::ActionTypes::CreateUnitRand || type == Game::ActionTypes::CreateUnitMove)
+	{
+		inInputStream.Read(seed);
+	}
 }

@@ -69,13 +69,13 @@ Unit* UnitManager::createUnit(const Vector2D& position, const Animation& mainAni
 	return pUnit;//return the newly created Unit (for convenience)
 }
 
-Unit* UnitManager::createUnit(const Vector2D& position, Sprite& sprite)
+Unit* UnitManager::createUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed)
 {
 	MemoryManager* pMemoryManager = Game::getInstance()->getMemoryManager();
 
-	Byte* ptr = pMemoryManager->allocate(sizeof(Unit));
+	Byte* ptr = pMemoryManager->allocate(sizeof(RandomPosUnit));
 
-	Unit* pUnit = new(ptr)RandomDirUnit(position, sprite);//placement new create the unit.
+	Unit* pUnit = new(ptr)RandomPosUnit(position, mainAnimation, altAnimation, seed);//placement new create the unit.
 
 
 
@@ -89,7 +89,6 @@ Unit* UnitManager::createUnit(const Animation& mainAnimation, const Animation& a
 	MemoryManager* pMemoryManager = Game::getInstance()->getMemoryManager();
 
 	Byte* ptr = pMemoryManager->allocate(sizeof(RandomSpawnedUnit));
-
 	srand(seed);
 	int randX = rand() % 800;
 	int randY = rand() % 600;

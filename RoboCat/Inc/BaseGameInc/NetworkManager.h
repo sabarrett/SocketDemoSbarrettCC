@@ -94,7 +94,7 @@ public:
 
 	NetworkManagerState GetState() { return mState; };
 
-	void addAction(Game::ActionTypes type, Vector2D pos);
+	void addAction(Game::ActionTypes type, Vector2D pos, int seed);
 
 private:
 	
@@ -121,6 +121,7 @@ private:
 		void Read(InputMemoryBitStream& inInputStream);
 		Game::ActionTypes type;
 		Vector2D postion;
+		int seed;
 	};
 
 	void	UpdateBytesSentLastFrame();
