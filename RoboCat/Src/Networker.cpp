@@ -29,7 +29,7 @@ void Networker::initServer(std::string port)
 	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	//mTCPSocket = sock;	//Setting mTCPSocket breaks it!
 	//mTCPSocket->SetNonBlockingMode(true);
-	sock->SetNonBlockingMode(true);
+	//sock->SetNonBlockingMode(true);
 
 	//if (mTCPSocket == nullptr)
 	if (sock == nullptr)
@@ -66,7 +66,7 @@ void Networker::initServer(std::string port)
 	//Accept Connection
 	std::cout << "Waiting for connection...\n";
 	//mTCPSocket->SetNonBlockingMode(false);
-	sock->SetNonBlockingMode(false);
+	//sock->SetNonBlockingMode(false);
 	
 	SocketAddress incomingAddress;
 	//TCPSocketPtr connSocket = mTCPSocket->Accept(incomingAddress);
@@ -78,7 +78,7 @@ void Networker::initServer(std::string port)
 
 	//mTCPSocket->CleanupSocket();
 	mTCPSocket = connSocket;
-	mTCPSocket->SetNonBlockingMode(false);
+	//mTCPSocket->SetNonBlockingMode(false);
 	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
 }
 
@@ -87,8 +87,12 @@ void Networker::connect(std::string clientIpAddress, std::string serverIpAddress
 	SocketUtil::StaticInit();
 
 	//Create Socket
-	mTCPSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	if (mTCPSocket == nullptr)
+	//mTCPSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	//sock->SetNonBlockingMode(true);
+
+	//if (mTCPSocket == nullptr)
+	if (sock == nullptr)
 	{
 		SocketUtil::ReportError("Creating Client Socket");
 		ExitProcess(1);
@@ -104,7 +108,8 @@ void Networker::connect(std::string clientIpAddress, std::string serverIpAddress
 		return;
 	}
 
-	if (mTCPSocket->Bind(*clientAddress) != NO_ERROR)
+	//if (mTCPSocket->Bind(*clientAddress) != NO_ERROR)
+	if (sock->Bind(*clientAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding Client Socket");
 		ExitProcess(1);
@@ -118,15 +123,19 @@ void Networker::connect(std::string clientIpAddress, std::string serverIpAddress
 		ExitProcess(1);
 	}
 
-	if (mTCPSocket->Connect(*srvAddress) != NO_ERROR)
+	//if (mTCPSocket->Connect(*srvAddress) != NO_ERROR)
+	if (sock->Connect(*srvAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Connecting To Server");
 		ExitProcess(1);
 	}
 	LOG("%s", "Succesfully Connect to the Server!");
 
-	mTCPSocket->SetNonBlockingMode(true);
+	//mTCPSocket->SetNonBlockingMode(true);
+	sock->SetNonBlockingMode(true);
 
+	mTCPSocket = sock;
+	//mTCPSocket->SetNonBlockingMode(false);
 }
 
 
