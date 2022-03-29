@@ -17,7 +17,7 @@ Lock::~Lock()
 {
 }
 
-void Lock::Update()
+void Lock::Update(WorldState* gameWorld)
 {
 	if (mGraphicsData.mX > 1500) mGraphicsData.mX = 0;
 	mGraphicsData.mX++;

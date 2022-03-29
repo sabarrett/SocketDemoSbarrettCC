@@ -49,6 +49,11 @@ void GameObject::SetPostion(int posX, int posY)
 	mGraphicsData.mY = posY;
 }
 
+Vector3 GameObject::GetPosition()
+{
+	return Vector3(mGraphicsData.mX,mGraphicsData.mY,0);
+}
+
 GameObject::~GameObject()
 {
 	delete mpGraphicsID;

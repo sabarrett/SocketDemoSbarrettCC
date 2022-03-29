@@ -9,7 +9,7 @@ private:
 	~Key();
 protected:
 public:
-	virtual void Update();
+	virtual void Update(WorldState* gameWorld);
 
 	CLASS_IDENTIFICATION('KEYS', Key)
 };

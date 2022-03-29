@@ -2,6 +2,7 @@
 #include <string>
 
 class GraphicsLibrary;
+class WorldState;
 
 class GameObject
 {
@@ -14,11 +15,12 @@ class GameObject
 	public:
 		enum { mClassId = 'GOBJ' };
 		virtual uint32_t GetClassId() const { return mClassId; }
-		virtual void Update() = 0;
+		virtual void Update(WorldState* gameWorld) = 0;
 		virtual void Write(OutputMemoryBitStream &stream);
 		virtual void Read(InputMemoryBitStream &stream);
 		virtual void Render(GraphicsLibrary* gl);
 		void SetPostion(int posX, int posY);
+		Vector3 GetPosition();
 		~GameObject();
 };
 struct Location
@@ -29,4 +31,5 @@ struct Location
 #define CLASS_IDENTIFICATION( inCode, inClass ) \
 enum{ mClassId = inCode }; \
 virtual uint32_t GetClassId() const { return mClassId; } \
-static GameObject* CreateInstance() { return new inClass(); }
+static GameObject* CreateInstance() { return new inClass(); }\
+friend WorldState;

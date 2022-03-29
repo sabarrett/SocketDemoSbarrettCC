@@ -12,6 +12,7 @@
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 #include "allegro_wrapper_functions-main/InputSystem.h"
 #include "GameFiles/Lock.h"
+#include "GameFiles/Key.h"
 #include "GameFiles/WorldState.h"
 #include "GameFiles/NetworkManager.h"
 
@@ -163,12 +164,15 @@ int main(int argc, const char** argv)
 	gl.render();
 
 	gl.loadImage(FILE_PATH, "lock_blue.png");
+	gl.loadImage(FILE_PATH, "keyBlue.png");
+	gl.loadImage(FILE_PATH, "coinGold.png");
 
 	WorldState gameWorld = WorldState(&gl);
 
 	if (userIsCreator)
 	{
 		gameWorld.CreateLock();
+		gameWorld.Create<Key>(SCREEN_X,0);
 	}
 
 	vector<JoinerInput> joinerInputs;

@@ -9,7 +9,7 @@ class Lock : public GameObject
 		~Lock();
 	protected:
 	public:
-		virtual void Update();
+		virtual void Update(WorldState* gameWorld);
 
 		CLASS_IDENTIFICATION('LOCK', Lock)
 };
