@@ -109,7 +109,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\common\lawson\Event System\Event.cpp" />
+    <ClCompile Include="..\lawson\Event System\Event.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="EventListener.cpp" />
     <ClCompile Include="EventSystem.cpp" />
