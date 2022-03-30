@@ -16,7 +16,8 @@ enum PacketTypes
 {
 	CREATE,
 	UPDATE,
-	DESTROY
+	DESTROY,
+	HELLO
 };
 
 enum ObjectTypes
@@ -132,15 +133,10 @@ class GameState
 		PlayerGameObject* mPlayer;
 		vector<CoinObject*> vCoins;
 		TomatoObject* tomato;
-
-		//map<int, LeftGameObject*> mLeftGameObjects;
-		int leftObjcounter = 0;
 	public:
 		GameState(bool serverState, string ourAddr, string other)
 		{
-			//cout << "construction initiated" << endl;
 			isServer = serverState;
-			cout << serverState << endl;
 			sock = CreateBoundSocket(ourAddr);
 			//if (isServer)
 				sock->SetNonBlockingMode(true);
@@ -153,7 +149,6 @@ class GameState
 			mLibrary->init("../2517597.jpg");
 			mInputSystem = new InputSystem();
 			mInputSystem->init(mLibrary);
-			//cout << "construction successful" << endl;
 			if (isServer)
 				mPlayer = new PlayerGameObject(650, 100, "../kirby.png", isServer);
 			else
@@ -172,9 +167,16 @@ class GameState
 			mLibrary->drawImage("background", 0, 0);
 			mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
 
-			tomato = new TomatoObject(800, rand() % 540 + 20);
-			for (int i = 0; i < 10; i++)
-				vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
+			if (isServer)
+			{
+				tomato = new TomatoObject(800, rand() % 540 + 20);
+				for (int i = 0; i < 10; i++)
+					vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
+			}
+			else
+			{
+				//SendPacket(sock, &otherAddr, PacketTypes::HELLO, 1, 1, 1, 1);
+			}
 
 			mLibrary->render();
 
@@ -183,28 +185,18 @@ class GameState
 
 			while (!escapePressed)
 			{
-				//cout << "entering loop" << endl;
-				/*for (auto& item : mLeftGameObjects)
+				if (isServer)
 				{
-					LeftGameObject* obj = item.second;
-					if (isServer)
-					{
-						obj->Update();
-						SendPacket(sock, otherAddr, PacketTypes::UPDATE, ObjectTypes::LEFT, obj->getX(), obj->getY(), item.first);
-					}
-					ReceivePacket(sock, otherAddr, mInputSystem);
-					mLibrary->drawImage("LeftObject", obj->getX(), obj->getY());
-				}*/
-				tomato->Update();
-				CheckForCollisions();
+					tomato->Update();
+					CheckForCollisions();
+				}
+				//ReceivePacket(sock, &otherAddr, mInputSystem);
 				for (auto& coin : vCoins)
 				{
 					mLibrary->drawImage("coin", coin->getX(), coin->getY());
 				}
-				mLibrary->drawImage("tomato", tomato->getX(), tomato->getY());
+				//mLibrary->drawImage("tomato", tomato->getX(), tomato->getY());
 
-				//cout << "Done updating each game object" << endl;
-				//int mousePress = mInputSystem->getMouseInput();
 				int keyPress = mInputSystem->getKeyboardInput();
 				mPlayer->Update(keyPress);
 				mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
@@ -212,22 +204,11 @@ class GameState
 				if (keyPress == KeyCode::KeyEscape)
 					escapePressed = true;
 
-				/*switch (mousePress)
-				{
-					case MouseButton::LeftMouse:
-					{
-						mLeftGameObjects.emplace(leftObjcounter, new LeftGameObject((int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), "../output-onlinepngtools.png"));
-						SendPacket(sock, otherAddr, PacketTypes::CREATE, ObjectTypes::LEFT, (int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), leftObjcounter++);
-						break;
-					}
-				}*/
 				mLibrary->render();
 				mLibrary->drawImage("background", 0, 0);
-				//cout << "one round of update done" << endl;
 			}
-			cout << "end update" << endl;
 		}
-		void SendPacket(UDPSocketPtr ptr, SocketAddress addr, int packetType, int objectType,
+		void SendPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType,
 			int pos_x, int pos_y, int ID)
 		{
 			int packet[5];
@@ -241,7 +222,8 @@ class GameState
 
 			cout << "attempting to send packet" << endl;
 
-			int bytesSent = ptr->SendTo(bytePacket, 20, addr);
+			int bytesSent = ptr->SendTo(bytePacket, 20, *addr);
+			cout << bytesSent << endl;
 			if (bytesSent <= 0)
 			{
 				SocketUtil::ReportError("Client SendTo");
@@ -249,12 +231,12 @@ class GameState
 
 			cout << "Sent packet" << endl;
 		}
-		void ReceivePacket(UDPSocketPtr ptr, SocketAddress addr, InputSystem* mInputSystem)
+		void ReceivePacket(UDPSocketPtr ptr, SocketAddress* addr, InputSystem* mInputSystem)
 		{
 			char buffer[20];
 			while (true)
 			{
-				int bytesReceived = ptr->ReceiveFrom(buffer, 20, addr);
+				int bytesReceived = ptr->ReceiveFrom(buffer, 20, *addr);
 				if (bytesReceived < 0)
 				{
 					SocketUtil::ReportError("Error receiving packet");
@@ -299,6 +281,11 @@ class GameState
 							}
 							break;
 						}
+						case PacketTypes::HELLO:
+						{
+							cout << "hello packet received!" << endl;
+							break;
+						}
 					}
 				}
 			}
@@ -306,11 +293,9 @@ class GameState
 
 		void CheckForCollisions()
 		{
-			cout << tomato->getY() << endl;
 			for (vector<CoinObject*>::iterator it = vCoins.begin(); it < vCoins.end(); it++)
 			{
 				CoinObject* coin = *it;
-				//cout << mPlayer->getX() << ", " << mPlayer->getY() << endl;
 				if (((mPlayer->getX() < coin->getX() && mPlayer->getX() + 100 > coin->getX())//top left corner
 					&& (mPlayer->getY() < coin->getY() && mPlayer->getY() + 100 > coin->getY()))
 
@@ -324,7 +309,7 @@ class GameState
 							&& (mPlayer->getY() < coin->getY() + 50 && mPlayer->getY() + 100 > coin->getY() + 50)))
 				{
 					vCoins.erase(it);
-					//delete coin;
+					delete coin;
 					vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
 					break;
 				}
