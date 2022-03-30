@@ -1,0 +1,31 @@
+﻿  Event.cpp
+c1xx : fatal error C1083: Cannot open source file: '..\..\..\..\..\common\lawson\Event System\Event.cpp': No such file or directory
+  Animation.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\Sprite.h(3,10): fatal error C1083: Cannot open include file: 'allegro5/allegro.h': No such file or directory
+  EventListener.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\EventListener.h(3,10): fatal error C1083: Cannot open include file: 'Trackable.h': No such file or directory
+  EventSystem.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\EventSystem.h(4,10): fatal error C1083: Cannot open include file: 'Trackable.h': No such file or directory
+  GraphicsBuffer.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\GraphicsBuffer.h(3,10): fatal error C1083: Cannot open include file: 'allegro5/allegro.h': No such file or directory
+  GraphicsBufferManager.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\GraphicsBufferManager.h(5,10): fatal error C1083: Cannot open include file: 'Trackable.h': No such file or directory
+  GraphicsSystem.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\GraphicsSystem.h(3,10): fatal error C1083: Cannot open include file: 'allegro5/allegro.h': No such file or directory
+  InputSystem.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\InputSystem.h(3,10): fatal error C1083: Cannot open include file: 'allegro5/allegro.h': No such file or directory
+  KeyEvent.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\Event.h(4,10): fatal error C1083: Cannot open include file: 'trackable.h': No such file or directory
+  MouseEvent.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\Event.h(4,10): fatal error C1083: Cannot open include file: 'trackable.h': No such file or directory
+  MouseMoveEvent.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\MouseMoveEvent.h(3,10): fatal error C1083: Cannot open include file: 'Vector2D.h': No such file or directory
+  Sprite.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\Sprite.h(3,10): fatal error C1083: Cannot open include file: 'allegro5/allegro.h': No such file or directory
+  System.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\GraphicsSystem.h(3,10): fatal error C1083: Cannot open include file: 'allegro5/allegro.h': No such file or directory
+  Unit.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\Sprite.h(3,10): fatal error C1083: Cannot open include file: 'allegro5/allegro.h': No such file or directory
+  UnitManager.cpp
+K:\source\repos\SocketDemo\Game\GraphicsLib\UnitManager.h(5,10): fatal error C1083: Cannot open include file: 'Trackable.h': No such file or directory
+  Generating Code...

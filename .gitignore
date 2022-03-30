@@ -5,5 +5,4 @@
 *.user
 *.pdb
 
-Debug/
 packages/
