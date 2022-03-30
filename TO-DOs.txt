@@ -1,5 +1,4 @@
 . Create a two-player networked game with shared world state.
-. Make use of Memory Streams and different Packet Header types to synchronize the state between the two instances.
 . Your game must have at least 10 synchronized objects in the world at once, with at least 3 different kinds of game objects.
 . Gameplay must involve creating and destroying objects, which is then synchronized between clients.
 
@@ -12,9 +11,7 @@ Requirements:
 
 TO-DOs:
 . Destroy GameObjects somehow (probably press backspace and a random one will delete, or right-click something)
-. Figure out how to send sprite identifiers for creating game objects and move speed for player --> network manager could hold default values, messy but works
 
 Replicating pointers, replicate the data they point to.
 Replicating vectors, replicate their size and data.
-Replicating objects with virtual methods, replicate identifiers to hook up proper virtual function tables.
 Replicating large arrays, omit unused elements.
