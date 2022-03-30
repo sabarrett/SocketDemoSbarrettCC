@@ -136,15 +136,13 @@ class GameState
 	public:
 		GameState(bool serverState, string ourAddr, string other)
 		{
+			cout << other << endl;
 			isServer = serverState;
 			sock = CreateBoundSocket(ourAddr);
 			//if (isServer)
 				sock->SetNonBlockingMode(true);
-			SocketAddress otherAddr;
-			{
-				SocketAddressPtr tempAddr = SocketAddressFactory::CreateIPv4FromString(other);
-				otherAddr = *tempAddr;
-			}
+			otherAddr = *(SocketAddressFactory::CreateIPv4FromString(other));
+			cout << otherAddr.ToString() << endl;
 			mLibrary = new GraphicsLibrary(800, 600);
 			mLibrary->init("../2517597.jpg");
 			mInputSystem = new InputSystem();
@@ -160,6 +158,7 @@ class GameState
 		}
 		void Update()
 		{
+			cout << otherAddr.ToString() << endl;
 			mLibrary->loadImage("../2517597.jpg", "background");
 			mLibrary->loadImage(mPlayer->getImageName(), "Player");
 			mLibrary->loadImage("../coin.png", "coin");
@@ -175,7 +174,7 @@ class GameState
 			}
 			else
 			{
-				//SendPacket(sock, &otherAddr, PacketTypes::HELLO, 1, 1, 1, 1);
+				SendPacket(sock, &otherAddr, PacketTypes::HELLO, 1, 1, 1, 1);
 			}
 
 			mLibrary->render();
@@ -190,7 +189,7 @@ class GameState
 					tomato->Update();
 					CheckForCollisions();
 				}
-				//ReceivePacket(sock, &otherAddr, mInputSystem);
+				ReceivePacket(sock, &otherAddr, mInputSystem);
 				for (auto& coin : vCoins)
 				{
 					mLibrary->drawImage("coin", coin->getX(), coin->getY());
@@ -211,6 +210,7 @@ class GameState
 		void SendPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType,
 			int pos_x, int pos_y, int ID)
 		{
+			cout << addr->ToString() << endl;
 			int packet[5];
 			packet[0] = packetType;
 			packet[1] = objectType;
@@ -355,11 +355,11 @@ int main(int argc, const char** argv)
 
 	if (isServer)
 	{
-		state = new GameState(true, "127.0.0.1:9000", "127.0.0.1:9001");
+		state = new GameState(true, "localhost:9000", "localhost:9001");
 	}
 	else
 	{
-		state = new GameState(false, "127.0.0.1:9001", "127.0.0.1:9000");
+		state = new GameState(false, "localhost:9001", "localhost:9000");
 	}
 
 	state->Update();
