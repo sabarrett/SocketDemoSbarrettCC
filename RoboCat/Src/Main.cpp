@@ -131,7 +131,7 @@ class GameState
 		GraphicsLibrary* mLibrary;
 		InputSystem* mInputSystem;
 		PlayerGameObject* mPlayer;
-		map<string, CoinObject*> mCoins;
+		vector<CoinObject*> vCoins;
 		TomatoObject* tomato;
 	public:
 		GameState(bool serverState, string ourAddr, string other)
@@ -170,7 +170,7 @@ class GameState
 			{
 				tomato = new TomatoObject(800, rand() % 540 + 20);
 				for (int i = 0; i < 10; i++)
-					mCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
+					vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
 			}
 			else
 			{
@@ -190,9 +190,9 @@ class GameState
 					CheckForCollisions();
 				}
 				ReceivePacket(sock, &otherAddr, mInputSystem);
-				for (auto& coin : mCoins)
+				for (auto& coin : vCoins)
 				{
-					mLibrary->drawImage("coin", coin.second->getX(), coin.second->getY());
+					mLibrary->drawImage("coin", coin->getX(), coin->getY());
 				}
 				//mLibrary->drawImage("tomato", tomato->getX(), tomato->getY());
 
@@ -293,23 +293,24 @@ class GameState
 
 		void CheckForCollisions()
 		{
-			for (auto& coin : mCoins)
+			for (vector<CoinObject*>::iterator it = vCoins.begin(); it < vCoins.end(); it++)
 			{
-				if (((mPlayer->getX() < coin.second->getX() && mPlayer->getX() + 100 > coin.second->getX())//top left corner
-					&& (mPlayer->getY() < coin.second->getY() && mPlayer->getY() + 100 > coin.second->getY()))
+				CoinObject* coin = *it;
+				if (((mPlayer->getX() < coin->getX() && mPlayer->getX() + 100 > coin->getX())//top left corner
+					&& (mPlayer->getY() < coin->getY() && mPlayer->getY() + 100 > coin->getY()))
 
-					|| ((mPlayer->getX() < coin.second->getX() + 50 && mPlayer->getX() + 100 > coin.second->getX() + 50)//bottom right
-					&& (mPlayer->getY() < coin.second->getY() + 50 && mPlayer->getY() + 100 > coin.second->getY() + 50))
+					|| ((mPlayer->getX() < coin->getX() + 50 && mPlayer->getX() + 100 > coin->getX() + 50)//bottom right
+					&& (mPlayer->getY() < coin->getY() + 50 && mPlayer->getY() + 100 > coin->getY() + 50))
 
-					|| ((mPlayer->getX() < coin.second->getX() + 50 && mPlayer->getX() + 100 > coin.second->getX() + 50)//top right
-						&& (mPlayer->getY() < coin.second->getY() && mPlayer->getY() + 100 > coin.second->getY()))
+					|| ((mPlayer->getX() < coin->getX() + 50 && mPlayer->getX() + 100 > coin->getX() + 50)//top right
+						&& (mPlayer->getY() < coin->getY() && mPlayer->getY() + 100 > coin->getY()))
 
-						|| ((mPlayer->getX() < coin.second->getX() && mPlayer->getX() + 100 > coin.second->getX())//bottom left
-							&& (mPlayer->getY() < coin.second->getY() + 50 && mPlayer->getY() + 100 > coin.second->getY() + 50)))
+						|| ((mPlayer->getX() < coin->getX() && mPlayer->getX() + 100 > coin->getX())//bottom left
+							&& (mPlayer->getY() < coin->getY() + 50 && mPlayer->getY() + 100 > coin->getY() + 50)))
 				{
-					mCoins.erase(coin.first);
-					delete coin.second;
-					mCoins.insert(coin.first, new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
+					vCoins.erase(it);
+					delete coin;
+					vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
 					break;
 				}
 			}
