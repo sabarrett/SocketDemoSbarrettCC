@@ -1,11 +1,17 @@
-#include "Event.h"
+//#include "Event.h"
+#include "..\..\GraphicsLib\Event.h"
+//#include "..\..\GraphicsLib\Event.h"
+//#include "..\..\GraphicsLib\Event.h"
 
-Event::Event(EventType type)
-:mType(type)
+
+Event::Event(int type)
 {
+	mType = type;
 }
 
 Event::~Event()
 {
 }
+
+
 

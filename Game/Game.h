@@ -12,7 +12,7 @@
 #include "EventListener.h"
 
 //Paths
-const string DIRECTORY = "..\\..\\..\\..\\common\\assets\\";
+const string DIRECTORY = "assets\\";
 const string WOODS_FILENAME = "Woods.png";
 const string SMURF_SPRITES_FILENAME = "smurf_sprites.png";
 const string DEAN_SPRITES_FILENAME = "dean_sprites.png";

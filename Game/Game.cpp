@@ -90,7 +90,7 @@ void Game::doLoop()
 		//NEXT FRAME
 		mTimer.sleepUntilElapsed(mFrameRate); //sleep until frame is over
 		mSinceFrame = mTimer.getElapsedTime(); //get the time it took to complete this frame
-		cout << mSinceFrame << endl; //output that frame time
+		//cout << mSinceFrame << endl; //output that frame time
 	}
 }
 

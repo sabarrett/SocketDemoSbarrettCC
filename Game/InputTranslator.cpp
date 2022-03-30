@@ -26,6 +26,7 @@ void InputTranslator::cleanup()
 
 void InputTranslator::handleEvent(const Event& theEvent)
 {
+	//std::cout << "handeling an event :)" << theEvent.getType() << " " << MOUSE_EVENT_B << endl;
 	//Check for mouse Event
 	if (theEvent.getType() == MOUSE_EVENT_B)
 	{
@@ -42,7 +43,7 @@ void InputTranslator::handleEvent(const Event& theEvent)
 		}
 	}
 	//Check for keyboard event
-	else if (theEvent.getType() == KEY_EVENT_B)
+	else if (theEvent.getType() == 1)
 	{
 		const KeyEvent& keyEvent = static_cast<const KeyEvent&>(theEvent);
 		if (keyEvent.getState() == "space")
@@ -57,6 +58,24 @@ void InputTranslator::handleEvent(const Event& theEvent)
 		}
 		else if (keyEvent.getState() == "esc")
 		{
+			//fire exit game event
+			mpESystem->fireEvent(EscEvent());
+		}
+		else if (keyEvent.getState() == "1")
+		{
+			std::cout << "handeling an event for button	1" << endl;
+			//fire exit game event
+			mpESystem->fireEvent(EscEvent());
+		}
+		else if (keyEvent.getState() == "2")
+		{
+			std::cout << "handeling an event for button	2" << endl;
+			//fire exit game event
+			mpESystem->fireEvent(EscEvent());
+		}
+		else if (keyEvent.getState() == "3")
+		{
+			std::cout << "handeling an event for button	3" << endl;
 			//fire exit game event
 			mpESystem->fireEvent(EscEvent());
 		}

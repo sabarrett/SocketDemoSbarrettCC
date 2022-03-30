@@ -1,7 +1,7 @@
 #include "KeyEvent.h"
 
 KeyEvent::KeyEvent(const string key)
-	:Event(KEY_EVENT_B)
+	:Event(1)
 	, mKey(key)
 {
 }

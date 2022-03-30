@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -25,12 +26,12 @@ enum EventType
 class Event 
 {
 public:
-	Event(EventType type);
+	Event(int type);
 	virtual ~Event();
 
-	EventType getType() const { return mType; };
+	int getType() const { std::cout << "this is a test " << mType << endl; return mType; };
 
 private:
-	EventType mType;
+	int mType;
 
 };

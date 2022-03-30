@@ -17,8 +17,10 @@ EventSystem::~EventSystem()
 
 void EventSystem::addListener(EventType type, EventListener* pListener)
 {
+
 	if (mIsInitted)
 	{
+		std::cout << "adding a listner " << type << endl;
 		mListenerMap.insert(pair< EventType, EventListener* >(type, pListener));
 	}
 }
@@ -102,6 +104,8 @@ void EventSystem::cleanup()
 
 void EventSystem::fireEvent( const Event& theEvent )
 {
+	std::cout << "firing event" << theEvent.getType() << endl;
+
 	if (mIsInitted)
 	{
 		dispatchAllEvents(theEvent);
@@ -112,12 +116,14 @@ void EventSystem::dispatchAllEvents( const Event& theEvent )
 {
 	if (mIsInitted)
 	{
+		std::cout << "dispatching event" << endl;
 		pair<multimap<EventType, EventListener*>::iterator, multimap<EventType, EventListener*>::iterator> ret;
-		ret = mListenerMap.equal_range(theEvent.getType());
+		ret = mListenerMap.equal_range(KEY_EVENT_B);
 
 		multimap<EventType, EventListener*>::iterator iter;
 		for (iter = ret.first; iter != ret.second; ++iter)
 		{
+			std::cout << "sending to listener" << endl;
 			iter->second->handleEvent(theEvent);
 		}
 	}
