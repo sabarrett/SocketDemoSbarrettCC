@@ -35,7 +35,7 @@ public:
 		return mInstance;
 	};
 
-	void init();
+	void init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour);
 	void cleanup();
 
 	~Networker();
@@ -49,12 +49,11 @@ public:
 	void sendNewGameObjectState(int networkID, PacketType packetHeader);
 
 	//Map
-	void CleanupMap();
-	void AddGameObjectToMap(GameObject* objectToAdd, int networkID);
-	GameObject* GetGameObjectFromMap(int networkID) { return mGameObjectMap[networkID]; };
-	map<int, GameObject*> GetMap() { return mGameObjectMap; };
-	void UpdateMapObjects();
-	void RenderMapObjects();
+	void addGameObjectToMap(GameObject* objectToAdd, int networkID);
+	GameObject* getGameObjectFromMap(int networkID) { return mGameObjectMap[networkID]; };
+	map<int, GameObject*> getMap() { return mGameObjectMap; };
+	void updateMapObjects();
+	void renderMapObjects();
 
 private:
 
@@ -65,5 +64,11 @@ private:
 	//Data
 	TCPSocketPtr* mpTCPSocket;
 	std::map<int, GameObject*> mGameObjectMap;
-	//int mGameObjectID;
+
+	//Data for GameObject replication
+	GraphicsLibrary* mpGraphicsLibrary;
+	float mPlayerMoveSpeed;
+	std::string mRockSpriteIdentifier;
+	std::string mPlayerSpriteIdentifier;
+	Colour mWallColour;
 };

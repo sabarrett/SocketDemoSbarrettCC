@@ -300,7 +300,7 @@ int main(int argc, const char** argv)
 	{
 		//Setup network manager
 		pNetworkManager = pNetworkManager->GetInstance();
-		pNetworkManager->init();
+		pNetworkManager->init(pGraphics);
 
 		//Prompt for isServer or not
 		std::string input;

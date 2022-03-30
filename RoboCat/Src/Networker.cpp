@@ -4,19 +4,25 @@
 //Constructor
 Networker::Networker()
 {
-	init();
+	
 }
 
 Networker::~Networker()
 {
 	cleanup();
-	SocketUtil::CleanUp();
 }
 
-void Networker::init()
+void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour)
 {
 	mpTCPSocket = new TCPSocketPtr;
 	mGameObjectMap = map<int, GameObject*>();
+
+	//Data for GameObject replication
+	mpGraphicsLibrary = graphicsLibrary;
+	mRockSpriteIdentifier = rockSpriteIdentifier;
+	mPlayerSpriteIdentifier = playerSpriteIdentifier;
+	mPlayerMoveSpeed = playerMoveSpeed;
+	mWallColour = wallColour;
 }
 
 void Networker::cleanup()
@@ -24,7 +30,17 @@ void Networker::cleanup()
 	//delete mInstance;
 	//mInstance = nullptr;
 
+	//Cleanup map
+	map<int, GameObject*>::iterator it;
+	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	{
+		delete it->second;
+		it->second = nullptr;
+	}
+	mGameObjectMap.clear();
+
 	(*mpTCPSocket)->CleanupSocket();
+	SocketUtil::CleanUp();
 }
 
 bool Networker::initServer(std::string port)
@@ -145,26 +161,71 @@ void Networker::getNewGameObjectState()
 		IMBStream.Read(packetHeader);
 		int networkID;
 		IMBStream.Read(networkID);
+		GameObjectType receiveType;
+		IMBStream.Read(receiveType);
 
 		//Logic depends on packer header type
 		switch (packetHeader)
 		{
 		case PacketType::PACKET_CREATE:
+		{
+			float posX;
+			float posY;
+
+			IMBStream.Read(posX);
+			IMBStream.Read(posY);
+
+			switch (receiveType)
+			{
+			case GameObjectType::ROCK:
+			{
+				Rock* newRock = new Rock(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mRockSpriteIdentifier);
+				mGameObjectMap.insert(pair<int, GameObject*>(networkID, newRock));
+				newRock = nullptr;
+
+				break;
+			}
+
+			case GameObjectType::PLAYER:
+			{
+				PlayerController* newPlayerController = new PlayerController(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mPlayerMoveSpeed, mPlayerSpriteIdentifier);
+				mGameObjectMap.insert(pair<int, GameObject*>(networkID, newPlayerController));
+				newPlayerController = nullptr;
+
+				break;
+
+			}
+
+			case GameObjectType::WALL:
+			{
+				float sizeX;
+				float sizeY;
+				float thickness;
+
+				IMBStream.Read(sizeX);
+				IMBStream.Read(sizeY);
+				IMBStream.Read(thickness);
+
+				Wall* newWall = new Wall(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), sizeX, sizeY, mWallColour, thickness);
+				mGameObjectMap.insert(pair<int, GameObject*>(networkID, newWall));
+				newWall = nullptr;
+
+				break;
+			}
+
+				break;
+			}
 
 			break;
+		}
 
 		case PacketType::PACKET_UPDATE:
 
 			if (mGameObjectMap[networkID] != nullptr)
 			{
-				GameObjectType receiveType;
-				IMBStream.Read(receiveType);
-
 				float x;
 				float y;
-				float sizeX;
-				float sizeY;
-				float thiccness;
+
 				switch (receiveType)
 				{
 				case GameObjectType::ROCK:
@@ -176,6 +237,11 @@ void Networker::getNewGameObjectState()
 					break;
 
 				case GameObjectType::WALL:
+				{
+					float sizeX;
+					float sizeY;
+					float thiccness;
+
 					Wall* wall = (Wall*)mGameObjectMap[networkID];
 					IMBStream.Read(x);
 					IMBStream.Read(y);
@@ -192,18 +258,32 @@ void Networker::getNewGameObjectState()
 
 					break;
 				}
+				}
 			}
 			else
 			{
-				//Create, this is here just in case of user error
-				//TO-DO: Implement
+				//Report error
+				std::cout << "ERROR: CANNOT UPDATE GAMEOBJECT ID " << networkID << " BECAUSE IT IS NOT IN THE NETWORK MANAGER MAP.\n";
 			}
 
 			break;
 
 		case PacketType::PACKET_DELETE:
+		{
+			//Delete element in map
+			map<int, GameObject*>::iterator it;
+			for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+			{
+				if (it->first == networkID)
+				{
+					delete it->second;
+					it->second = nullptr;
+					mGameObjectMap.erase(it->first);
+				}
+			}
 
 			break;
+		}
 
 		default:
 			return;
@@ -246,6 +326,8 @@ void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
 
 	case PacketType::PACKET_DELETE:
 
+		//Send nothing else
+
 		break;
 
 	default:
@@ -255,23 +337,12 @@ void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
 	(*mpTCPSocket)->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
 }
 
-void Networker::CleanupMap()
-{
-	map<int, GameObject*>::iterator it;
-	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
-	{
-		delete it->second;
-		it->second = nullptr;
-	}
-	mGameObjectMap.clear();
-}
-
-void Networker::AddGameObjectToMap(GameObject* objectToAdd, int networkID)
+void Networker::addGameObjectToMap(GameObject* objectToAdd, int networkID)
 {
 	mGameObjectMap.insert(pair<int, GameObject*>(networkID, objectToAdd));
 }
 
-void Networker::UpdateMapObjects()
+void Networker::updateMapObjects()
 {
 	map<int, GameObject*>::iterator it;
 	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
@@ -280,7 +351,7 @@ void Networker::UpdateMapObjects()
 	}
 }
 
-void Networker::RenderMapObjects()
+void Networker::renderMapObjects()
 {
 	map<int, GameObject*>::iterator it;
 	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
