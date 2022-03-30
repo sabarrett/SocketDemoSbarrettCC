@@ -132,84 +132,124 @@ bool Networker::connect(std::string serverIpAddress, std::string port)
 }
 
 
-void Networker::getNewGameObjectState(map<int, GameObject*> gameObjectMap)
+void Networker::getNewGameObjectState()
 {
 	char buffer[1024];
 	int32_t byteRecieve = (*mpTCPSocket)->Receive(buffer, 1024);
 	if (byteRecieve > 0)
 	{
 		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
+
+		//Start reading
+		PacketType packetHeader;
+		IMBStream.Read(packetHeader);
 		int networkID;
 		IMBStream.Read(networkID);
 
-		if (gameObjectMap[networkID] != nullptr)
+		//Logic depends on packer header type
+		switch (packetHeader)
 		{
-			GameObjectType recieveType;
-			IMBStream.Read(recieveType);
+		case PacketType::PACKET_CREATE:
 
-			float x;
-			float y;
-			float sizeX;
-			float sizeY;
-			float thiccness;
-			switch (recieveType)
+			break;
+
+		case PacketType::PACKET_UPDATE:
+
+			if (mGameObjectMap[networkID] != nullptr)
 			{
-			case GameObjectType::ROCK:
-			case GameObjectType::PLAYER:
+				GameObjectType receiveType;
+				IMBStream.Read(receiveType);
 
-				IMBStream.Read(x);
-				IMBStream.Read(y);
-				gameObjectMap[networkID]->setPos(std::make_pair(x, y));
-				break;
+				float x;
+				float y;
+				float sizeX;
+				float sizeY;
+				float thiccness;
+				switch (receiveType)
+				{
+				case GameObjectType::ROCK:
+				case GameObjectType::PLAYER:
 
-			case GameObjectType::WALL:
-				Wall* wall = (Wall*)gameObjectMap[networkID];
-				IMBStream.Read(x);
-				IMBStream.Read(y);
-				
-				wall->setPos(std::make_pair(x, y));
+					IMBStream.Read(x);
+					IMBStream.Read(y);
+					mGameObjectMap[networkID]->setPos(std::make_pair(x, y));
+					break;
 
-				IMBStream.Read(sizeX);
-				IMBStream.Read(sizeY);
-				IMBStream.Read(thiccness);
+				case GameObjectType::WALL:
+					Wall* wall = (Wall*)mGameObjectMap[networkID];
+					IMBStream.Read(x);
+					IMBStream.Read(y);
 
-				wall->setWallSizeX(sizeX);
-				wall->setWallSizeY(sizeY);
-				wall->setWallThickness(thiccness);
+					wall->setPos(std::make_pair(x, y));
 
-				break;
+					IMBStream.Read(sizeX);
+					IMBStream.Read(sizeY);
+					IMBStream.Read(thiccness);
+
+					wall->setWallSizeX(sizeX);
+					wall->setWallSizeY(sizeY);
+					wall->setWallThickness(thiccness);
+
+					break;
+				}
 			}
-		}
-		else
-		{
-			//create new object
+			else
+			{
+				//Create, this is here just in case of user error
+				//TO-DO: Implement
+			}
+
+			break;
+
+		case PacketType::PACKET_DELETE:
+
+			break;
+
+		default:
+			return;
 		}
 	}
 }
 
-
-void Networker::sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID)
+void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
 {
 	OutputMemoryBitStream OMBStream;
-	OMBStream.Write(gameObjectMap[ID]->getNetworkID());
-	OMBStream.Write(gameObjectMap[ID]->getGameObjectType());
-	
-	switch (gameObjectMap[ID]->getGameObjectType())
+	OMBStream.Write(packetHeader);
+	OMBStream.Write(mGameObjectMap[ID]->getNetworkID());
+	OMBStream.Write(mGameObjectMap[ID]->getGameObjectType());
+
+	//Logic depends on packer header type
+	switch (packetHeader)
 	{
-	case GameObjectType::ROCK:
-	case GameObjectType::PLAYER:
-		OMBStream.Write(gameObjectMap[ID]->getPosition().first);
-		OMBStream.Write(gameObjectMap[ID]->getPosition().second);
+	case PacketType::PACKET_CREATE:
+	case PacketType::PACKET_UPDATE:
+
+		switch (mGameObjectMap[ID]->getGameObjectType())
+		{
+		case GameObjectType::ROCK:
+		case GameObjectType::PLAYER:
+			OMBStream.Write(mGameObjectMap[ID]->getPosition().first);
+			OMBStream.Write(mGameObjectMap[ID]->getPosition().second);
+			break;
+
+		case GameObjectType::WALL:
+			Wall* wall = (Wall*)mGameObjectMap[ID];
+			OMBStream.Write(wall->getPosition().first);
+			OMBStream.Write(wall->getPosition().second);
+			OMBStream.Write(wall->getWallSizeX());
+			OMBStream.Write(wall->getWallSizeY());
+			OMBStream.Write(wall->getWallThickness());
+			break;
+		}
+
 		break;
 
-	case GameObjectType::WALL:
-		Wall* wall = (Wall*)gameObjectMap[ID];
-		OMBStream.Write(wall->getPosition().first);
-		OMBStream.Write(wall->getPosition().second);
-		OMBStream.Write(wall->getWallSizeX());
-		OMBStream.Write(wall->getWallSizeY());
-		OMBStream.Write(wall->getWallThickness());
+	case PacketType::PACKET_DELETE:
+
 		break;
+
+	default:
+		return;
 	}
 
 	(*mpTCPSocket)->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
@@ -226,10 +266,9 @@ void Networker::CleanupMap()
 	mGameObjectMap.clear();
 }
 
-void Networker::AddGameObjectToMap(GameObject* objectToAdd)
+void Networker::AddGameObjectToMap(GameObject* objectToAdd, int networkID)
 {
-	mGameObjectMap.insert(pair<int, GameObject*>(mGameObjectID, objectToAdd));
-	++mGameObjectID;
+	mGameObjectMap.insert(pair<int, GameObject*>(networkID, objectToAdd));
 }
 
 void Networker::UpdateMapObjects()

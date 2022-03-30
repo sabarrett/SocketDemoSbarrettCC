@@ -51,7 +51,6 @@ float wallBorderThickness = 5.0;
 //-------------------------GameObject Data-------------------------
 GameObjectType currentGameObjectType;
 std::string currentGameObjectTypeString;
-int gameObjectID = 0;
 
 //-------------------------Player Data-------------------------
 PlayerController* pPlayerController;
@@ -104,9 +103,8 @@ void start()
 
 	//Spawn player
 	pPlayerController = new PlayerController(networkID, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
-	pNetworkManager->AddGameObjectToMap(pPlayerController);
+	pNetworkManager->AddGameObjectToMap(pPlayerController, networkID);
 	networkID++;
-
 
 	al_start_timer(timer);
 }
@@ -133,7 +131,8 @@ void update()
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
-				pNetworkManager->AddGameObjectToMap(gameObjectToSpawn);
+				pNetworkManager->AddGameObjectToMap(gameObjectToSpawn, networkID);
+				pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
 				networkID++;
 
 				break;
@@ -142,7 +141,8 @@ void update()
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, white, wallBorderThickness));
-				pNetworkManager->AddGameObjectToMap(gameObjectToSpawn);
+				pNetworkManager->AddGameObjectToMap(gameObjectToSpawn, networkID);
+				pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
 				networkID++;
 
 				break;
@@ -224,7 +224,7 @@ void update()
 	pNetworkManager->UpdateMapObjects();
 
 	//Update player controller
-	pPlayerController->update();
+	//pPlayerController->update();
 }
 
 void draw()
@@ -238,7 +238,7 @@ void draw()
 	pNetworkManager->RenderMapObjects();
 
 	//Draw player controller
-	pPlayerController->draw();
+	//pPlayerController->draw();
 
 	//Text indicator of current GameObject Type
 	pGraphics->drawText(100, 50, "Current Object to Spawn: " + currentGameObjectTypeString, TextAlignment::ALIGN_LEFT);
@@ -327,6 +327,9 @@ int main(int argc, const char** argv)
 			bHasConnectd = pNetworkManager->initServer(portNumber);
 			if (bHasConnectd)
 				std::cout << "main.cpp --> server initted.\n";
+
+			//Server PlayerController is networkID 0
+			networkID = 0;
 		}
 		else
 		{
@@ -345,6 +348,9 @@ int main(int argc, const char** argv)
 			bHasConnectd = pNetworkManager->connect(serverIP, portNumber);
 			if (bHasConnectd)
 				std::cout << "main.cpp --> client connected.\n";
+
+			//Client PlayerController is networkID 1
+			networkID = 1;
 		}
 
 		//If the peer has connected
@@ -352,6 +358,12 @@ int main(int argc, const char** argv)
 		{
 			//Setup
 			start();
+
+			//Sync player controllers
+			pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+
+			//Since 0 and 1 are used for both player controllers, start everything else at 2
+			networkID = 2;
 
 			//Loop the game
 			while (bGameIsRunning)
@@ -363,6 +375,12 @@ int main(int argc, const char** argv)
 				{
 					//Update call
 					update();
+
+					//Network updates - send player data
+					pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
+					
+					//Network update - receive packets
+					pNetworkManager->getNewGameObjectState();
 
 					//Draw call
 					draw();

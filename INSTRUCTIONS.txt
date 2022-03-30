@@ -1,6 +1,7 @@
-. Open 2 instances of a command prompt
-. Build the project in Visual Studio
-. cd into RoboCat/Bin/Debug
-. In one instance of the command prompt, type .\SocketDemo.exe server <port_number>
-. In the other instance of the command prompt, type .\SocketDemo.exe client(or whatever) <client IPv4 address> <server IPv4 address> <port_number>
+. Open 2 instances of a visual studio
+. Run the project
+. You will be prompted though the command line for input
+. In one instance, type 'y' to be the host, enter a port number
+. In the other instance, type anything other than 'y' to denote that you're the client, enter host IP address, enter port number
 . MAKE SURE THE PORT NUMBERS ARE THE SAME!!!
+. Follow on-screen prompts to playtest the game

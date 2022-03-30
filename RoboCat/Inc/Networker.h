@@ -45,13 +45,13 @@ public:
 	bool connect(std::string serverIpAddress, std::string port);
 
 	//Update game state
-	void getNewGameObjectState(map<int, GameObject*> gameObjectMap);
-	void sendNewGameObjectState(map<int, GameObject*> gameObjectMap, int ID);
+	void getNewGameObjectState();
+	void sendNewGameObjectState(int networkID, PacketType packetHeader);
 
 	//Map
 	void CleanupMap();
-	void AddGameObjectToMap(GameObject* objectToAdd);
-	GameObject* GetGameObjectFromMap(int ID) { return mGameObjectMap[mGameObjectID]; };
+	void AddGameObjectToMap(GameObject* objectToAdd, int networkID);
+	GameObject* GetGameObjectFromMap(int networkID) { return mGameObjectMap[networkID]; };
 	map<int, GameObject*> GetMap() { return mGameObjectMap; };
 	void UpdateMapObjects();
 	void RenderMapObjects();
@@ -65,5 +65,5 @@ private:
 	//Data
 	TCPSocketPtr* mpTCPSocket;
 	std::map<int, GameObject*> mGameObjectMap;
-	int mGameObjectID;
+	//int mGameObjectID;
 };
