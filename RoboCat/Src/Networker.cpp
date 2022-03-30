@@ -90,7 +90,6 @@ bool Networker::initServer(std::string port)
 
 
 	*mpTCPSocket = connSocket;
-	//*mpTCPSocket = sock;
 
 	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
 	
@@ -292,7 +291,7 @@ void Networker::getNewGameObjectState()
 			return;
 		}
 	}
-	else if (byteRecieve == -10053)
+	else if (byteRecieve == -10053 || byteRecieve == -10054)
 	{
 		LOG("%s", "Disconnected From Server");
 		exit(0);
@@ -301,6 +300,12 @@ void Networker::getNewGameObjectState()
 
 void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
 {
+	/*if ((*mpTCPSocket)->)
+	{
+		LOG("%s", "Disconnected From Client");
+		exit(0);
+	}*/
+
 	OutputMemoryBitStream OMBStream;
 	OMBStream.Write(packetHeader);
 	OMBStream.Write(mGameObjectMap[ID]->getNetworkID());

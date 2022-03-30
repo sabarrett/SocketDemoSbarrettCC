@@ -175,8 +175,6 @@ void update()
 		{
 		case KeyCode::R:
 		{
-
-
 			break;
 		}
 
@@ -216,6 +214,12 @@ void update()
 			//Quit game
 			bGameIsRunning = false;
 			return;
+			break;
+		}
+		case KeyCode::BACK:
+		{
+			pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_DELETE);
+			networkID--;
 			break;
 		}
 

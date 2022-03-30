@@ -23,7 +23,8 @@ enum KeyCode
 	W = ALLEGRO_KEY_W,
 	A = ALLEGRO_KEY_A,
 	S = ALLEGRO_KEY_S,
-	D = ALLEGRO_KEY_D
+	D = ALLEGRO_KEY_D,
+	BACK = ALLEGRO_KEY_BACKSPACE
 };
 
 enum MouseButton

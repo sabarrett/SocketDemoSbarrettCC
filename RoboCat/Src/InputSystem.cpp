@@ -151,6 +151,10 @@ KeyCode InputSystem::getKeyboardInput(InputMode inputMode)
 			return KeyCode::D;
 			break;
 
+		case KeyCode::BACK:
+			return KeyCode::BACK;
+			break;
+
 		default:
 			break;
 		}
