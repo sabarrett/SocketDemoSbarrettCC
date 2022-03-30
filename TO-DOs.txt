@@ -1,12 +1,9 @@
-. Create a two-player networked game with shared world state.
-. Your game must have at least 10 synchronized objects in the world at once, with at least 3 different kinds of game objects.
 . Gameplay must involve creating and destroying objects, which is then synchronized between clients.
 
 Requirements:
 
 . Your code must be submitted as a pull request to the assignment2 branch of the github repository.
 . The github action checks must be passing for your code.
-. It must be possible for two players to connect to the game.
 --> The above requirements are mandatory. If any of them are not met, your assignment will receive a 0.
 
 TO-DOs:

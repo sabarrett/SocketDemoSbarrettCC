@@ -55,7 +55,10 @@ std::string currentGameObjectTypeString;
 
 //-------------------------Player Data-------------------------
 PlayerController* pPlayerController;
-const std::pair<float, float> STARTING_PLAYER_POSITION = std::make_pair<float, float>(300.0, 300.0);
+
+std::pair<float, float> startingPlayerPos;
+const std::pair<float, float> STARTING_PLAYER_POSITION_SERVER = std::make_pair<float, float>(300.0, 300.0);
+const std::pair<float, float> STARTING_PLAYER_POSITION_CLIENT = std::make_pair<float, float>(600.0, 300.0);
 float playerMoveSpeed = 0.5;
 
 //-------------------------Network Data-------------------------
@@ -104,7 +107,7 @@ void start()
 	wallColour = white;
 
 	//Spawn player
-	pPlayerController = new PlayerController(networkID, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+	pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
 	pNetworkManager->addGameObjectToMap(pPlayerController, networkID);
 	networkID++;
 
@@ -317,6 +320,7 @@ int main(int argc, const char** argv)
 
 			//Server PlayerController is networkID 0
 			networkID = 0;
+			startingPlayerPos = STARTING_PLAYER_POSITION_SERVER;
 		}
 		else
 		{
@@ -338,6 +342,7 @@ int main(int argc, const char** argv)
 
 			//Client PlayerController is networkID 1
 			networkID = 1;
+			startingPlayerPos = STARTING_PLAYER_POSITION_CLIENT;
 		}
 
 		//If the peer has connected
