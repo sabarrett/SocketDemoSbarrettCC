@@ -49,7 +49,6 @@ bool Networker::initServer(std::string port)
 
 	//Create Socket
 	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-
 	if (sock == nullptr)
 	{
 		SocketUtil::ReportError("Creating Listenting Socket");
@@ -82,13 +81,16 @@ bool Networker::initServer(std::string port)
 	//Accept Connection
 	std::cout << "Waiting for connection...\n";
 	
+	sock->SetNonBlockingMode(false);
 	SocketAddress incomingAddress;
 	TCPSocketPtr connSocket = sock->Accept(incomingAddress);
 
 	while (connSocket == nullptr)
 		connSocket = sock->Accept(incomingAddress);
 
-	*mpTCPSocket = sock;
+
+	*mpTCPSocket = connSocket;
+	//*mpTCPSocket = sock;
 
 	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
 	
