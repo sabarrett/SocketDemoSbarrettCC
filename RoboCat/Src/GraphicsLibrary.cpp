@@ -98,7 +98,7 @@ bool GraphicsLibrary::initText(std::string fontFilePath, int fontSize, Colour te
 
 	//Init font
 	mpFont = al_load_ttf_font(fontFilePath.c_str(), fontSize, 0);
-	mColour = al_map_rgba(textColour.getR(), textColour.getG(), textColour.getB(), textColour.getA());
+	mTextColour = al_map_rgba(textColour.getR(), textColour.getG(), textColour.getB(), textColour.getA());
 
 	return true;
 }
@@ -117,7 +117,7 @@ void GraphicsLibrary::loadImage(std::string imageFilePath, std::string imageIden
 
 void GraphicsLibrary::drawText(float posX, float posY, std::string text, TextAlignment alignment)
 {
-	al_draw_text(mpFont, mColour, posX, posY, alignment, text.c_str());
+	al_draw_text(mpFont, mTextColour, posX, posY, alignment, text.c_str());
 }
 
 void GraphicsLibrary::drawRectangle(float topLeftX, float topLeftY, float bottomRightX, float bottomRightY, Colour colour, float thickness)

@@ -1,4 +1,4 @@
-#include <map>
+//#include <map>
 #include <iostream>
 
 #include "Networker.h"
@@ -78,7 +78,7 @@ bool init()
 	if (bSuccessfulInit)
 		bSuccessfulInit = pGraphics->initText(ASSET_PATH + ARIAL_FONT_FILE, FONT_SIZE, white);
 
-	//Add images to the graphcis library
+	//Add images to the graphics library
 	pGraphics->loadImage(ASSET_PATH + BACKGROUND_IMAGE_FILE, BACKGROUND_IMAGE_SPRITE_IDENTIFIER);
 	pGraphics->loadImage(ASSET_PATH + ROCK_IMAGE_FILE, ROCK_SPRITE_IDENTIFIER);
 	pGraphics->loadImage(ASSET_PATH + WALL_IMAGE_FILE, WALL_SPRITE_IDENTIFIER);

@@ -278,8 +278,8 @@ void Networker::getNewGameObjectState()
 			{
 				if (it->first == networkID)
 				{
-					delete it->second;
-					it->second = nullptr;
+					//delete it->second;
+					//it->second = nullptr;
 					mGameObjectMap.erase(it->first);
 				}
 			}
@@ -300,12 +300,6 @@ void Networker::getNewGameObjectState()
 
 void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
 {
-	/*if ((*mpTCPSocket)->)
-	{
-		LOG("%s", "Disconnected From Client");
-		exit(0);
-	}*/
-
 	OutputMemoryBitStream OMBStream;
 	OMBStream.Write(packetHeader);
 	OMBStream.Write(mGameObjectMap[ID]->getNetworkID());

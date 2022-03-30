@@ -48,7 +48,7 @@ class GraphicsLibrary
 
 	//UI text
 	ALLEGRO_FONT* mpFont;
-	ALLEGRO_COLOR mColour;
+	ALLEGRO_COLOR mTextColour;
 
 	friend class InputSystem;
 
