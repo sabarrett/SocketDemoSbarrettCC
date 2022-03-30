@@ -100,6 +100,27 @@ class PlayerGameObject
 		void setY(int y) { yPos = y; };
 };
 
+class CoinObject
+{
+	private:
+		int xPos, yPos;
+	public:
+		CoinObject(int x, int y) { xPos = x; yPos = y; };
+		int getX() { return xPos; };
+		int getY() { return yPos; };
+};
+
+class TomatoObject
+{
+	private:
+		int xPos, yPos;
+	public:
+		TomatoObject(int x, int y) { xPos = x; yPos = y; };
+		int getX() { return xPos; };
+		int getY() { return yPos; };
+		void Update() { xPos--; };
+};
+
 class GameState
 {
 	private:
@@ -109,13 +130,11 @@ class GameState
 		GraphicsLibrary* mLibrary;
 		InputSystem* mInputSystem;
 		PlayerGameObject* mPlayer;
+		vector<CoinObject*> vCoins;
 
 		//map<int, LeftGameObject*> mLeftGameObjects;
 		int leftObjcounter = 0;
 	public:
-		GameState()
-		{
-		}
 		GameState(bool serverState, string ourAddr, string other)
 		{
 			//cout << "construction initiated" << endl;
@@ -147,8 +166,14 @@ class GameState
 		{
 			mLibrary->loadImage("../2517597.jpg", "background");
 			mLibrary->loadImage(mPlayer->getImageName(), "Player");
+			mLibrary->loadImage("../coin.png", "coin");
+			mLibrary->loadImage("../tomato.png", "tomato");
 			mLibrary->drawImage("background", 0, 0);
 			mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
+
+			for (int i = 0; i < 10; i++)
+				vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
+
 			mLibrary->render();
 
 
@@ -168,6 +193,11 @@ class GameState
 					ReceivePacket(sock, otherAddr, mInputSystem);
 					mLibrary->drawImage("LeftObject", obj->getX(), obj->getY());
 				}*/
+				CheckForCollisions();
+				for (auto& coin : vCoins)
+				{
+					mLibrary->drawImage("coin", coin->getX(), coin->getY());
+				}
 
 				//cout << "Done updating each game object" << endl;
 				//int mousePress = mInputSystem->getMouseInput();
@@ -269,6 +299,32 @@ class GameState
 				}
 			}
 		}
+
+		void CheckForCollisions()
+		{
+			for (vector<CoinObject*>::iterator it = vCoins.begin(); it < vCoins.end(); it++)
+			{
+				CoinObject* coin = *it;
+				//cout << mPlayer->getX() << ", " << mPlayer->getY() << endl;
+				if (((mPlayer->getX() < coin->getX() && mPlayer->getX() + 100 > coin->getX())//top left corner
+					&& (mPlayer->getY() < coin->getY() && mPlayer->getY() + 100 > coin->getY()))
+
+					|| ((mPlayer->getX() < coin->getX() + 50 && mPlayer->getX() + 100 > coin->getX() + 50)//bottom right
+					&& (mPlayer->getY() < coin->getY() + 50 && mPlayer->getY() + 100 > coin->getY() + 50))
+
+					|| ((mPlayer->getX() < coin->getX() + 50 && mPlayer->getX() + 100 > coin->getX() + 50)//top right
+						&& (mPlayer->getY() < coin->getY() && mPlayer->getY() + 100 > coin->getY()))
+
+						|| ((mPlayer->getX() < coin->getX() && mPlayer->getX() + 100 > coin->getX())//bottom left
+							&& (mPlayer->getY() < coin->getY() + 50 && mPlayer->getY() + 100 > coin->getY() + 50)))
+				{
+					vCoins.erase(it);
+					//delete coin;
+					vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
+					break;
+				}
+			}
+		}
 };
 
 int main(int argc, const char** argv)
@@ -283,7 +339,7 @@ int main(int argc, const char** argv)
 	__argc = argc;
 	__argv = argv;
 #endif
-
+	srand(time(NULL));
 	SocketUtil::StaticInit();
 
 	//DoThreadExample();
