@@ -131,6 +131,7 @@ class GameState
 		InputSystem* mInputSystem;
 		PlayerGameObject* mPlayer;
 		vector<CoinObject*> vCoins;
+		TomatoObject* tomato;
 
 		//map<int, LeftGameObject*> mLeftGameObjects;
 		int leftObjcounter = 0;
@@ -171,6 +172,7 @@ class GameState
 			mLibrary->drawImage("background", 0, 0);
 			mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
 
+			tomato = new TomatoObject(800, rand() % 540 + 20);
 			for (int i = 0; i < 10; i++)
 				vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
 
@@ -193,11 +195,13 @@ class GameState
 					ReceivePacket(sock, otherAddr, mInputSystem);
 					mLibrary->drawImage("LeftObject", obj->getX(), obj->getY());
 				}*/
+				tomato->Update();
 				CheckForCollisions();
 				for (auto& coin : vCoins)
 				{
 					mLibrary->drawImage("coin", coin->getX(), coin->getY());
 				}
+				mLibrary->drawImage("tomato", tomato->getX(), tomato->getY());
 
 				//cout << "Done updating each game object" << endl;
 				//int mousePress = mInputSystem->getMouseInput();
@@ -302,6 +306,7 @@ class GameState
 
 		void CheckForCollisions()
 		{
+			cout << tomato->getY() << endl;
 			for (vector<CoinObject*>::iterator it = vCoins.begin(); it < vCoins.end(); it++)
 			{
 				CoinObject* coin = *it;
@@ -323,6 +328,22 @@ class GameState
 					vCoins.push_back(new CoinObject(rand() % 700 + 50, rand() % 500 + 50));
 					break;
 				}
+			}
+			if (((mPlayer->getX() < tomato->getX() && mPlayer->getX() + 100 > tomato->getX())//top left corner
+				&& (mPlayer->getY() < tomato->getY() && mPlayer->getY() + 100 > tomato->getY()))
+
+				|| ((mPlayer->getX() < tomato->getX() + 30 && mPlayer->getX() + 100 > tomato->getX() + 30)//bottom right
+					&& (mPlayer->getY() < tomato->getY() + 30 && mPlayer->getY() + 100 > tomato->getY() + 30))
+
+				|| ((mPlayer->getX() < tomato->getX() + 30 && mPlayer->getX() + 100 > tomato->getX() + 30)//top right
+					&& (mPlayer->getY() < tomato->getY() && mPlayer->getY() + 100 > tomato->getY()))
+
+				|| ((mPlayer->getX() < tomato->getX() && mPlayer->getX() + 100 > tomato->getX())//bottom left
+					&& (mPlayer->getY() < tomato->getY() + 30 && mPlayer->getY() + 100 > tomato->getY() + 30))
+				
+				|| tomato->getX() <= 0)
+			{
+				tomato = new TomatoObject(800, rand() % 540 + 20);
 			}
 		}
 };
