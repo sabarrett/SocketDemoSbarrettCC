@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <Trackable.h>
 
 class Event;
 class EventListener;
@@ -9,7 +8,7 @@ enum EventType;
 
 using namespace std;
 
-class EventSystem:public Trackable
+class EventSystem
 {
 public:
 	static EventSystem* getInstance();

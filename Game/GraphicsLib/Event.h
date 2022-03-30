@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <trackable.h>
 
 using namespace std;
 
@@ -23,7 +22,7 @@ enum EventType
 	NUM_EVENT_TYPES_B
 };
 
-class Event :public Trackable
+class Event 
 {
 public:
 	Event(EventType type);

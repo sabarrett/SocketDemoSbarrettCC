@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.32126.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SocketDemo", "RoboCat\Chapter3.vcxproj", "{B3B75176-8D81-4E7B-A5D0-C2E5423844D3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DB900E08-5331-46D6-B450-6775A2C7C856} = {DB900E08-5331-46D6-B450-6775A2C7C856}
+		{4B9AB2DA-44CB-4F3D-866F-FA7F345BD810} = {4B9AB2DA-44CB-4F3D-866F-FA7F345BD810}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{04763FF9-6187-4AE4-9896-72C33BB941C9}"
 EndProject
