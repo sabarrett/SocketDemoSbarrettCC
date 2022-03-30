@@ -249,8 +249,6 @@ void draw()
 
 void cleanup()
 {
-	std::cout << "Hitting cleanup()\n";
-
 	//cleanup timer
 	al_destroy_timer(timer);
 	al_destroy_event_queue(eventQueue);
@@ -381,7 +379,6 @@ int main(int argc, const char** argv)
 		}
 	}
 
-	std::cout << "End of program.\n";
 	std::cin.get();
 
 	return 0;

@@ -89,6 +89,7 @@ bool Networker::initServer(std::string port)
 		connSocket = sock->Accept(incomingAddress);
 
 	*mpTCPSocket = sock;
+
 	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
 	
 	if (mpTCPSocket != nullptr)
