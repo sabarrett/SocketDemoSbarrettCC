@@ -77,7 +77,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\..\..\common\DeanLib\include;GraphicsLib\;..\..\..\..\..\common\allegro\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>DeanLib;GraphicsLib\;allegro\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -141,6 +141,11 @@
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="UnitManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DeanLib\DeanLib.vcxproj">
+      <Project>{db900e08-5331-46d6-b450-6775a2c7c856}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

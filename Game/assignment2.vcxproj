@@ -75,7 +75,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\..\common\DeanLib\include;GraphicsLib\;..\..\..\..\common\allegro\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>DeanLib;GraphicsLib\;allegro\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>GraphicsLib\debug;..\..\..\..\common\deanlib\lib;..\..\..\..\common\allegro\debug\v141\win32\lib</AdditionalLibraryDirectories>
@@ -139,6 +139,14 @@
     <ClInclude Include="PauseEvent.h" />
     <ClInclude Include="PlaceUnitEvent.h" />
     <ClInclude Include="SwitchAnimEvent.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="DeanLib\DeanLib.vcxproj">
+      <Project>{db900e08-5331-46d6-b450-6775a2c7c856}</Project>
+    </ProjectReference>
+    <ProjectReference Include="GraphicsLib\GraphicsLib.vcxproj">
+      <Project>{4b9ab2da-44cb-4f3d-866f-fa7f345bd810}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
