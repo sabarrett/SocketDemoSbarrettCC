@@ -5,12 +5,10 @@
 class DeleteUnitsEvent : public Event
 {
 public:
-	DeleteUnitsEvent(int x, int y);
+	DeleteUnitsEvent();
 	~DeleteUnitsEvent();
 
-	int getX() const { return mX; };
-	int getY() const { return mY; };
+	//int getX() const { return num; };
+	//int getY() const { return mY; };
 
-private:
-	int mX, mY;
 };

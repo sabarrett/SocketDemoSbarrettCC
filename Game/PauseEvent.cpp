@@ -1,7 +1,7 @@
 #include "PauseEvent.h"
 
 PauseEvent::PauseEvent()
-	:Event(PAUSE_EVENT)
+	:Event(8)
 {
 }
 

@@ -56,11 +56,9 @@ void GameListener::handleEvent(const Event& theEvent)
 	else if (theEvent.getType() == DELETE_UNITS_EVENT)
 	{
 		const DeleteUnitsEvent& deleteUnitsEvent = static_cast<const DeleteUnitsEvent&>(theEvent);
-		int x = deleteUnitsEvent.getX();
-		int y = deleteUnitsEvent.getY();
 
 		//erase all units in a vicinity
-		mpGame->deleteUnits(x, y);
+		mpGame->deleteUnits();
 	}
 }
 

@@ -68,5 +68,5 @@ public:
 	void pause();
 	void switchAnim();
 	void placeUnit(int x, int y);
-	void deleteUnits(int x, int y);
+	void deleteUnits();
 };

@@ -7,12 +7,12 @@ class PlaceUnitEvent : public Event
 {
 public:
 public:
-	PlaceUnitEvent(int x, int y);
+	PlaceUnitEvent(int num);
 	~PlaceUnitEvent();
 
 	int getX() const { return mX; };
 	int getY() const { return mY; };
 
 private:
-	int mX, mY;
+	int mX, mY, type;
 };

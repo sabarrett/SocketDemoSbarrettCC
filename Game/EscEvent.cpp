@@ -1,7 +1,7 @@
 #include "EscEvent.h"
 
 EscEvent::EscEvent()
-	:Event(ESC_EVENT)
+	:Event(5)
 {
 }
 

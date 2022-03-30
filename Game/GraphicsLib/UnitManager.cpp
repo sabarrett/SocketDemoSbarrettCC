@@ -1,4 +1,5 @@
 #include "UnitManager.h"
+#include "UnitManager.h"
 
 UnitManager::UnitManager()
 {
@@ -42,6 +43,11 @@ void UnitManager::deleteUnit(int unitLoc)
 {
 	delete(mUnits[unitLoc]);
 	mUnits.erase(mUnits.begin() + unitLoc);
+}
+
+void UnitManager::deleteRandomUnit()
+{
+	deleteUnit(rand() % mUnits.size());
 }
 
 void UnitManager::deleteUnit(Unit* delUnit)

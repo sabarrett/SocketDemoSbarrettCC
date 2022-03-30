@@ -152,8 +152,8 @@ void Game::placeUnit(int x, int y)
 	}
 }
 
-void Game::deleteUnits(int x, int y)
+void Game::deleteUnits()
 {
 	//erase all units in a vicinity
-	mpUnitManager->erase(x- SMURF_SIZE / 2, y - SMURF_SIZE / 2, SMURF_SIZE - 20, SMURF_SIZE - 10);
+	mpUnitManager->deleteRandomUnit();
 }
