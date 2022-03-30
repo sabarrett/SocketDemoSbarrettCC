@@ -29,7 +29,6 @@ public:
 	vector<float> color;
 	vector<int> position;
 	float radius;
-	
 };
 
 RainParticle::RainParticle(int xStart, int yStart, float newRadius, float newR, float newG, float newB, float newA)
@@ -113,14 +112,15 @@ public:
 
 	vector<int> position;
 	float radius;
-
 };
+
 void CircleClass::Read(InputMemoryBitStream& iStream)
 {
 	iStream.Read(position[0]);
 	iStream.Read(position[1]);
 	iStream.Read(radius);
 }
+
 void CircleClass::Write(OutputMemoryBitStream& oStream) const
 {
 	oStream.Write(position[0]);
@@ -132,6 +132,7 @@ void CircleClass::Draw()
 {
 	al_draw_filled_circle(position[0], position[1], radius, al_map_rgb(0, 255, 0));
 }
+
 CircleClass::CircleClass(int xStart, int yStart, float newRadius)
 {
 	position.push_back(xStart);
@@ -147,9 +148,9 @@ CircleClass::CircleClass()
 	position.push_back(yTemp);
 	radius = 10;
 }
+
 void CircleClass::UpdatePos(int xChange, int yChange)
 {
-
 	position[0] += xChange;
 	position[1] += yChange;
 	if (position[0] > windowWidth) position[0] = 0;
@@ -173,7 +174,6 @@ public:
 	void Draw();
 	
 };
-
 
 void RectangleObject::Read(InputMemoryBitStream& stream)
 {
@@ -208,7 +208,6 @@ RectangleObject::RectangleObject()
 
 void RectangleObject::UpdatePos(int xChange, int yChange)
 {
-
 	xPos += xChange;
 	yPos += yChange;
 	if (xPos > windowWidth) xPos = 0;
@@ -231,22 +230,18 @@ void ThrowSocketError(std::string errorMsg)
 
 TCPSocketPtr StartServer()
 {
-	// listening socket to take in new clients
 	TCPSocketPtr listeningSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (listeningSocket == nullptr)
 		ThrowSocketError("Could not create socket: NullPtr");
 
-	//create a ptr for the port
 	SocketAddressPtr addressPtr = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080"); // a hard-coded port to bind to
 	if (addressPtr == nullptr)
 		ThrowSocketError("Could not create server address");
 
-	// Bind listening socket to an address
 	bool bindError = listeningSocket->Bind(*addressPtr) != NO_ERROR; // bind the socket and check if there is an error
 	if (bindError)
 		ThrowSocketError("Could not bind to address");
 
-	// Listen on listeningSocket
 	bool listenError = listeningSocket->Listen() != NO_ERROR;
 	if (listenError)
 		ThrowSocketError("Listen Error");
@@ -266,7 +261,6 @@ TCPSocketPtr StartServer()
 
 void BradsTotallyOriginalServer()
 {
-
 	TCPSocketPtr incomingSocket = StartServer();
 
 	// Game Loop Variables
@@ -287,10 +281,8 @@ void BradsTotallyOriginalServer()
 		rain[k] = RainParticle(rand() % windowWidth + 1, rand() % windowHeight + 1, rand() % 5 + 5, 0, 0, rand() % 254 + 1, rand() % 254 + 1);
 	}
 
-	//send data
 	std::thread ServerSendThread([&incomingSocket, &exit, &outObjects, &numObjects, &rain, &numDroplets]()
 		{
-			//send message
 			while (!exit)
 			{
 				OutputMemoryBitStream oStream = OutputMemoryBitStream();
@@ -304,11 +296,9 @@ void BradsTotallyOriginalServer()
 				{
 					rain[j].Write(oStream);
 				}
-				//LOG("%s", oStream.GetBitLength())
 				incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 			}
 		});
-	//ServerSendThread.join();
 
 	RectangleObject inObjects[numObjects];
 	thread ServerRecieveThread([&exit, &incomingSocket, &inObjects, &numObjects]()
@@ -318,7 +308,6 @@ void BradsTotallyOriginalServer()
 				char buffer[4096];
 				int32_t bytesReceived = int32_t(); // get username
 				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
-				//LOG("%s %s", "server game loop", exit);
 				
 				bytesReceived = incomingSocket->Receive(buffer, 4096);
 				for (int i = 0; i < numObjects; i++)
@@ -328,7 +317,6 @@ void BradsTotallyOriginalServer()
 			}
 			incomingSocket->~TCPSocket();
 		});
-	//ServerRecieveThread.join();
 	
 	ALLEGRO_DISPLAY* display;
 	display = al_create_display(windowWidth, windowHeight);
@@ -345,36 +333,11 @@ void BradsTotallyOriginalServer()
 
 	while (!exit) //GameLoop
 	{
-		//Get keyboardInput
 		ALLEGRO_EVENT events;
 
 		al_get_next_event(eventQueue, &events);
 		if (events.type == ALLEGRO_EVENT_KEY_UP)
 		{
-			/*
-			if (events.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
-				exit = true;
-			if (events.keyboard.keycode == ALLEGRO_KEY_UP)
-			{
-				yMove = false;
-				yAxis = 0;
-			}
-			if (events.keyboard.keycode == ALLEGRO_KEY_DOWN)
-			{
-				yMove = false;
-				yAxis = 0;
-			}
-			if (events.keyboard.keycode == ALLEGRO_KEY_RIGHT)
-			{
-				xAxis = 0;
-				xMove = false;
-			}
-			if (events.keyboard.keycode == ALLEGRO_KEY_LEFT)
-			{
-				xAxis = 0;
-				xMove = false;
-			}
-			*/
 			switch (events.keyboard.keycode)
 			{
 			case ALLEGRO_KEY_ESCAPE:
@@ -391,8 +354,7 @@ void BradsTotallyOriginalServer()
 			case ALLEGRO_KEY_LEFT:
 				xAxis = 0;
 				xMove = false;
-			}
-			
+			}		
 		}
 		if (events.type == ALLEGRO_EVENT_KEY_DOWN)
 		{
@@ -412,7 +374,6 @@ void BradsTotallyOriginalServer()
 				xAxis = 1;
 				xMove = true;
 			}
-
 			else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 			{
 				xAxis = -1;
@@ -438,7 +399,6 @@ void BradsTotallyOriginalServer()
 		al_clear_to_color(al_map_rgb(0,0,0));
 	}
 	al_destroy_display(display);
-
 }
 
 TCPSocketPtr StartClientConnection()
@@ -466,10 +426,8 @@ TCPSocketPtr StartClientConnection()
 }
 void BradsLessOriginalClient()
 {
-	
 	TCPSocketPtr clientSocket = StartClientConnection();
 
-	
 	bool exit = false;
 	const int numObjects = 1;
 
@@ -483,7 +441,6 @@ void BradsLessOriginalClient()
 
 	thread ClientSendThread([&clientSocket, &exit, &outRectangles, &numObjects]()
 		{
-			//send message
 			while (!exit)
 			{
 				OutputMemoryBitStream oStream = OutputMemoryBitStream();
@@ -496,17 +453,14 @@ void BradsLessOriginalClient()
 			}
 			
 		});
-	//ClientSendThread.join();
 
 	// Read In Objects
 	CircleClass inObjects[numObjects];
 	const int numDroplets = 10;
 	RainParticle rain[numDroplets];
 
-
 	thread ClientRecieveThread([&exit, &clientSocket, &inObjects, &numObjects, &rain, &numDroplets]()
 		{
-			
 			while (!exit)
 			{
 				char buffer[4096];
@@ -526,7 +480,6 @@ void BradsLessOriginalClient()
 			}
 			clientSocket->~TCPSocket();
 		});
-	//ClientRecieveThread.join();
 
 	// Main Game Loop
 	ALLEGRO_DISPLAY* display;
@@ -544,10 +497,10 @@ void BradsLessOriginalClient()
 
 	while (!exit) //GameLoop
 	{
-		//Get keyboardInput
 		ALLEGRO_EVENT events;
 
 		al_get_next_event(eventQueue, &events);
+
 		if (events.type == ALLEGRO_EVENT_KEY_UP)
 		{
 			switch (events.keyboard.keycode)
@@ -568,6 +521,7 @@ void BradsLessOriginalClient()
 				xMove = false;
 			}
 		}
+
 		if (events.type == ALLEGRO_EVENT_KEY_DOWN)
 		{
 			al_get_keyboard_state(&keyState);
@@ -611,9 +565,7 @@ void BradsLessOriginalClient()
 		al_clear_to_color(al_map_rgb(0, 0, 0));
 	}
 	al_destroy_display(display);
-
 }
-
 
 int main(int argc, const char** argv)
 {
@@ -628,14 +580,14 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	SocketUtil::StaticInit(); // socket initialization
+	SocketUtil::StaticInit(); 
 	if (!al_init()) return -1;
 
 	al_init_primitives_addon();
 	al_install_keyboard();
 
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server"; // check if the command on the executable is 'server'
-	if (isServer) // if it is the server
+	if (isServer) 
 	{
 		BradsTotallyOriginalServer();
 	}
