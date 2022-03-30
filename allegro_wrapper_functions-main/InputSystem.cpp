@@ -126,7 +126,30 @@ KeyCode InputSystem::getKeyboardInput()
 		case KeyCode::R:
 			return KeyCode::R;
 			break;
-
+		case KeyCode::P1_Down:
+			return KeyCode::P1_Down;
+			break;
+		case KeyCode::P1_Left:
+			return KeyCode::P1_Left;
+			break;
+		case KeyCode::P1_Right:
+			return KeyCode::P1_Right;
+			break;
+		case KeyCode::P1_Up:
+			return KeyCode::P1_Up;
+			break;
+		case KeyCode::P2_Down:
+			return KeyCode::P2_Down;
+			break;
+		case KeyCode::P2_Left:
+			return KeyCode::P2_Left;
+			break;
+		case KeyCode::P2_Right:
+			return KeyCode::P2_Right;
+			break;
+		case KeyCode::P2_Up:
+			return KeyCode::P2_Up;
+			break;
 		default:
 			/*return KeyCode::NONE*/;
 		}

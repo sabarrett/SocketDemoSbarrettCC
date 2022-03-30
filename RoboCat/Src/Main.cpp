@@ -39,17 +39,62 @@ UDPSocketPtr CreateBoundSocket(std::string IP)
 		return cliSock;
 }
 
-class LeftGameObject
+class PlayerGameObject
 {
 	private:
 		int xPos;
 		int	yPos;
 		string imageName;
+		bool isPlayer1;
 	public:
-		LeftGameObject(int x, int y, string fileName) { xPos = x; yPos = y; imageName = fileName; };
+		PlayerGameObject(int x, int y, string fileName, bool isPlayer) 
+		{ 
+			xPos = x; 
+			yPos = y; 
+			imageName = fileName; 
+			isPlayer1 = isPlayer;
+		};
 		int getX() { return xPos; };
 		int getY() { return yPos; };
-		void Update() { xPos--; };
+		void Update(int keyPress) 
+		{
+			if (isPlayer1)
+			{
+				switch (keyPress)
+				{
+				case KeyCode::P1_Down:
+					yPos += 7;
+					break;
+				case KeyCode::P1_Left:
+					xPos -= 7;
+					break;
+				case KeyCode::P1_Right:
+					xPos += 7;
+					break;
+				case KeyCode::P1_Up:
+					yPos -= 7;
+					break;
+				}
+			}
+			else
+			{
+				switch (keyPress)
+				{
+				case KeyCode::P2_Down:
+					yPos += 3;
+					break;
+				case KeyCode::P2_Left:
+					xPos -= 3;
+					break;
+				case KeyCode::P2_Right:
+					xPos += 3;
+					break;
+				case KeyCode::P2_Up:
+					yPos -= 3;
+					break;
+				}
+			}
+		};
 		string getImageName() { return imageName; };
 		void setX(int x) { xPos = x; };
 		void setY(int y) { yPos = y; };
@@ -63,8 +108,9 @@ class GameState
 		SocketAddress otherAddr;
 		GraphicsLibrary* mLibrary;
 		InputSystem* mInputSystem;
+		PlayerGameObject* mPlayer;
 
-		map<int, LeftGameObject*> mLeftGameObjects;
+		//map<int, LeftGameObject*> mLeftGameObjects;
 		int leftObjcounter = 0;
 	public:
 		GameState()
@@ -88,6 +134,10 @@ class GameState
 			mInputSystem = new InputSystem();
 			mInputSystem->init(mLibrary);
 			//cout << "construction successful" << endl;
+			if (isServer)
+				mPlayer = new PlayerGameObject(650, 100, "../kirby.png", isServer);
+			else
+				mPlayer = new PlayerGameObject(100, 100, "../homie.png", isServer);
 		}
 		~GameState()
 		{
@@ -96,16 +146,18 @@ class GameState
 		void Update()
 		{
 			mLibrary->loadImage("../2517597.jpg", "background");
-			mLibrary->loadImage("../output-onlinepngtools.png", "LeftObject");
+			mLibrary->loadImage(mPlayer->getImageName(), "Player");
 			mLibrary->drawImage("background", 0, 0);
+			mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
 			mLibrary->render();
+
 
 			bool escapePressed = false;
 
 			while (!escapePressed)
 			{
 				//cout << "entering loop" << endl;
-				for (auto& item : mLeftGameObjects)
+				/*for (auto& item : mLeftGameObjects)
 				{
 					LeftGameObject* obj = item.second;
 					if (isServer)
@@ -115,16 +167,18 @@ class GameState
 					}
 					ReceivePacket(sock, otherAddr, mInputSystem);
 					mLibrary->drawImage("LeftObject", obj->getX(), obj->getY());
-				}
+				}*/
 
 				//cout << "Done updating each game object" << endl;
-				int mousePress = mInputSystem->getMouseInput();
+				//int mousePress = mInputSystem->getMouseInput();
 				int keyPress = mInputSystem->getKeyboardInput();
+				mPlayer->Update(keyPress);
+				mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
 
 				if (keyPress == KeyCode::KeyEscape)
 					escapePressed = true;
 
-				switch (mousePress)
+				/*switch (mousePress)
 				{
 					case MouseButton::LeftMouse:
 					{
@@ -132,7 +186,7 @@ class GameState
 						SendPacket(sock, otherAddr, PacketTypes::CREATE, ObjectTypes::LEFT, (int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), leftObjcounter++);
 						break;
 					}
-				}
+				}*/
 				mLibrary->render();
 				mLibrary->drawImage("background", 0, 0);
 				//cout << "one round of update done" << endl;
@@ -182,7 +236,7 @@ class GameState
 					{
 						case PacketTypes::CREATE:
 						{
-							mLeftGameObjects.emplace(leftObjcounter++, new LeftGameObject((int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), "../output-onlinepngtools.png"));
+							//mLeftGameObjects.emplace(leftObjcounter++, new LeftGameObject((int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), "../output-onlinepngtools.png"));
 							break;
 						}
 						case PacketTypes::DESTROY:
@@ -195,9 +249,9 @@ class GameState
 							{
 								case ObjectTypes::LEFT:
 								{
-									LeftGameObject* obj = mLeftGameObjects.find(packet[2])->second;
-									obj->setX(packet[3]);
-									obj->setY(packet[4]);
+									//LeftGameObject* obj = mLeftGameObjects.find(packet[2])->second;
+									//obj->setX(packet[3]);
+									//obj->setY(packet[4]);
 									break;
 								}
 								case ObjectTypes::RIGHT:
