@@ -15,6 +15,92 @@ int windowHeight = 600;
 int FPS = 30;
 
 #if _WIN32
+
+class RainParticle
+{
+public:
+	RainParticle(int xStart, int yStart, float newRadius, float newR, float newG, float newB, float newA);
+	RainParticle();
+	void Read(InputMemoryBitStream& iStream);
+	void Write(OutputMemoryBitStream& oStream) const;
+	void Draw();
+	void UpdatePos(int xChange, int yChange);
+
+	vector<float> color;
+	vector<int> position;
+	float radius;
+	
+};
+
+RainParticle::RainParticle(int xStart, int yStart, float newRadius, float newR, float newG, float newB, float newA)
+{
+	color.push_back(newR);
+	color.push_back(newG);
+	color.push_back(newB);
+	color.push_back(newA);
+
+	position.push_back(xStart);
+	position.push_back(yStart);
+
+	radius = newRadius;
+}
+
+RainParticle::RainParticle()
+{
+	float tempR, tempG, tempB, tempA;
+	int tempX, tempY;
+	color.push_back(tempR);
+	color.push_back(tempG);
+	color.push_back(tempB);
+	color.push_back(tempA);
+
+	position.push_back(tempX);
+	position.push_back(tempY);
+
+	radius = float();
+}
+
+void RainParticle::Read(InputMemoryBitStream& iStream)
+{
+	iStream.Read(color[0]);
+	iStream.Read(color[1]);
+	iStream.Read(color[2]);
+	iStream.Read(color[3]);
+
+	iStream.Read(position[0]);
+	iStream.Read(position[1]);
+
+	iStream.Read(radius);
+}
+
+void RainParticle::Write(OutputMemoryBitStream& oStream) const
+{
+	oStream.Write(color[0]);
+	oStream.Write(color[1]);
+	oStream.Write(color[2]);
+	oStream.Write(color[3]);
+
+	oStream.Write(position[0]);
+	oStream.Write(position[1]);
+
+	oStream.Write(radius);
+}
+
+void RainParticle::Draw()
+{
+	al_draw_filled_circle(position[0], position[1], radius, al_map_rgba(color[0], color[1], color[2], color[3]));
+}
+
+void RainParticle::UpdatePos(int xChange, int yChange)
+{
+	position[0] += xChange;
+	position[1] += yChange;
+	if (position[0] > windowWidth) position[0] = 0;
+	if (position[1] > windowHeight) position[1] = 0;
+	if (position[0] < 0) position[0] = windowWidth;
+	if (position[1] < 0) position[1] = windowHeight;
+}
+
 class CircleClass
 {
 public:
@@ -44,7 +130,7 @@ void CircleClass::Write(OutputMemoryBitStream& oStream) const
 
 void CircleClass::Draw()
 {
-	al_draw_circle(position[0], position[1], radius, al_map_rgb(0, 0, 255), 2);
+	al_draw_filled_circle(position[0], position[1], radius, al_map_rgb(0, 255, 0));
 }
 CircleClass::CircleClass(int xStart, int yStart, float newRadius)
 {
@@ -95,7 +181,6 @@ void RectangleObject::Read(InputMemoryBitStream& stream)
 	stream.Read(height);
 	stream.Read(xPos);
 	stream.Read(yPos);
-
 }
 
 void RectangleObject::Write(OutputMemoryBitStream& stream) const
@@ -134,7 +219,7 @@ void RectangleObject::UpdatePos(int xChange, int yChange)
 
 void RectangleObject::Draw()
 {
-	al_draw_rectangle(xPos, yPos, xPos + width, yPos + height, al_map_rgb(255, 0, 0), 2);
+	al_draw_filled_rectangle(xPos, yPos, xPos + width, yPos + height, al_map_rgb(255, 0, 0));
 }
 
 void ThrowSocketError(std::string errorMsg)
@@ -195,11 +280,18 @@ void BradsTotallyOriginalServer()
 		outObjects[j] = CircleClass(100, 100, 20);
 	}
 
+	const int numDroplets = 10;
+	RainParticle rain[numDroplets];
+	for (int k = 0; k < numDroplets; k++)
+	{
+		rain[k] = RainParticle(rand() % windowWidth + 1, rand() % windowHeight + 1, rand() % 5 + 5, 0, 0, rand() % 254 + 1, rand() % 254 + 1);
+	}
+
 	//send data
-	std::thread ServerSendThread([&incomingSocket, &exit, &outObjects, &numObjects]()
+	std::thread ServerSendThread([&incomingSocket, &exit, &outObjects, &numObjects, &rain, &numDroplets]()
 		{
 			//send message
-			while (1)
+			while (!exit)
 			{
 				OutputMemoryBitStream oStream = OutputMemoryBitStream();
 
@@ -208,6 +300,11 @@ void BradsTotallyOriginalServer()
 					outObjects[i].Write(oStream);
 				}
 				
+				for (int j = 0; j < numDroplets; j++)
+				{
+					rain[j].Write(oStream);
+				}
+				//LOG("%s", oStream.GetBitLength())
 				incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 			}
 		});
@@ -216,12 +313,12 @@ void BradsTotallyOriginalServer()
 	RectangleObject inObjects[numObjects];
 	thread ServerRecieveThread([&exit, &incomingSocket, &inObjects, &numObjects]()
 		{		
-			while (1)
+			while (!exit)
 			{
 				char buffer[4096];
 				int32_t bytesReceived = int32_t(); // get username
 				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
-				LOG("%s %s", "server game loop", exit);
+				//LOG("%s %s", "server game loop", exit);
 				
 				bytesReceived = incomingSocket->Receive(buffer, 4096);
 				for (int i = 0; i < numObjects; i++)
@@ -254,6 +351,30 @@ void BradsTotallyOriginalServer()
 		al_get_next_event(eventQueue, &events);
 		if (events.type == ALLEGRO_EVENT_KEY_UP)
 		{
+			/*
+			if (events.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+				exit = true;
+			if (events.keyboard.keycode == ALLEGRO_KEY_UP)
+			{
+				yMove = false;
+				yAxis = 0;
+			}
+			if (events.keyboard.keycode == ALLEGRO_KEY_DOWN)
+			{
+				yMove = false;
+				yAxis = 0;
+			}
+			if (events.keyboard.keycode == ALLEGRO_KEY_RIGHT)
+			{
+				xAxis = 0;
+				xMove = false;
+			}
+			if (events.keyboard.keycode == ALLEGRO_KEY_LEFT)
+			{
+				xAxis = 0;
+				xMove = false;
+			}
+			*/
 			switch (events.keyboard.keycode)
 			{
 			case ALLEGRO_KEY_ESCAPE:
@@ -271,6 +392,7 @@ void BradsTotallyOriginalServer()
 				xAxis = 0;
 				xMove = false;
 			}
+			
 		}
 		if (events.type == ALLEGRO_EVENT_KEY_DOWN)
 		{
@@ -298,7 +420,6 @@ void BradsTotallyOriginalServer()
 			}
 		}
 
-		al_clear_to_color(al_map_rgb(0, 0, 0));
 		for (int i = 0; i < numObjects; i++)
 		{
 			if (xMove || yMove)
@@ -308,7 +429,13 @@ void BradsTotallyOriginalServer()
 			inObjects[i].Draw();
 			outObjects[i].Draw();
 		}
+		for (int j = 0; j < numDroplets; j++)
+		{
+			rain[j].UpdatePos(1, 3);
+			rain[j].Draw();
+		}
 		al_flip_display();
+		al_clear_to_color(al_map_rgb(0,0,0));
 	}
 	al_destroy_display(display);
 
@@ -348,7 +475,7 @@ void BradsLessOriginalClient()
 
 	//create Game Objects
 	RectangleObject outRectangles[numObjects];
-	//Sleep(1000);
+
 	for (int j = 0; j < numObjects; j++)
 	{
 		outRectangles[j] = RectangleObject(20, 20, rand() % windowWidth + 1, rand() % windowHeight + 1);
@@ -357,7 +484,7 @@ void BradsLessOriginalClient()
 	thread ClientSendThread([&clientSocket, &exit, &outRectangles, &numObjects]()
 		{
 			//send message
-			while (1)
+			while (!exit)
 			{
 				OutputMemoryBitStream oStream = OutputMemoryBitStream();
 
@@ -373,21 +500,28 @@ void BradsLessOriginalClient()
 
 	// Read In Objects
 	CircleClass inObjects[numObjects];
+	const int numDroplets = 10;
+	RainParticle rain[numDroplets];
 
-	thread ClientRecieveThread([&exit, &clientSocket, &inObjects, &numObjects]()
+
+	thread ClientRecieveThread([&exit, &clientSocket, &inObjects, &numObjects, &rain, &numDroplets]()
 		{
 			
-			while (1)
+			while (!exit)
 			{
 				char buffer[4096];
 				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
 				int32_t bytesReceived = int32_t();
-				LOG("%s", "Client game loop");
+				//LOG("%s", "Client game loop");
 				bytesReceived = clientSocket->Receive(buffer, 4096);
 
 				for (int i = 0; i < numObjects; i++)
 				{
 					inObjects[i].Read(iStream);
+				}
+				for (int j = 0; j < numDroplets; j++)
+				{
+					rain[j].Read(iStream);
 				}
 			}
 			clientSocket->~TCPSocket();
@@ -460,7 +594,6 @@ void BradsLessOriginalClient()
 			}
 		}
 
-		al_clear_to_color(al_map_rgb(0, 0, 0));
 		for (int i = 0; i < numObjects; i++)
 		{
 			if (xMove || yMove)
@@ -470,9 +603,15 @@ void BradsLessOriginalClient()
 			outRectangles[i].Draw();
 			inObjects[i].Draw();
 		}
+		for (int j = 0; j < numDroplets; j++)
+		{
+			rain[j].Draw();
+		}
 		al_flip_display();
+		al_clear_to_color(al_map_rgb(0, 0, 0));
 	}
 	al_destroy_display(display);
+
 }
 
 
