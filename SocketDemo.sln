@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32126.315
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chapter3", "RoboCat\Chapter3.vcxproj", "{B3B75176-8D81-4E7B-A5D0-C2E5423844D3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SocketDemo", "RoboCat\Chapter3.vcxproj", "{B3B75176-8D81-4E7B-A5D0-C2E5423844D3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{04763FF9-6187-4AE4-9896-72C33BB941C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +32,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {01C7F7FF-2D28-47D8-B6CB-4B137B73DBE7}
 	EndGlobalSection
 EndGlobal
