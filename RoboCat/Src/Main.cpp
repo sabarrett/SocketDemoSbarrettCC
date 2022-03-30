@@ -29,6 +29,7 @@ const int FONT_SIZE = 32;
 
 //-------------------------Colours-------------------------
 Colour white(255, 255, 255, 255);
+Colour wallColour;
 
 //-------------------------Asset Identifiers-------------------------
 const std::string BACKGROUND_IMAGE_SPRITE_IDENTIFIER = "background_image";
@@ -101,9 +102,11 @@ void start()
 	currentGameObjectType = GameObjectType::ROCK;
 	currentGameObjectTypeString = "Rock";
 
+	wallColour = white;
+
 	//Spawn player
 	pPlayerController = new PlayerController(networkID, pGraphics, STARTING_PLAYER_POSITION, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
-	pNetworkManager->AddGameObjectToMap(pPlayerController, networkID);
+	pNetworkManager->addGameObjectToMap(pPlayerController, networkID);
 	networkID++;
 
 	al_start_timer(timer);
@@ -131,7 +134,7 @@ void update()
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
-				pNetworkManager->AddGameObjectToMap(gameObjectToSpawn, networkID);
+				pNetworkManager->addGameObjectToMap(gameObjectToSpawn, networkID);
 				pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
 				networkID++;
 
@@ -140,8 +143,8 @@ void update()
 			case GameObjectType::WALL:
 			{
 				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
-				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, white, wallBorderThickness));
-				pNetworkManager->AddGameObjectToMap(gameObjectToSpawn, networkID);
+				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, wallColour, wallBorderThickness));
+				pNetworkManager->addGameObjectToMap(gameObjectToSpawn, networkID);
 				pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
 				networkID++;
 
@@ -221,7 +224,7 @@ void update()
 		}
 	}
 
-	pNetworkManager->UpdateMapObjects();
+	pNetworkManager->updateMapObjects();
 
 	//Update player controller
 	//pPlayerController->update();
@@ -235,7 +238,7 @@ void draw()
 	pGraphics->drawImage(BACKGROUND_IMAGE_SPRITE_IDENTIFIER, 0, 0);
 
 	//Draw GameObjects
-	pNetworkManager->RenderMapObjects();
+	pNetworkManager->renderMapObjects();
 
 	//Draw player controller
 	//pPlayerController->draw();
@@ -263,10 +266,7 @@ void cleanup()
 	al_destroy_timer(timer);
 	al_destroy_event_queue(eventQueue);
 
-	//Cleanup GameObjects
-	pNetworkManager->CleanupMap();
-
-	//Cleanup network manager
+	//Cleanup network manager - cleans up GameObjects
 	pNetworkManager->cleanup();
 	pNetworkManager = nullptr;
 
@@ -300,7 +300,7 @@ int main(int argc, const char** argv)
 	{
 		//Setup network manager
 		pNetworkManager = pNetworkManager->GetInstance();
-		pNetworkManager->init(pGraphics);
+		pNetworkManager->init(pGraphics, ROCK_SPRITE_IDENTIFIER, PLAYER_SPRITE_IDENTIFIER, playerMoveSpeed, wallColour);
 
 		//Prompt for isServer or not
 		std::string input;
