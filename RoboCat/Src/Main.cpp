@@ -58,7 +58,7 @@ PlayerController* pPlayerController;
 
 std::pair<float, float> startingPlayerPos;
 const std::pair<float, float> STARTING_PLAYER_POSITION_SERVER = std::make_pair<float, float>(300.0, 300.0);
-const std::pair<float, float> STARTING_PLAYER_POSITION_CLIENT = std::make_pair<float, float>(600.0, 300.0);
+const std::pair<float, float> STARTING_PLAYER_POSITION_CLIENT = std::make_pair<float, float>(900.0, 300.0);
 float playerMoveSpeed = 0.5;
 
 //-------------------------Network Data-------------------------
