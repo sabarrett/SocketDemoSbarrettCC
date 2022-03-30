@@ -290,6 +290,11 @@ void Networker::getNewGameObjectState()
 			return;
 		}
 	}
+	else if (byteRecieve == -10053)
+	{
+		LOG("%s", "Disconnected From Server");
+		exit(0);
+	}
 }
 
 void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
