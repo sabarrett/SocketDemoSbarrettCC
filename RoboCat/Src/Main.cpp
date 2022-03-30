@@ -97,7 +97,6 @@ bool init()
 
 void start()
 {
-	std::cout << "Hitting start()\n";
 	//Default GameObject to spawn
 	currentGameObjectType = GameObjectType::ROCK;
 	currentGameObjectTypeString = "Rock";
@@ -114,8 +113,6 @@ void start()
 
 void update()
 {
-	std::cout << "Hitting update()\n";
-
 	//Get mouse input
 	{
 		MouseButton mouseInput = pInput->getMouseInput();
@@ -225,23 +222,15 @@ void update()
 	}
 
 	pNetworkManager->updateMapObjects();
-
-	//Update player controller
-	//pPlayerController->update();
 }
 
 void draw()
 {
-	std::cout << "Hitting draw()\n";
-
 	//Background image
 	pGraphics->drawImage(BACKGROUND_IMAGE_SPRITE_IDENTIFIER, 0, 0);
 
 	//Draw GameObjects
 	pNetworkManager->renderMapObjects();
-
-	//Draw player controller
-	//pPlayerController->draw();
 
 	//Text indicator of current GameObject Type
 	pGraphics->drawText(100, 50, "Current Object to Spawn: " + currentGameObjectTypeString, TextAlignment::ALIGN_LEFT);
@@ -385,8 +374,6 @@ int main(int argc, const char** argv)
 					//Draw call
 					draw();
 				}
-
-				std::cout << "bGameIsRunning loop\n";
 			}
 
 			//Cleanup when done
