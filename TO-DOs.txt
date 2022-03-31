@@ -3,3 +3,6 @@ Requirements:
 . Your code must be submitted as a pull request to the assignment2 branch of the github repository.
 . The github action checks must be passing for your code.
 --> The above requirements are mandatory. If any of them are not met, your assignment will receive a 0.
+
+Future Improvements:
+. Spawn sprite from center (offset half the bitmap width and height)
