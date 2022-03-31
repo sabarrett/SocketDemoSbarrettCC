@@ -1,14 +1,5 @@
-. Gameplay must involve creating and destroying objects, which is then synchronized between clients.
-
 Requirements:
 
 . Your code must be submitted as a pull request to the assignment2 branch of the github repository.
 . The github action checks must be passing for your code.
 --> The above requirements are mandatory. If any of them are not met, your assignment will receive a 0.
-
-TO-DOs:
-. Destroy GameObjects somehow (probably press backspace and a random one will delete, or right-click something)
-
-Replicating pointers, replicate the data they point to.
-Replicating vectors, replicate their size and data.
-Replicating large arrays, omit unused elements.
