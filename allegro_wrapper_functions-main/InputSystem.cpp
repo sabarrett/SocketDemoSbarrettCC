@@ -85,7 +85,7 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 MouseButton InputSystem::getMouseInput()
 {
 	//If there is an event
-	al_wait_for_event(mpEventQueue, &mEvent);
+	al_get_next_event(mpEventQueue, &mEvent);
 
 	if (mEvent.type == InputMode::MouseDown)
 	{
@@ -112,7 +112,7 @@ MouseButton InputSystem::getMouseInput()
 KeyCode InputSystem::getKeyboardInput()
 {
 	//If there is an event
-	al_wait_for_event(mpEventQueue, &mEvent);
+	al_get_next_event(mpEventQueue, &mEvent);
 	
 	if (mEvent.type == InputMode::KeyPressed)
 	{

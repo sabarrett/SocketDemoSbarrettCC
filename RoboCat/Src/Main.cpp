@@ -139,8 +139,7 @@ class GameState
 		{
 			isServer = serverState;
 			sock = CreateBoundSocket(ourAddr);
-			//if (isServer)
-				sock->SetNonBlockingMode(true);
+			sock->SetNonBlockingMode(true);
 			otherAddr = *(SocketAddressFactory::CreateIPv4FromString(other));
 			cout << otherAddr.ToString() << endl;
 			mLibrary = new GraphicsLibrary(800, 600);
@@ -174,7 +173,6 @@ class GameState
 			mLibrary->drawImage("background", 0, 0);
 			mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
 			mLibrary->drawImage("Other Player", otherPlayer->getX(), otherPlayer->getY());
-
 			if (isServer)
 			{
 				tomato = new TomatoObject(800, rand() % 540 + 20);
@@ -183,12 +181,10 @@ class GameState
 			}
 			else
 			{
+				tomato = new TomatoObject(800, 800);
 				SendPacket(sock, &otherAddr, PacketTypes::HELLO, 1, 1, 1);
 			}
-
 			mLibrary->render();
-
-
 			bool escapePressed = false;
 
 			while (!escapePressed)
@@ -196,8 +192,13 @@ class GameState
 				if (isServer)
 				{
 					tomato->Update();
+					SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::TOMATO, tomato->getX(), tomato->getY());
 					CheckForCollisions(mPlayer);
 					CheckForCollisions(otherPlayer);
+				}
+				else
+				{
+					ReceivePacket(sock, &otherAddr, mInputSystem);
 				}
 				SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::PLAYER, mPlayer->getX(), mPlayer->getY());
 				ReceivePacket(sock, &otherAddr, mInputSystem);
@@ -205,14 +206,11 @@ class GameState
 				{
 					mLibrary->drawImage("coin", coin->getX(), coin->getY());
 				}
-				//mLibrary->drawImage("tomato", tomato->getX(), tomato->getY());
-
+				mLibrary->drawImage("tomato", tomato->getX(), tomato->getY());
 				int keyPress = mInputSystem->getKeyboardInput();
 				mPlayer->Update(keyPress);
 				mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
 				mLibrary->drawImage("Other Player", otherPlayer->getX(), otherPlayer->getY());
-				cout << otherPlayer->getX() << ", " << otherPlayer->getY() << endl;
-
 				if (keyPress == KeyCode::KeyEscape)
 					escapePressed = true;
 
@@ -232,7 +230,6 @@ class GameState
 			char* bytePacket = (char*)packet;
 
 			int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
-			cout << bytesSent << endl;
 			if (bytesSent <= 0)
 			{
 				SocketUtil::ReportError("Client SendTo");
@@ -243,10 +240,10 @@ class GameState
 			int packet[25];
 			packet[0] = packetType;
 			packet[1] = objectType;
-			for (int i = 2; i < 20; i+=2)
+			for (int i = 2; i < 20; i += 2)
 			{
-				packet[i] = coins[i/2 - 1]->getX();
-				packet[i+1] = coins[i/2 - 1]->getY();
+				packet[i] = coins[i / 2 - 1]->getX();
+				packet[i + 1] = coins[i / 2 - 1]->getY();
 			}
 
 			char* bytePacket = (char*)packet;
@@ -260,63 +257,51 @@ class GameState
 		void ReceivePacket(UDPSocketPtr ptr, SocketAddress* addr, InputSystem* mInputSystem)
 		{
 			char buffer[100];
-			//while (true)
 			{
 				int bytesReceived = ptr->ReceiveFrom(buffer, 100, *addr);
 				if (bytesReceived < 0)
 				{
 					SocketUtil::ReportError("Error receiving packet");
-					//break;
 				}
 				else if (bytesReceived == 0)
-					//break;
 					return;
 				else
 				{
 					int* packet = (int*)buffer;
 					switch (packet[0])
 					{
-						case PacketTypes::CREATE:
+					case PacketTypes::UPDATE:
+					{
+						switch (packet[1])
 						{
-							//mLeftGameObjects.emplace(leftObjcounter++, new LeftGameObject((int)mInputSystem->getMouseX(), (int)mInputSystem->getMouseY(), "../output-onlinepngtools.png"));
+						case ObjectTypes::PLAYER:
+						{
+							otherPlayer->setX(packet[2]);
+							otherPlayer->setY(packet[3]);
 							break;
 						}
-						case PacketTypes::DESTROY:
+						case ObjectTypes::COIN:
 						{
-							break;
-						}
-						case PacketTypes::UPDATE:
-						{
-							switch (packet[1])
+							vCoins.clear();
+							for (int i = 2; i < 20; i += 2)
 							{
-								case ObjectTypes::PLAYER:
-								{
-									otherPlayer->setX(packet[2]);
-									otherPlayer->setY(packet[3]);
-									break;
-								}
-								case ObjectTypes::COIN:
-								{
-									vCoins.clear();
-									for (int i = 2; i < 20; i += 2)
-									{
-										vCoins.push_back(new CoinObject(packet[i], packet[i + 1]));
-										//vCoins[i / 2 - 1] = new CoinObject(packet[i], packet[i + 1]);
-									}
-									break;
-								}
-								case ObjectTypes::TOMATO:
-								{
-									break;
-								}
+								vCoins.push_back(new CoinObject(packet[i], packet[i + 1]));
 							}
 							break;
 						}
-						case PacketTypes::HELLO:
+						case ObjectTypes::TOMATO:
 						{
-							SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
+							tomato = new TomatoObject(packet[2], packet[3]);
 							break;
 						}
+						}
+						break;
+					}
+					case PacketTypes::HELLO:
+					{
+						SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
+						break;
+					}
 					}
 				}
 			}
@@ -329,15 +314,12 @@ class GameState
 				CoinObject* coin = *it;
 				if (((player->getX() < coin->getX() && player->getX() + 100 > coin->getX())//top left corner
 					&& (player->getY() < coin->getY() && player->getY() + 100 > coin->getY()))
-
 					|| ((player->getX() < coin->getX() + 50 && player->getX() + 100 > coin->getX() + 50)//bottom right
-					&& (player->getY() < coin->getY() + 50 && player->getY() + 100 > coin->getY() + 50))
-
+						&& (player->getY() < coin->getY() + 50 && player->getY() + 100 > coin->getY() + 50))
 					|| ((player->getX() < coin->getX() + 50 && player->getX() + 100 > coin->getX() + 50)//top right
 						&& (player->getY() < coin->getY() && player->getY() + 100 > coin->getY()))
-
-						|| ((player->getX() < coin->getX() && player->getX() + 100 > coin->getX())//bottom left
-							&& (player->getY() < coin->getY() + 50 && player->getY() + 100 > coin->getY() + 50)))
+					|| ((player->getX() < coin->getX() && player->getX() + 100 > coin->getX())//bottom left
+						&& (player->getY() < coin->getY() + 50 && player->getY() + 100 > coin->getY() + 50)))
 				{
 					vCoins.erase(it);
 					delete coin;
@@ -348,16 +330,12 @@ class GameState
 			}
 			if (((player->getX() < tomato->getX() && player->getX() + 100 > tomato->getX())//top left corner
 				&& (player->getY() < tomato->getY() && player->getY() + 100 > tomato->getY()))
-
 				|| ((player->getX() < tomato->getX() + 30 && player->getX() + 100 > tomato->getX() + 30)//bottom right
 					&& (player->getY() < tomato->getY() + 30 && player->getY() + 100 > tomato->getY() + 30))
-
 				|| ((player->getX() < tomato->getX() + 30 && player->getX() + 100 > tomato->getX() + 30)//top right
 					&& (player->getY() < tomato->getY() && player->getY() + 100 > tomato->getY()))
-
 				|| ((player->getX() < tomato->getX() && player->getX() + 100 > tomato->getX())//bottom left
 					&& (player->getY() < tomato->getY() + 30 && player->getY() + 100 > tomato->getY() + 30))
-				
 				|| tomato->getX() <= 0)
 			{
 				tomato = new TomatoObject(800, rand() % 540 + 20);
