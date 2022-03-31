@@ -286,7 +286,8 @@ void Networker::getNewGameObjectState()
 			//for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
 			for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 			{
-				if (it->first == networkID)
+				//DO NOT DELETE A PLAYER
+				if (it->first == networkID && it->second->getGameObjectType() != GameObjectType::PLAYER)
 				{
 					//delete it->second;
 					//it->second = nullptr;

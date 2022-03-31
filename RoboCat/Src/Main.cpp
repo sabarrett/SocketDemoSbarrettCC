@@ -17,6 +17,7 @@ float screenSizeY = 900.0;
 
 //-------------------------Input Data-------------------------
 InputSystem* pInput;
+bool canSpawnGameObject = false;
 
 //-------------------------Assets-------------------------
 const std::string ASSET_PATH = "Assets\\";
@@ -140,54 +141,68 @@ void start()
 
 void update()
 {
-	//Get mouse input
+	//Get mouse down input
 	{
-		MouseButton mouseInput = pInput->getMouseInput();
+		MouseButton mouseDownInput = pInput->getMouseInput(InputMode::MouseDown);
 
 		//Handle input
-		switch (mouseInput)
+		switch (mouseDownInput)
 		{
 		case MouseButton::LeftMouse:
 		{
-			//Spawn current GameObject type
-			GameObject* gameObjectToSpawn;
-
-			switch (currentGameObjectType)
+			if (!canSpawnGameObject)
 			{
-			case GameObjectType::ROCK:
-			{
-				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
-				gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
-				pNetworkManager->addGameObjectToMap(gameObjectToSpawn, networkID);
-				pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
-				networkID++;
+				//Spawn current GameObject type
+				GameObject* gameObjectToSpawn;
 
-				break;
+				switch (currentGameObjectType)
+				{
+				case GameObjectType::ROCK:
+				{
+					pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
+					gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
+					pNetworkManager->addGameObjectToMap(gameObjectToSpawn, networkID);
+					pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
+					networkID++;
+
+					break;
+				}
+				case GameObjectType::WALL:
+				{
+					pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
+					gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, wallColour, wallBorderThickness));
+					pNetworkManager->addGameObjectToMap(gameObjectToSpawn, networkID);
+					pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
+					networkID++;
+
+					break;
+				}
+
+				default:
+				{
+					std::cout << "INVALID GAMEOBJECT TYPE! CANNOT CREATE!\n";
+
+					break;
+				}
+				}
+
+				gameObjectToSpawn = nullptr;
+				canSpawnGameObject = true;
 			}
-			case GameObjectType::WALL:
-			{
-				pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
-				gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, wallColour, wallBorderThickness));
-				pNetworkManager->addGameObjectToMap(gameObjectToSpawn, networkID);
-				pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
-				networkID++;
-
-				break;
-			}
-
-			default:
-			{
-				std::cout << "INVALID GAMEOBJECT TYPE! CANNOT CREATE!\n";
-
-				break;
-			}
-			}
-
-			gameObjectToSpawn = nullptr;
 		}
 
 		default:
 			break;
+		}
+	}
+
+	//Get mouse up input
+	{
+		MouseButton mouseUpInput = pInput->getMouseInput(InputMode::MouseUp);
+		{
+			//Prevent spawning multiple gameobjects with mouse down - allow player to spawn after mouse is released again
+			if (mouseUpInput == MouseButton::LeftMouse)
+				canSpawnGameObject = false;
 		}
 	}
 

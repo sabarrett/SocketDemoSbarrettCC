@@ -86,12 +86,12 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 	return true;
 }
 
-MouseButton InputSystem::getMouseInput()
+MouseButton InputSystem::getMouseInput(InputMode inputMode)
 {
 	//If there is an event
 	al_get_next_event(mpMouseEventQueue, &mMouseEvent);
 
-	if (mMouseEvent.type == InputMode::MouseDown)
+	if (mMouseEvent.type == inputMode)
 	{
 		//Update mouse state
 		ALLEGRO_MOUSE_STATE mouseState;
