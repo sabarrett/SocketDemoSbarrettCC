@@ -331,8 +331,20 @@ void Networker::sendGameObjectState(int ID, PacketType packetHeader)
 		break;
 
 	case PacketType::PACKET_DELETE:
+	{
+		//Delete it on the sender's end
+		std::vector<std::pair<int, GameObject*>>::iterator it;
+		for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
+		{
+			//DO NOT DELETE A PLAYER
+			if (it->first == ID && it->second->getGameObjectType() != GameObjectType::PLAYER)
+			{
+				mGameObjectsVec.erase(it);
 
-		//Send nothing else
+				break;
+			}
+		}
+	}
 
 		break;
 
