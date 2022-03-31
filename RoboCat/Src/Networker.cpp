@@ -271,15 +271,18 @@ void Networker::receiveGameObjectState()
 		case PacketType::PACKET_DELETE:
 		{
 			//Delete element in map
-			std::vector<std::pair<int, GameObject*>>::iterator it;
-			for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
+			if (mGameObjectsVec.size() > 0)
 			{
-				//DO NOT DELETE A PLAYER
-				if (it->first == networkID && it->second->getGameObjectType() != GameObjectType::PLAYER)
+				std::vector<std::pair<int, GameObject*>>::iterator it;
+				for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 				{
-					mGameObjectsVec.erase(it);
+					//DO NOT DELETE A PLAYER
+					if (it->first == networkID && it->second->getGameObjectType() != GameObjectType::PLAYER)
+					{
+						mGameObjectsVec.erase(it);
 
-					break;
+						break;
+					}
 				}
 			}
 
@@ -333,15 +336,18 @@ void Networker::sendGameObjectState(int ID, PacketType packetHeader)
 	case PacketType::PACKET_DELETE:
 	{
 		//Delete it on the sender's end
-		std::vector<std::pair<int, GameObject*>>::iterator it;
-		for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
+		if (mGameObjectsVec.size() > 0)
 		{
-			//DO NOT DELETE A PLAYER
-			if (it->first == ID && it->second->getGameObjectType() != GameObjectType::PLAYER)
+			std::vector<std::pair<int, GameObject*>>::iterator it;
+			for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 			{
-				mGameObjectsVec.erase(it);
+				//DO NOT DELETE A PLAYER
+				if (it->first == ID && it->second->getGameObjectType() != GameObjectType::PLAYER)
+				{
+					mGameObjectsVec.erase(it);
 
-				break;
+					break;
+				}
 			}
 		}
 	}

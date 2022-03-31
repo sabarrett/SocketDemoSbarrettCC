@@ -257,8 +257,13 @@ void update()
 		}
 		case KeyCode::BACK:
 		{
-			pNetworkManager->sendGameObjectState(networkID - 1, PacketType::PACKET_DELETE);
-			networkID--;
+			//Players have IDs 0 and 1, DO NOT TOUCH THEM
+			if (networkID > 1)
+			{
+				pNetworkManager->sendGameObjectState(networkID - 1, PacketType::PACKET_DELETE);
+				networkID--;
+			}
+
 			break;
 		}
 
