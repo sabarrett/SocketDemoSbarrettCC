@@ -250,3 +250,13 @@ int* UnitManager::getAllUnitsTypes()
 	}
 	return types;
 }
+
+Unit* UnitManager::getAllUnits()
+{
+	Unit* units = new Unit[mUnits.size()];
+	for (int i = 0; i < mUnits.size(); i++)
+	{
+		units[i] = getUnit(i)
+	}
+	return units;
+}
