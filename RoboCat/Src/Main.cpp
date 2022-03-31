@@ -14,11 +14,11 @@
 #include <MemoryTracker.h>
 #include <string>
 
-#include "Game.h"
+#include <Game.h>
 #include "allegro5/allegro.h"
-#include "EventSystem.h"
-#include "GameEventSystem.h"
-#include "GameListener.h"
+#include <EventSystem.h>
+#include <GameEventSystem.h>
+#include <GameListener.h>
 // Problem: Game Loop
 //
 // updateInput(); (make sure to not block here!)
@@ -314,6 +314,36 @@ void DoThreadExample()
 	t3.join();
 }
 
+
+void runGame() 
+{
+	EventSystem::initInstance();
+
+	const double SLEEP_TIME = 5.0;
+
+	PerformanceTracker* pPerformanceTracker = new PerformanceTracker;
+
+	Game::initInstance();
+	GameListener* gameListener = new GameListener();
+
+	gameListener->init();
+
+	Game::getInstance()->setFrameRate(60.0);
+	Game::getInstance()->doLoop();
+	Game::getInstance()->cleanUpInstance();
+
+	gameListener->cleanup();
+	delete(gameListener);
+
+	EventSystem::getInstance()->cleanupInstance();
+
+	delete pPerformanceTracker;
+
+	MemoryTracker::getInstance()->reportAllocations(cout);
+	system("pause");
+
+}
+
 #if _WIN32
 int main(int argc, const char** argv)
 {
@@ -339,20 +369,15 @@ int main(int argc, const char** argv)
 
 
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
-
+	runGame();
 	if (isServer)
 	{
-		// Server code ----------------
-		//		Want P2P -- we'll get to that :)
 		DoTcpServer();
 	}
 	else
 	{
-		// Client code ----------------
 		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
-
-
 	SocketUtil::CleanUp();
 
 	return 0;

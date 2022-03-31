@@ -130,40 +130,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DeleteUnitsEvent.cpp" />
-    <ClCompile Include="EscEvent.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameEvent.cpp" />
-    <ClCompile Include="GameEventSystem.cpp" />
-    <ClCompile Include="GameListener.cpp" />
-    <ClCompile Include="InputTranslator.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="PauseEvent.cpp" />
-    <ClCompile Include="PlaceUnitEvent.cpp" />
-    <ClCompile Include="SwitchAnimEvent.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DeleteUnitsEvent.h" />
-    <ClInclude Include="EscEvent.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GameEvent.h" />
-    <ClInclude Include="GameEventSystem.h" />
-    <ClInclude Include="GameListener.h" />
-    <ClInclude Include="InputTranslator.h" />
-    <ClInclude Include="PauseEvent.h" />
-    <ClInclude Include="PlaceUnitEvent.h" />
-    <ClInclude Include="SwitchAnimEvent.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="DeanLib\DeanLib.vcxproj">
       <Project>{db900e08-5331-46d6-b450-6775a2c7c856}</Project>
     </ProjectReference>
     <ProjectReference Include="GraphicsLib\GraphicsLib.vcxproj">
       <Project>{4b9ab2da-44cb-4f3d-866f-fa7f345bd810}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

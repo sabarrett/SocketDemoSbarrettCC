@@ -139,7 +139,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <AdditionalIncludeDirectories>..\Game\;..\Game\DeanLib\include;..\Game\GraphicsLib\;Inc\</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -152,7 +152,7 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>..\Game\GraphicsLib\debug;..\packages\Allegro.5.2.7.1\build\native\v142\win32\lib;..\Game\DeanLib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\Game\GraphicsLib\debug;..\packages\Allegro.5.2.7.1\build\native\v142\win32\lib;..\Game\DeanLib\lib;..\Game\Debug</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>true</EnableDPIAwareness>
@@ -382,6 +382,16 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Game\DeleteUnitsEvent.h" />
+    <ClInclude Include="..\Game\EscEvent.h" />
+    <ClInclude Include="..\Game\Game.h" />
+    <ClInclude Include="..\Game\GameEvent.h" />
+    <ClInclude Include="..\Game\GameEventSystem.h" />
+    <ClInclude Include="..\Game\GameListener.h" />
+    <ClInclude Include="..\Game\InputTranslator.h" />
+    <ClInclude Include="..\Game\PauseEvent.h" />
+    <ClInclude Include="..\Game\PlaceUnitEvent.h" />
+    <ClInclude Include="..\Game\SwitchAnimEvent.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
@@ -395,6 +405,16 @@
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
+    <ClCompile Include="..\Game\DeleteUnitsEvent.cpp" />
+    <ClCompile Include="..\Game\EscEvent.cpp" />
+    <ClCompile Include="..\Game\Game.cpp" />
+    <ClCompile Include="..\Game\GameEvent.cpp" />
+    <ClCompile Include="..\Game\GameEventSystem.cpp" />
+    <ClCompile Include="..\Game\GameListener.cpp" />
+    <ClCompile Include="..\Game\InputTranslator.cpp" />
+    <ClCompile Include="..\Game\PauseEvent.cpp" />
+    <ClCompile Include="..\Game\PlaceUnitEvent.cpp" />
+    <ClCompile Include="..\Game\SwitchAnimEvent.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
@@ -412,12 +432,8 @@
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Game\packages.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Game\assignment2.vcxproj">
-      <Project>{ec58da42-88da-4b82-bfc4-ae6d5219f837}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
