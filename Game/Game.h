@@ -75,6 +75,8 @@ public:
 	void placeUnit(int type);
 	void placeUnit(int type, int xLoc, int yLoc);
 	void deleteUnits();
+	void deleteAllUnits();
 	void updateWorldState(int xLoc[], int yLoc[], int type[]);
+	//void updateWorldState(Unit* units[4096]);
 	Unit* getUnitData();
 };

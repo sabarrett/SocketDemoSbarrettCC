@@ -415,6 +415,7 @@
     <ClCompile Include="..\Game\PauseEvent.cpp" />
     <ClCompile Include="..\Game\PlaceUnitEvent.cpp" />
     <ClCompile Include="..\Game\SwitchAnimEvent.cpp" />
+    <ClCompile Include="sendDataEvent.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
@@ -423,6 +424,7 @@
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="sendDataEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">

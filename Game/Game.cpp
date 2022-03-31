@@ -70,8 +70,8 @@ void Game::cleanUp()
 
 void Game::doLoop()
 {
-	while (cont)
-	{
+	//while (cont)
+	//{
 		mTimer.start();
 
 		//GET INPUT
@@ -91,7 +91,7 @@ void Game::doLoop()
 		mTimer.sleepUntilElapsed(mFrameRate); //sleep until frame is over
 		mSinceFrame = mTimer.getElapsedTime(); //get the time it took to complete this frame
 		//cout << mSinceFrame << endl; //output that frame time
-	}
+	//}
 }
 
 void Game::setFrameRate(double fps)
@@ -210,6 +210,11 @@ void Game::deleteUnits()
 	mpUnitManager->deleteRandomUnit();
 }
 
+void Game::deleteAllUnits()
+{
+	mpUnitManager->deleteAllUnits();
+}
+
 void Game::updateWorldState(int xLoc[], int yLoc[], int type[])
 {
 	mpUnitManager->deleteAllUnits();
@@ -219,6 +224,17 @@ void Game::updateWorldState(int xLoc[], int yLoc[], int type[])
 		placeUnit(type[i], xLoc[i], yLoc[i]);
 	}
 }
+
+/*
+void Game::updateWorldState(Unit* units[4096])
+{
+	mpUnitManager->deleteAllUnits();
+	for (int i = 0; i < sizeof(units); i++)
+	{
+		placeUnit(units[i].mType, units[i].mX, units[i].mY);
+	}
+}
+*/
 
 Unit* Game::getUnitData()
 {

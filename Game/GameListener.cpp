@@ -56,6 +56,7 @@ void GameListener::handleEvent(const Event& theEvent)
 
 		mpGame->placeUnit(placeUnitEvent.getX());
 		mpGame->setWorldStateChanged(true);
+		cout << "setting to true b";
 	}
 	//delete units
 	else if (theEvent.getType() == 7)

@@ -7,6 +7,7 @@
 #include <string>
 
 #include <iostream>
+#include <sstream>
 #include <cassert>
 #include <string>
 
@@ -40,6 +41,8 @@ void runGame()
 
 void DoTcpServer()
 {
+
+	string username;
 	// Create socket
 	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (listenSocket == nullptr)
@@ -84,61 +87,207 @@ void DoTcpServer()
 
 	// Accept() - Accept on socket -> Blocking; Waits for incoming connection and completes TCP handshake
 
-	LOG("%s", "Waiting to accept connections...");
-	SocketAddress incomingAddress;
-	TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
-	while (connSocket == nullptr)
+	bool fullQuit = false;
+
+	while (!fullQuit)
 	{
-		connSocket = listenSocket->Accept(incomingAddress);
-		// SocketUtil::ReportError("Accepting connection");
-		// ExitProcess(1);
-	}
+		LOG("%s", "Waiting to accept connections...");
+		SocketAddress incomingAddress;
+		TCPSocketPtr connSocket = listenSocket->Accept(incomingAddress);
+		while (connSocket == nullptr)
+		{
+			connSocket = listenSocket->Accept(incomingAddress);
+			// SocketUtil::ReportError("Accepting connection");
+			// ExitProcess(1);
+		}
 
-	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+		LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+		LOG("%s", "use /exit to exit chat room, /fullExit to close program\n");
 
-	bool quit = false;
-	std::thread receiveThread([&connSocket, &quit, &incomingAddress]() { // don't use [&] :)
-		while (!quit) // Need to add a quit here to have it really exit!
+		string namePrint;
+		bool shouldDelete = false;
+
+		bool quit = false;
+		std::thread receiveThread([&quit, &connSocket, &namePrint, &shouldDelete]() { // don't use [&] :)
+			while (!quit) // Need to add a quit here to have it really exit!
+			{
+
+				string buffer[4096];
+				int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+				std::cout << "recieveing on server\n";
+
+
+
+
+				/*
+				if (bytesReceived == 0)
+				{
+					LOG("%s", "Other user has disconnected");
+					quit = true;
+					// handle disconnect
+				}
+				*/
+				if (bytesReceived < 0)
+				{
+					SocketUtil::ReportError("Receiving");
+					return;
+				}
+
+				/*
+				if (shouldDelete)
+				{
+					printf("\33[2K\r                                                             \r");
+				}
+				*/
+
+				cout << "deleting" << endl;
+				Game::getInstance()->deleteAllUnits();
+				cout << "I have deleted" << endl;
+
+				std::string s = "";
+				for each (string var in buffer)
+				{
+					s += var;
+				}
+				std::string delimiter = "|";
+
+				std::vector<vector<string>> units;
+
+				size_t pos = 0;
+				int current = 0;
+				std::string token;
+				while ((pos = s.find(delimiter)) != std::string::npos) {
+					current++;
+					units.push_back(vector<string>());
+					token = s.substr(0, pos);
+					//std::cout << token << std::endl;
+					while ((pos = token.find(" ")) != std::string::npos) {
+						string token2 = s.substr(0, pos);
+						units[current].push_back(token2);
+						//std::cout << token << std::endl;
+						s.erase(0, pos + delimiter.length());
+					}
+					s.erase(0, pos + delimiter.length());
+				}
+				//std::cout << s << std::endl;
+
+				
+				for (int i = 0; i < units.size(); i++)
+				{
+					Game::getInstance()->placeUnit(stoi(units[i][0]), stoi(units[i][1]), stoi(units[i][2]));
+				}
+				
+
+				//std::string receivedMsg(buffer, bytesReceived);
+
+				/*
+				if (receivedMsg == "/exit")
+				{
+					LOG("%s", "Other user has exited chat room");
+					quit = true;
+					break;
+				}
+				else
+				{
+					LOG("%s", receivedMsg.c_str());
+					if (shouldDelete)
+					{
+						printf(namePrint.c_str());
+					}
+				}
+				*/
+			}
+			});
+
+		/*
+		string msg;
+
+		if (username.length() == 0)
+		{
+			std::cout << "Enter DisplayName: ";
+			std::getline(std::cin, username);
+			msg = "\n" + username + " has entered the chat :)";
+			connSocket->Send(msg.c_str(), msg.length());
+		}
+
+		namePrint = username + ": ";
+
+		printf(namePrint.c_str());
+		*/
+		while (!quit)
 		{
 			runGame();
-			char buffer[4096];
-			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-			if (bytesReceived == 0)
+			//cout << "CHECKING";
+
+			if (Game::getInstance()->getWorldStateChanged())
 			{
-				std::cout << incomingAddress.ToString() << " has disconnected";
-				quit = true;
+				cout << "I am here";
+				Game::getInstance()->setWorldStateChanged(false);
+				/*
+				Unit* unitArray = Game::getInstance()->getUnitData();
+				int count = sizeof(unitArray);
+				int xs[] = new int[count];
+				for (int i = 0; i < sizeof(unitArray); i++)
+				{
+				}
+				*/
+				//connSocket->Send(unitArray,sizeof( Game::getInstance()->getUnitData()) * sizeof(Unit));
+				string temp = "";
+				Unit* units = Game::getInstance()->getUnitData();
+				for (int i = 0; i < sizeof(units); i++)
+				{
+					temp += units[i].mType;
+					temp += " ";
+					temp += units[i].mX;
+					temp += " ";
+					temp += units[i].mY;
+					temp += "|";
+				}
+
+				//std::cout << "sending from server" << sizeof(Game::getInstance()->getUnitData()) << "\n";
+				connSocket->Send(temp.c_str(), temp.size());
 			}
-			if (bytesReceived < 0)
+			/*
+			string msg;
+			std::getline(std::cin, msg);
+
+			if (msg == "/exit" || msg == "/Exit")
 			{
-				SocketUtil::ReportError("Receiving");
-				return;
+				quit = true;
+				msg = "/exit";
+				connSocket->Send(msg.c_str(), msg.length());
+				break;
+			}
+			if (msg == "/fullExit" || msg == "/FullExit" || msg == "/full Exit" || msg == "/Full Exit")
+			{
+				fullQuit = true;
+				msg = "/exit";
+				connSocket->Send(msg.c_str(), msg.length());
+				ExitProcess(1);
+				break;
 			}
 
-			std::string receivedMsg(buffer, bytesReceived);
-			LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
-			std::cout << ">";
+
+			msg = username + ": " + msg;
+			connSocket->Send(msg.c_str(), msg.length());
+
+			printf(namePrint.c_str());
+			shouldDelete = true;
+			*/
 		}
-		});
-	while (!quit) // Need to add a quit here to have it really exit!
-	{
-		std::cout << ">";
-		std::string returnMsg;
-		std::getline(std::cin, returnMsg);
-		if (returnMsg == "/quit")
-		{
-			quit = true;
-		}
-		else
-		{
-			connSocket->Send(returnMsg.c_str(), returnMsg.length());
-		}
+		receiveThread.join();
 	}
-	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
-	receiveThread.join();
+
+	//std::cout << "Press enter to exit at any time!\n";
+	//std::cin.get();
+	//quit = true;
+	//connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	//sendThread.join();
 }
 
 void DoTcpClient(std::string port)
 {
+	string username;
 	// Create socket
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (clientSocket == nullptr)
@@ -168,58 +317,208 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Bound client socket");
 
+	bool fullQuit = false;
 	// Connect() -> Connect socket to remote host
-
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
-	if (servAddress == nullptr)
+	while (!fullQuit)
 	{
-		SocketUtil::ReportError("Creating server address");
-		ExitProcess(1);
-	}
+		SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+		if (servAddress == nullptr)
+		{
+			SocketUtil::ReportError("Creating server address");
+			ExitProcess(1);
+		}
 
-	if (clientSocket->Connect(*servAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Connecting to server");
-		ExitProcess(1);
-	}
+		if (clientSocket->Connect(*servAddress) != NO_ERROR)
+		{
+			SocketUtil::ReportError("Connecting to server");
+			ExitProcess(1);
+		}
 
-	LOG("%s", "Connected to server!");
-	bool quit = false;
-	std::thread receiveThread([&clientSocket, &quit]() {
+		LOG("%s", "Connected to server!");
+		LOG("\n\n-------You are in %s's chat room-------\n", clientAddress->ToString().c_str());
+		LOG("%s", "use /exit to exit chat room, /fullExit to close program\n");
+
+		string namePrint;
+		bool shouldDelete = false;
+
+		bool quit = false;
+		std::thread receiveThread([&quit, &clientSocket, &namePrint, &shouldDelete]() { // don't use [&] :)
+			while (!quit) // Need to add a quit here to have it really exit!
+			{
+
+				string buffer[4096];
+				int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+				std::cout << "recieveing on client\n";
+
+
+
+
+				/*
+				if (bytesReceived == 0)
+				{
+					LOG("%s", "Other user has disconnected");
+					quit = true;
+					// handle disconnect
+				}
+				*/
+				if (bytesReceived < 0)
+				{
+					SocketUtil::ReportError("Receiving");
+					return;
+				}
+
+				/*
+				if (shouldDelete)
+				{
+					printf("\33[2K\r                                                             \r");
+				}
+				*/
+				cout << "deleting" << endl;
+				Game::getInstance()->deleteAllUnits();
+
+				cout << "I have deleted" << endl;
+
+				std::string s = "";
+				for each (string var in buffer)
+				{
+					cout << var << endl;
+					s += var;
+				}
+				std::string delimiter = "|";
+				cout << s << " this is s" << endl;
+				std::vector<vector<string>> units;
+
+				size_t pos = 0;
+				int current = 0;
+				std::string token;
+				while ((pos = s.find(delimiter)) != std::string::npos) {
+					current++;
+					units.push_back(vector<string>());
+					token = s.substr(0, pos);
+					//std::cout << token << std::endl;
+					while ((pos = token.find(" ")) != std::string::npos) {
+						string token2 = s.substr(0, pos);
+						units[current].push_back(token2);
+						//std::cout << token << std::endl;
+						s.erase(0, pos + delimiter.length());
+					}
+					s.erase(0, pos + delimiter.length());
+				}
+				//std::cout << s << std::endl;
+				cout << units.size() << endl;
+
+				for (int i = 0; i < units.size(); i++)
+				{
+					Game::getInstance()->placeUnit(stoi(units[i][0]), stoi(units[i][1]), stoi(units[i][2]));
+				}
+
+
+				//std::string receivedMsg(buffer, bytesReceived);
+
+				/*
+				if (receivedMsg == "/exit")
+				{
+					LOG("%s", "Other user has exited chat room");
+					quit = true;
+					break;
+				}
+				else
+				{
+					LOG("%s", receivedMsg.c_str());
+					if (shouldDelete)
+					{
+						printf(namePrint.c_str());
+					}
+				}
+				*/
+			}
+			});
+
+		/*
+		string msg;
+
+		if (username.length() == 0)
+		{
+			std::cout << "Enter DisplayName: ";
+			std::getline(std::cin, username);
+			msg = "\n" + username + " has entered the chat :)";
+			connSocket->Send(msg.c_str(), msg.length());
+		}
+
+		namePrint = username + ": ";
+
+		printf(namePrint.c_str());
+		*/
 		while (!quit)
 		{
-			char buffer[4096];
-			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
-			if (bytesReceived == 0)
+			runGame();
+			//cout << "CHECKING";
+
+			if (Game::getInstance()->getWorldStateChanged())
 			{
-				std::cout << "Server disconnected";
-				quit = true;
+				cout << "I am here";
+				Game::getInstance()->setWorldStateChanged(false);
+				/*
+				Unit* unitArray = Game::getInstance()->getUnitData();
+				int count = sizeof(unitArray);
+				int xs[] = new int[count];
+				for (int i = 0; i < sizeof(unitArray); i++)
+				{
+				}
+				*/
+				//connSocket->Send(unitArray,sizeof( Game::getInstance()->getUnitData()) * sizeof(Unit));
+				string temp = "";
+				Unit* units = Game::getInstance()->getUnitData();
+				for (int i = 0; i < sizeof(units); i++)
+				{
+					temp += units[i].mType;
+					temp += " ";
+					temp += units[i].mX;
+					temp += " ";
+					temp += units[i].mY;
+					temp += "|";
+				}
+
+				//std::cout << "sending from server" << sizeof(Game::getInstance()->getUnitData()) << "\n";
+				clientSocket->Send(temp.c_str(), temp.size());
 			}
-			if (bytesReceived < 0)
+			/*
+			string msg;
+			std::getline(std::cin, msg);
+
+			if (msg == "/exit" || msg == "/Exit")
 			{
-				SocketUtil::ReportError("Receiving");
-				return;
+				quit = true;
+				msg = "/exit";
+				connSocket->Send(msg.c_str(), msg.length());
+				break;
+			}
+			if (msg == "/fullExit" || msg == "/FullExit" || msg == "/full Exit" || msg == "/Full Exit")
+			{
+				fullQuit = true;
+				msg = "/exit";
+				connSocket->Send(msg.c_str(), msg.length());
+				ExitProcess(1);
+				break;
 			}
 
-			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Server: %s", receivedMsg.c_str());
-			std::cout << ">";
+
+			msg = username + ": " + msg;
+			connSocket->Send(msg.c_str(), msg.length());
+
+			printf(namePrint.c_str());
+			shouldDelete = true;
+			*/
 		}
-		});
-	while (!quit)
-	{
-		std::cout << ">";
-		std::string msg;
-		std::getline(std::cin, msg);
-		if (msg == "/quit")
-		{
-			quit = true;
-		}
-		clientSocket->Send(msg.c_str(), msg.length());
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		receiveThread.join();
 	}
-	clientSocket->~TCPSocket();
-	receiveThread.join();
+
+	//std::cout << "Press enter to exit at any time!\n";
+	//std::cin.get();
+	//quit = true;
+	//clientSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
+	//receiveThread.join();
+	//sendThread.join();
 }
 
 std::mutex coutMutex;
@@ -315,13 +614,15 @@ void DoThreadExample()
 	std::cout << "Press enter to exit at any time.\n\n";
 	std::cin.get();
 
+	/*
 	gQuit = true;
 	quit = true;
-
+	*/
 	t1.join();
 	t2.join();
 	t3.join();
 }
+
 
 void initGame()
 {
