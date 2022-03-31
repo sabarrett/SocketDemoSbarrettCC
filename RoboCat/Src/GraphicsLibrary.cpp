@@ -150,7 +150,7 @@ void GraphicsLibrary::drawScaledImage(std::string imageIdentifier, float posX, f
 	{
 		if (iterator->first == imageIdentifier)
 		{
-			al_draw_scaled_bitmap(iterator->second, posX, posY, 1.0, 1.0, posX, posY, scaleX, scaleY, 0);
+			al_draw_scaled_bitmap(iterator->second, 0, 0, al_get_bitmap_width(iterator->second), al_get_bitmap_height(iterator->second), posX, posY, al_get_bitmap_width(iterator->second) * scaleX, al_get_bitmap_height(iterator->second) * scaleY, 0);
 		}
 	}
 }

@@ -134,5 +134,5 @@ void PlayerController::update()
 void PlayerController::draw()
 {
 	//Draw sprite at mPosition
-	pGraphicsLibrary->drawImage(mSPRITE_IDENTIFIER, mPosition.first, mPosition.second);
+	pGraphicsLibrary->drawScaledImage(mSPRITE_IDENTIFIER, mPosition.first, mPosition.second, 0.25, 0.25);
 }
