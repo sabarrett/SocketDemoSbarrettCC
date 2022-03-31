@@ -65,4 +65,5 @@ public:
 
 	Vector2D* getAllUnitsLocation();
 	int* getAllUnitsTypes();
+	Unit* getAllUnits();
 };
