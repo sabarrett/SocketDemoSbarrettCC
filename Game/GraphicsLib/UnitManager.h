@@ -4,6 +4,7 @@ using namespace std;
 
 #include "Trackable.h"
 #include <vector>
+#include "Vector2D.h"
 #include "Unit.h"
 #include "Animation.h"
 
@@ -61,4 +62,7 @@ public:
 	//GAME FUNCTIONS
 	void update(double deltaTime);
 	void draw(GraphicsSystem* gSystem);
+
+	Vector2D* getAllUnitsLocation();
+	int* getAllUnitsTypes();
 };

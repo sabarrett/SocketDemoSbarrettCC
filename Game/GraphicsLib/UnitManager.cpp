@@ -228,3 +228,25 @@ void UnitManager::draw(GraphicsSystem* gSystem)
 		(*it)->draw(gSystem);
 	}
 }
+
+Vector2D* UnitManager::getAllUnitsLocation()
+{
+	Vector2D* loc = new Vector2D[mUnits.size()];
+
+	for (int i = 0; i < mUnits.size(); i++)
+	{
+		loc[i] = Vector2D( getUnit(i)->mX, getUnit(i)->mY );
+	}
+
+	return loc;
+}
+
+int* UnitManager::getAllUnitsTypes()
+{
+	int* types = new int[mUnits.size()];
+	for (int i = 0; i < mUnits.size(); i++)
+	{
+		types[i] = getUnit(i)->mType;
+	}
+	return types;
+}
