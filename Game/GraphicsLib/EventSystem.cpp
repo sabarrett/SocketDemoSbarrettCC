@@ -20,7 +20,7 @@ void EventSystem::addListener(EventType type, EventListener* pListener)
 
 	if (mIsInitted)
 	{
-		std::cout << "adding a listner " << type << endl;
+		//std::cout << "adding a listner " << type << endl;
 		mListenerMap.insert(pair< EventType, EventListener* >(type, pListener));
 	}
 }
@@ -104,7 +104,7 @@ void EventSystem::cleanup()
 
 void EventSystem::fireEvent( const Event& theEvent )
 {
-	std::cout << "firing event" << theEvent.getType() << endl;
+	//std::cout << "firing event" << theEvent.getType() << endl;
 
 	if (mIsInitted)
 	{

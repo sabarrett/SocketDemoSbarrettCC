@@ -30,6 +30,14 @@
 // render();
 // goto beginning;
 
+GameListener* gameListener;// = new GameListener();
+PerformanceTracker* pPerformanceTracker;
+
+void runGame()
+{
+	Game::getInstance()->doLoop();
+}
+
 void DoTcpServer()
 {
 	// Create socket
@@ -92,6 +100,7 @@ void DoTcpServer()
 	std::thread receiveThread([&connSocket, &quit, &incomingAddress]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
+			runGame();
 			char buffer[4096];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
@@ -314,22 +323,24 @@ void DoThreadExample()
 	t3.join();
 }
 
-
-void runGame() 
+void initGame()
 {
 	EventSystem::initInstance();
 
 	const double SLEEP_TIME = 5.0;
 
-	PerformanceTracker* pPerformanceTracker = new PerformanceTracker;
+	 pPerformanceTracker = new PerformanceTracker;
 
 	Game::initInstance();
-	GameListener* gameListener = new GameListener();
 
+	gameListener = new GameListener();
 	gameListener->init();
 
 	Game::getInstance()->setFrameRate(60.0);
-	Game::getInstance()->doLoop();
+}
+
+void shutGame()
+{
 	Game::getInstance()->cleanUpInstance();
 
 	gameListener->cleanup();
@@ -341,8 +352,8 @@ void runGame()
 
 	MemoryTracker::getInstance()->reportAllocations(cout);
 	system("pause");
-
 }
+
 
 #if _WIN32
 int main(int argc, const char** argv)
@@ -369,7 +380,7 @@ int main(int argc, const char** argv)
 
 
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
-	runGame();
+	initGame();
 	if (isServer)
 	{
 		DoTcpServer();
@@ -379,6 +390,6 @@ int main(int argc, const char** argv)
 		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
 	SocketUtil::CleanUp();
-
+	shutGame();
 	return 0;
 }

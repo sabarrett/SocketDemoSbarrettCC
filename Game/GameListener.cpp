@@ -31,7 +31,7 @@ void GameListener::handleEvent(const Event& theEvent)
 	//escape game
 	if (theEvent.getType() == 5)
 	{
-		std::cout << "escape game" << endl;
+		//std::cout << "escape game" << endl;
 		mpGame->escape();
 	}
 	//pause game
