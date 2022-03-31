@@ -51,6 +51,8 @@ private:
 	Animation mAnimation1;
 	Animation mAnimation2;
 
+	bool hasChanged;
+
 public:
 	
 	void init();
@@ -62,6 +64,9 @@ public:
 	static Game* getInstance() { return mpsInstance; }
 	static void initInstance();
 	static void cleanUpInstance();
+
+	void setWorldStateChanged(bool set);
+	bool getWorldStateChanged();
 
 	//EVENT FUNCTIONS
 	void escape();

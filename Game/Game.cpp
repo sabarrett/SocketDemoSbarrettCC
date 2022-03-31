@@ -117,6 +117,16 @@ void Game::cleanUpInstance()
 	mpsInstance = nullptr;
 }
 
+void Game::setWorldStateChanged(bool set)
+{
+	hasChanged = set;
+}
+
+bool Game::getWorldStateChanged()
+{
+	return hasChanged;
+}
+
 void Game::escape()
 {
 	//exit the game

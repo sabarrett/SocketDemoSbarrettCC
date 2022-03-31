@@ -333,6 +333,10 @@ void initGame()
 
 	Game::initInstance();
 
+	//EventSystem* mpESystem = EventSystem::getInstance();
+	//mpESystem->addListener(MOUSE_EVENT_B, this);
+	//mpESystem->addListener(KEY_EVENT_B, this);
+
 	gameListener = new GameListener();
 	gameListener->init();
 

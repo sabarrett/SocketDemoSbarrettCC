@@ -33,16 +33,19 @@ void GameListener::handleEvent(const Event& theEvent)
 	{
 		//std::cout << "escape game" << endl;
 		mpGame->escape();
+		mpGame->setWorldStateChanged(true);
 	}
 	//pause game
 	else if (theEvent.getType() == 8)
 	{
 		mpGame->pause();
+		mpGame->setWorldStateChanged(true);
 	}
 	//switch animations
 	else if (theEvent.getType() == SWITCH_ANIM_EVENT)
 	{
 		mpGame->switchAnim();
+		mpGame->setWorldStateChanged(true);
 	}
 	//place unit
 	else if (theEvent.getType() == 6)
@@ -52,6 +55,7 @@ void GameListener::handleEvent(const Event& theEvent)
 		int y = 50;
 
 		mpGame->placeUnit(placeUnitEvent.getX());
+		mpGame->setWorldStateChanged(true);
 	}
 	//delete units
 	else if (theEvent.getType() == 7)
@@ -62,6 +66,9 @@ void GameListener::handleEvent(const Event& theEvent)
 
 		//erase all units in a vicinity
 		mpGame->deleteUnits();
+		mpGame->setWorldStateChanged(true);
 	}
+
+	
 }
 
