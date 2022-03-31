@@ -120,44 +120,7 @@ KeyCode InputSystem::getKeyboardInput(InputMode inputMode)
 	
 	if (mKeyboardEvent.type == inputMode)
 	{
-		//Check the type
-		switch (mKeyboardEvent.keyboard.keycode)
-		{
-		case KeyCode::Esc:
-			return KeyCode::Esc;
-			break;
-
-		case KeyCode::R:
-			return KeyCode::R;
-			break;
-
-		case KeyCode::Tab:
-			return KeyCode::Tab;
-			break;
-
-		case KeyCode::W:
-			return KeyCode::W;
-			break;
-
-		case KeyCode::A:
-			return KeyCode::A;
-			break;
-
-		case KeyCode::S:
-			return KeyCode::S;
-			break;
-
-		case KeyCode::D:
-			return KeyCode::D;
-			break;
-
-		case KeyCode::BACK:
-			return KeyCode::BACK;
-			break;
-
-		default:
-			break;
-		}
+		return (KeyCode)mKeyboardEvent.keyboard.keycode;
 	}
 
 }
