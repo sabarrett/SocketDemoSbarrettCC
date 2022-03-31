@@ -106,10 +106,34 @@ void start()
 
 	wallColour = white;
 
-	//Spawn player
-	pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
-	pNetworkManager->addGameObjectToMap(pPlayerController, networkID);
-	networkID++;
+	//If server
+	if (networkID == 0)
+	{
+		//Spawn player
+		pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+		pNetworkManager->addGameObjectToMap(pPlayerController, networkID);
+		networkID++;
+
+		//Send it out
+		pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+		
+		//Get client player
+		pNetworkManager->getNewGameObjectState();
+	}
+	//If client
+	else if (networkID == 1)
+	{		
+		//Get server player
+		pNetworkManager->getNewGameObjectState();
+
+		//Spawn player
+		pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+		pNetworkManager->addGameObjectToMap(pPlayerController, networkID);
+		networkID++;
+
+		//Send it out
+		pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+	}
 
 	al_start_timer(timer);
 }
@@ -218,7 +242,7 @@ void update()
 		}
 		case KeyCode::BACK:
 		{
-			pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_DELETE);
+			pNetworkManager->sendNewGameObjectState(networkID - 1, PacketType::PACKET_DELETE);
 			networkID--;
 			break;
 		}
@@ -247,7 +271,8 @@ void draw()
 		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 50, "WASD - Move Player.", TextAlignment::ALIGN_LEFT);
 		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 100, "TAB - Change GameObject to Spawn.", TextAlignment::ALIGN_LEFT);
 		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 150, "Left Mouse - Spawn GameObject.", TextAlignment::ALIGN_LEFT);
-		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 200, "ESC - Quit.", TextAlignment::ALIGN_LEFT);
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 200, "Backspace - Delete last GameObject.", TextAlignment::ALIGN_LEFT);
+		pGraphics->drawText(pGraphics->getScreenSizeX() - 700, 250, "ESC - Quit.", TextAlignment::ALIGN_LEFT);
 	}
 
 	//Render it all
@@ -355,8 +380,8 @@ int main(int argc, const char** argv)
 			//Setup
 			start();
 
-			//Sync player controllers
-			pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+			////Sync player controllers
+			//pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 
 			//Since 0 and 1 are used for both player controllers, start everything else at 2
 			networkID = 2;

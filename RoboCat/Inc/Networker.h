@@ -50,8 +50,9 @@ public:
 
 	//Map
 	void addGameObjectToMap(GameObject* objectToAdd, int networkID);
-	GameObject* getGameObjectFromMap(int networkID) { return mGameObjectMap[networkID]; };
-	map<int, GameObject*> getMap() { return mGameObjectMap; };
+	//GameObject* getGameObjectFromMap(int networkID) { return mGameObjectMap[networkID]; };
+	GameObject* getGameObjectFromMap(int networkID) { return mGameObjectsVec[networkID].second; };
+	//map<int, GameObject*> getMap() { return mGameObjectMap; };
 	void updateMapObjects();
 	void renderMapObjects();
 
@@ -63,7 +64,8 @@ private:
 
 	//Data
 	TCPSocketPtr* mpTCPSocket;
-	std::map<int, GameObject*> mGameObjectMap;
+	//std::map<int, GameObject*> mGameObjectMap;
+	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
 
 	//Data for GameObject replication
 	GraphicsLibrary* mpGraphicsLibrary;

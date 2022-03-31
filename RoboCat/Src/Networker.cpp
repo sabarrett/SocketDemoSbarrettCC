@@ -15,7 +15,8 @@ Networker::~Networker()
 void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour)
 {
 	mpTCPSocket = new TCPSocketPtr;
-	mGameObjectMap = map<int, GameObject*>();
+	//mGameObjectMap = map<int, GameObject*>();
+	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
 
 	//Data for GameObject replication
 	mpGraphicsLibrary = graphicsLibrary;
@@ -31,13 +32,16 @@ void Networker::cleanup()
 	//mInstance = nullptr;
 
 	//Cleanup map
-	map<int, GameObject*>::iterator it;
-	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	//map<int, GameObject*>::iterator it;
+	std::vector<std::pair<int, GameObject*>>::iterator it;
+	//for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 	{
 		delete it->second;
 		it->second = nullptr;
 	}
-	mGameObjectMap.clear();
+	//mGameObjectMap.clear();
+	mGameObjectsVec.clear();
 
 	(*mpTCPSocket)->CleanupSocket();
 	SocketUtil::CleanUp();
@@ -182,7 +186,8 @@ void Networker::getNewGameObjectState()
 			case GameObjectType::ROCK:
 			{
 				Rock* newRock = new Rock(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mRockSpriteIdentifier);
-				mGameObjectMap.insert(pair<int, GameObject*>(networkID, newRock));
+				//mGameObjectMap.insert(pair<int, GameObject*>(networkID, newRock));
+				mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newRock));
 				newRock = nullptr;
 
 				break;
@@ -191,7 +196,8 @@ void Networker::getNewGameObjectState()
 			case GameObjectType::PLAYER:
 			{
 				PlayerController* newPlayerController = new PlayerController(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mPlayerMoveSpeed, mPlayerSpriteIdentifier);
-				mGameObjectMap.insert(pair<int, GameObject*>(networkID, newPlayerController));
+				//mGameObjectMap.insert(pair<int, GameObject*>(networkID, newPlayerController));
+				mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newPlayerController));
 				newPlayerController = nullptr;
 
 				break;
@@ -209,13 +215,12 @@ void Networker::getNewGameObjectState()
 				IMBStream.Read(thickness);
 
 				Wall* newWall = new Wall(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), sizeX, sizeY, mWallColour, thickness);
-				mGameObjectMap.insert(pair<int, GameObject*>(networkID, newWall));
+				//mGameObjectMap.insert(pair<int, GameObject*>(networkID, newWall));
+				mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newWall));
 				newWall = nullptr;
 
 				break;
 			}
-
-				break;
 			}
 
 			break;
@@ -223,7 +228,8 @@ void Networker::getNewGameObjectState()
 
 		case PacketType::PACKET_UPDATE:
 
-			if (mGameObjectMap[networkID] != nullptr)
+			//if (mGameObjectMap[networkID] != nullptr)
+			if (mGameObjectsVec[networkID].second != nullptr)
 			{
 				float x;
 				float y;
@@ -235,7 +241,8 @@ void Networker::getNewGameObjectState()
 
 					IMBStream.Read(x);
 					IMBStream.Read(y);
-					mGameObjectMap[networkID]->setPos(std::make_pair(x, y));
+					//mGameObjectMap[networkID]->setPos(std::make_pair(x, y));
+					mGameObjectsVec[networkID].second->setPos(std::make_pair(x, y));
 					break;
 
 				case GameObjectType::WALL:
@@ -244,7 +251,8 @@ void Networker::getNewGameObjectState()
 					float sizeY;
 					float thiccness;
 
-					Wall* wall = (Wall*)mGameObjectMap[networkID];
+					//Wall* wall = (Wall*)mGameObjectMap[networkID];
+					Wall* wall = (Wall*)mGameObjectsVec[networkID].second;
 					IMBStream.Read(x);
 					IMBStream.Read(y);
 
@@ -273,14 +281,18 @@ void Networker::getNewGameObjectState()
 		case PacketType::PACKET_DELETE:
 		{
 			//Delete element in map
-			map<int, GameObject*>::iterator it;
-			for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+			//map<int, GameObject*>::iterator it;
+			std::vector<std::pair<int, GameObject*>>::iterator it;
+			//for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+			for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 			{
 				if (it->first == networkID)
 				{
 					//delete it->second;
 					//it->second = nullptr;
-					mGameObjectMap.erase(it->first);
+					mGameObjectsVec.erase(it);
+
+					break;
 				}
 			}
 
@@ -302,8 +314,10 @@ void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
 {
 	OutputMemoryBitStream OMBStream;
 	OMBStream.Write(packetHeader);
-	OMBStream.Write(mGameObjectMap[ID]->getNetworkID());
-	OMBStream.Write(mGameObjectMap[ID]->getGameObjectType());
+	//OMBStream.Write(mGameObjectMap[ID]->getNetworkID());
+	OMBStream.Write(mGameObjectsVec[ID].second->getNetworkID());
+	//OMBStream.Write(mGameObjectMap[ID]->getGameObjectType());
+	OMBStream.Write(mGameObjectsVec[ID].second->getGameObjectType());
 
 	//Logic depends on packer header type
 	switch (packetHeader)
@@ -311,16 +325,20 @@ void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
 	case PacketType::PACKET_CREATE:
 	case PacketType::PACKET_UPDATE:
 
-		switch (mGameObjectMap[ID]->getGameObjectType())
+		//switch (mGameObjectMap[ID]->getGameObjectType())
+		switch (mGameObjectsVec[ID].second->getGameObjectType())
 		{
 		case GameObjectType::ROCK:
 		case GameObjectType::PLAYER:
-			OMBStream.Write(mGameObjectMap[ID]->getPosition().first);
-			OMBStream.Write(mGameObjectMap[ID]->getPosition().second);
+			//OMBStream.Write(mGameObjectMap[ID]->getPosition().first);
+			OMBStream.Write(mGameObjectsVec[ID].second->getPosition().first);
+			//OMBStream.Write(mGameObjectMap[ID]->getPosition().second);
+			OMBStream.Write(mGameObjectsVec[ID].second->getPosition().second);
 			break;
 
 		case GameObjectType::WALL:
-			Wall* wall = (Wall*)mGameObjectMap[ID];
+			//Wall* wall = (Wall*)mGameObjectMap[ID];
+			Wall* wall = (Wall*)mGameObjectsVec[ID].second;
 			OMBStream.Write(wall->getPosition().first);
 			OMBStream.Write(wall->getPosition().second);
 			OMBStream.Write(wall->getWallSizeX());
@@ -346,13 +364,16 @@ void Networker::sendNewGameObjectState(int ID, PacketType packetHeader)
 
 void Networker::addGameObjectToMap(GameObject* objectToAdd, int networkID)
 {
-	mGameObjectMap.insert(pair<int, GameObject*>(networkID, objectToAdd));
+	//mGameObjectMap.insert(pair<int, GameObject*>(networkID, objectToAdd));
+	mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, objectToAdd));
 }
 
 void Networker::updateMapObjects()
 {
-	map<int, GameObject*>::iterator it;
-	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	//map<int, GameObject*>::iterator it;
+	std::vector<std::pair<int, GameObject*>>::iterator it;
+	//for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 	{
 		it->second->update();
 	}
@@ -360,8 +381,10 @@ void Networker::updateMapObjects()
 
 void Networker::renderMapObjects()
 {
-	map<int, GameObject*>::iterator it;
-	for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	//map<int, GameObject*>::iterator it;
+	std::vector<std::pair<int, GameObject*>>::iterator it;
+	//for (it = mGameObjectMap.begin(); it != mGameObjectMap.end(); ++it)
+	for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 	{
 		it->second->draw();
 	}
