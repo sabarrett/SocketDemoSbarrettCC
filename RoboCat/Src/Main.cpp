@@ -47,10 +47,23 @@ bool TCPClientSendMessages(TCPSocketPtr connSocket, SocketAddress address, int u
 
 	char message[4096];
 	
-	int count = unitCount;
-	sprintf(message, "%d", count);
+	//int count = unitCount;
+	sprintf(message, "%d", unitCount);
 
-	connSocket->Send(message, sizeof(count));
+	connSocket->Send(message, sizeof(unitCount));
+
+	for (int i = 0; i < unitCount; i++)
+	{
+		//message = gameObjects[i].GetObjectType();
+		//connSocket->Send(gameObjects[i].GetObjectType(), 
+			//sizeof(gameObjects[i].GetObjectType()));
+
+		sprintf(message, "%f", gameObjects[i].GetPositionX());
+		connSocket->Send(message, sizeof(gameObjects[i].GetPositionX()));
+
+		sprintf(message, "%f", gameObjects[i].GetPositionY());
+		connSocket->Send(message, sizeof(gameObjects[i].GetPositionY()));
+	}
 
 	//then on the other side receive and convert back with atoi
 
