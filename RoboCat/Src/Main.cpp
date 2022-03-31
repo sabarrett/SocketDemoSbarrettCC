@@ -14,11 +14,11 @@
 #include <MemoryTracker.h>
 #include <string>
 
-//#include "Game.h"
-//#include "allegro5/allegro.h"
-//#include "EventSystem.h"
-//#include "GameEventSystem.h"
-//#include "GameListener.h"
+#include "Game.h"
+#include "allegro5/allegro.h"
+#include "EventSystem.h"
+#include "GameEventSystem.h"
+#include "GameListener.h"
 // Problem: Game Loop
 //
 // updateInput(); (make sure to not block here!)
