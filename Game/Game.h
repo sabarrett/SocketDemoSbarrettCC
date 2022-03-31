@@ -68,5 +68,8 @@ public:
 	void pause();
 	void switchAnim();
 	void placeUnit(int type);
+	void placeUnit(int type, int xLoc, int yLoc);
 	void deleteUnits();
+	void updateWorldState(int xLoc[], int yLoc[], int type[]);
+	Unit* getUnitData();
 };

@@ -168,8 +168,53 @@ void Game::placeUnit(int type)
 	//add a unit
 }
 
+void Game::placeUnit(int type, int xLoc, int yLoc)
+{
+	int x = xLoc;
+	int y = yLoc;
+	Sprite sprite;
+	switch (type)
+	{
+	case 1:
+		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 0 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		break;
+	case 2:
+		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		break;
+	case 3:
+		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 6 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		break;
+	default:
+		break;
+	}
+	//std::cout << type << endl;
+	//add a unit
+}
+
 void Game::deleteUnits()
 {
 	//erase all units in a vicinity
 	mpUnitManager->deleteRandomUnit();
 }
+
+void Game::updateWorldState(int xLoc[], int yLoc[], int type[])
+{
+	mpUnitManager->deleteAllUnits();
+	
+	for (int i = 0; i < sizeof(type); i++)
+	{
+		placeUnit(type[i], xLoc[i], yLoc[i]);
+	}
+}
+
+Unit* Game::getUnitData()
+{
+	return mpUnitManager->getAllUnits();
+}
+
+
+
+
