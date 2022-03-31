@@ -137,7 +137,6 @@ class GameState
 	public:
 		GameState(bool serverState, string ourAddr, string other)
 		{
-			cout << other << endl;
 			isServer = serverState;
 			sock = CreateBoundSocket(ourAddr);
 			//if (isServer)
@@ -169,7 +168,6 @@ class GameState
 		}
 		void Update()
 		{
-			cout << otherAddr.ToString() << endl;
 			mLibrary->loadImage("../2517597.jpg", "background");
 			mLibrary->loadImage("../coin.png", "coin");
 			mLibrary->loadImage("../tomato.png", "tomato");
@@ -213,6 +211,7 @@ class GameState
 				mPlayer->Update(keyPress);
 				mLibrary->drawImage("Player", mPlayer->getX(), mPlayer->getY());
 				mLibrary->drawImage("Other Player", otherPlayer->getX(), otherPlayer->getY());
+				cout << otherPlayer->getX() << ", " << otherPlayer->getY() << endl;
 
 				if (keyPress == KeyCode::KeyEscape)
 					escapePressed = true;
@@ -224,7 +223,6 @@ class GameState
 		void SendPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType,
 			int pos_x, int pos_y)
 		{
-			cout << addr->ToString() << endl;
 			int packet[25];
 			packet[0] = packetType;
 			packet[1] = objectType;
@@ -233,20 +231,15 @@ class GameState
 
 			char* bytePacket = (char*)packet;
 
-			cout << "attempting to send packet" << endl;
-
 			int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
 			cout << bytesSent << endl;
 			if (bytesSent <= 0)
 			{
 				SocketUtil::ReportError("Client SendTo");
 			}
-
-			cout << "Sent packet" << endl;
 		}
 		void SendCoinPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType, vector<CoinObject*> coins)
 		{
-			cout << addr->ToString() << endl;
 			int packet[25];
 			packet[0] = packetType;
 			packet[1] = objectType;
@@ -258,16 +251,11 @@ class GameState
 
 			char* bytePacket = (char*)packet;
 
-			cout << "attempting to send packet" << endl;
-
 			int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
-			cout << bytesSent << endl;
 			if (bytesSent <= 0)
 			{
 				SocketUtil::ReportError("Client SendTo");
 			}
-
-			cout << "Sent packet" << endl;
 		}
 		void ReceivePacket(UDPSocketPtr ptr, SocketAddress* addr, InputSystem* mInputSystem)
 		{
@@ -285,7 +273,6 @@ class GameState
 					return;
 				else
 				{
-					cout << "received packet" << endl;
 					int* packet = (int*)buffer;
 					switch (packet[0])
 					{
@@ -304,8 +291,8 @@ class GameState
 							{
 								case ObjectTypes::PLAYER:
 								{
-									otherPlayer->setX(packet[3]);
-									otherPlayer->setY(packet[4]);
+									otherPlayer->setX(packet[2]);
+									otherPlayer->setY(packet[3]);
 									break;
 								}
 								case ObjectTypes::COIN:
@@ -327,7 +314,6 @@ class GameState
 						}
 						case PacketTypes::HELLO:
 						{
-							cout << "hello packet received!" << endl;
 							SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
 							break;
 						}
