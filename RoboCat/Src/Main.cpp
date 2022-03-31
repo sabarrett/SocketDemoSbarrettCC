@@ -11,7 +11,7 @@ std::string BACKGROUND_PATH = "..//..//Assets//Woods.png"; //I think
 #if _WIN32
 
 //maybe dont need these to be bools this time?
-bool TCPServerSendMessages(TCPSocketPtr conn, SocketAddress address)
+bool TCPServerSendMessages(TCPSocketPtr conn, SocketAddress address, int unitCount, GameObject gameObjects[])
 {
 	char message[4096];
 	char buffer[4096];
@@ -38,7 +38,7 @@ bool TCPServerSendMessages(TCPSocketPtr conn, SocketAddress address)
 	return true;
 }
 
-bool TCPClientSendMessages(TCPSocketPtr connSocket, SocketAddress address)
+bool TCPClientSendMessages(TCPSocketPtr connSocket, SocketAddress address, int unitCount, GameObject gameObjects[])
 {
 	//so i want to send out and receive all the different info each run through here
 		//object count
@@ -46,19 +46,15 @@ bool TCPClientSendMessages(TCPSocketPtr connSocket, SocketAddress address)
 		//object position
 
 	char message[4096];
+	
+	int count = unitCount;
+	sprintf(message, "%d", count);
 
-	printf("%s", "Please enter a message to send:");
+	connSocket->Send(message, sizeof(count));
 
-	scanf("%s", &message);
+	//then on the other side receive and convert back with atoi
 
-	if (strcmp(message, "&") == 0)
-	{
-		std::string msg("the peer has disconnected");
-		connSocket->Send(msg.c_str(), msg.length());
-		return false;
-	}
-
-	connSocket->Send(message, 4096);
+	//connSocket->Send(message, 4096);
 
 	LOG("%s", "Sent message to peer");
 
