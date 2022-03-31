@@ -50,6 +50,14 @@ void UnitManager::deleteUnit(int unitLoc)
 	mUnits.erase(mUnits.begin() + unitLoc);
 }
 
+void UnitManager::deleteAllUnits()
+{
+	while (mUnits.size() > 0)
+	{
+		deleteUnit(0);
+	}
+}
+
 void UnitManager::deleteRandomUnit()
 {
 	if (mUnits.size() > 0)

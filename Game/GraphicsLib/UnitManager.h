@@ -28,6 +28,7 @@ public:
 
 	//DELETE UNIT
 	void deleteUnit(int unitLoc);
+	void deleteAllUnits();
 	void deleteRandomUnit();
 	void deleteUnit(Unit* delUnit);
 	void erase(int mouseX, int mouseY, const int UNIT_WIDTH, const int UNIT_HEIGHT);

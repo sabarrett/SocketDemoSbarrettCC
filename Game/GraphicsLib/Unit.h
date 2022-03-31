@@ -12,8 +12,6 @@ class Unit : public Trackable
 {
 private:
 	//current state of unit
-	int mX, mY = 0;
-	int mCurrentAnim;
 
 	//All animations
 	//Sprite sprite;
@@ -36,5 +34,8 @@ private:
 	void addAnimation(Animation anim);
 
 public:
+	int mType;
+	int mX, mY = 0;
+	int mCurrentAnim;
 	friend class UnitManager;
 };
