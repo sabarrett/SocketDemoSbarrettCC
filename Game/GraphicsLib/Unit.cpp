@@ -20,6 +20,17 @@ Unit::Unit(int x, int y)
 	mCurrentAnim = 0;
 }
 
+Unit::Unit(int x, int y, Sprite newsprite)
+{
+	//Filled constructor
+	Animation anim = Animation();
+	anim.addSprite(newsprite);
+	mAnimations = vector<Animation>(2, anim);
+	mX = x;
+	mY = y;
+	mCurrentAnim = 0;
+}
+
 Unit::Unit(int x, int y, Animation anim1, Animation anim2)
 {
 	Animation anim = Animation();

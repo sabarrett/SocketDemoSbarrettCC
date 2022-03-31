@@ -32,6 +32,11 @@ void UnitManager::addUnit(int x, int y)
 	mUnits.push_back(new Unit(x, y));
 }
 
+void UnitManager::addUnit(int x, int y, Sprite sprite)
+{
+	mUnits.push_back(new Unit(x, y, sprite));
+}
+
 void UnitManager::addUnit(int x, int y, Animation anim1, Animation anim2)
 {
 	mUnits.push_back(new Unit(x, y, anim1, anim2));
@@ -47,7 +52,10 @@ void UnitManager::deleteUnit(int unitLoc)
 
 void UnitManager::deleteRandomUnit()
 {
-	deleteUnit(rand() % mUnits.size());
+	if (mUnits.size() > 0)
+	{
+		deleteUnit(rand() % mUnits.size());
+	}
 }
 
 void UnitManager::deleteUnit(Unit* delUnit)

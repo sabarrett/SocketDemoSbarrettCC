@@ -29,7 +29,7 @@ public:
 	Event(int type);
 	virtual ~Event();
 
-	int getType() const { std::cout << "this is a test " << mType << endl; return mType; };
+	int getType() const { return mType; };
 
 private:
 	int mType;

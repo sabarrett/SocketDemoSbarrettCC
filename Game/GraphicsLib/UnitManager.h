@@ -23,6 +23,7 @@ public:
 	void addUnit(Unit* newUnit);
 	void addUnit();
 	void addUnit(int x, int y);
+	void addUnit(int x, int y, Sprite sprite);
 	void addUnit(int x, int y, Animation anim1, Animation anim2);
 
 	//DELETE UNIT

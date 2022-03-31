@@ -27,4 +27,6 @@ private:
 	ALLEGRO_MOUSE_STATE mMouseState;
 
 	EventSystem* mpEventSystem;
+
+	float coolDown;
 };

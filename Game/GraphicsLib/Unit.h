@@ -16,10 +16,12 @@ private:
 	int mCurrentAnim;
 
 	//All animations
+	//Sprite sprite;
 	vector<Animation> mAnimations;
 
 	Unit();
 	Unit(int x, int y);
+	Unit(int x, int y, Sprite newsprite);
 	Unit(int x, int y, Animation anim1, Animation anim2);
 	~Unit();
 

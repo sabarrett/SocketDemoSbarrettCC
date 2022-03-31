@@ -13,7 +13,7 @@ InputSystem::~InputSystem()
 void InputSystem::init()
 {
 	std::cout << "init InputSystem" << endl;
-
+	coolDown = 0;
 	//install allegro dependencies
 	if (!al_install_keyboard())
 		std::cout << "keyboard install failed";
@@ -30,59 +30,61 @@ void InputSystem::cleanup()
 
 void InputSystem::update()
 {
-	//std::cout << "update InputSystem" << endl;
-	al_get_mouse_state(&mMouseState); //get allegro mouse state
+	coolDown++;
 
-	//if right clicked, return true
-	if (mMouseState.buttons & 1)
-	{
-		//fire mouse event with right click and mouse position
-		mpEventSystem->fireEvent(MouseEvent(1, mMouseState.x, mMouseState.y));
-		std::cout << "mouse event 1" << endl;
-	}
-	else if (mMouseState.buttons & 2)
-	{
-		//fire mouse event with left click and mouse position
-		mpEventSystem->fireEvent(MouseEvent(2, mMouseState.x, mMouseState.y));
-		std::cout << MouseEvent(2, mMouseState.x, mMouseState.y).getType() << endl;
-	}
+	//std::cout << coolDown << endl;
+	int eee = 10;
 
 	al_get_keyboard_state(&mKeyState);//get allegro key state
 
-	if (al_key_down(&mKeyState, ALLEGRO_KEY_ENTER))
+	if (al_key_down(&mKeyState, ALLEGRO_KEY_DELETE) || al_key_down(&mKeyState, ALLEGRO_KEY_BACKSPACE))
 	{
 		//fire key event with enter click
-		mpEventSystem->fireEvent(KeyEvent("enter"));
-		std::cout << "key event enter" << endl;
+		if (coolDown > eee)
+		{
+			mpEventSystem->fireEvent(KeyEvent("enter"));
+			coolDown = 0;
+		}
+		//std::cout << "key event enter" << endl;
 	}
 	else if (al_key_down(&mKeyState, ALLEGRO_KEY_ESCAPE))
 	{
+		if (coolDown > eee)
+		{
 		//fire key event with esc click
 		mpEventSystem->fireEvent(KeyEvent("esc"));
-		std::cout << "key event esc" << endl;
-	}
-	else if (al_key_down(&mKeyState, ALLEGRO_KEY_SPACE))
-	{
-		//fire key event with space click
-		mpEventSystem->fireEvent(KeyEvent("space"));
-		std::cout << "key event space" << endl;
+		//std::cout << "key event esc" << endl;
+		coolDown = 0;
+		}
 	}
 	else if (al_key_down(&mKeyState, ALLEGRO_KEY_1))
 	{
+				if (coolDown > eee)
+				{
 		//fire key event with space click
 		mpEventSystem->fireEvent(KeyEvent("1"));
-		std::cout << "key event 1" << endl;
+		//std::cout << "key event 1" << endl;
+		coolDown = 0;
+				}
 	}
 	else if (al_key_down(&mKeyState, ALLEGRO_KEY_2))
 	{
+					if (coolDown > eee)
+					{
 		//fire key event with space click
 		mpEventSystem->fireEvent(KeyEvent("2"));
-		std::cout << "key event 2" << endl;
+		//std::cout << "key event 2" << endl;
+		coolDown = 0;
+					}
 	}
 	else if (al_key_down(&mKeyState, ALLEGRO_KEY_3))
 	{
+						if (coolDown > eee)
+						{
 		//fire key event with space click
 		mpEventSystem->fireEvent(KeyEvent("3"));
-		std::cout << "key event 3" << endl;
+		//std::cout << "key event 3" << endl;
+		coolDown = 0;
+						}
 	}
 }

@@ -29,12 +29,13 @@ void GameListener::cleanup()
 void GameListener::handleEvent(const Event& theEvent)
 {
 	//escape game
-	if (theEvent.getType() == ESC_EVENT)
+	if (theEvent.getType() == 5)
 	{
+		std::cout << "escape game" << endl;
 		mpGame->escape();
 	}
 	//pause game
-	else if (theEvent.getType() == PAUSE_EVENT)
+	else if (theEvent.getType() == 8)
 	{
 		mpGame->pause();
 	}
@@ -44,17 +45,19 @@ void GameListener::handleEvent(const Event& theEvent)
 		mpGame->switchAnim();
 	}
 	//place unit
-	else if (theEvent.getType() == PLACE_UNIT_EVENT)
+	else if (theEvent.getType() == 6)
 	{
 		const PlaceUnitEvent& placeUnitEvent = static_cast<const PlaceUnitEvent&>(theEvent);
-		int x = placeUnitEvent.getX();
-		int y = placeUnitEvent.getY();
+		int x = 50;
+		int y = 50;
 
-		mpGame->placeUnit(x, y);
+		mpGame->placeUnit(placeUnitEvent.getX());
 	}
 	//delete units
-	else if (theEvent.getType() == DELETE_UNITS_EVENT)
+	else if (theEvent.getType() == 7)
 	{
+
+		//std::cout << "I am deleteing a unity :)" << endl;
 		const DeleteUnitsEvent& deleteUnitsEvent = static_cast<const DeleteUnitsEvent&>(theEvent);
 
 		//erase all units in a vicinity

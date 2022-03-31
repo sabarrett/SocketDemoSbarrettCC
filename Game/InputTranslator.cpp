@@ -7,7 +7,7 @@
 InputTranslator::InputTranslator()
 {
 	mpESystem = EventSystem::getInstance();
-	mpESystem->addListener(MOUSE_EVENT_B, this);
+	//mpESystem->addListener(MOUSE_EVENT_B, this);
 	mpESystem->addListener(KEY_EVENT_B, this);
 }
 
@@ -60,25 +60,25 @@ void InputTranslator::handleEvent(const Event& theEvent)
 		}
 		else if (keyEvent.getState() == "esc")
 		{
-			std::cout << "handeling an event for escape" << endl;
+			//std::cout << "handeling an event for escape" << endl;
 			//fire exit game event
 			mpESystem->fireEvent(EscEvent());
 		}
 		else if (keyEvent.getState() == "1")
 		{
-			std::cout << "handeling an event for button	1" << endl;
+			//std::cout << "handeling an event for button	1" << endl;
 			//fire exit game event
 			mpESystem->fireEvent(PlaceUnitEvent(1));
 		}
 		else if (keyEvent.getState() == "2")
 		{
-			std::cout << "handeling an event for button	2" << endl;
+			//std::cout << "handeling an event for button	2" << endl;
 			//fire exit game event
 			mpESystem->fireEvent(PlaceUnitEvent(2));
 		}
 		else if (keyEvent.getState() == "3")
 		{
-			std::cout << "handeling an event for button	3" << endl;
+			//std::cout << "handeling an event for button	3" << endl;
 			//fire exit game event
 			mpESystem->fireEvent(PlaceUnitEvent(3));
 		}

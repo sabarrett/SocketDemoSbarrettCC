@@ -8,6 +8,11 @@ Sprite::Sprite(GraphicsBuffer *image, vector<int> sourceLoc, int width, int heig
 	mHeight = height;
 }
 
+Sprite::Sprite()
+{
+}
+
+
 Sprite::~Sprite()
 {
 }

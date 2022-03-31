@@ -10,7 +10,7 @@ public:
 	PlaceUnitEvent(int num);
 	~PlaceUnitEvent();
 
-	int getX() const { return mX; };
+	int getX() const { return type; };
 	int getY() const { return mY; };
 
 private:

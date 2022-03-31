@@ -12,6 +12,7 @@ class Sprite : public Trackable
 {
 public:
 	Sprite(GraphicsBuffer *image, vector<int> sourceLoc, int width, int height);
+	Sprite();
 	~Sprite();
 
 	//getters

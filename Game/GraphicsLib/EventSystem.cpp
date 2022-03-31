@@ -116,14 +116,14 @@ void EventSystem::dispatchAllEvents( const Event& theEvent )
 {
 	if (mIsInitted)
 	{
-		std::cout << "dispatching event" << endl;
+		//std::cout << "dispatching event" << endl;
 		pair<multimap<EventType, EventListener*>::iterator, multimap<EventType, EventListener*>::iterator> ret;
 		ret = mListenerMap.equal_range(KEY_EVENT_B);
 
 		multimap<EventType, EventListener*>::iterator iter;
-		for (iter = ret.first; iter != ret.second; ++iter)
+		for (iter = mListenerMap.begin(); iter != mListenerMap.end(); ++iter)
 		{
-			std::cout << "sending to listener" << endl;
+			//std::cout << "sending to listener" << endl;
 			iter->second->handleEvent(theEvent);
 		}
 	}

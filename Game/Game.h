@@ -14,13 +14,13 @@
 //Paths
 const string DIRECTORY = "assets\\";
 const string WOODS_FILENAME = "Woods.png";
-const string SMURF_SPRITES_FILENAME = "smurf_sprites.png";
+const string SMURF_SPRITES_FILENAME = "glowing-balls.png";
 const string DEAN_SPRITES_FILENAME = "dean_sprites.png";
 
 //Sizes
 const int SMURF_ROWS = 4;
 const int SMURF_COLS = 4;
-const int SMURF_SIZE = 60;
+const int SMURF_SIZE = 32;
 
 class Game : public Trackable
 {
@@ -67,6 +67,6 @@ public:
 	void escape();
 	void pause();
 	void switchAnim();
-	void placeUnit(int x, int y);
+	void placeUnit(int type);
 	void deleteUnits();
 };
