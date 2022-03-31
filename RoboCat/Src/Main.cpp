@@ -400,9 +400,6 @@ int main(int argc, const char** argv)
 			//Setup
 			start();
 
-			////Sync player controllers
-			//pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
-
 			//Since 0 and 1 are used for both player controllers, start everything else at 2
 			networkID = 2;
 
