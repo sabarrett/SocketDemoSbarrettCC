@@ -1,0 +1,7 @@
+. Open 2 instances of a visual studio
+. Run the project
+. You will be prompted though the command line for input
+. In one instance, type 'y' to be the host, enter a port number
+. In the other instance, type anything other than 'y' to denote that you're the client, enter host IP address, enter port number
+. MAKE SURE THE PORT NUMBERS ARE THE SAME!!!
+. Follow on-screen prompts to playtest the game
