@@ -17,7 +17,7 @@ float screenSizeY = 900.0;
 
 //-------------------------Input Data-------------------------
 InputSystem* pInput;
-bool canSpawnGameObject = false;
+bool bCanSpawnGameObject = false;
 
 //-------------------------Assets-------------------------
 const std::string ASSET_PATH = "Assets\\";
@@ -112,28 +112,28 @@ void start()
 	{
 		//Spawn player
 		pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
-		pNetworkManager->addGameObjectToMap(pPlayerController, networkID);
+		pNetworkManager->addGameObject(pPlayerController, networkID);
 		networkID++;
 
 		//Send it out
-		pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+		pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 		
 		//Get client player
-		pNetworkManager->getNewGameObjectState();
+		pNetworkManager->receiveGameObjectState();
 	}
 	//If client
 	else if (networkID == 1)
 	{		
 		//Get server player
-		pNetworkManager->getNewGameObjectState();
+		pNetworkManager->receiveGameObjectState();
 
 		//Spawn player
 		pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
-		pNetworkManager->addGameObjectToMap(pPlayerController, networkID);
+		pNetworkManager->addGameObject(pPlayerController, networkID);
 		networkID++;
 
 		//Send it out
-		pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+		pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 	}
 
 	al_start_timer(timer);
@@ -150,7 +150,7 @@ void update()
 		{
 		case MouseButton::LeftMouse:
 		{
-			if (!canSpawnGameObject)
+			if (!bCanSpawnGameObject)
 			{
 				//Spawn current GameObject type
 				GameObject* gameObjectToSpawn;
@@ -161,8 +161,8 @@ void update()
 				{
 					pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 					gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
-					pNetworkManager->addGameObjectToMap(gameObjectToSpawn, networkID);
-					pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
+					pNetworkManager->addGameObject(gameObjectToSpawn, networkID);
+					pNetworkManager->sendGameObjectState(networkID, PacketType::PACKET_CREATE);
 					networkID++;
 
 					break;
@@ -171,8 +171,8 @@ void update()
 				{
 					pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 					gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, wallColour, wallBorderThickness));
-					pNetworkManager->addGameObjectToMap(gameObjectToSpawn, networkID);
-					pNetworkManager->sendNewGameObjectState(networkID, PacketType::PACKET_CREATE);
+					pNetworkManager->addGameObject(gameObjectToSpawn, networkID);
+					pNetworkManager->sendGameObjectState(networkID, PacketType::PACKET_CREATE);
 					networkID++;
 
 					break;
@@ -187,7 +187,7 @@ void update()
 				}
 
 				gameObjectToSpawn = nullptr;
-				canSpawnGameObject = true;
+				bCanSpawnGameObject = true;
 			}
 		}
 
@@ -202,7 +202,7 @@ void update()
 		{
 			//Prevent spawning multiple gameobjects with mouse down - allow player to spawn after mouse is released again
 			if (mouseUpInput == MouseButton::LeftMouse)
-				canSpawnGameObject = false;
+				bCanSpawnGameObject = false;
 		}
 	}
 
@@ -257,7 +257,7 @@ void update()
 		}
 		case KeyCode::BACK:
 		{
-			pNetworkManager->sendNewGameObjectState(networkID - 1, PacketType::PACKET_DELETE);
+			pNetworkManager->sendGameObjectState(networkID - 1, PacketType::PACKET_DELETE);
 			networkID--;
 			break;
 		}
@@ -267,7 +267,7 @@ void update()
 		}
 	}
 
-	pNetworkManager->updateMapObjects();
+	pNetworkManager->updateGameObjects();
 }
 
 void draw()
@@ -276,7 +276,7 @@ void draw()
 	pGraphics->drawImage(BACKGROUND_IMAGE_SPRITE_IDENTIFIER, 0, 0);
 
 	//Draw GameObjects
-	pNetworkManager->renderMapObjects();
+	pNetworkManager->renderGameObjects();
 
 	//Text indicator of current GameObject Type
 	pGraphics->drawText(100, 50, "Current Object to Spawn: " + currentGameObjectTypeString, TextAlignment::ALIGN_LEFT);
@@ -413,10 +413,10 @@ int main(int argc, const char** argv)
 					update();
 
 					//Network updates - send player data
-					pNetworkManager->sendNewGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
+					pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
 					
 					//Network update - receive packets
-					pNetworkManager->getNewGameObjectState();
+					pNetworkManager->receiveGameObjectState();
 
 					//Draw call
 					draw();

@@ -45,16 +45,14 @@ public:
 	bool connect(std::string serverIpAddress, std::string port);
 
 	//Update game state
-	void getNewGameObjectState();
-	void sendNewGameObjectState(int networkID, PacketType packetHeader);
+	void receiveGameObjectState();
+	void sendGameObjectState(int networkID, PacketType packetHeader);
 
 	//Map
-	void addGameObjectToMap(GameObject* objectToAdd, int networkID);
-	//GameObject* getGameObjectFromMap(int networkID) { return mGameObjectMap[networkID]; };
-	GameObject* getGameObjectFromMap(int networkID) { return mGameObjectsVec[networkID].second; };
-	//map<int, GameObject*> getMap() { return mGameObjectMap; };
-	void updateMapObjects();
-	void renderMapObjects();
+	void addGameObject(GameObject* objectToAdd, int networkID);
+	GameObject* getGameObject(int networkID) { return mGameObjectsVec[networkID].second; };
+	void updateGameObjects();
+	void renderGameObjects();
 
 private:
 
@@ -64,7 +62,6 @@ private:
 
 	//Data
 	TCPSocketPtr* mpTCPSocket;
-	//std::map<int, GameObject*> mGameObjectMap;
 	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
 
 	//Data for GameObject replication
