@@ -1,10 +1,12 @@
+#include "RoboCatPCH.h"
+
 /*
 Allegro Wrapper Functions
 Written by Adel Talhouk in FA21
 InputSystem.cpp
 */
-#include "RoboCatPCH.h" //added
 #include "InputSystem.h"
+#include "GameController.h"
 
 #include <iostream>
 
@@ -78,6 +80,8 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 	//Register mouse event source
 	al_register_event_source(mpEventQueue, al_get_mouse_event_source());
 
+	mGameController = GameController();
+
 	return true;
 }
 
@@ -124,6 +128,19 @@ KeyCode InputSystem::getKeyboardInput()
 
 		case KeyCode::R:
 			return KeyCode::R;
+			break;
+		
+		case KeyCode::LEFT:
+			GameController::sendBees(LEFT);
+			return KeyCode::LEFT;
+			break;
+		
+		case KeyCode::RIGHT:
+			return KeyCode::RIGHT;
+			break;
+
+		case KeyCode::SPACE:
+			return KeyCode::SPACE;
 			break;
 
 		default:

@@ -18,7 +18,10 @@ InputSystem.h
 enum KeyCode
 {
 	ESC = ALLEGRO_KEY_ESCAPE,
-	R = ALLEGRO_KEY_R
+	R = ALLEGRO_KEY_R,
+	LEFT = ALLEGRO_KEY_LEFT,
+	RIGHT = ALLEGRO_KEY_RIGHT,
+	SPACE = ALLEGRO_KEY_SPACE
 };
 
 enum MouseButton
@@ -46,6 +49,9 @@ class InputSystem
 
 	//Event
 	ALLEGRO_EVENT mEvent;
+
+	//Added by Olli
+	GameController mGameController;
 
 	//-------------------------Public data-------------------------
 public:
