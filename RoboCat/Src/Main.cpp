@@ -1,6 +1,7 @@
 
 #include "RoboCatPCH.h"
 #include <thread>
+#include "RoboCat/InputSystem.h"
 
 #if _WIN32
 
