@@ -1,5 +1,6 @@
 #pragma once
 
+
 /*
 Allegro Wrapper Functions
 Written by Adel Talhouk in FA21

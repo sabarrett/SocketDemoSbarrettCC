@@ -1,9 +1,11 @@
+#include "RoboCatPCH.h"
+
 /*
 Allegro Wrapper Functions
 Written by Adel Talhouk in FA21
 GraphicsLibrary.cpp
 */
-#include "RoboCatPCH.h" //added
+
 #include "GraphicsLibrary.h"
 
 #include <iostream>

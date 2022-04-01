@@ -2,6 +2,7 @@
 #include "RoboCatPCH.h"
 
 #include <thread>;
+#include "GraphicsLibrary.h"
 
 #if _WIN32
 
@@ -25,6 +26,11 @@ int main(int argc, const char** argv)
 	UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 
 	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
+
+	GraphicsLibrary graphLib = GraphicsLibrary(1000,600);
+	graphLib.init("..\RoboCat\Graphics\field-bg.jpg");
+	graphLib.loadImage("..\RoboCat\Graphics\field-bg.jpg", "background");
+	//graphLib.drawImage("background", 0, 600);
 
 	//clientAddr not needed for long, don't keep it around
 	{
@@ -65,6 +71,8 @@ int main(int argc, const char** argv)
 	srvThread.join();
 
 	SocketUtil::CleanUp();
+
+	system("pause");
 
 	return 0;
 }
