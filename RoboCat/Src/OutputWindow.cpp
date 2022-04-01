@@ -105,5 +105,5 @@ void OutputWindow::MoveCursorToScreenBottom()
 {
     _CONSOLE_SCREEN_BUFFER_INFO conInfo;
     GetConsoleScreenBufferInfo(output, &conInfo);
-    SetConsoleCursorPosition(output, COORD{0, short(conInfo.dwSize.Y - short(1))});
+    //SetConsoleCursorPosition(output, COORD{0, short(conInfo.dwSize.Y - short(1))});
 }
