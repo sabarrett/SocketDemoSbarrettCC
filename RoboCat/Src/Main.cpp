@@ -12,8 +12,8 @@
 
 //-------------------------Graphics Data-------------------------
 GraphicsLibrary* pGraphics;
-float screenSizeX = 1000.0;
-float screenSizeY = 600.0;
+float screenSizeX = 1600.0;
+float screenSizeY = 900.0;
 
 //-------------------------Input Data-------------------------
 InputSystem* pInput;
