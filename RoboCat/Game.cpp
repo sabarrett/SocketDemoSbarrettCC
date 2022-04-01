@@ -15,7 +15,9 @@ enum class PacketType
 {
 	PT_PADDLE,
 	PT_BALL,
-	PT_SCORE
+	PT_SCORE,
+	PT_WIN,
+	PT_TEST
 };
 
 Game::Game()
@@ -177,7 +179,7 @@ void Game::UpdateBall(ball* ball)
 	oStream.Write(ball->pos->x);
 	oStream.Write(ball->pos->y);
 
-	TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+	Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 }
 
 void Game::UpdateScore()
@@ -188,6 +190,32 @@ void Game::UpdateScore()
 	oStream.Write(mScoreTwo->points);
 
 	TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+
+	OutputMemoryBitStream o2Stream;
+	
+	if (mScoreOne->points >= 20) 
+	{
+		std::cout << " Player 1  Won" << std::endl;
+		mRunning = false;
+
+		mWinningPlayer = 0;
+
+
+		o2Stream.Write(PacketType::PT_WIN);
+		o2Stream.Write(0);
+		Send(o2Stream.GetBufferPtr(), o2Stream.GetBitLength());
+	}
+	else if (mScoreTwo->points >= 20)
+	{
+		std::cout << " Player 2  Won" << std::endl;
+		mRunning = false;
+
+		mWinningPlayer = 1;
+
+		o2Stream.Write(PacketType::PT_WIN);
+		o2Stream.Write(1);
+		Send(o2Stream.GetBufferPtr(), o2Stream.GetBitLength());
+	}
 }
 
 //This math is for sure off, but this isn't a game physics class so I don't want to spend too much time
@@ -232,7 +260,14 @@ void Game::SendUpdatedStates()
 	oStream.Write(PacketType::PT_PADDLE);
 	oStream.Write(yPos);
 
-	TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+	Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+}
+
+int Game::Send(const void* inData, size_t inLen)
+{
+
+	int temp = TCPSocket->Send(inData, inLen);
+	return 0;
 }
 
 void Game::Receive()
@@ -266,6 +301,23 @@ void Game::Receive()
 			{
 				iStream.Read(mScoreOne->points);
 				iStream.Read(mScoreTwo->points);
+			}
+			if (type == PacketType::PT_WIN) 
+			{
+				
+				iStream.Read(mWinningPlayer);
+
+				if (!mWinningPlayer) 
+				{
+					std::cout << " Player 1  Won" << std::endl;
+					mRunning = false;
+				}
+				else 
+				{
+					std::cout << " Player 2  Won" << std::endl;
+					mRunning = false;
+				}
+
 			}
 		}
 		else  if (bytesReceived < 0)
@@ -341,6 +393,10 @@ void Game::Update()
 	}
 
 	receiveThread.join();
+
+	string junk;
+	std::cout << "Press any key to continue." << std::endl;
+	std::cin >> junk;
 }
 
 void Game::UpdateNetworkedPaddle(int y)

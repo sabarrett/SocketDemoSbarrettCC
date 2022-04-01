@@ -39,12 +39,13 @@ TCPSocketPtr TCPSocket::Accept( SocketAddress& inFromAddress )
 	}
 }
 
+
 int32_t	TCPSocket::Send( const void* inData, size_t inLen )
 {
 	int bytesSentCount = send( mSocket, static_cast< const char* >( inData ), inLen, 0 );
 	if( bytesSentCount < 0 )
 	{
-		SocketUtil::ReportError( "TCPSocket::Send" );
+		//SocketUtil::ReportError( "TCPSocket::Send" );
 		return -SocketUtil::GetLastError();
 	}
 	return bytesSentCount;

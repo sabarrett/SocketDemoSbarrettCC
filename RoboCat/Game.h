@@ -24,6 +24,7 @@ class Game
 	bool mRunning = false;
 	bool mIsServer = false;
 	bool mLocalLeft = true;
+	int mWinningPlayer = 0;
 
 	bool InitAllegro();
 	void StartServer();
@@ -36,6 +37,7 @@ class Game
 	void CheckCollisions(ball* ball);
 	void CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2);
 	void SendUpdatedStates();
+	int Send(const void *inData, size_t inLen);
 	void Receive(); 
 
 	
