@@ -213,7 +213,7 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-	InputSystem mInputSystem; //do i need this to be a pointer and create it?
+	InputSystem* mpInputSystem = new InputSystem(); //do i need this to be a pointer and create it?
 	GameObject mGameObjects[MAX_OBJECT_COUNT]; //possibly make this an array with MAX_OBJECT_COUNT
 	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
 
@@ -241,14 +241,12 @@ int main(int argc, const char** argv)
 	}
 
 	mpGraphicsLibrary->init(BACKGROUND_PATH);
-	//mpGraphicsLibrary->loadImage()
 
 	while (activeConnection == true)
 	{
 		pastUnitCount = unitCount;
-		mpGraphicsLibrary->render(); //render here or at the end?
 
-		if (mInputSystem.getKeyboardInput() == KeyCode::S)
+		if (mpInputSystem->getKeyboardInput() == KeyCode::S)
 		{
 			//spawn an object
 			mGameObjects[unitCount].CreateObject();
@@ -256,7 +254,7 @@ int main(int argc, const char** argv)
 			unitCount++;
 		}
 
-		if (mInputSystem.getKeyboardInput() == KeyCode::D)
+		if (mpInputSystem->getKeyboardInput() == KeyCode::D)
 		{
 			//despawn an object
 			int tmpRand;
@@ -282,6 +280,12 @@ int main(int argc, const char** argv)
 			}
 		}
 
+		if (mpInputSystem->getKeyboardInput() == KeyCode::Esc)
+		{
+			//basically exit the game shut everything down
+			activeConnection = false;
+		}
+
 		for (int i = 0; i < unitCount; i++)
 		{
 			mGameObjects[i].UpdatePosition();
@@ -289,11 +293,13 @@ int main(int argc, const char** argv)
 		}
 
 		//now i need to move and send this info
-
+		mpGraphicsLibrary->render(); //render at the very end
 	}
 	
 	delete mpGraphicsLibrary;
 	mpGraphicsLibrary = NULL; //is this needed?
+	delete mpInputSystem;
+	mpInputSystem = NULL;
 
 	SocketUtil::CleanUp();
 
