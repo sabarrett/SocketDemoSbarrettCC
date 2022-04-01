@@ -65,6 +65,7 @@ float playerMoveSpeed = 0.5;
 //-------------------------Network Data-------------------------
 Networker* Networker::mInstance = 0;
 Networker* pNetworkManager;
+PacketType packetTypeReceived;
 int networkID = 0;
 
 bool init()
@@ -418,7 +419,11 @@ int main(int argc, const char** argv)
 					pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
 
 					//Network update - receive packets
-					pNetworkManager->receiveGameObjectState();
+					packetTypeReceived = pNetworkManager->receiveGameObjectState();
+
+					//If you receive a new GameObject, increment the network ID to keep spawning in sync!
+					if (packetTypeReceived == PacketType::PACKET_CREATE)
+						networkID++;
 
 					//Draw call
 					draw();

@@ -15,7 +15,8 @@ enum PacketType
 {
 	PACKET_CREATE,
 	PACKET_UPDATE,
-	PACKET_DELETE
+	PACKET_DELETE,
+	PACKET_INVALID
 };
 
 //Networker is singleton (we only want one networker at a time)
@@ -45,7 +46,7 @@ public:
 	bool connect(std::string serverIpAddress, std::string port);
 
 	//Update game state
-	void receiveGameObjectState();
+	PacketType receiveGameObjectState();
 	void sendGameObjectState(int networkID, PacketType packetHeader);
 
 	//Map

@@ -152,7 +152,7 @@ bool Networker::connect(std::string serverIpAddress, std::string port)
 }
 
 
-void Networker::receiveGameObjectState()
+PacketType Networker::receiveGameObjectState()
 {
 	char buffer[1024];
 	int32_t byteRecieve = (*mpTCPSocket)->Receive(buffer, 1024);
@@ -292,14 +292,17 @@ void Networker::receiveGameObjectState()
 		}
 
 		default:
-			return;
+			return PacketType::PACKET_INVALID;
 		}
+
+		return packetHeader;
 	}
 	else if (byteRecieve == -10053 || byteRecieve == -10054)
 	{
 		LOG("%s", "Disconnected From Server");
 		exit(0);
 	}
+	return PacketType::PACKET_INVALID;
 }
 
 void Networker::sendGameObjectState(int ID, PacketType packetHeader)
