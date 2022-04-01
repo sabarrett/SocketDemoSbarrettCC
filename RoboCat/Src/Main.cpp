@@ -19,19 +19,19 @@ int FPS = 30;
 class RainParticle
 {
 public:
-	RainParticle(int xStart, int yStart, float newRadius, float newR, float newG, float newB, float newA);
+	RainParticle(float xStart, float yStart, float newRadius, float newR, float newG, float newB, float newA);
 	RainParticle();
 	void Read(InputMemoryBitStream& iStream);
 	void Write(OutputMemoryBitStream& oStream) const;
 	void Draw();
-	void UpdatePos(int xChange, int yChange);
+	void UpdatePos(float xChange, float yChange);
 
 	vector<float> color;
-	vector<int> position;
+	vector<float> position;
 	float radius;
 };
 
-RainParticle::RainParticle(int xStart, int yStart, float newRadius, float newR, float newG, float newB, float newA)
+RainParticle::RainParticle(float xStart, float yStart, float newRadius, float newR, float newG, float newB, float newA)
 {
 	color.push_back(newR);
 	color.push_back(newG);
@@ -46,8 +46,8 @@ RainParticle::RainParticle(int xStart, int yStart, float newRadius, float newR, 
 
 RainParticle::RainParticle()
 {
-	float tempR, tempG, tempB, tempA;
-	int tempX, tempY;
+	float tempR, tempG, tempB, tempA, tempX, tempY;
+
 	color.push_back(tempR);
 	color.push_back(tempG);
 	color.push_back(tempB);
@@ -90,7 +90,7 @@ void RainParticle::Draw()
 	al_draw_filled_circle(position[0], position[1], radius, al_map_rgba(color[0], color[1], color[2], color[3]));
 }
 
-void RainParticle::UpdatePos(int xChange, int yChange)
+void RainParticle::UpdatePos(float xChange, float yChange)
 {
 	position[0] += xChange;
 	position[1] += yChange;
@@ -262,16 +262,17 @@ TCPSocketPtr StartServer()
 void BradsTotallyOriginalServer()
 {
 	TCPSocketPtr incomingSocket = StartServer();
+	incomingSocket->SetNonBlockingMode(true);
 
 	// Game Loop Variables
 	bool exit = false;
 	const int numObjects = 1;
 
 	//Greate GameObjects
-	CircleClass outObjects[numObjects];
+	CircleClass greenCircle[numObjects];
 	for (int j = 0; j < numObjects; j++)
 	{
-		outObjects[j] = CircleClass(100, 100, 20);
+		greenCircle[j] = CircleClass(100, 100, 20);
 	}
 
 	const int numDroplets = 10;
@@ -281,42 +282,7 @@ void BradsTotallyOriginalServer()
 		rain[k] = RainParticle(rand() % windowWidth + 1, rand() % windowHeight + 1, rand() % 5 + 5, 0, 0, rand() % 254 + 1, rand() % 254 + 1);
 	}
 
-	std::thread ServerSendThread([&incomingSocket, &exit, &outObjects, &numObjects, &rain, &numDroplets]()
-		{
-			while (!exit)
-			{
-				OutputMemoryBitStream oStream = OutputMemoryBitStream();
-
-				for (int i = 0; i < numObjects; i++)
-				{
-					outObjects[i].Write(oStream);
-				}
-				
-				for (int j = 0; j < numDroplets; j++)
-				{
-					rain[j].Write(oStream);
-				}
-				incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
-			}
-		});
-
 	RectangleObject inObjects[numObjects];
-	thread ServerRecieveThread([&exit, &incomingSocket, &inObjects, &numObjects]()
-		{		
-			while (!exit)
-			{
-				char buffer[4096];
-				int32_t bytesReceived = int32_t(); // get username
-				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
-				
-				bytesReceived = incomingSocket->Receive(buffer, 4096);
-				for (int i = 0; i < numObjects; i++)
-				{
-					inObjects[i].Read(iStream);
-				}
-			}
-			incomingSocket->~TCPSocket();
-		});
 	
 	ALLEGRO_DISPLAY* display;
 	display = al_create_display(windowWidth, windowHeight);
@@ -333,6 +299,37 @@ void BradsTotallyOriginalServer()
 
 	while (!exit) //GameLoop
 	{
+
+		//send Data
+		OutputMemoryBitStream oStream = OutputMemoryBitStream();
+
+		for (int i = 0; i < numObjects; i++)
+		{
+			greenCircle[i].Write(oStream);
+		}
+
+		for (int j = 0; j < numDroplets; j++)
+		{
+			rain[j].Write(oStream);
+		}
+		incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
+
+		//recieve Data
+		char buffer[4096];
+		int32_t bytesReceived = int32_t(); // get username
+		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
+
+		bytesReceived = incomingSocket->Receive(buffer, 4096);
+		if (bytesReceived != -10035)
+		{
+			for (int i = 0; i < numObjects; i++)
+			{
+				inObjects[i].Read(iStream);
+			}
+		}
+
+		
+
 		ALLEGRO_EVENT events;
 
 		al_get_next_event(eventQueue, &events);
@@ -385,14 +382,14 @@ void BradsTotallyOriginalServer()
 		{
 			if (xMove || yMove)
 			{
-				outObjects[i].UpdatePos(xAxis, yAxis);
+				greenCircle[i].UpdatePos(xAxis, yAxis);
 			}
 			inObjects[i].Draw();
-			outObjects[i].Draw();
+			greenCircle[i].Draw();
 		}
 		for (int j = 0; j < numDroplets; j++)
 		{
-			rain[j].UpdatePos(1, 3);
+			rain[j].UpdatePos(0.1, 0.3);
 			rain[j].Draw();
 		}
 		al_flip_display();
@@ -427,6 +424,7 @@ TCPSocketPtr StartClientConnection()
 void BradsLessOriginalClient()
 {
 	TCPSocketPtr clientSocket = StartClientConnection();
+	clientSocket->SetNonBlockingMode(true);
 
 	bool exit = false;
 	const int numObjects = 1;
@@ -439,47 +437,11 @@ void BradsLessOriginalClient()
 		outRectangles[j] = RectangleObject(20, 20, rand() % windowWidth + 1, rand() % windowHeight + 1);
 	}
 
-	thread ClientSendThread([&clientSocket, &exit, &outRectangles, &numObjects]()
-		{
-			while (!exit)
-			{
-				OutputMemoryBitStream oStream = OutputMemoryBitStream();
-
-				for (int i = 0; i < numObjects; i++)
-				{
-					outRectangles[i].Write(oStream);
-				}
-				clientSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
-			}
-			
-		});
-
 	// Read In Objects
 	CircleClass inObjects[numObjects];
+
 	const int numDroplets = 10;
 	RainParticle rain[numDroplets];
-
-	thread ClientRecieveThread([&exit, &clientSocket, &inObjects, &numObjects, &rain, &numDroplets]()
-		{
-			while (!exit)
-			{
-				char buffer[4096];
-				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
-				int32_t bytesReceived = int32_t();
-				//LOG("%s", "Client game loop");
-				bytesReceived = clientSocket->Receive(buffer, 4096);
-
-				for (int i = 0; i < numObjects; i++)
-				{
-					inObjects[i].Read(iStream);
-				}
-				for (int j = 0; j < numDroplets; j++)
-				{
-					rain[j].Read(iStream);
-				}
-			}
-			clientSocket->~TCPSocket();
-		});
 
 	// Main Game Loop
 	ALLEGRO_DISPLAY* display;
@@ -497,6 +459,35 @@ void BradsLessOriginalClient()
 
 	while (!exit) //GameLoop
 	{
+		// Recieve data
+		char buffer[4096];
+		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
+		int32_t bytesReceived = int32_t();
+		//LOG("%s", "Client game loop");
+		bytesReceived = clientSocket->Receive(buffer, 4096);
+		if (bytesReceived != -10035)
+		{
+			for (int i = 0; i < numObjects; i++)
+			{
+				inObjects[i].Read(iStream);
+			}
+			for (int j = 0; j < numDroplets; j++)
+			{
+				rain[j].Read(iStream);
+			}
+		}
+		
+
+		//send Data
+		OutputMemoryBitStream oStream = OutputMemoryBitStream();
+
+		for (int i = 0; i < numObjects; i++)
+		{
+			outRectangles[i].Write(oStream);
+		}
+		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
+			
+
 		ALLEGRO_EVENT events;
 
 		al_get_next_event(eventQueue, &events);
