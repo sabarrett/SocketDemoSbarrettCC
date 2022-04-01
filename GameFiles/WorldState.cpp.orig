@@ -1,0 +1,113 @@
+#include "RoboCatPCH.h"
+
+#include "allegro_wrapper_functions-main/GraphicsLibrary.h"
+
+#include "WorldState.h"
+
+#include "Lock.h"
+#include "Key.h"
+
+WorldState::WorldState(GraphicsLibrary* gl)
+{
+	mpGraphicsLibrary = gl;
+	mpGameObjectLinker = new LinkingContext();
+	mGameObjects = std::vector<GameObject*>();
+}
+
+WorldState::~WorldState()
+{
+	delete mpGameObjectLinker;
+	mpGraphicsLibrary = nullptr;
+}
+
+void WorldState::Update()
+{
+	for each (GameObject* var in mGameObjects)
+	{
+		var->Update();
+	}
+}
+
+void WorldState::Render()
+{
+	mpGraphicsLibrary->drawImage(BACKGROUND, 0, 0);
+
+	for each (GameObject * var in mGameObjects)
+	{
+		var->Render(mpGraphicsLibrary);
+	}
+
+	mpGraphicsLibrary->render();
+}
+
+void WorldState::CreateLock()
+{
+	CreateLock(0, 0);
+}
+
+void WorldState::CreateLock(int posX, int posY)
+{
+	GameObject* createdGameObject = Lock::CreateInstance();
+	createdGameObject->SetPostion(posX, posY);
+	mpGameObjectLinker->GetNetworkId(createdGameObject,true);
+	mGameObjects.push_back(createdGameObject);
+}
+
+<<<<<<< HEAD
+void WorldState::CreateKey()
+{
+	CreateKey(Location{0,0});
+}
+
+void WorldState::CreateKey(Location loc)
+{
+	GameObject* createdGameObject = Key::CreateInstance();
+	createdGameObject->SetPostion(loc.x , loc.y);
+	mpGameObjectLinker->GetNetworkId(createdGameObject, true);
+	mGameObjects.push_back(createdGameObject);
+=======
+void WorldState::Write(OutputMemoryBitStream& stream)
+{
+	int count = mGameObjects.size();
+	GameObject* tempObj;
+	stream.Write(count);
+	for (int i = 0; i < count; i++)
+	{
+		tempObj = mGameObjects[i];
+		stream.Write(mpGameObjectLinker->GetNetworkId(tempObj,true));
+		stream.Write(tempObj->GetClassId());
+		tempObj->Write(stream);
+	}
+}
+
+void WorldState::Read(InputMemoryBitStream& stream)
+{
+	int count;
+	uint32_t networkID;
+	uint32_t classID;
+	GameObject* tempObj;
+	stream.Read(count);
+	for (int i = 0; i < count; i++)
+	{
+		stream.Read(networkID);
+		stream.Read(classID);
+		
+		tempObj = mpGameObjectLinker->GetGameObject(networkID);
+
+		if (tempObj == nullptr)
+		{
+			switch (classID)
+			{
+				case 'LOCK':
+					tempObj = Lock::CreateInstance();
+					break;
+				default:
+					break;
+			}
+			mpGameObjectLinker->AddGameObject(tempObj, networkID);
+		}
+		
+		tempObj->Read(stream);
+	}
+>>>>>>> 53b7d8bebddd73c83e40367fd0206359099adf60
+}
