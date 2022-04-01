@@ -50,6 +50,7 @@ struct Ball : PhysObject {
     float radius;
     int ownerID;
     bool isDead;
+    Vector2 impact;
     Vector2 trail[4];
     int framesTillRefresh;
     int bounceFrames;
@@ -65,6 +66,8 @@ struct Brick {
         return Rectangle{ position.x - bricks.x / 2, position.y - bricks.y / 2, screenWidth / BRICK_COLUMNS, 40 };
     }
 };
+
+
 
 Brick brickList[BRICK_ROWS][BRICK_COLUMNS] = { 0 };
 // player 1 is always the host
@@ -341,6 +344,8 @@ void DrawBrick(Brick brick);
 void DrawPlayer(Player player);
 void DrawBall(Ball ball);
 
+Vector2 cameraOffset;
+
 TCPSocketPtr masterSocket;
 TCPPacketManager packetManager;
 
@@ -445,7 +450,11 @@ int main(int argc, const char** argv)
             // Draw
             //----------------------------------------------------------------------------------
             BeginDrawing();
-
+            Camera2D camera = { 0 };
+            camera.offset = Vector2{0, 0 };
+            camera.zoom = 1.0f;
+            camera.offset = Vector2Add(cameraOffset, camera.offset);
+            BeginMode2D(camera);
             ClearBackground(RAYWHITE);
 
             //Draw Player
@@ -489,6 +498,7 @@ int main(int argc, const char** argv)
             const char* nick2 = player2.nickname.c_str();
             DrawText(nick2, screenWidth - MeasureText(nick2, 20) - 20, GetScreenHeight() - 20, 20, RED);
         }
+        EndMode2D();
         EndDrawing();
         //----------------------------------------------------------------------------------
         shouldClose = WindowShouldClose();
@@ -512,7 +522,10 @@ int main(int argc, const char** argv)
 
 void DrawBall(Ball ball) {
     float radius = ball.radius + (float)ball.bounceFrames * ball.bounceFrames;
-    DrawCircleV(ball.position, radius, ball.ballColor);
+    float radiusX = radius - ball.impact.x * 0.1;
+    float radiusY = radius - ball.impact.y * 0.1;
+    DrawEllipse(ball.position.x, ball.position.y, radiusX, radiusY, ball.ballColor);
+    //DrawCircleV(ball.position, radius, ball.ballColor);
     Vector2 start = ball.position;
     for (int i = 0; i < 4; i++) {
         DrawLineEx(start, ball.trail[i], 4 / (i + 1), ball.ballColor);
@@ -543,7 +556,9 @@ void DrawBrick(Brick brick) {
 void DrawPlayer(Player player) {
     Rectangle rect = player.rect();
     float bumpShrink = (float)player.bumpFrames;
-    rect.x += bumpShrink;
+
+    float offset = player.velocity.x;
+    rect.x += bumpShrink ;
     rect.y += bumpShrink;
     rect.width -= bumpShrink;
     rect.height -= bumpShrink;
@@ -552,11 +567,11 @@ void DrawPlayer(Player player) {
     Vector2 btmL = { rect.x, rect.y + rect.height };
     Vector2 topR = { rect.x + rect.width, rect.y };
     Vector2 points[6] = {
-        { btmL.x - 10, btmL.y - 10},
+        { btmL.x - 10 - offset, btmL.y - 10},
         { btmL.x, btmL.y },
-        { btmL.x - 10, topR.y - 10},
+        { btmL.x - 10 - offset, topR.y - 10},
         { btmL.x, topR.y},
-        { topR.x - 10, topR.y - 10},
+        { topR.x - 10 - offset, topR.y - 10},
         { topR.x, topR.y}
 
         
@@ -721,8 +736,8 @@ void UpdateBall(Player& owner, Ball& ball) {
         ball.velocity.y *= -1;
         ball.position.y = ball.radius;
     }
-
-   
+    
+    ball.trail[3] = Vector2Lerp(ball.trail[2], ball.trail[3], 0.9);
     if (ball.framesTillRefresh == 0) {
         ball.framesTillRefresh = 10;
         ball.trail[3] = ball.trail[2];
@@ -736,6 +751,8 @@ void UpdateBall(Player& owner, Ball& ball) {
 
     if (velDelta.x != 0 || velDelta.y != 0) {
         ball.bounceFrames = 5;
+        ball.impact = Vector2{ fabs(velDelta.x), fabs(velDelta.y) };
+        cameraOffset = velDelta;
     }
 
     if (ball.hasAuthority && (startVel.x != ball.velocity.x || startVel.y != ball.velocity.y) ) {
@@ -748,6 +765,8 @@ void UpdateBall(Player& owner, Ball& ball) {
         packetManager.SendPacket(masterSocket.get(), &movePacket);
     }
 
+    ball.impact = Vector2Scale(ball.impact, 0.95);
+    
     if (ball.bounceFrames > 0) ball.bounceFrames--;
 }
 
@@ -813,6 +832,8 @@ void UpdateGame()
     UpdateBall(player2, ball2);
 
     UpdatePhysObjs();
+
+    cameraOffset = Vector2Scale(cameraOffset, 0.9);
 
     //Reset
     gameOver = true;
