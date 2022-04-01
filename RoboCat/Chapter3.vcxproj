@@ -564,7 +564,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="GraphicsLib.cpp" />
+    <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="TCPSocket.cpp" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="GraphicsLib.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
@@ -585,6 +590,7 @@
     <ClCompile Include="Src\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
+    <ClInclude Include="InputSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">
