@@ -12,6 +12,7 @@ enum CurrentObject
 	BOULDER,
 	BUBBLE,
 	BEE,
+	PLAYER,
 	INVALID
 };
 
