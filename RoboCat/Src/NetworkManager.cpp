@@ -30,7 +30,7 @@ bool NetworkManager::initServer(std::string port)
 	}
 	std::cout << "Listening Socket Created\n";
 
-	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001"); //change to be versatile
+	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:8080"); //change to be versatile
 	if (srvAddr == nullptr)
 	{
 		SocketUtil::ReportError("Creating Listening Address\n");
@@ -49,9 +49,9 @@ bool NetworkManager::initServer(std::string port)
 		SocketUtil::ReportError("Listening on Socket\n");
 		ExitProcess(1);
 	}
-	std::cout << "Listening Socket Working";
+	std::cout << "Listening Socket Working\n";
 
-	std::cout << "Waiting on Connection.";
+	std::cout << "Waiting on Connection.\n";
 
 	sock->SetNonBlockingMode(false);
 	SocketAddress clientAddr;
@@ -79,20 +79,24 @@ bool NetworkManager::connect(std::string IPAddr, std::string port)
 		ExitProcess(1);
 		return false;
 	}
+	std::cout << "Client Socket Created\n";
 
-	SocketAddressPtr cliAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9000");
+	string addr = "0.0.0.0:0";
+	SocketAddressPtr cliAddr = SocketAddressFactory::CreateIPv4FromString(addr.c_str());
 	if (cliAddr == nullptr)
 	{
 		SocketUtil::ReportError("Creating Client Address");
 		ExitProcess(1);
 		return false;
 	}
+	std::cout << "Client Address Working\n";
 
 	if (sock->Bind(*cliAddr) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding Client Socket");
 		ExitProcess(1);
 	}
+	std::cout << "Bound Client Socket\n";
 
 	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString(IPAddr + ":" + port);
 	if (srvAddr == nullptr)
@@ -100,10 +104,12 @@ bool NetworkManager::connect(std::string IPAddr, std::string port)
 		SocketUtil::ReportError("Creating Server Address");
 		ExitProcess(1);
 	}
+	std::cout << "Created Server Address\n";
 
 	if (sock->Connect(*srvAddr) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Connecting to Server");
+		system("pause");
 		ExitProcess(1);
 	}
 	LOG("%s", "Connected");
@@ -120,8 +126,8 @@ bool NetworkManager::connect(std::string IPAddr, std::string port)
 void NetworkManager::recieve()
 {
 	char buffer[1024];
-	int32_t byteRecieve = (*mpTCPSocket)->Receive(buffer, 1024);
-	if (byteRecieve > 0)
+	int32_t bytesRecieved = (*mpTCPSocket)->Receive(buffer, 1024);
+	if (bytesRecieved > 0)
 	{
 		InputMemoryBitStream InMBStream = InputMemoryBitStream(buffer, 1024);
 		//
@@ -176,39 +182,39 @@ void NetworkManager::recieve()
 				Colour playerColor;
 				char direction;
 
-								switch (recieveType)
-								{
-								case CurrentObject::BUBBLE: //HERE IS ISSUE
-									Bubble* newBubble;
-									newBubble= (Bubble*)mObjectsVector[networkID].first;
+				switch (recieveType)
+				{
+				case CurrentObject::BUBBLE: //HERE IS ISSUE
+					Bubble* newBubble;
+					newBubble= (Bubble*)mObjectsVector[networkID].first;
 				
-									InMBStream.Read(posX);
-									InMBStream.Read(posY);
-									//InMBStream.Read(playerColor);
+					InMBStream.Read(posX);
+					InMBStream.Read(posY);
+					//InMBStream.Read(playerColor);
 				
-									newBubble->setPosition(posX, posY);
-									//newBubble->setPlayerColor(playerColor);
-									break;
+					newBubble->setPosition(posX, posY);
+					//newBubble->setPlayerColor(playerColor);
+					break;
 				
-								case CurrentObject::BOULDER:
-									InMBStream.Read(posX);
-									InMBStream.Read(posY);
+				case CurrentObject::BOULDER:
+					InMBStream.Read(posX);
+					InMBStream.Read(posY);
 				
-									mObjectsVector[networkID].first->setPosition(posX, posY);
-									break;
+					mObjectsVector[networkID].first->setPosition(posX, posY);
+					break;
 				
-								case CurrentObject::BEE:
-									Bees* newBees;
-									newBees = (Bees*)mObjectsVector[networkID].first;
+				case CurrentObject::BEE:
+					Bees* newBees;
+					newBees = (Bees*)mObjectsVector[networkID].first;
 				
-									InMBStream.Read(posX);
-									InMBStream.Read(posY);
-									InMBStream.Read(direction);
+					InMBStream.Read(posX);
+					InMBStream.Read(posY);
+					InMBStream.Read(direction);
 				
-									newBees->setPosition(posX, posY);
-									newBees->setDirection(direction);
-									break;
-								}
+					newBees->setPosition(posX, posY);
+					newBees->setDirection(direction);
+					break;
+				}
 			}
 			else
 				std::cout << "Broken broken";
@@ -220,7 +226,7 @@ void NetworkManager::recieve()
 			return;
 		}
 	}
-	else if (byteRecieve == -10053 || byteRecieve == -10054)
+	else if (bytesRecieved == -10053 || bytesRecieved == -10054)
 	{
 		std::cout << "disconnected";
 		exit(0);
@@ -260,8 +266,13 @@ void NetworkManager::send(int networkID, Packets type)
 			OutMBStream.Write(newBee->getPosition().second);
 			OutMBStream.Write(newBee->getDirection());
 			break;
+		case CurrentObject::PLAYER:
+			PlayerController* newpController;
+			newpController = new PlayerController(networkID, mpGraphicsLib);
+			mObjectsVector.push_back(pair<GameObjects*, int>(newpController, networkID));
+			newpController = nullptr;
+			break;
 		}
-
 		break;
 	}
 

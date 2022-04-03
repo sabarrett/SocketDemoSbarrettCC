@@ -155,7 +155,7 @@ int main(int argc, const char** argv)
 		if (role == "y")
 		{
 			std::string port;
-			port = 8080;
+			port = "8080";
 			/*std::cout << "Port: ";
 			std::cin >> port;*/
 
@@ -174,7 +174,7 @@ int main(int argc, const char** argv)
 			std::cin >> connectIP;*/
 
 			std::string port;
-			port = 8081;
+			port = "8080";
 			/*std::cout << "Port: ";
 			std::cin >> port;*/
 
