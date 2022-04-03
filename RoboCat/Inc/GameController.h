@@ -6,6 +6,7 @@
 //makeshift game manager
 class GameController
 {
+
 public:
 
 	GameController();
@@ -13,8 +14,8 @@ public:
 	~GameController() {};
 
 	void dropBoulder();
-	void sendBees(KeyCode direction);
-	void makeBubble(std::string playerID);
+	void sendBees(char direction);
+	void makeBubble(int playerID);
 	void sendDart();
 
 private:
@@ -27,4 +28,5 @@ private:
 
 	int p1Score;
 	int p2Score;
+
 };

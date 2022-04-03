@@ -38,7 +38,7 @@ GraphicsLibrary::~GraphicsLibrary()
 	mpDisplay = nullptr;
 }
 
-bool GraphicsLibrary::init(std::string backgroundFilePath)
+bool GraphicsLibrary::init()
 {
 	//Init allegro
 	if (!al_init())
@@ -105,6 +105,20 @@ void GraphicsLibrary::drawImage(std::string imageIdentifier, float posX, float p
 		if (iterator->first == imageIdentifier)
 		{
 			al_draw_bitmap(iterator->second, posX, posY, 0);
+		}
+	}
+}
+
+void GraphicsLibrary::drawScaledImage(std::string imageIdentifier, float posX, float posY, float scaleX, float scaleY)
+{
+	//Find the image and draw if it exists
+	std::vector<std::pair<std::string, ALLEGRO_BITMAP*>>::iterator iterator;
+
+	for (iterator = mBitmapPointersVector.begin(); iterator != mBitmapPointersVector.end(); ++iterator)
+	{
+		if (iterator->first == imageIdentifier)
+		{
+			al_draw_scaled_bitmap(iterator->second, 0, 0, al_get_bitmap_width(iterator->second), al_get_bitmap_height(iterator->second), posX, posY, al_get_bitmap_width(iterator->second) * scaleX, al_get_bitmap_height(iterator->second) * scaleY, 0);
 		}
 	}
 }
