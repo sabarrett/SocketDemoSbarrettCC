@@ -80,7 +80,7 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 	//Register mouse event source
 	al_register_event_source(mpEventQueue, al_get_mouse_event_source());
 
-	mGameController = GameController();
+	//mGameController = GameController();
 
 	return true;
 }
@@ -112,10 +112,11 @@ MouseButton InputSystem::getMouseInput()
 	}
 }
 
-KeyCode InputSystem::getKeyboardInput()
+KeyCode InputSystem::getKeyboardInput(InputMode inputMode)
 {
 	//If there is an event
 	al_wait_for_event(mpEventQueue, &mEvent);
+	KeyCode pressKey;
 	
 	if (mEvent.type == InputMode::KeyPressed)
 	{
@@ -123,30 +124,31 @@ KeyCode InputSystem::getKeyboardInput()
 		switch (mEvent.keyboard.keycode)
 		{
 		case KeyCode::ESC:
-			return KeyCode::ESC;
+			pressKey = ESC;
 			break;
 
-		case KeyCode::R:
-			return KeyCode::R;
+		case KeyCode::B:
+			//mpGameController->makeBubble("p1");
+			pressKey = B;
 			break;
 		
 		case KeyCode::LEFT:
-			GameController::sendBees(LEFT);
-			return KeyCode::LEFT;
+			mpGameController->sendBees('l');
+			pressKey = LEFT;
 			break;
 		
 		case KeyCode::RIGHT:
-			return KeyCode::RIGHT;
+			mpGameController->sendBees('r');
+			pressKey = RIGHT;
 			break;
 
 		case KeyCode::SPACE:
-			return KeyCode::SPACE;
+			mpGameController->dropBoulder();
+			pressKey = SPACE;
 			break;
 
-		default:
-			/*return KeyCode::NONE*/;
 		}
 	}
 
-	//return KeyCode::NONE;
+	return pressKey;
 }

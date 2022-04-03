@@ -11,14 +11,17 @@ InputSystem.h
 */
 
 #include "GraphicsLibrary.h"
+#include "GameController.h"
 
 //Include allegro libraries for input
 #include <allegro5/allegro.h>
 
+
+
 enum KeyCode
 {
 	ESC = ALLEGRO_KEY_ESCAPE,
-	R = ALLEGRO_KEY_R,
+	B = ALLEGRO_KEY_B,
 	LEFT = ALLEGRO_KEY_LEFT,
 	RIGHT = ALLEGRO_KEY_RIGHT,
 	SPACE = ALLEGRO_KEY_SPACE
@@ -42,6 +45,7 @@ enum InputMode
 
 class InputSystem
 {
+	friend class GameController;
 	//-------------------------Private data-------------------------
 
 	//Event queue
@@ -49,10 +53,6 @@ class InputSystem
 
 	//Event
 	ALLEGRO_EVENT mEvent;
-
-	//Added by Olli
-	GameController mGameController;
-
 	//-------------------------Public data-------------------------
 public:
 
@@ -70,5 +70,7 @@ public:
 	//Functions
 	bool init(GraphicsLibrary* pGraphicsLib);
 	MouseButton getMouseInput();
-	KeyCode getKeyboardInput();
+	KeyCode getKeyboardInput(InputMode inputMode);
+
+	GameController* mpGameController;
 };

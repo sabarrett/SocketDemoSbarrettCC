@@ -58,11 +58,12 @@ public:
 	//Mutator(s)
 
 	//Functions
-	bool init(std::string backgroundFilePath);
+	bool init();
 	void render();
 	void loadImage(std::string imageFilePath, std::string imageIdentifier);
 
 	//Drawing functions
 	void drawImage(std::string imageIdentifier, float posX, float posY);
+	void drawScaledImage(std::string imageIdentifier, float posX, float posY, float scaleX, float scaleY);
 	void drawTintedImage(std::string imageIdentifier, float posX, float posY, Colour col);
 };
