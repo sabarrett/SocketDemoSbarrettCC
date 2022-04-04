@@ -5,6 +5,9 @@
 
 #if _WIN32
 
+const int SCREEN_SIZE_X = 1000;
+const int SCREEN_SIZE_Y = 600;
+
 void TCPServer(UDPSocketPtr server)
 {
 	std::thread sendInput([&] {
@@ -51,6 +54,10 @@ int main(int argc, const char** argv)
 
 	UDPSocketPtr cliSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 	UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
+
+	//GraphicsLib* gLib = new GraphicsLib(SCREEN_SIZE_X, SCREEN_SIZE_Y);
+	//gLib->init("../../common/assets/steps.png");
+	//gLib->loadImage("../../common/assets/steps.png", "background");
 		
 	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
 	{
