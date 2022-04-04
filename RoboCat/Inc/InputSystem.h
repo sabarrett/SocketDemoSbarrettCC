@@ -49,10 +49,10 @@ class InputSystem
 	//-------------------------Private data-------------------------
 
 	//Event queue
-	ALLEGRO_EVENT_QUEUE* mpEventQueue;
+	ALLEGRO_EVENT_QUEUE* mpKeyboardEventQueue;
 
 	//Event
-	ALLEGRO_EVENT mEvent;
+	ALLEGRO_EVENT mKeyboardEvent;
 	//-------------------------Public data-------------------------
 public:
 

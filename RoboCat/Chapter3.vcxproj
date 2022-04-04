@@ -381,7 +381,6 @@
     <ClInclude Include="Inc\Colour.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Inc\GameController.h" />
     <ClInclude Include="Inc\GameObjects.h" />
     <ClInclude Include="Inc\GraphicsLibrary.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -404,7 +403,6 @@
     <ClInclude Include="Inc\RoboCatShared.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
     <ClCompile Include="Src\Colour.cpp" />
-    <ClCompile Include="Src\GameController.cpp" />
     <ClCompile Include="Src\GameObjects.cpp" />
     <ClCompile Include="Src\GraphicsLibrary.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

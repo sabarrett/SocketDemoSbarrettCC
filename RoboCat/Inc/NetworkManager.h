@@ -7,7 +7,7 @@
 #include "Colour.h"
 #include "PlayerController.h"
 
-enum Packets
+enum TypePacket
 {
 	PACKET_CREATE,
 	PACKET_UPDATE,
@@ -31,17 +31,18 @@ public:
 
 	NetworkManager();
 	~NetworkManager() {};
-	void init(GraphicsLibrary* gLib, Colour p1Color, Colour p2Color);
 	
 	bool initServer(std::string port);
+	void init(GraphicsLibrary* gLib, Colour p1Color, Colour p2Color);
 	bool connect(std::string serverIP, std::string port);
 
-	void recieve();
-	void send(int networkID, Packets packetType);
-
 	void spawnObj(GameObjects* newObj, int networkID);
+	void send(int networkID, TypePacket packetType);
+	void recieve();
+
 	void updateObj();
 	void renderObj();
+
 	GameObjects* getObj() {};
 
 private:
@@ -50,12 +51,10 @@ private:
 	GraphicsLibrary* mpGraphicsLib;
 	TCPSocketPtr* mpTCPSocket;
 
-	Colour mP1Color, mP2Color;
+	std::vector<std::pair<GameObjects*, int>> mGameObjVector;
 
-	std::vector<std::pair<GameObjects*, int>> mObjectsVector;
+	Colour mP1Color, mP2Color;
 	std::string mBubbleImgID;
 	std::string mBoulderImgID;
 	std::string mBeeImgID;
-
-	
 };

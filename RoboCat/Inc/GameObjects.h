@@ -3,11 +3,10 @@
 #include <string>
 #include <utility>
 #include "GraphicsLibrary.h"
-#include "GameController.h"
 
 using std::pair;
 
-enum CurrentObject
+enum GameObjType
 {
 	BOULDER,
 	BUBBLE,
@@ -20,22 +19,23 @@ class GameObjects
 {
 public:
 	GameObjects() {};
-	GameObjects(CurrentObject type, GraphicsLibrary* gLib, const int networkID);
-	GameObjects(CurrentObject type, GraphicsLibrary* gLib, const int networkID, float posX, float posY, const std::string imgID = "");
+	GameObjects(GameObjType type, GraphicsLibrary* gLib, const int networkID);
+	GameObjects(GameObjType type, GraphicsLibrary* gLib, const int networkID, float posX, float posY, const std::string imgID = "");
 	virtual ~GameObjects();
 
-	const CurrentObject getObjType() { return mObjType; }
+	const GameObjType getObjType() { return mObjType; }
 	const int getNetworkID() { return mNetworkID; }
 	const pair<float, float> getPosition() { return pair<float, float>(mPosX, mPosY); }
 
 	void setPosition(float posX, float posY) { mPosX = posX; mPosY = posY; }
+	std::string getImageID() { return mIMG_ID; }
 
 	virtual void update() {};
 	virtual void draw() {};
 
 protected:
 
-	CurrentObject mObjType;
+	GameObjType mObjType;
 	const std::string mIMG_ID;
 	int mNetworkID;
 	float mPosX;
@@ -73,7 +73,7 @@ public:
 
 	Bees(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY);
 	~Bees() {};
-	void spawn(KeyCode direction) {};
+	//void spawn(KeyCode direction) { };
 	void move() {};
 
 	void setDirection(char dir) { mDirection = dir; }

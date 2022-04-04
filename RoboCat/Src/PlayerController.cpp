@@ -3,15 +3,14 @@
 
 PlayerController::PlayerController()
 {
-	//networkID = 0;
+
 }
 
 PlayerController::PlayerController(const int networkID, GraphicsLibrary* gLib)
-	:GameObjects(CurrentObject::PLAYER, gLib, networkID)
+	:GameObjects(GameObjType::PLAYER, gLib, networkID)
 {
 	pPressKey = new InputSystem();
 	pPressKey->init(gLib);
-	//mNetworkID = networkID;
 }
 
 PlayerController::~PlayerController()
