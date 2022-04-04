@@ -246,25 +246,24 @@ void NetworkManager::recieve()
 					std::cout << "Broken broken";
 					system("pause");
 				}
+				break;
 			}
 
 			case TypePacket::PACKET_DESTROY:
 			{
-				LOG("%s", "Destroy Attempt");
 				if (mGameObjVector.size() > 0)
 				{
-					int deleted = 0;
 					std::vector<std::pair<GameObjects*, int>>::iterator iter;
 					for (iter = mGameObjVector.begin(); iter != mGameObjVector.end(); iter++)
 					{
 						if (iter->first->getObjType() == GameObjType::BOULDER)
 						{
 							mGameObjVector.erase(iter);
-							deleted++;
+							mCurrentID--;
 							break;
 						}
 					}
-					mCurrentID -= deleted;
+					
 				}
 					break;
 			}
@@ -283,6 +282,7 @@ void NetworkManager::recieve()
 
 void NetworkManager::send(int networkID, TypePacket type)
 {
+	bool destroyed = false;
 	OutputMemoryBitStream OutMBStream;
 	OutMBStream.Write(type);
 	OutMBStream.Write(mGameObjVector[networkID].first->getNetworkID());
@@ -352,7 +352,6 @@ void NetworkManager::send(int networkID, TypePacket type)
 
 		case TypePacket::PACKET_DESTROY:
 		{	
-			LOG("%s", "Destroy Attempt");
 			if (mGameObjVector.size() > 0)
 			{
 				std::vector<std::pair<GameObjects*, int>>::iterator iter;
@@ -361,9 +360,11 @@ void NetworkManager::send(int networkID, TypePacket type)
 					if (iter->first->getObjType() == GameObjType::BOULDER)
 					{
 						mGameObjVector.erase(iter);
+						destroyed = true;
 						break;
 					}
 				}
+
 			}
 			break;
 		}
@@ -373,6 +374,8 @@ void NetworkManager::send(int networkID, TypePacket type)
 	}
 
 	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength());
+	if (destroyed)
+		mCurrentID--;
 }
 
 void NetworkManager::spawnObj(GameObjects* obj, int id)

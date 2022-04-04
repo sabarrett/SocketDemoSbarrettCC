@@ -159,7 +159,7 @@ void update()
 		{	
 			if (networkID > 1)
 			{
-				pNetworkManager->send(networkID, TypePacket::PACKET_DESTROY);
+				pNetworkManager->send(networkID-1, TypePacket::PACKET_DESTROY);
 				networkID = pNetworkManager->getCurrentID();
 			}
 			break;
