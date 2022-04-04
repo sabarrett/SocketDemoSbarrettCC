@@ -26,22 +26,29 @@ void NetworkManager::init(SocketAddress address)
 
 void NetworkManager::SendHello()
 {
-	if (mCurrentState == NetworkStates::New && mLastHello > 0.5f)
+	if (mCurrentState == NetworkStates::New && mLastHello >= 0.5f)
 	{
 		//send out the hello packet thing
+		//OutputMemoryBitStream
 		mCurrentState = NetworkStates::Packet;
 	}
 }
 
 void NetworkManager::SendPackets()
 {
+	if (mCurrentState == Hello)
+	{
+		SendHello();
+	}
+
 	if (mCurrentState == Packet)
 	{
-
+		OutputMemoryBitStream output;
+		//output.Write(); //write the state packet out?
 	}
 }
 
-void NetworkManager::ReceivePackets()
+void NetworkManager::ReceivePackets(InputMemoryBitStream& inputStream)
 {
 
 }

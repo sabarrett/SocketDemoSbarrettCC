@@ -30,9 +30,9 @@ class NetworkManager
 		void init(SocketAddress address);
 
 		//maybe pass in a socket to use here, or have one in network manager
-		void SendHello();
-		void SendPackets();
-		void ReceivePackets(); //InputMemoryBitStream
+		void SendHello(); //OutputMemoryBitStream
+		void SendPackets(); //OutputMemoryBitStream
+		void ReceivePackets(InputMemoryBitStream& inputStream); //InputMemoryBitStream
 
 		int getID();
 };

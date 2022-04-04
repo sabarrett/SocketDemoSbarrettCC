@@ -4,6 +4,7 @@
 #include "GraphicsLibrary.h"
 #include "Colour.h"
 #include "GameObject.h"
+#include "NetworkManager.h"
 
 const int MAX_OBJECT_COUNT = 100; //i think this might be needed i am unsure
 std::string BACKGROUND_PATH = "..//..//Assets//Woods.png"; //I think
