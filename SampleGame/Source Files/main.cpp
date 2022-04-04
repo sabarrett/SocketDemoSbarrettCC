@@ -25,19 +25,28 @@
 #include "Timer.h"
 
 #include <iostream>
+#include <string>
 
 const int screenWidth = 800;
 const int screenHeight = 450;
 
-int main()
+int main(int argc, char* argv[])
 {
 
     //Initialize runtime timer
     Timer t;
     t.start();
+
+    bool isServer = false;
+    if (argc > 1)
+    {
+        if (strcmp(argv[1], "server") == 0)
+            isServer = true;
+    }
+        
     
     //Play Game
-    Game::getInstance()->init(screenWidth, screenHeight, 60, true);
+    Game::getInstance()->init(screenWidth, screenHeight, 60, isServer, true);
     Game::getInstance()->startGame();
     Game::getInstance()->cleanup();
     Game::cleanupInstance();

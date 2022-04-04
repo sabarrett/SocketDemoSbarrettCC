@@ -51,5 +51,5 @@ set(PROJECT_SOURCES "Source Files/Animation.cpp" "Source Files/AnimationData.cpp
 add_library(${PROJECT_NAME} ${PROJECT_SOURCES})
 set(raylib_VERBOSE 1)
 target_include_directories(RedEngine PUBLIC ../RedLib ../RedLib-build)
-target_link_libraries(${PROJECT_NAME} PUBLIC raylib raylib-cpp RedLib)
+target_link_libraries(${PROJECT_NAME} PUBLIC raylib RedLib)
 # That's it! You should have an example executable that you can run. Have fun!

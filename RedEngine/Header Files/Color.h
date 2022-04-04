@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raylib-cpp.hpp"
+#include "LibraryIncludes.h"
 #include "Trackable.h"
 
 const int MAX_COLOR_VALUE = 255;

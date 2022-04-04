@@ -1,0 +1,19 @@
+# ninja log v5
+3	205	6706526938405282	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-mkdir	61638fc942aa0138
+187	243	6707410846752665	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-configure	671d284e3d12d71b
+206	174913	6706528685279330	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-download	8fff2b85939f7f30
+1	130	0	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-update	493992ceb75bad2d
+130	187	6707410846172997	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-patch	ac156b71725a2fc2
+244	299	6707410847302982	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-build	bb5be9df370d972c
+299	354	6707410847872649	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-install	316baaa1ede94d45
+355	409	6707410848412343	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-test	fd5a8f33c18382cf
+409	488	6707410849191892	CMakeFiles/raylib-populate-complete	bb96da6aa38d460c
+409	488	6707410849191892	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-done	bb96da6aa38d460c
+0	127	0	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-update	493992ceb75bad2d
+127	184	6707414332000399	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-patch	ac156b71725a2fc2
+185	241	6707414332570327	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-configure	671d284e3d12d71b
+241	298	6707414333139796	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-build	bb5be9df370d972c
+298	355	6707414333719462	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-install	316baaa1ede94d45
+355	411	6707414334269254	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-test	fd5a8f33c18382cf
+411	489	6707414335058850	CMakeFiles/raylib-populate-complete	bb96da6aa38d460c
+411	489	6707414335058850	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-done	bb96da6aa38d460c

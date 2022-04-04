@@ -2,7 +2,7 @@
 #include "MouseEvent.h"
 
 MouseEvent::MouseEvent(int button, ButtonState state)
-    : Event(MOUSE_EVENT)
+    : Event(MOUSE_ACTION_EVENT)
 {
     mButton = button;
     mState = state;

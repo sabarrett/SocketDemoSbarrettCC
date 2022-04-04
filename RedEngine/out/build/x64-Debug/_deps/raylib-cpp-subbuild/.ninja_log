@@ -1,0 +1,11 @@
+# ninja log v5
+1	18903	6706529300118267	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-mkdir	df75c8cbf28b0801
+53149	53219	6706529644480312	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-configure	ab66d80c27b60cb7
+53472	53602	6706529648313227	CMakeFiles/raylib-cpp-populate-complete	1362178c45451074
+19067	52991	6706529641871807	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-download	5cc6835e9c6bf047
+52991	53068	6706529642931204	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-update	c4a25c5968abac9e
+53068	53149	6706529643730744	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-patch	991abc7cda2491be
+53219	53285	6706529645140115	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-build	edd1072de048e4a7
+53285	53356	6706529645860234	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-install	5d879a1af948d528
+53356	53472	6706529646979909	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-test	b5b425e9129035cb
+53472	53602	6706529648313227	raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-done	1362178c45451074

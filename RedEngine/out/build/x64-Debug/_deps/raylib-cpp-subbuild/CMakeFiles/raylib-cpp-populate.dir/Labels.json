@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/CMakeFiles/raylib-cpp-populate"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/CMakeFiles/raylib-cpp-populate.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/CMakeFiles/raylib-cpp-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/spyid/Documents/NetworkingAssignment/RedEngine/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/raylib-cpp-populate-stamp/raylib-cpp-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"raylib-cpp-populate"
+		],
+		"name" : "raylib-cpp-populate"
+	}
+}

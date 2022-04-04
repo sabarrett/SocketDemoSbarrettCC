@@ -13,8 +13,12 @@ class GraphicsBufferManager;
 class GameListener;
 class EventSystem;
 class Vector2D;
+class TCPNetworkManager;
+class Unit;
 
-const std::string ASSET_PATH = "C:/Users/spyid/Documents/RedEngine/SampleGame/Assets/"; //MAKE THIS RELATIVE PATH
+enum Packet_Header;
+
+const std::string ASSET_PATH = "C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/Assets/"; //MAKE THIS RELATIVE PATH
 const std::string SMURF_FILENAME = "smurf_sprites.png";
 const std::string PROJECTILE_FILENAME = "Sphere_Glow.png";
 const std::string BACKGROUND_FILEPATH = "room/room0000.png";
@@ -29,7 +33,7 @@ public:
 	static Game* getInstance();
 	static void cleanupInstance();
 
-	void init(int screenWidth, int screenHeight, int fps = 60, bool debugMode = false);
+	void init(int screenWidth, int screenHeight, int fps = 60, bool isServer = false, bool debugMode = false);
 	void cleanup();
 
 	void startGame();
@@ -50,9 +54,12 @@ private:
 	void DKeyRelease(KeyCode);
 	void DMouseRelease(int);
 
-	void fireProj();
+	int fireProj();
+	void fireOppProj(int id, Vector2D loc);
 
 	void quitGame();
+
+	static void handleNetworkPacket(Packet_Header, char* data, int length);
 
 	static Game* mspInstance;
 
@@ -65,11 +72,12 @@ private:
 	GameListener* mpGameListener;
 
 	Player* mpPlayerUnit;
+	Unit* mpOpponent;
 
 	Timer* mpGameTimer;
 
 	double deltaTime;
-	bool mDebugMode, mIsPlaying;
+	bool mDebugMode, mIsPlaying, mIsServer;
 
 	float mTimePerFrame;
 	

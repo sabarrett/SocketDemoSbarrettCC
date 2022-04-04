@@ -10,6 +10,9 @@
 #include "GraphicsBufferManager.h"
 #include "EventSystem.h"
 #include "GameListener.h"
+#include "../RedNet/Header Files/TCPNetworkManager.h"
+#include "Unit.h"
+#include "TCPNetworkManager.h"
 
 #include <iostream>
 
@@ -70,6 +73,7 @@ Game::Game()
 	mDebugMode = false;
 	mIsPlaying = false;
 	mTimePerFrame = 0.0f;
+
 }
 
 Game::~Game()
@@ -77,7 +81,7 @@ Game::~Game()
 	
 }
 
-void Game::init(int screenWidth, int screenHeight, int fps, bool debugMode)
+void Game::init(int screenWidth, int screenHeight, int fps, bool isServer, bool debugMode)
 {
 	SetExitKey(-1);
 	SetTargetFPS(999);
@@ -99,17 +103,40 @@ void Game::init(int screenWidth, int screenHeight, int fps, bool debugMode)
 	mpAnimationManager->createAndManageAnimationData("proj", projBuffer, 1, 13, 0.25f);
 
 	Animation* playerAnim = mpAnimationManager->createAndManageAnimation(playerAnimData, 16);
-	mpPlayerUnit = new Player(playerAnim, 200.0f, Vector2D(300, 300));
+
+	if (isServer)
+	{
+		mpPlayerUnit = new Player(playerAnim, 200.0f, Vector2D(300, 300));
+		mpOpponent = mpUnitManager->createAndManageUnit(playerAnim, -1, Vector2D(700, 200)); //-1 for an ID represents a non-replicated unit
+	}
+	else
+	{
+		mpPlayerUnit = new Player(playerAnim, 200.0f, Vector2D(700, 200));
+		mpOpponent = mpUnitManager->createAndManageUnit(playerAnim, -1, Vector2D(300, 300));
+	}
 
 	mpGameListener = new GameListener();
 	EventSystem::getInstance()->addListener(PLAYER_MOVE_EVENT, mpGameListener);
 	EventSystem::getInstance()->addListener(KEYBOARD_EVENT, mpGameListener);
-	EventSystem::getInstance()->addListener(MOUSE_EVENT, mpGameListener);
+	EventSystem::getInstance()->addListener(MOUSE_ACTION_EVENT, mpGameListener);
 
 	mpGameTimer = new Timer();
 
 	mTimePerFrame = 1.0f / fps;
 	mDebugMode = debugMode;
+	mIsServer = isServer;
+
+	if (isServer)
+	{
+		TCPNetworkManager::getInstance()->init("127.0.0.1", 8011);
+		TCPNetworkManager::getInstance()->listenAndAccept();
+	}
+	else
+	{
+		TCPNetworkManager::getInstance()->init("127.0.0.1", 8012);
+		TCPNetworkManager::getInstance()->connectTo("127.0.0.1", 8011);
+	}
+		
 
 	srand(time(NULL));
 }
@@ -152,12 +179,39 @@ void Game::getInput()
 
 void Game::update()
 {
-	mpUnitManager->update(deltaTime);
+	if (mIsServer)
+	{
+		mpUnitManager->update(deltaTime);
+
+		for (int i = mpUnitManager->getNumOfUnits()-1; i > 0; i--)
+		{
+			int id = mpUnitManager->getIDAt(i);
+			//cout << id << " ";
+			if (id < 0)
+				continue;
+
+			Unit* u = mpUnitManager->getUnitAt(i);
+			Vector2D pos = u->getLocation();
+
+			int dataLength = sizeof(id) + sizeof(pos);
+			char* data = new char[dataLength]();
+
+			memcpy(data, (char*)&id, sizeof(id));
+			memcpy(data + sizeof(id), (char*)&pos, sizeof(pos));
+
+			TCPNetworkManager::getInstance()->sendPacket(Packet_Header::OBJECT_MOVE, data, dataLength);
+
+			delete[] data;
+		}
+	}
+	
 
 	mpAnimationManager->update(deltaTime);
 
 	mpPlayerUnit->setMoveDirection(InputSystem::getInstance()->getMovementAxis().normalized());
 	mpPlayerUnit->update(deltaTime);
+
+	TCPNetworkManager::getInstance()->receivePackets(handleNetworkPacket);
 }
 
 void Game::render()
@@ -180,33 +234,38 @@ void Game::debug()
 {
 	if(mDebugMode)
 	{
-		cout << "Frame Length: " << deltaTime << ", which is equal to " << 1 / deltaTime << " FPS." << endl;
+		//cout << "Frame Length: " << deltaTime << ", which is equal to " << 1 / deltaTime << " FPS." << endl;
 	}
 }
 
 void Game::DPlayerMove(Vector2D loc)
 {
-	cout << "Player move to: " << loc << endl;
+	if(mDebugMode)
+		cout << "Player move to: " << loc << endl;
 }
 
 void Game::DKeyPress(KeyCode key)
 {
-	cout << "Key pressed with ID: " << key << endl;
+	if(mDebugMode)
+		cout << "Key pressed with ID: " << key << endl;
 }
 
 void Game::DMousePress(int button)
 {
-	cout << "Mouse Button pressed with ID: " << button << endl;
+	if (mDebugMode)
+		cout << "Mouse Button pressed with ID: " << button << endl;
 }
 
 void Game::DKeyRelease(KeyCode key)
 {
-	cout << "Key released with ID: " << key << endl;
+	if (mDebugMode)
+		cout << "Key released with ID: " << key << endl;
 }
 
 void Game::DMouseRelease(int button)
 {
-	cout << "Mouse Button released with ID: " << button << endl;
+	if (mDebugMode)
+		cout << "Mouse Button released with ID: " << button << endl;
 }
 
 void Game::quitGame()
@@ -215,7 +274,60 @@ void Game::quitGame()
 	cout << "QUIT" << endl;
 }
 
-void Game::fireProj()
+void Game::handleNetworkPacket(Packet_Header header, char* data, int length)
+{
+	Game* gameInstance = getInstance();
+
+	//cout << "I gotta packet boys!" << endl;
+	int id;
+	Vector2D pos;
+	Unit* u;
+	switch (header)
+	{
+	case PLAYER_MOVE:
+		//cout << "WE MOVING!!" << endl;
+		gameInstance->mpOpponent->setLocation(*(Vector2D*)data);
+		break;
+
+	case FIRE_PROJECTILE:
+		//cout << "FIRE IN THE HOLE!" << endl;
+
+		memcpy((char*)&id, data, sizeof(id));
+		memcpy((char*)&pos, data + sizeof(id), sizeof(pos));
+
+		gameInstance->fireOppProj(id, pos);
+		break;
+
+	case OBJECT_MOVE:
+
+		memcpy((char*)&id, data, sizeof(id));
+		memcpy((char*)&pos, data + sizeof(id),  sizeof(pos));
+
+		u = gameInstance->mpUnitManager->getUnitAtID(id);
+		
+		if (u)
+		{
+			u->setLocation(pos);
+		}
+
+		//cout << "MOVE OBJECT: " << id << endl;
+		break;
+
+	case OBJECT_DELETE:
+		memcpy((char*)&id, data, sizeof(id));
+
+		gameInstance->mpUnitManager->removeAndDeleteUnit(gameInstance->mpUnitManager->getUnitAtID(id));
+		break;
+
+	case CAMERA_MOVE:
+		memcpy((char*)&pos, data, sizeof(pos));
+
+		gameInstance->mpGraphicsSystem->setCameraLocation(pos);
+	}
+
+}
+
+int Game::fireProj()
 {
 	Vector2D dir = Vector2D(
 		InputSystem::getInstance()->getMousePosition().getX() - mpPlayerUnit->getLocation().getX() + mpGraphicsSystem->getCameraLocation().getX(), 
@@ -225,5 +337,20 @@ void Game::fireProj()
 	AnimationData* projAnimData = mpAnimationManager->getAnimationData("proj");
 	Animation* projAnim = mpAnimationManager->createAndManageAnimation(projAnimData, 13);
 
-	mpUnitManager->createAndManageUnit(projAnim, mpPlayerUnit->getLocation(), dir, PROJECTILE_SPEED);
+	Unit* u = mpUnitManager->createAndManageUnit(projAnim, 0, mpPlayerUnit->getLocation(), dir, PROJECTILE_SPEED);
+
+	return mpUnitManager->getIDAt(mpUnitManager->find(u));
+}
+
+void Game::fireOppProj(int id, Vector2D loc)
+{
+	Vector2D dir = Vector2D(
+		loc.getX() - mpOpponent->getLocation().getX() + mpGraphicsSystem->getCameraLocation().getX(),
+		loc.getY() - mpOpponent->getLocation().getY() + mpGraphicsSystem->getCameraLocation().getY());
+	dir.normalize();
+
+	AnimationData* projAnimData = mpAnimationManager->getAnimationData("proj");
+	Animation* projAnim = mpAnimationManager->createAndManageAnimation(projAnimData, 13);
+
+	mpUnitManager->createAndManageUnit(projAnim, id, mpOpponent->getLocation(), dir, PROJECTILE_SPEED);
 }
