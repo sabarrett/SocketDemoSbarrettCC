@@ -2,7 +2,6 @@
 
 #include "GameObjects.h"
 #include "InputSystem.h"
-#include "GameController.h"
 
 class PlayerController : public GameObjects
 {
@@ -15,10 +14,9 @@ public:
 	void update() {};
 	void draw() {};
 
-	//int getNetworkID() { return networkID; }
+	void setIsConnected(bool connected) { mIsConnected = connected; }
 
 private:
 	InputSystem* pPressKey;
-	//int networkID;
-
+	bool mIsConnected;
 };

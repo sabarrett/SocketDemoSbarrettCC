@@ -18,7 +18,7 @@ InputSystem* pInput;
 GameController* pGameController;
 
 const std::string BACKGROUND_PATH = "Graphics\\field-bg.jpg";
-const std::string BOULDER_PATH = "Graphics\\boulder-ing.png";
+const std::string BOULDER_PATH = "Graphics\\boulder-img.png";
 const std::string BUBBLE_PATH = "Graphics\\bubble-ing.png";
 const std::string BEE_PATH = "Graphics\\bee-ing.png";
 
@@ -27,20 +27,18 @@ const std::string BOULDER_IMG_IDENTIFIER = "boulder_img";
 const std::string BUBBLE_IMG_IDENTIFIER = "bubble_img";
 const std::string BEE_IMG_IDENTIFIER = "bee_img";
 
-Colour blue(0, 0, 255); //P1
-Colour red(255, 0, 0); //P2
+PlayerController* player;
+ALLEGRO_EVENT_QUEUE* pEventQueue = nullptr;
+ALLEGRO_TIMER* timer = nullptr;
+NetworkManager* NetworkManager::mpNetworkInstance = 0;
+NetworkManager* pNetworkManager;
 
 bool isRunning = true;
 float FPS = 60.0;
-
-ALLEGRO_EVENT_QUEUE* pEventQueue = nullptr;
-ALLEGRO_TIMER* timer = nullptr;
-
-PlayerController* player;
-
-NetworkManager* NetworkManager::mpNetworkInstance = 0;
-NetworkManager* pNetworkManager;
+Colour blue(0, 0, 255); //P1
+Colour red(255, 0, 0); //P2
 int networkID = 0;
+
 
 bool init()
 {
@@ -74,18 +72,19 @@ void start()
 		pNetworkManager->spawnObj(player, networkID);
 		networkID++;
 
-		pNetworkManager->send(player->getNetworkID(), Packets::PACKET_CREATE);
+		pNetworkManager->send(player->getNetworkID(), TypePacket::PACKET_CREATE);
 		pNetworkManager->recieve();
 	}
+
 	//client
 	else if (networkID == 1)
 	{
-		pNetworkManager->recieve();
 		player = new PlayerController(networkID, pGraphicsLib);
+		pNetworkManager->recieve();
 		pNetworkManager->spawnObj(player, networkID);
 		networkID++;
 
-		pNetworkManager->send(player->getNetworkID(), Packets::PACKET_CREATE);
+		pNetworkManager->send(player->getNetworkID(), TypePacket::PACKET_CREATE);
 	}
 
 	al_start_timer(timer);
@@ -105,17 +104,45 @@ void update()
 	KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyPressed);
 	switch (keyCode)
 	{
-	case KeyCode::ESC:
-	{
-		isRunning = false;
-		break;
-	}
-	case KeyCode::B:
-	{
-		pGameController->makeBubble(networkID);
-		pNetworkManager->send(networkID, Packets::PACKET_CREATE);
-		break;
-	}
+		case KeyCode::ESC:
+		{
+			isRunning = false;
+			break;
+		}
+		case KeyCode::B:
+		{
+			//make bubble
+			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+			break;
+		}
+
+		case KeyCode::LEFT:
+		{
+			//make left bees
+			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+			break;
+		}
+	
+		case KeyCode::RIGHT:
+		{	
+			//make right bees
+			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+			break;
+		}
+
+		case KeyCode::SPACE:
+		{	
+			float randPosX = 0.0;
+			float randPosY =0.0;
+
+			GameObjects* newBoulder;
+			newBoulder = new Boulder(pGraphicsLib, networkID, BOULDER_IMG_IDENTIFIER, randPosX, randPosY);
+
+			pNetworkManager->spawnObj(newBoulder, networkID);
+			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+			networkID++;
+			break;
+		}
 	}
 
 	pNetworkManager->updateObj();
@@ -142,9 +169,9 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 	bool runGame = true;
+	bool successConnect = false;
 	if (init())
 	{
-		bool successConnect = false;
 		pNetworkManager = pNetworkManager->GetInstance();
 		pNetworkManager->init(pGraphicsLib, blue, red);
 
@@ -155,9 +182,7 @@ int main(int argc, const char** argv)
 		if (role == "y")
 		{
 			std::string port;
-			port = "8080";
-			/*std::cout << "Port: ";
-			std::cin >> port;*/
+			port = "8080"; //can change later
 
 			successConnect = pNetworkManager->initServer(port);
 			if (successConnect)
@@ -169,14 +194,11 @@ int main(int argc, const char** argv)
 		else if (role == "n")
 		{
 			std::string connectIP;
-			connectIP = "127.0.0.1";
-			/*std::cout << "Server IP: ";
-			std::cin >> connectIP;*/
+			connectIP = "127.0.0.1"; //can change later
 
 			std::string port;
-			port = "8080";
-			/*std::cout << "Port: ";
-			std::cin >> port;*/
+			port = "8080"; //can change later
+
 
 			successConnect = pNetworkManager->connect(connectIP, port);
 			if (successConnect)
@@ -188,7 +210,7 @@ int main(int argc, const char** argv)
 		if (successConnect)
 		{
 			start();
-			networkID = 2;
+			networkID = 2; //don't overwrite players
 
 			while (isRunning)
 			{
@@ -198,7 +220,7 @@ int main(int argc, const char** argv)
 				if (alEvent.type == ALLEGRO_EVENT_TIMER)
 				{
 					update();
-					pNetworkManager->send(player->getNetworkID(), Packets::PACKET_UPDATE);
+					pNetworkManager->send(player->getNetworkID(), TypePacket::PACKET_UPDATE);
 
 					pNetworkManager->recieve();
 					draw();
@@ -207,55 +229,6 @@ int main(int argc, const char** argv)
 			cleanup();
 		}
 	}
-
-
-
-
-
-	//SocketUtil::StaticInit();
-
-	//UDPSocketPtr cliSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-	//UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-
-	//SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
-
-	////clientAddr not needed for long, don't keep it around
-	//{
-	//	SocketAddressPtr cliAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9000");
-	//	if (cliAddr == nullptr)
-	//	{
-	//		SocketUtil::ReportError("create client socket");
-	//		ExitProcess(1);
-	//	}
-	//	cliSock->Bind(*cliAddr);
-	//}
-	//srvSock->Bind(*srvAddr);
-
-	//std::string msg("Hello Server");
-	//int nBytesSent = cliSock->SendTo(msg.c_str(), msg.length(), *srvAddr);
-	//if (nBytesSent <= 0)
-	//{
-	//	SocketUtil::ReportError("Client SendTo");
-	//}
-	//std::cout << "Sent " << nBytesSent << " bytes\n";
-	//
-
-	//std::thread srvThread([&srvSock]()
-	//{
-	//	char buffer[4096];
-	//	SocketAddress fromAddr;
-	//	int nBytesRecieved = srvSock->ReceiveFrom(buffer, 4096, fromAddr);
-	//	if (nBytesRecieved <= 0)
-	//	{
-	//		SocketUtil::ReportError("Server RecieveFrom");
-	//		return;
-	//	}
-	//	std::string msg(buffer, nBytesRecieved);
-	//	std::cout << "Recieved message from: " << fromAddr.ToString() << ": " << msg << std::endl;
-	//});
-
-
-	//srvThread.join();
 
 	//SocketUtil::CleanUp();
 

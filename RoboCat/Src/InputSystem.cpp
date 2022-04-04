@@ -14,15 +14,15 @@ InputSystem.cpp
 InputSystem::InputSystem()
 {
 	//Create an event queue
-	mpEventQueue = al_create_event_queue();
+	mpKeyboardEventQueue = al_create_event_queue();
 }
 
 //Destructor
 InputSystem::~InputSystem()
 {
 	//Cleanup event queue
-	al_destroy_event_queue(mpEventQueue);
-	mpEventQueue = nullptr;
+	al_destroy_event_queue(mpKeyboardEventQueue);
+	mpKeyboardEventQueue = nullptr;
 }
 
 float InputSystem::getMouseX()
@@ -72,13 +72,13 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 	}
 
 	//Register screen event source
-	al_register_event_source(mpEventQueue, al_get_display_event_source(pGraphicsLib->mpDisplay));
+	al_register_event_source(mpKeyboardEventQueue, al_get_display_event_source(pGraphicsLib->mpDisplay));
 
 	//Register keyboard event source
-	al_register_event_source(mpEventQueue, al_get_keyboard_event_source());
+	al_register_event_source(mpKeyboardEventQueue, al_get_keyboard_event_source());
 
 	//Register mouse event source
-	al_register_event_source(mpEventQueue, al_get_mouse_event_source());
+	al_register_event_source(mpKeyboardEventQueue, al_get_mouse_event_source());
 
 	//mGameController = GameController();
 
@@ -88,9 +88,9 @@ bool InputSystem::init(GraphicsLibrary* pGraphicsLib)
 MouseButton InputSystem::getMouseInput()
 {
 	//If there is an event
-	al_wait_for_event(mpEventQueue, &mEvent);
+	al_wait_for_event(mpKeyboardEventQueue, &mKeyboardEvent);
 
-	if (mEvent.type == InputMode::MouseDown)
+	if (mKeyboardEvent.type == InputMode::MouseDown)
 	{
 		//Update mouse state
 		ALLEGRO_MOUSE_STATE mouseState;
@@ -115,40 +115,12 @@ MouseButton InputSystem::getMouseInput()
 KeyCode InputSystem::getKeyboardInput(InputMode inputMode)
 {
 	//If there is an event
-	al_wait_for_event(mpEventQueue, &mEvent);
-	KeyCode pressKey;
-	
-	if (mEvent.type == InputMode::KeyPressed)
+	//al_wait_for_event(mpEventQueue, &mEvent);
+	al_get_next_event(mpKeyboardEventQueue, &mKeyboardEvent);
+	if (mKeyboardEvent.type == inputMode)
 	{
-		//Check the type
-		switch (mEvent.keyboard.keycode)
-		{
-		case KeyCode::ESC:
-			pressKey = ESC;
-			break;
-
-		case KeyCode::B:
-			//mpGameController->makeBubble("p1");
-			pressKey = B;
-			break;
-		
-		case KeyCode::LEFT:
-			mpGameController->sendBees('l');
-			pressKey = LEFT;
-			break;
-		
-		case KeyCode::RIGHT:
-			mpGameController->sendBees('r');
-			pressKey = RIGHT;
-			break;
-
-		case KeyCode::SPACE:
-			mpGameController->dropBoulder();
-			pressKey = SPACE;
-			break;
-
-		}
+		return (KeyCode)mKeyboardEvent.keyboard.keycode;
 	}
 
-	return pressKey;
+	//return pressKey;
 }

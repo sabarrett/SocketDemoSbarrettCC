@@ -2,7 +2,7 @@
 
 #include "GameObjects.h"
 
-GameObjects::GameObjects(CurrentObject type, GraphicsLibrary* gLib, const int networkID)
+GameObjects::GameObjects(GameObjType type, GraphicsLibrary* gLib, const int networkID)
 	:mObjType(type), mNetworkID(networkID)
 {
 	mGraphicsLib = gLib;
@@ -11,13 +11,10 @@ GameObjects::GameObjects(CurrentObject type, GraphicsLibrary* gLib, const int ne
 	mPosY = 0.0;
 }
 
-GameObjects::GameObjects(CurrentObject type, GraphicsLibrary* gLib, const int networkID, float posX, float posY, const std::string imgID)
-	:mObjType(type), mNetworkID(networkID), mIMG_ID(imgID)
+GameObjects::GameObjects(GameObjType type, GraphicsLibrary* gLib, const int networkID, float posX, float posY, const std::string imgID)
+	:mObjType(type), mGraphicsLib(gLib), mNetworkID(networkID), mPosX(posX), mPosY(posY), mIMG_ID(imgID)
 {
-	mGraphicsLib = gLib;
 
-	mPosX = posX;
-	mPosY = posY;
 }
 
 GameObjects::~GameObjects()
@@ -27,13 +24,13 @@ GameObjects::~GameObjects()
 
 //---------------------Boulder-------------------/
 Boulder::Boulder(GraphicsLibrary* gLib, const int networkID)
-	:GameObjects(CurrentObject::BOULDER, gLib, networkID)
+	:GameObjects(GameObjType::BOULDER, gLib, networkID)
 {
 
 }
 
 Boulder::Boulder(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY)
-	: GameObjects(CurrentObject::BOULDER, gLib, networkID, posX, posY, imgID)
+	: GameObjects(GameObjType::BOULDER, gLib, networkID, posX, posY, imgID)
 {
 
 }
@@ -45,7 +42,7 @@ void Boulder::draw()
 
 //---------------------Bubble-------------------/
 Bubble::Bubble(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY)
-	: GameObjects(CurrentObject::BUBBLE, gLib, networkID, posX, posY, imgID)
+	: GameObjects(GameObjType::BUBBLE, gLib, networkID, posX, posY, imgID)
 {
 
 }
@@ -58,7 +55,7 @@ void Bubble::draw()
 
 //---------------------Bees-------------------/
 Bees::Bees(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY)
-	: GameObjects(CurrentObject::BEE, gLib, networkID, posX, posY, imgID)
+	: GameObjects(GameObjType::BEE, gLib, networkID, posX, posY, imgID)
 {
 
 }
