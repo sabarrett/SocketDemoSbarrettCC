@@ -11,6 +11,7 @@ PlayerController::PlayerController(const int networkID, GraphicsLibrary* gLib)
 {
 	pPressKey = new InputSystem();
 	pPressKey->init(gLib);
+	mPlayerID = networkID;
 }
 
 PlayerController::~PlayerController()

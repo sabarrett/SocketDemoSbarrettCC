@@ -19,7 +19,7 @@ GameController* pGameController;
 
 const std::string BACKGROUND_PATH = "Graphics\\field-bg.jpg";
 const std::string BOULDER_PATH = "Graphics\\boulder-img.png";
-const std::string BUBBLE_PATH = "Graphics\\bubble-ing.png";
+const std::string BUBBLE_PATH = "Graphics\\bubble-img.png";
 const std::string BEE_PATH = "Graphics\\bee-ing.png";
 
 const std::string BACKGROUND_IMG_IDENTIFIER = "background_img";
@@ -39,10 +39,13 @@ Colour blue(0, 0, 255); //P1
 Colour red(255, 0, 0); //P2
 int networkID = 0;
 
+int tempPlayerID;
+
 
 bool init()
 {
 	bool initted = false;
+	srand(6);
 
 	pGraphicsLib = new GraphicsLibrary(screenSizeX, screenSizeY);
 	initted = pGraphicsLib->init();
@@ -69,6 +72,8 @@ void start()
 	if (networkID == 0)
 	{
 		player = new PlayerController(networkID, pGraphicsLib);
+		tempPlayerID = 0;
+		player->setPlayerID(tempPlayerID);
 		pNetworkManager->spawnObj(player, networkID);
 		networkID++;
 
@@ -80,6 +85,8 @@ void start()
 	else if (networkID == 1)
 	{
 		player = new PlayerController(networkID, pGraphicsLib);
+		tempPlayerID = 1;
+		player->setPlayerID(tempPlayerID);
 		pNetworkManager->recieve();
 		pNetworkManager->spawnObj(player, networkID);
 		networkID++;
@@ -111,8 +118,15 @@ void update()
 		}
 		case KeyCode::B:
 		{
-			//make bubble
+			float randPosX = rand() % (int)screenSizeX;
+			float randPosY = 10.0;
+
+			GameObjects* newBubble;
+			newBubble = new Bubble(pGraphicsLib, networkID, BUBBLE_IMG_IDENTIFIER, randPosX, randPosY, tempPlayerID); //watch out for this
+
+			pNetworkManager->spawnObj(newBubble, networkID);
 			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+			networkID++;
 			break;
 		}
 
@@ -132,8 +146,8 @@ void update()
 
 		case KeyCode::SPACE:
 		{	
-			float randPosX = 0.0;
-			float randPosY =0.0;
+			float randPosX = rand() % (int)screenSizeX;
+			float randPosY = rand() % (int)screenSizeY;
 
 			GameObjects* newBoulder;
 			newBoulder = new Boulder(pGraphicsLib, networkID, BOULDER_IMG_IDENTIFIER, randPosX, randPosY);
@@ -188,6 +202,7 @@ int main(int argc, const char** argv)
 			if (successConnect)
 				std::cout << "connect successful.\n";
 
+			tempPlayerID = 0;
 			networkID = 0;
 		}
 
@@ -204,6 +219,7 @@ int main(int argc, const char** argv)
 			if (successConnect)
 				std::cout << "Client Connected\n";
 
+			tempPlayerID = 1;
 			networkID = 1;
 		}
 

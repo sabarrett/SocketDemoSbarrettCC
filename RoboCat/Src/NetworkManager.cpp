@@ -146,18 +146,26 @@ void NetworkManager::recieve()
 			float posX;
 			float posY;
 			string imgID = "";
+			int inPlayerID;
 
 			InMBStream.Read(posX);
 			InMBStream.Read(posY);
 
 			switch (recieveObjType)
 			{
-				//case GameObjType::BUBBLE:
-				//	Bubble* newBubble;
-				//	newBubble = new Bubble(mpGraphicsLib, networkID, mBubbleImgID, posX, posY);
-				//	mGameObjVector.push_back(pair<GameObjects*, int>(newBubble, networkID));
-				//	newBubble = nullptr;
-				//	break;
+				case GameObjType::BUBBLE:
+					InMBStream.Read(imgID);
+					InMBStream.Read(inPlayerID);
+
+					Bubble* newBubble;
+					newBubble = new Bubble(mpGraphicsLib, networkID, imgID, posX, posY, inPlayerID);
+					if (networkID < mGameObjVector.size() - 1) //compensate for dropped packets
+						networkID = mGameObjVector.size();
+
+					mGameObjVector.push_back(pair<GameObjects*, int>(newBubble, networkID));
+
+					newBubble = nullptr;
+					break;
 
 			case GameObjType::BOULDER:
 				InMBStream.Read(imgID);
@@ -177,6 +185,7 @@ void NetworkManager::recieve()
 				//	break;
 
 			case GameObjType::PLAYER:
+				InMBStream.Read(inPlayerID);
 				PlayerController* newPlayer;
 				newPlayer = new PlayerController(networkID, mpGraphicsLib);
 				mGameObjVector.push_back(pair<GameObjects*, int>(newPlayer, networkID));
@@ -190,30 +199,24 @@ void NetworkManager::recieve()
 		{
 			if (mGameObjVector[networkID].first != nullptr)
 			{
-				float posX;
 				float posY;
 				//Colour playerColor;
 				//char direction;
 
 				switch (recieveObjType)
 				{
-//case GameObjType::BUBBLE: //HERE IS ISSUE
-//	Bubble* newBubble;
-//	newBubble= (Bubble*)mGameObjVector[networkID].first;
-//
-//	InMBStream.Read(posX);
-//	InMBStream.Read(posY);
-//	//InMBStream.Read(playerColor);
-//
-//	newBubble->setPosition(posX, posY);
-//	//newBubble->setPlayerColor(playerColor);
-//	break;
+				case GameObjType::BUBBLE: //HERE IS ISSUE
+	
+					InMBStream.Read(posY);
+	
+					mGameObjVector[networkID].first->setPosY(posY);
+					break;
 				
 				case GameObjType::BOULDER:
-					InMBStream.Read(posX);
+					/*InMBStream.Read(posX);
 					InMBStream.Read(posY);
 				
-					mGameObjVector[networkID].first->setPosition(posX, posY);
+					mGameObjVector[networkID].first->setPosition(posX, posY);*/
 					break;
 				
 /*case GameObjType::BEE:
@@ -230,6 +233,7 @@ break;*/
 
 				case GameObjType::PLAYER:
 					mGameObjVector[networkID].first->setPosition(0, 0); //placeholder content, player is just entity spawning as obj
+					break;
 				}
 			}
 			else
@@ -264,13 +268,12 @@ void NetworkManager::send(int networkID, TypePacket type)
 		{
 			switch (mGameObjVector[networkID].first->getObjType())
 			{
-				//case GameObjType::BUBBLE:
-				//	Bubble* newBubble;
-				//	newBubble = (Bubble*)mGameObjVector[networkID].first;
-				//	OutMBStream.Write(newBubble->getPosition().first);
-				//	OutMBStream.Write(newBubble->getPosition().second);
-				//	//OutMBStream.Write(newBubble->getPlayerColor());
-				//	break;
+			case GameObjType::BUBBLE:
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
+				OutMBStream.Write(mGameObjVector[networkID].first->getPlayerID()); //watch this too
+				break;
 
 			case GameObjType::BOULDER:
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
@@ -288,6 +291,7 @@ void NetworkManager::send(int networkID, TypePacket type)
 			case GameObjType::PLAYER:
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				OutMBStream.Write(mGameObjVector[networkID].first->getNetworkID());
 				break;
 			}
 			break;
@@ -297,6 +301,11 @@ void NetworkManager::send(int networkID, TypePacket type)
 		{
 			switch (mGameObjVector[networkID].first->getObjType())
 			{
+			case GameObjType::BUBBLE:
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				break;
+
 			case GameObjType::BOULDER:
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
@@ -304,6 +313,7 @@ void NetworkManager::send(int networkID, TypePacket type)
 			case GameObjType::PLAYER:
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				OutMBStream.Write(mGameObjVector[networkID].first->getNetworkID());
 				break;
 			}
 			break;
