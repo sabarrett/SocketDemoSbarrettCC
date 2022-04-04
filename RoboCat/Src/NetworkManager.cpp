@@ -135,6 +135,8 @@ void NetworkManager::recieve()
 
 		int networkID;
 		InMBStream.Read(networkID);
+		if (mCurrentID < networkID)
+			mCurrentID = networkID;
 
 		GameObjType recieveObjType;
 		InMBStream.Read(recieveObjType);
@@ -147,6 +149,7 @@ void NetworkManager::recieve()
 			float posY;
 			string imgID = "";
 			int inPlayerID;
+			int num;
 
 			InMBStream.Read(posX);
 			InMBStream.Read(posY);
@@ -177,12 +180,16 @@ void NetworkManager::recieve()
 				newBoulder = nullptr;
 				break;
 
-				//case GameObjType::BEE:
-				//	Bees* newBee;
-				//	newBee = new Bees(mpGraphicsLib, networkID, mBeeImgID, posX, posY);
-				//	mGameObjVector.push_back(pair<GameObjects*, int>(newBee, networkID));
-				//	newBee = nullptr;
-				//	break;
+			case GameObjType::BEE:
+				InMBStream.Read(imgID);
+				InMBStream.Read(num);
+				
+				Bees* newBee;
+				newBee = new Bees(mpGraphicsLib, networkID, imgID, posX, posY, num);
+				mGameObjVector.push_back(pair<GameObjects*, int>(newBee, networkID));
+
+				newBee = nullptr;
+				break;
 
 			case GameObjType::PLAYER:
 				InMBStream.Read(inPlayerID);
@@ -200,6 +207,8 @@ void NetworkManager::recieve()
 			if (mGameObjVector[networkID].first != nullptr)
 			{
 				float posY;
+				float posX;
+				float num;
 				//Colour playerColor;
 				//char direction;
 
@@ -219,17 +228,12 @@ void NetworkManager::recieve()
 					mGameObjVector[networkID].first->setPosition(posX, posY);*/
 					break;
 				
-/*case GameObjType::BEE:
-Bees* newBees;
-newBees = (Bees*)mGameObjVector[networkID].first;
-				
-InMBStream.Read(posX);
-InMBStream.Read(posY);
-InMBStream.Read(direction);
-				
-newBees->setPosition(posX, posY);
-newBees->setDirection(direction);
-break;*/
+				case GameObjType::BEE:
+					InMBStream.Read(posX);
+					InMBStream.Read(num);
+
+					mGameObjVector[networkID].first->setPosX(posX);
+					break;
 
 				case GameObjType::PLAYER:
 					mGameObjVector[networkID].first->setPosition(0, 0); //placeholder content, player is just entity spawning as obj
@@ -281,13 +285,13 @@ void NetworkManager::send(int networkID, TypePacket type)
 				OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
 				break;
 
-				/*case GameObjType::BEE:
-					Bees* newBee;
-					newBee = (Bees*)mGameObjVector[networkID].first;
-					OutMBStream.Write(newBee->getPosition().first);
-					OutMBStream.Write(newBee->getPosition().second);
-					OutMBStream.Write(newBee->getDirection());
-					break;*/
+			case GameObjType::BEE:
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
+				OutMBStream.Write(mGameObjVector[networkID].first->getNum());//watch for this
+				break;
+
 			case GameObjType::PLAYER:
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
@@ -310,6 +314,11 @@ void NetworkManager::send(int networkID, TypePacket type)
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
 				break;
+			
+			case GameObjType::BEE:
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				break;
+
 			case GameObjType::PLAYER:
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);

@@ -38,6 +38,8 @@ public:
 	int getPlayerID() { return mPlayerID; }
 	void setPlayerID(int ID) { mPlayerID = ID; }
 
+	int getNum() { return mObjNum; }
+
 	virtual void update() {};
 	virtual void draw() {};
 
@@ -49,6 +51,8 @@ protected:
 	float mPosX;
 	float mPosY;
 	int mPlayerID;
+
+	int mObjNum;
 
 	GraphicsLibrary* mGraphicsLib;
 };
@@ -80,23 +84,21 @@ class Bees : public GameObjects
 {
 public:
 
-	Bees(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY);
+	Bees(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY, int num);
 	~Bees() {};
-	//void spawn(KeyCode direction) { };
 	void move() {};
 
-	void setDirection(char dir) { mDirection = dir; }
-	char getDirection() { return mDirection; }
+	void setQuantity(int num) { mObjNum = num; }
+	int getQuantity() { return mObjNum; }
 
-	void update() {};
+
+	void update();
 	void draw();
 
 private:
 
 	std::string mImageFileBee;
-	char mDirection;
-	int mBeeQuantity;
-	int mBeeSpeed;
+	int mBeeSpeed = 1;
 
 };
 
