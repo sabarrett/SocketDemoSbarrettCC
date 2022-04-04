@@ -66,4 +66,5 @@ public:
 	void drawImage(std::string imageIdentifier, float posX, float posY);
 	void drawScaledImage(std::string imageIdentifier, float posX, float posY, float scaleX, float scaleY);
 	void drawTintedImage(std::string imageIdentifier, float posX, float posY, Colour col);
+	void drawTintedScaledImage(std::string imageIdentifier, float posX, float posY, Colour col, float scaleX, float scaleY);
 };

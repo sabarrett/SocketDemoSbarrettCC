@@ -16,7 +16,11 @@ public:
 
 	void setIsConnected(bool connected) { mIsConnected = connected; }
 
+	//int getPlayerID() { return mPlayerID; }
+	//void setPlayerID(int ID) { mPlayerID = ID; }
+
 private:
 	InputSystem* pPressKey;
 	bool mIsConnected;
+	//int mPlayerID;
 };

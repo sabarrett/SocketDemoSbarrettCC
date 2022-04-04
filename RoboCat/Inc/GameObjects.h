@@ -3,6 +3,7 @@
 #include <string>
 #include <utility>
 #include "GraphicsLibrary.h"
+#include "Colour.h"
 
 using std::pair;
 
@@ -21,6 +22,8 @@ public:
 	GameObjects() {};
 	GameObjects(GameObjType type, GraphicsLibrary* gLib, const int networkID);
 	GameObjects(GameObjType type, GraphicsLibrary* gLib, const int networkID, float posX, float posY, const std::string imgID = "");
+	GameObjects(GameObjType type, GraphicsLibrary* gLib, const int networkID, float posX, float posY, const std::string imgID, int playerID);
+
 	virtual ~GameObjects();
 
 	const GameObjType getObjType() { return mObjType; }
@@ -28,7 +31,12 @@ public:
 	const pair<float, float> getPosition() { return pair<float, float>(mPosX, mPosY); }
 
 	void setPosition(float posX, float posY) { mPosX = posX; mPosY = posY; }
+	void setPosX(float posX) { mPosX = posX; }
+	void setPosY(float posY) { mPosY = posY; }
 	std::string getImageID() { return mIMG_ID; }
+
+	int getPlayerID() { return mPlayerID; }
+	void setPlayerID(int ID) { mPlayerID = ID; }
 
 	virtual void update() {};
 	virtual void draw() {};
@@ -40,6 +48,7 @@ protected:
 	int mNetworkID;
 	float mPosX;
 	float mPosY;
+	int mPlayerID;
 
 	GraphicsLibrary* mGraphicsLib;
 };
@@ -95,7 +104,7 @@ class Bubble : public GameObjects
 {
 public:
 
-	Bubble(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY);
+	Bubble(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY, int playerID);
 	~Bubble() {};
 	void spawn(std::string playerID) {};
 	void pop() {};
@@ -104,13 +113,13 @@ public:
 	void setPlayerColor(Colour color) { mBubbleColor = color; }
 	Colour getPlayerColor() { return mBubbleColor; }
 
-	void update() {};
+	void update();
 	void draw();
 
 private:
 
 	std::string mImageFileBubble;
 	Colour mBubbleColor;
-	int mBubbleSpeed;
+	float mBubbleSpeed = 0.15;
 
 };

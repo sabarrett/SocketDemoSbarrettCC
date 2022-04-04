@@ -139,3 +139,20 @@ void GraphicsLibrary::drawTintedImage(std::string imageIdentifier, float posX, f
 		}
 	}
 }
+
+void GraphicsLibrary::drawTintedScaledImage(std::string imageIdentifier, float posX, float posY, Colour col, float scaleX, float scaleY)
+{
+	//Find the image and draw if it exists
+	std::vector<std::pair<std::string, ALLEGRO_BITMAP*>>::iterator iterator;
+
+	//Set colour
+	ALLEGRO_COLOR colour = al_map_rgba(col.getR(), col.getG(), col.getB(), col.getA());
+
+	for (iterator = mBitmapPointersVector.begin(); iterator != mBitmapPointersVector.end(); ++iterator)
+	{
+		if (iterator->first == imageIdentifier)
+		{
+			al_draw_tinted_scaled_bitmap(iterator->second, colour,0,0, al_get_bitmap_width(iterator->second), al_get_bitmap_height(iterator->second), posX, posY, al_get_bitmap_width(iterator->second) * scaleX, al_get_bitmap_height(iterator->second) * scaleY, 0);
+		}
+	}
+}
