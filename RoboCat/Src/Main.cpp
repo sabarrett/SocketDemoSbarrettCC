@@ -155,12 +155,15 @@ void update()
 			break;
 		}
 	
-		//case KeyCode::RIGHT: //maybe someday
-		//{	
-		//	make right bees
-		//	pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-		//	break;
-		//}
+		case KeyCode::RIGHT: //maybe someday will be more bees
+		{	
+			if (networkID > 1)
+			{
+				pNetworkManager->send(networkID, TypePacket::PACKET_DESTROY);
+				networkID = pNetworkManager->getCurrentID();
+			}
+			break;
+		}
 
 		case KeyCode::SPACE:
 		{	

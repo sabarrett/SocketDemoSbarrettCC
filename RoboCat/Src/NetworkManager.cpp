@@ -143,112 +143,134 @@ void NetworkManager::recieve()
 
 		switch (recievePacketType)
 		{
-		case TypePacket::PACKET_CREATE:
-		{
-			float posX;
-			float posY;
-			string imgID = "";
-			int inPlayerID;
-			int num;
-
-			InMBStream.Read(posX);
-			InMBStream.Read(posY);
-
-			switch (recieveObjType)
+			case TypePacket::PACKET_CREATE:
 			{
-				case GameObjType::BUBBLE:
-					InMBStream.Read(imgID);
-					InMBStream.Read(inPlayerID);
-
-					Bubble* newBubble;
-					newBubble = new Bubble(mpGraphicsLib, networkID, imgID, posX, posY, inPlayerID);
-					if (networkID < mGameObjVector.size() - 1) //compensate for dropped packets
-						networkID = mGameObjVector.size();
-
-					mGameObjVector.push_back(pair<GameObjects*, int>(newBubble, networkID));
-
-					newBubble = nullptr;
-					break;
-
-			case GameObjType::BOULDER:
-				InMBStream.Read(imgID);
-
-				Boulder* newBoulder;
-				newBoulder = new Boulder(mpGraphicsLib, networkID, imgID, posX, posY);
-				mGameObjVector.push_back(pair<GameObjects*, int>(newBoulder, networkID));
-
-				newBoulder = nullptr;
-				break;
-
-			case GameObjType::BEE:
-				InMBStream.Read(imgID);
-				InMBStream.Read(num);
-				
-				Bees* newBee;
-				newBee = new Bees(mpGraphicsLib, networkID, imgID, posX, posY, num);
-				mGameObjVector.push_back(pair<GameObjects*, int>(newBee, networkID));
-
-				newBee = nullptr;
-				break;
-
-			case GameObjType::PLAYER:
-				InMBStream.Read(inPlayerID);
-				PlayerController* newPlayer;
-				newPlayer = new PlayerController(networkID, mpGraphicsLib);
-				mGameObjVector.push_back(pair<GameObjects*, int>(newPlayer, networkID));
-
-				newPlayer = nullptr;
-				break;
-			}
-				
-		}
-		case TypePacket::PACKET_UPDATE:
-		{
-			if (mGameObjVector[networkID].first != nullptr)
-			{
-				float posY;
 				float posX;
-				float num;
-				//Colour playerColor;
-				//char direction;
+				float posY;
+				string imgID = "";
+				int inPlayerID;
+				int num;
+
+				InMBStream.Read(posX);
+				InMBStream.Read(posY);
 
 				switch (recieveObjType)
 				{
-				case GameObjType::BUBBLE: //HERE IS ISSUE
-	
-					InMBStream.Read(posY);
-	
-					mGameObjVector[networkID].first->setPosY(posY);
-					break;
-				
-				case GameObjType::BOULDER:
-					/*InMBStream.Read(posX);
-					InMBStream.Read(posY);
-				
-					mGameObjVector[networkID].first->setPosition(posX, posY);*/
-					break;
-				
-				case GameObjType::BEE:
-					InMBStream.Read(posX);
-					InMBStream.Read(num);
+					case GameObjType::BUBBLE:
+						InMBStream.Read(imgID);
+						InMBStream.Read(inPlayerID);
 
-					mGameObjVector[networkID].first->setPosX(posX);
+						Bubble* newBubble;
+						newBubble = new Bubble(mpGraphicsLib, networkID, imgID, posX, posY, inPlayerID);
+						if (networkID < mGameObjVector.size() - 1) //compensate for dropped packets
+							networkID = mGameObjVector.size();
+
+						mGameObjVector.push_back(pair<GameObjects*, int>(newBubble, networkID));
+
+						newBubble = nullptr;
+						break;
+
+				case GameObjType::BOULDER:
+					InMBStream.Read(imgID);
+
+					Boulder* newBoulder;
+					newBoulder = new Boulder(mpGraphicsLib, networkID, imgID, posX, posY);
+					mGameObjVector.push_back(pair<GameObjects*, int>(newBoulder, networkID));
+
+					newBoulder = nullptr;
+					break;
+
+				case GameObjType::BEE:
+					InMBStream.Read(imgID);
+					InMBStream.Read(num);
+				
+					Bees* newBee;
+					newBee = new Bees(mpGraphicsLib, networkID, imgID, posX, posY, num);
+					mGameObjVector.push_back(pair<GameObjects*, int>(newBee, networkID));
+
+					newBee = nullptr;
 					break;
 
 				case GameObjType::PLAYER:
-					mGameObjVector[networkID].first->setPosition(0, 0); //placeholder content, player is just entity spawning as obj
+					InMBStream.Read(inPlayerID);
+					PlayerController* newPlayer;
+					newPlayer = new PlayerController(networkID, mpGraphicsLib);
+					mGameObjVector.push_back(pair<GameObjects*, int>(newPlayer, networkID));
+
+					newPlayer = nullptr;
 					break;
 				}
+				
 			}
-			else
-			{
-				std::cout << "Broken broken";
-				system("pause");
-			}
-		}
-		default:
-			return;
 
+			case TypePacket::PACKET_UPDATE:
+			{
+				if (mGameObjVector[networkID].first != nullptr)
+				{
+					float posY;
+					float posX;
+					float num;
+					//Colour playerColor;
+					//char direction;
+
+					switch (recieveObjType)
+					{
+					case GameObjType::BUBBLE: //HERE IS ISSUE
+	
+						InMBStream.Read(posY);
+	
+						mGameObjVector[networkID].first->setPosY(posY);
+						break;
+				
+					case GameObjType::BOULDER:
+						/*InMBStream.Read(posX);
+						InMBStream.Read(posY);
+				
+						mGameObjVector[networkID].first->setPosition(posX, posY);*/
+						break;
+				
+					case GameObjType::BEE:
+						InMBStream.Read(posX);
+						InMBStream.Read(num);
+
+						mGameObjVector[networkID].first->setPosX(posX);
+						break;
+
+					case GameObjType::PLAYER:
+						mGameObjVector[networkID].first->setPosition(0, 0); //placeholder content, player is just entity spawning as obj
+						break;
+					}
+				}
+				else
+				{
+					std::cout << "Broken broken";
+					system("pause");
+				}
+			}
+
+			case TypePacket::PACKET_DESTROY:
+			{
+				LOG("%s", "Destroy Attempt");
+				if (mGameObjVector.size() > 0)
+				{
+					int deleted = 0;
+					std::vector<std::pair<GameObjects*, int>>::iterator iter;
+					for (iter = mGameObjVector.begin(); iter != mGameObjVector.end(); iter++)
+					{
+						if (iter->first->getObjType() == GameObjType::BOULDER)
+						{
+							mGameObjVector.erase(iter);
+							deleted++;
+							break;
+						}
+					}
+					mCurrentID -= deleted;
+				}
+					break;
+			}
+
+			default:
+				return;
 		}
 	}
 	else if (bytesRecieved == -10053 || bytesRecieved == -10054)
@@ -331,13 +353,16 @@ void NetworkManager::send(int networkID, TypePacket type)
 		case TypePacket::PACKET_DESTROY:
 		{	
 			LOG("%s", "Destroy Attempt");
-			if (!mGameObjVector.empty())
+			if (mGameObjVector.size() > 0)
 			{
 				std::vector<std::pair<GameObjects*, int>>::iterator iter;
 				for (iter = mGameObjVector.begin(); iter != mGameObjVector.end(); iter++)
 				{
-					mGameObjVector.erase(iter);
-					break;
+					if (iter->first->getObjType() == GameObjType::BOULDER)
+					{
+						mGameObjVector.erase(iter);
+						break;
+					}
 				}
 			}
 			break;
