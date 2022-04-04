@@ -43,6 +43,9 @@ public:
 	void updateObj();
 	void renderObj();
 
+	int getCurrentID() { return mCurrentID; }
+	void setCurrentID(int newID) { mCurrentID = newID; }
+
 	GameObjects* getObj() {};
 
 private:
@@ -57,4 +60,6 @@ private:
 	std::string mBubbleImgID;
 	std::string mBoulderImgID;
 	std::string mBeeImgID;
+
+	int mCurrentID;
 };

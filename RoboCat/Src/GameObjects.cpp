@@ -66,14 +66,27 @@ void Bubble::update()
 }
 
 //---------------------Bees-------------------/
-Bees::Bees(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY)
+Bees::Bees(GraphicsLibrary* gLib, const int networkID, const std::string imgID, float posX, float posY, int num)
 	: GameObjects(GameObjType::BEE, gLib, networkID, posX, posY, imgID)
 {
-
+	mObjNum = num;
 }
+
 
 void Bees::draw()
 {
-	mGraphicsLib->drawScaledImage(mIMG_ID, mPosX, mPosY, 0.25, 0.25);
+	for (int i = 0; i < mObjNum; i++)
+	{
+		int min = (mPosY - 20);
+		int max = (mPosY + 20);
+		float randY = rand()%(max - min + 1) + min;
+		mGraphicsLib->drawScaledImage(mIMG_ID, mPosX, randY, 0.1, 0.1);
+		//mGraphicsLib->drawScaledImage(mIMG_ID, mPosX, mPosY, 0.1, 0.1);
+	}
+}
+
+void Bees::update()
+{
+	mPosX += mBeeSpeed;
 }
 

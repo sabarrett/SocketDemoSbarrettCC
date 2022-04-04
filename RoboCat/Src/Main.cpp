@@ -20,7 +20,7 @@ GameController* pGameController;
 const std::string BACKGROUND_PATH = "Graphics\\field-bg.jpg";
 const std::string BOULDER_PATH = "Graphics\\boulder-img.png";
 const std::string BUBBLE_PATH = "Graphics\\bubble-img.png";
-const std::string BEE_PATH = "Graphics\\bee-ing.png";
+const std::string BEE_PATH = "Graphics\\bee-img.png";
 
 const std::string BACKGROUND_IMG_IDENTIFIER = "background_img";
 const std::string BOULDER_IMG_IDENTIFIER = "boulder_img";
@@ -108,6 +108,15 @@ void draw()
 
 void update()
 {
+	if(networkID != pNetworkManager->getCurrentID())
+	{
+		if (networkID > pNetworkManager->getCurrentID())
+			pNetworkManager->setCurrentID(networkID);
+		else
+			networkID = pNetworkManager->getCurrentID();
+	}
+
+
 	KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyPressed);
 	switch (keyCode)
 	{
@@ -133,16 +142,25 @@ void update()
 		case KeyCode::LEFT:
 		{
 			//make left bees
+			float randPosY = rand() % (int)screenSizeY;
+			float randPosX = 10.0;
+			float randNum = rand() % 10;
+
+			GameObjects* newBee;
+			newBee = new Bees(pGraphicsLib, networkID, BEE_IMG_IDENTIFIER, randPosX, randPosY, randNum); //watch out for this
+
+			pNetworkManager->spawnObj(newBee, networkID);
 			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+			networkID++;
 			break;
 		}
 	
-		case KeyCode::RIGHT:
-		{	
-			//make right bees
-			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-			break;
-		}
+		//case KeyCode::RIGHT: //maybe someday
+		//{	
+		//	make right bees
+		//	pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+		//	break;
+		//}
 
 		case KeyCode::SPACE:
 		{	
