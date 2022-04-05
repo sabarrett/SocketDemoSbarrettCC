@@ -40,15 +40,26 @@ UDPSocketPtr CreateBoundSocket(std::string IP)
 		return cliSock;
 }
 
-struct Packet
+class Packet
 {
-	int* buffer;
-	time_t timeStamp;
+	private:
+		int* buffer;
+		long int timeStamp;
 
-	friend bool operator<(const Packet& a, const Packet& b)
-	{
-		return a.timeStamp > b.timeStamp;
-	};
+	public:
+		Packet(int* b, long int time)
+		{
+			buffer = b;
+			timeStamp = time;
+		}
+
+		long int getTimeStamp() { return timeStamp; };
+		int* getBuffer() { return buffer; };
+
+		friend bool operator<(const Packet& a, const Packet& b)
+		{
+			return a.timeStamp > b.timeStamp;
+		};
 };
 
 class PlayerGameObject
@@ -263,7 +274,9 @@ class GameState
 		PlayerGameObject* otherPlayer;
 		vector<CoinObject*> vCoins;
 		TomatoObject* tomato;
-		double mTimePerFrame;
+		double mTimePerFrame = 1000/60;
+		long int timeBeforeProcessing = 5;
+		priority_queue<Packet*> mReceivedPackets;
 	public:
 		GameState(bool serverState, string ourAddr, string other)
 		{
@@ -331,14 +344,24 @@ class GameState
 				}
 				else
 				{
-					ReceivePacket(sock, &otherAddr, mInputSystem);
+					mReceivedPackets.push(new Packet(ReceivePacket(sock, &otherAddr, mInputSystem), static_cast<long int>(time(NULL)) + rand() % 6 - 3));
 				}
 				SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::PLAYER, mPlayer->getX(), mPlayer->getY());
-				ReceivePacket(sock, &otherAddr, mInputSystem);
+				mReceivedPackets.push(new Packet(ReceivePacket(sock, &otherAddr, mInputSystem), static_cast<long int>(time(NULL)) + rand() % 6 - 3));
+
+				while (static_cast <long int> (time(NULL)) - mReceivedPackets.top()->getTimeStamp() < timeBeforeProcessing)
+				{
+					Packet* temp = mReceivedPackets.top();
+					mReceivedPackets.pop();
+					processPacket(temp->getBuffer());
+					delete temp;
+				}
+
 				for (auto& coin : vCoins)
 				{
 					mLibrary->drawImage("coin", coin->getX(), coin->getY());
 				}
+
 				mLibrary->drawImage("tomato", tomato->getX(), tomato->getY());
 				int keyPress = mInputSystem->getKeyboardInput();
 				mPlayer->Update(keyPress);
@@ -406,12 +429,19 @@ class GameState
 				else
 				{
 					int* packet = (int*)buffer;
-					switch (packet[0])
+					return packet;
+				}
+			}
+		}
+
+		void processPacket(int* packet)
+		{
+			switch (packet[0])
+			{
+				case PacketTypes::UPDATE:
+				{
+					switch (packet[1])
 					{
-					case PacketTypes::UPDATE:
-					{
-						switch (packet[1])
-						{
 						case ObjectTypes::PLAYER:
 						{
 							otherPlayer->setX(packet[2]);
@@ -432,15 +462,13 @@ class GameState
 							tomato = new TomatoObject(packet[2], packet[3]);
 							break;
 						}
-						}
-						break;
 					}
-					case PacketTypes::HELLO:
-					{
-						SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
-						break;
-					}
-					}
+					break;
+				}
+				case PacketTypes::HELLO:
+				{
+					SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
+					break;
 				}
 			}
 		}
