@@ -37,9 +37,9 @@ void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs)
 	RemoveUnneededGameObjects();
 }
 
-void WorldState::Render()
+void WorldState::Render(string background)
 {
-	mpGraphicsLibrary->drawImage(BACKGROUND, 0, 0);
+	mpGraphicsLibrary->drawImage(background, 0, 0);
 
 	for each (GameObject * var in mGameObjects)
 	{
