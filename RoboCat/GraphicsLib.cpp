@@ -18,6 +18,8 @@ GraphicsLib::GraphicsLib(float screenSizeX, float screenSizeY)
 
 	//Allegro display
 	mpDisplay = nullptr;
+
+	init();
 }
 
 //Destructor

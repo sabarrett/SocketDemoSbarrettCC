@@ -1,17 +1,9 @@
 
 #include "RoboCatPCH.h"
 #include <thread>
-#include "RoboCat/InputSystem.h"
+#include "RoboCat/Game.h"
 
 #if _WIN32
-
-const int SCREEN_SIZE_X = 1000;
-const int SCREEN_SIZE_Y = 600;
-const string FILE_PATH = "..\\common\\assets\\";
-const string BACKGROUND_FILE = "steps.png";
-const string HOMER_FILE = "HomerSimpson.png";
-const string QUIMBY_FILE = "Mayor_Quimby.png";
-const string DONUT_FILE = "Donut.png";
 
 void TCPServer(UDPSocketPtr server)
 {
@@ -61,10 +53,18 @@ int main(int argc, const char** argv)
 	UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 
 	GraphicsLib* gLib = new GraphicsLib(SCREEN_SIZE_X, SCREEN_SIZE_Y);
-	gLib->init();
 	gLib->loadImage(FILE_PATH + BACKGROUND_FILE, "background");
 	gLib->drawImage("background", 0, 0);
+	gLib->loadImage(FILE_PATH + HOMER_FILE, "homer");
+	gLib->drawImage("homer", 0, 100);
 	gLib->render();
+
+	GraphicsLib* gLib2 = new GraphicsLib(SCREEN_SIZE_X, SCREEN_SIZE_Y);
+	gLib2->loadImage(FILE_PATH + BACKGROUND_FILE, "background");
+	gLib2->drawImage("background", 0, 0);
+	gLib2->loadImage(FILE_PATH + QUIMBY_FILE, "homer");
+	gLib2->drawImage("homer", 1500, 100);
+	gLib2->render();
 		
 	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
 	{
