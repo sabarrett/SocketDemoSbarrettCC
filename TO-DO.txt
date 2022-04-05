@@ -1,0 +1,34 @@
+Assignment Requirements:
+
+"Enhance" your previous game to simulate jitter, latency, and dropped packets, and add a reliability layer to deal with these potential pitfalls. Your game must:
+
+. Pass all checks on github
+. Be able to open a window
+. Have at least two players able to connect at once
+--> These are the minimum requirements for the assignment to be gradable.
+
+- Packets are occasionally "dropped," by random chance or by some algorithm. Dropped packets are registered as having been sent by the sender, but do not actually call the socket's send() function. Random delay is introduced to some packet's send time, and packets can be delivered out of order.
+- Game state is sent through a reliability layer. Important data is sent through guaranteed mechanisms, while data that does not require guaranteed delivery is sent through simpler mechanisms. Important data is resilient to jitter, out-of-order delivery, and high latency.
+
+---------------------------------------------------------------
+Questions:
+
+. TCP always resends dropped packets, and keeps a queue of things to resend so nothing arrives out of order?
+. Where do the layers come into play in our previous assignment? Transport layer, Network layer, Link layer?
+
+. For the assignment, are we combining TCP with a custom UDP solution?
+. Are we replacing or Send and Receive code in our NetworkManager? Do we port over all the serialization and deserialization code to the DeliveryNotificationManager, or do we keep it and call functions from DeliveryNotificationManager in our NetworkManager?
+
+---------------------------------------------------------------
+Notes and Ideas:
+
+. Use TransmissionData.h - make a derived class?
+. Use Timimg.h and .cpp
+. Use InFlightPacket.h and .cpp
+. Use DeliveryNotificationManager.h and .cpp
+. Use AckRange.h and .cpp
+
+--> Chapter 7 slide 14 gives a good explanation of how this can be done
+
+. Figure out how to read and write PacketSquenceNumber, AckRange, and hasAcks in our Networker (see DeliveryNotificationManager.cpp's reads from inInputStream)
+. Override TransmissionData::HandleDeliveryFailure() and HandleDeliverySuccess()
