@@ -16,9 +16,12 @@ enum NetworkStates
 class NetworkManager
 {
 	private:
-		int mNetworkID; //here?
+		int mNetworkID; 
 		float mLastHello;
 		float mLastInputPacket;
+		std::string mName;
+
+		//int mGameObjectCount;
 
 		SocketAddress mAddress;
 		TCPSocketPtr mSocket;
@@ -27,12 +30,14 @@ class NetworkManager
 		NetworkManager();
 		~NetworkManager();
 
-		void init(SocketAddress address);
+		void init(SocketAddress address, std::string name);
+		void update();
 
 		//maybe pass in a socket to use here, or have one in network manager
-		void SendHello(); //OutputMemoryBitStream
-		void SendPackets(); //OutputMemoryBitStream
-		void ReceivePackets(InputMemoryBitStream& inputStream); //InputMemoryBitStream
+		void SendHello();
+		void SendPackets();
+		void ReceivePackets(InputMemoryBitStream& inputStream);
 
 		int getID();
+		string getName();
 };

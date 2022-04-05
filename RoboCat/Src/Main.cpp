@@ -5,6 +5,7 @@
 #include "Colour.h"
 #include "GameObject.h"
 #include "NetworkManager.h"
+#include "SDL_timer.h"
 
 const int MAX_OBJECT_COUNT = 100; //i think this might be needed i am unsure
 std::string BACKGROUND_PATH = "..//..//Assets//Woods.png"; //I think
@@ -217,6 +218,7 @@ int main(int argc, const char** argv)
 	InputSystem* mpInputSystem = new InputSystem(); //do i need this to be a pointer and create it?
 	GameObject mGameObjects[MAX_OBJECT_COUNT]; //possibly make this an array with MAX_OBJECT_COUNT
 	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
+	//SDL_AddTimer
 
 	bool activeConnection = true;
 	bool isServer;
