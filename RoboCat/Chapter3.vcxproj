@@ -568,10 +568,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="GraphicsLib.cpp" />
     <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="TCPSocket.cpp" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="GraphicsLib.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
