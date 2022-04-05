@@ -40,6 +40,17 @@ UDPSocketPtr CreateBoundSocket(std::string IP)
 		return cliSock;
 }
 
+struct Packet
+{
+	int* buffer;
+	time_t timeStamp;
+
+	friend bool operator<(const Packet& a, const Packet& b)
+	{
+		return a.timeStamp > b.timeStamp;
+	};
+};
+
 class PlayerGameObject
 {
 	private:
@@ -284,6 +295,7 @@ class GameState
 		{
 			delete mLibrary;
 		}
+		//change receive method to return the packet, put the packet in a priority (?) queue of returned packets along with a time stamp, only process packets received x seconds ago
 		void Update()//make time a part of this so that it runs the same rate on all systems
 		{
 			Timer timer;
