@@ -1,4 +1,3 @@
-
 #include "RoboCatPCH.h"
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 #include "allegro_wrapper_functions-main/Colour.h"
@@ -7,6 +6,7 @@
 #include <thread>
 #include <vector>
 #include <map>
+#include <Windows.h>
 
 using namespace std;
 
@@ -82,16 +82,16 @@ class PlayerGameObject
 				switch (keyPress)
 				{
 				case KeyCode::P2_Down:
-					yPos += 3;
+					yPos += 7;
 					break;
 				case KeyCode::P2_Left:
-					xPos -= 3;
+					xPos -= 7;
 					break;
 				case KeyCode::P2_Right:
-					xPos += 3;
+					xPos += 7;
 					break;
 				case KeyCode::P2_Up:
-					yPos -= 3;
+					yPos -= 7;
 					break;
 				}
 			}
@@ -115,11 +115,129 @@ class TomatoObject
 {
 	private:
 		int xPos, yPos;
+		double mTimeUntilNextFrame, msPerFrame = 1000/60;
 	public:
 		TomatoObject(int x, int y) { xPos = x; yPos = y; };
 		int getX() { return xPos; };
 		int getY() { return yPos; };
-		void Update() { xPos--; };
+		void Update(double deltaTime) 
+		{
+			mTimeUntilNextFrame -= deltaTime;
+			if (mTimeUntilNextFrame <= 0)
+			{
+				mTimeUntilNextFrame = msPerFrame;
+				xPos--;
+			}
+		};
+};
+
+/* Timer - high accuracy timer - uses Large Integer to prevent rollover
+Dean Lawson
+Champlain College
+2011
+*/
+
+class Timer
+{
+
+private:
+	LARGE_INTEGER mStartTime;
+	LARGE_INTEGER mEndTime;
+	LARGE_INTEGER mTimerFrequency;
+	double mElapsedTime;
+	double mFactor;
+	double mLastFactor;
+	bool mPaused;
+
+	//helper function - uses current frequency for the Timer
+	double calcDifferenceInMS(LARGE_INTEGER from, LARGE_INTEGER to) const
+	{
+		double difference = (double)(to.QuadPart - from.QuadPart) / (double)mTimerFrequency.QuadPart;
+		difference *= mFactor;
+		return difference * 1000;
+	}
+public:
+	Timer()
+		:mElapsedTime(0.0)
+		, mPaused(true)
+		, mFactor(1.0)
+		, mLastFactor(1.0)
+	{
+		QueryPerformanceFrequency(&mTimerFrequency);
+		mStartTime.QuadPart = 0;
+		mEndTime.QuadPart = 0;
+	}
+	~Timer()
+	{
+	}
+
+	void start()
+	{
+		QueryPerformanceCounter(&mStartTime);
+
+		//reset end time as well
+		mEndTime.QuadPart = 0;
+
+		mElapsedTime = 0.0;
+
+		pause(false);//unpause
+	}
+	void stop()
+	{
+		QueryPerformanceCounter(&mEndTime);
+		mElapsedTime = calcDifferenceInMS(mStartTime, mEndTime);
+	}
+	double getElapsedTime() const//returns how much time has elapsed since start
+	{
+		//if we have an end time then the timer isn't running and we can just return the elapsed time
+		if (mEndTime.QuadPart != 0)
+		{
+			return mElapsedTime;
+		}
+		else //otherwise we need to get the current time, do the math and return that
+		{
+			LARGE_INTEGER currentTime;
+			QueryPerformanceCounter(&currentTime);
+			return calcDifferenceInMS(mStartTime, currentTime);
+		}
+	}
+	void sleepUntilElapsed(double ms)
+	{
+		LARGE_INTEGER currentTime, lastTime;
+		QueryPerformanceCounter(&currentTime);
+		double timeToSleep = ms - calcDifferenceInMS(mStartTime, currentTime);
+
+		while (timeToSleep > 0.0)
+		{
+			lastTime = currentTime;
+			QueryPerformanceCounter(&currentTime);
+			double timeElapsed = calcDifferenceInMS(lastTime, currentTime);
+			timeToSleep -= timeElapsed;
+			if (timeToSleep > 10.0)//if we are going to be in this loop for a long time - 
+			{						//Sleep to relinquish back to Windows
+				Sleep(10);
+			}
+		}
+	}
+	void pause(bool shouldPause)
+	{
+		if (shouldPause && !mPaused)//want to pause and we are not currently paused
+		{
+			mPaused = true;
+			QueryPerformanceCounter(&mEndTime);
+			mElapsedTime += calcDifferenceInMS(mStartTime, mEndTime);
+		}
+		else if (!shouldPause && mPaused)//want to unpause and we are paused
+		{
+			mPaused = false;
+			QueryPerformanceCounter(&mStartTime);
+		}
+	}
+	inline double getFactor() const { return mFactor; };
+	inline void multFactor(double mult) { mLastFactor = mFactor; mFactor *= mult; };
+	inline void setFactor(double theFactor) { mLastFactor = mFactor; mFactor = theFactor; };
+	inline void restoreLastFactor() { mFactor = mLastFactor; };
+
 };
 
 class GameState
@@ -134,6 +252,7 @@ class GameState
 		PlayerGameObject* otherPlayer;
 		vector<CoinObject*> vCoins;
 		TomatoObject* tomato;
+		double mTimePerFrame;
 	public:
 		GameState(bool serverState, string ourAddr, string other)
 		{
@@ -165,8 +284,9 @@ class GameState
 		{
 			delete mLibrary;
 		}
-		void Update()
+		void Update()//make time a part of this so that it runs the same rate on all systems
 		{
+			Timer timer;
 			mLibrary->loadImage("../2517597.jpg", "background");
 			mLibrary->loadImage("../coin.png", "coin");
 			mLibrary->loadImage("../tomato.png", "tomato");
@@ -189,9 +309,10 @@ class GameState
 
 			while (!escapePressed)
 			{
+				timer.start();
 				if (isServer)
 				{
-					tomato->Update();
+					tomato->Update(mTimePerFrame);
 					SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::TOMATO, tomato->getX(), tomato->getY());
 					CheckForCollisions(mPlayer);
 					CheckForCollisions(otherPlayer);
@@ -216,6 +337,7 @@ class GameState
 
 				mLibrary->render();
 				mLibrary->drawImage("background", 0, 0);
+				timer.sleepUntilElapsed(mTimePerFrame);
 			}
 		}
 		void SendPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType,
@@ -228,11 +350,13 @@ class GameState
 			packet[3] = pos_y;
 
 			char* bytePacket = (char*)packet;
-
-			int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
-			if (bytesSent <= 0)
+			if (rand() % 16 != 5)
 			{
-				SocketUtil::ReportError("Client SendTo");
+				int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
+				if (bytesSent <= 0)
+				{
+					SocketUtil::ReportError("Client SendTo");
+				}
 			}
 		}
 		void SendCoinPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType, vector<CoinObject*> coins)
@@ -247,14 +371,16 @@ class GameState
 			}
 
 			char* bytePacket = (char*)packet;
-
-			int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
-			if (bytesSent <= 0)
+			if (rand() % 16 != 5)
 			{
-				SocketUtil::ReportError("Client SendTo");
+				int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
+				if (bytesSent <= 0)
+				{
+					SocketUtil::ReportError("Client SendTo");
+				}
 			}
 		}
-		void ReceivePacket(UDPSocketPtr ptr, SocketAddress* addr, InputSystem* mInputSystem)
+		int* ReceivePacket(UDPSocketPtr ptr, SocketAddress* addr, InputSystem* mInputSystem)
 		{
 			char buffer[100];
 			{
@@ -358,7 +484,6 @@ int main(int argc, const char** argv)
 	srand(time(NULL));
 	SocketUtil::StaticInit();
 
-	//DoThreadExample();
 	GameState* state;
 
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
@@ -373,8 +498,6 @@ int main(int argc, const char** argv)
 	}
 
 	state->Update();
-
-	//cin.get();
 
 	SocketUtil::CleanUp();
 
