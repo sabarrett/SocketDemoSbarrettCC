@@ -93,9 +93,9 @@ void Game::init(int screenWidth, int screenHeight, int fps, bool isServer, bool 
 	mpUnitManager = new UnitManager();
 
 	mpGraphicsBufferManager = new GraphicsBufferManager();
-	GraphicsBuffer* smurfBuffer = mpGraphicsBufferManager->createAndManageGraphicsBuffer("smurf", ASSET_PATH + SMURF_FILENAME);
-	GraphicsBuffer* projBuffer = mpGraphicsBufferManager->createAndManageGraphicsBuffer("proj", ASSET_PATH + PROJECTILE_FILENAME);
-	mpGraphicsBufferManager->createAndManageGraphicsBuffer("background", ASSET_PATH + BACKGROUND_FILEPATH);
+	GraphicsBuffer* smurfBuffer = mpGraphicsBufferManager->createAndManageGraphicsBuffer("smurf", GAMEASSETS + SMURF_FILENAME);
+	GraphicsBuffer* projBuffer = mpGraphicsBufferManager->createAndManageGraphicsBuffer("proj", GAMEASSETS + PROJECTILE_FILENAME);
+	mpGraphicsBufferManager->createAndManageGraphicsBuffer("background", GAMEASSETS + BACKGROUND_FILEPATH);
 
 	mpAnimationManager = new AnimationManager();
 

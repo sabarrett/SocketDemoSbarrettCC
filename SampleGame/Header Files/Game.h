@@ -18,10 +18,10 @@ class Unit;
 
 enum Packet_Header;
 
-const std::string ASSET_PATH = "C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/Assets/"; //MAKE THIS RELATIVE PATH
+const std::string ASSET_PATH = "Assets\\";
 const std::string SMURF_FILENAME = "smurf_sprites.png";
 const std::string PROJECTILE_FILENAME = "Sphere_Glow.png";
-const std::string BACKGROUND_FILEPATH = "room/room0000.png";
+const std::string BACKGROUND_FILEPATH = "room\\room0000.png";
 
 const float PROJECTILE_SPEED = 100.0f;
 

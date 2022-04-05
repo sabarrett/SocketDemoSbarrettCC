@@ -1,9 +1,9 @@
 Performing C SOURCE FILE Test COMPILER_HAS_THOSE_TOGGLES failed with the following output:
-Change Dir: C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/x64-Debug/CMakeFiles/CMakeTmp
+Change Dir: C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/x64-Debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_c7809 && [1/2] Building C object CMakeFiles\cmTC_c7809.dir\src.c.obj
-FAILED: CMakeFiles/cmTC_c7809.dir/src.c.obj 
-C:\PROGRA~2\MICROS~2\2019\COMMUN~1\VC\Tools\MSVC\1429~1.301\bin\Hostx64\x64\cl.exe  /nologo -DCOMPILER_HAS_THOSE_TOGGLES  /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1   -Werror=pointer-arith /showIncludes /FoCMakeFiles\cmTC_c7809.dir\src.c.obj /FdCMakeFiles\cmTC_c7809.dir\ /FS -c src.c
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_f9c5c && [1/2] Building C object CMakeFiles\cmTC_f9c5c.dir\src.c.obj
+FAILED: CMakeFiles/cmTC_f9c5c.dir/src.c.obj 
+C:\PROGRA~2\MICROS~2\2019\ENTERP~1\VC\Tools\MSVC\1427~1.291\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3 -DCOMPILER_HAS_THOSE_TOGGLES /MDd /Zi /Ob0 /Od /RTC1   -Werror=pointer-arith /showIncludes /FoCMakeFiles\cmTC_f9c5c.dir\src.c.obj /FdCMakeFiles\cmTC_f9c5c.dir\ /FS -c src.c
 cl : Command line error D8021 : invalid numeric argument '/Werror=pointer-arith'
 ninja: build stopped: subcommand failed.
 
@@ -11,11 +11,11 @@ ninja: build stopped: subcommand failed.
 Source file was:
 int main(void) { return 0; }
 Determining if the include file pthread.h exists failed with the following output:
-Change Dir: C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/x64-Debug/CMakeFiles/CMakeTmp
+Change Dir: C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/x64-Debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_379cf && [1/2] Building C object CMakeFiles\cmTC_379cf.dir\CheckIncludeFile.c.obj
-FAILED: CMakeFiles/cmTC_379cf.dir/CheckIncludeFile.c.obj 
-C:\PROGRA~2\MICROS~2\2019\COMMUN~1\VC\Tools\MSVC\1429~1.301\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_379cf.dir\CheckIncludeFile.c.obj /FdCMakeFiles\cmTC_379cf.dir\ /FS -c CheckIncludeFile.c
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_97f1a && [1/2] Building C object CMakeFiles\cmTC_97f1a.dir\CheckIncludeFile.c.obj
+FAILED: CMakeFiles/cmTC_97f1a.dir/CheckIncludeFile.c.obj 
+C:\PROGRA~2\MICROS~2\2019\ENTERP~1\VC\Tools\MSVC\1427~1.291\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_97f1a.dir\CheckIncludeFile.c.obj /FdCMakeFiles\cmTC_97f1a.dir\ /FS -c CheckIncludeFile.c
 CheckIncludeFile.c(1): fatal error C1083: Cannot open include file: 'pthread.h': No such file or directory
 ninja: build stopped: subcommand failed.
 

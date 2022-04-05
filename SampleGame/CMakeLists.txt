@@ -21,6 +21,7 @@ if (NOT raylib_FOUND)
     endif()
 endif()
 
+
 # raylib-cpp
 find_package(raylib-cpp QUIET)
 if (NOT raylib-cpp_FOUND)
@@ -52,6 +53,8 @@ find_library(RedNet RedNet)
 add_subdirectory(../RedNet ../RedNet-build)
 
 include_directories("Header Files" "../RedEngine/Header Files" "../RedLib/Header Files" "../RedNet/Header Files")
+
+add_definitions(-DGAMEASSETS="${CMAKE_SOURCE_DIR}/Assets/")
 
 set(PROJECT_NAME SampleGame)
 set(PROJECT_SOURCES "Source Files/Unit.cpp" "Source Files/Game.cpp" "Source Files/main.cpp" "Source Files/Player.cpp" "Source Files/UnitManager.cpp" "Source Files/PlayerMoveEvent.cpp" "Source Files/GameListener.cpp")
