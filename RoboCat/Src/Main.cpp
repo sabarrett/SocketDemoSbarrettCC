@@ -42,7 +42,7 @@ const std::string PLAYER_SPRITE_IDENTIFIER = "player_image";
 bool bGameIsRunning = true;
 std::map<int, GameObject*> gameObjectMap;
 
-float FPS = 60;
+int FPS = 60;
 ALLEGRO_TIMER* timer = nullptr;
 ALLEGRO_EVENT_QUEUE* eventQueue = nullptr;
 
@@ -340,7 +340,7 @@ int main(int argc, const char** argv)
 	{
 		//Setup network manager
 		pNetworkManager = pNetworkManager->GetInstance();
-		pNetworkManager->init(pGraphics, ROCK_SPRITE_IDENTIFIER, PLAYER_SPRITE_IDENTIFIER, playerMoveSpeed, wallColour);
+		pNetworkManager->init(pGraphics, ROCK_SPRITE_IDENTIFIER, PLAYER_SPRITE_IDENTIFIER, playerMoveSpeed, wallColour, 60);
 
 		//Prompt for isServer or not
 		std::string input;

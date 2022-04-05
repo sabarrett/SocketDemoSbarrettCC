@@ -32,3 +32,18 @@ Notes and Ideas:
 
 . Figure out how to read and write PacketSquenceNumber, AckRange, and hasAcks in our Networker (see DeliveryNotificationManager.cpp's reads from inInputStream)
 . Override TransmissionData::HandleDeliveryFailure() and HandleDeliverySuccess()
+
+-----------------------------------------------------------------
+
+Simulating Latency/Jitter
+
+1. Along with header, send a float for arrival time
+	Note: Arrival time should be +/- a random amount, for simulating jitter
+
+2. Insert packet into a queue (couple ways to do this)
+	Note: one way the professor recommended is to enqueue the bytes recieve and split it that way (memory management yaaaaay)
+
+3. Sort Queue based on arrival time (this will simulate jitter)
+
+4. Each frame of the game, we process only the packets that arrvive based on the current arrival time
+	Note: if arrival time = x seconds, we only process the packets x seconds ago

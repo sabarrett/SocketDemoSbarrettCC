@@ -4,7 +4,6 @@
 //Constructor
 Networker::Networker()
 {
-
 }
 
 Networker::~Networker()
@@ -12,10 +11,19 @@ Networker::~Networker()
 	cleanup();
 }
 
-void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour)
+void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour, float arrivalTime)
 {
+	if (mIsInit)
+	{
+		cleanup();
+	}
+
+	std::srand(time(NULL));
+	mArrivalTime = arrivalTime;
+
 	mpTCPSocket = new TCPSocketPtr;
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
+	mPacketQueue = std::queue<std::pair<int, float>>();
 
 	//Data for GameObject replication
 	mpGraphicsLibrary = graphicsLibrary;
@@ -23,13 +31,12 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	mPlayerSpriteIdentifier = playerSpriteIdentifier;
 	mPlayerMoveSpeed = playerMoveSpeed;
 	mWallColour = wallColour;
+
+	mIsInit = true;
 }
 
 void Networker::cleanup()
 {
-	//delete mInstance;
-	//mInstance = nullptr;
-
 	//Cleanup map
 	std::vector<std::pair<int, GameObject*>>::iterator it;
 	for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
@@ -42,7 +49,10 @@ void Networker::cleanup()
 	(*mpTCPSocket)->CleanupSocket();
 	delete mpTCPSocket;
 	mpTCPSocket = nullptr;
+
 	SocketUtil::CleanUp();
+
+	mIsInit = false;
 }
 
 bool Networker::initServer(std::string port)
@@ -307,6 +317,8 @@ PacketType Networker::receiveGameObjectState()
 
 void Networker::sendGameObjectState(int ID, PacketType packetHeader)
 {
+	int time = mArrivalTime + (-100 + rand() & (100 - -100 + 1)); // MIN + rand() % (MAX - MIN + 1), calculates a random number int between a neg and pos value
+
 	OutputMemoryBitStream OMBStream;
 	OMBStream.Write(packetHeader);
 	OMBStream.Write(mGameObjectsVec[ID].second->getNetworkID());
@@ -386,5 +398,14 @@ void Networker::renderGameObjects()
 	for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 	{
 		it->second->draw();
+	}
+}
+
+//Not finished lol, will finish today
+void Networker::SortPacketQueue()
+{
+	for (int i = 1; i <= mPacketQueue.size(); ++i)
+	{
+		
 	}
 }

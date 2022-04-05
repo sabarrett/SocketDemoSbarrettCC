@@ -2,14 +2,15 @@
 
 #include <string>
 #include <map>
+#include <stdlib.h>
+#include <time.h>
+#include <queue>
 
 #include "GameObject.h"
 #include "Rock.h"
 #include "Wall.h"
 #include "PlayerController.h"
 #include "RoboCatPCH.h"
-
-using std::map;
 
 enum PacketType
 {
@@ -36,7 +37,7 @@ public:
 		return mInstance;
 	};
 
-	void init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour);
+	void init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour, float arrivalTime);
 	void cleanup();
 
 	~Networker();
@@ -55,6 +56,9 @@ public:
 	void updateGameObjects();
 	void renderGameObjects();
 
+	//Queue
+	void SortPacketQueue();
+
 private:
 
 	Networker();
@@ -64,6 +68,9 @@ private:
 	//Data
 	TCPSocketPtr* mpTCPSocket;
 	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
+	std::queue<std::pair<int, float>> mPacketQueue; //Might wanna change types depending on how we store the packets
+	int mArrivalTime; 
+	bool mIsInit;
 
 	//Data for GameObject replication
 	GraphicsLibrary* mpGraphicsLibrary;
