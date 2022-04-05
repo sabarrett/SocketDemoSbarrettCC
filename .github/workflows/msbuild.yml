@@ -31,6 +31,8 @@ jobs:
       uses: lukka/run-cmake@v10
       with:
         cmakeListsTxtPath: '${{ github.workspace }}/SampleGame/CMakeLists.txt'
+        configurePreset: 'Ninja'
+        buildPreset: 'Ninja'
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
