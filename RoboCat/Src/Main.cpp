@@ -7,6 +7,11 @@
 
 const int SCREEN_SIZE_X = 1000;
 const int SCREEN_SIZE_Y = 600;
+const string FILE_PATH = "..\\common\\assets\\";
+const string BACKGROUND_FILE = "steps.png";
+const string HOMER_FILE = "HomerSimpson.png";
+const string QUIMBY_FILE = "Mayor_Quimby.png";
+const string DONUT_FILE = "Donut.png";
 
 void TCPServer(UDPSocketPtr server)
 {
@@ -56,8 +61,10 @@ int main(int argc, const char** argv)
 	UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 
 	GraphicsLib* gLib = new GraphicsLib(SCREEN_SIZE_X, SCREEN_SIZE_Y);
-	gLib->init("../../common/assets/steps.png");
-	gLib->loadImage("../../common/assets/steps.png", "background");
+	gLib->init();
+	gLib->loadImage(FILE_PATH + BACKGROUND_FILE, "background");
+	gLib->drawImage("background", 0, 0);
+	gLib->render();
 		
 	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
 	{

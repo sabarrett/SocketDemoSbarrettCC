@@ -55,7 +55,7 @@ public:
 	//Mutator(s)
 
 	//Functions
-	bool init(std::string backgroundFilePath);
+	bool init();
 	void render();
 	void loadImage(std::string imageFilePath, std::string imageIdentifier);
 
