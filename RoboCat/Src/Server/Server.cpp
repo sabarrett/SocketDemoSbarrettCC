@@ -201,6 +201,7 @@ void Server::SendWorldUpdatePackets()
 	{
 		if (m_connections[i].SocketPtrTCP != nullptr)
 		{
+			//std::cout << "WORLD-STATE SIZE: " << outStream.GetByteLength() << "\n";
 			m_SocketPtrUDP->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), m_connections[i].socketAddress);
 		}
 	}

@@ -95,11 +95,19 @@ int main(int argc, const char** argv)
 		game->Draw();
 		game->DoNetworking();
 
-		frameTime = SDL_GetTicks() - frameStart;
+		/*frameTime = SDL_GetTicks() - frameStart;
 		if (frameDelay > frameTime)
 		{
 			SDL_Delay(frameDelay - frameTime);
+		}*/
+		frameTime = SDL_GetTicks() - frameStart;
+		while(frameDelay > frameTime)
+		{
+			frameTime = SDL_GetTicks() - frameStart;
 		}
+
+		frameTime = SDL_GetTicks() - frameStart;
+		std::cout << "FPS: " << (1000/frameTime) << "\n";
 		frame++;
 	}
 	if (server)
