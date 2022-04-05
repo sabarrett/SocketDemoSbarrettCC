@@ -218,7 +218,9 @@ int main(int argc, const char** argv)
 	InputSystem* mpInputSystem = new InputSystem(); //do i need this to be a pointer and create it?
 	GameObject mGameObjects[MAX_OBJECT_COUNT]; //possibly make this an array with MAX_OBJECT_COUNT
 	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
-	//SDL_AddTimer
+	
+	//average time between frames is 16.67 milliseconds
+		//could be useful for determining time between packets better in network manager
 
 	bool activeConnection = true;
 	bool isServer;

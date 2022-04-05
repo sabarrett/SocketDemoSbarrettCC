@@ -30,6 +30,9 @@ void NetworkManager::update() //sdl_timer
 {
 	//mLastHello += timer. //trying to do something with sdl timer for this
 	//mLastInputPacket +=
+
+	//if (mLastInputPacket > TIME_BETWEEN_PACKETS
+		//SendPackets();
 }
 
 void NetworkManager::SendHello()
