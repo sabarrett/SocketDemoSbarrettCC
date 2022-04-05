@@ -12,7 +12,7 @@
 using namespace std;
 int windowWidth = 800;
 int windowHeight = 600;
-int FPS = 30;
+int FRAMERATE = 16;
 
 #if _WIN32
 
@@ -227,6 +227,16 @@ void ThrowSocketError(std::string errorMsg)
 	ExitProcess(1); // kill
 }
 
+ALLEGRO_TIMER* GiveMeATimer(float incr)
+{
+	ALLEGRO_TIMER* timer = al_create_timer(incr);
+	if (timer == nullptr)
+	{
+		ERROR;
+	}
+	al_start_timer(timer);
+	return timer;
+}
 
 TCPSocketPtr StartServer()
 {
@@ -264,6 +274,12 @@ void BradsTotallyOriginalServer()
 	TCPSocketPtr incomingSocket = StartServer();
 	incomingSocket->SetNonBlockingMode(true);
 
+	//Timer
+	ALLEGRO_TIMER* timer = GiveMeATimer(0.001);
+	int currentTime = al_get_timer_count(timer);
+	int lastTime = 0;
+	float deltaTime = 0;
+
 	// Game Loop Variables
 	bool exit = false;
 	const int numObjects = 1;
@@ -300,6 +316,11 @@ void BradsTotallyOriginalServer()
 	while (!exit) //GameLoop
 	{
 
+		//Timer
+		currentTime = al_get_timer_count(timer);
+		deltaTime = currentTime - lastTime;
+		lastTime = currentTime;
+
 		//send Data
 		OutputMemoryBitStream oStream = OutputMemoryBitStream();
 
@@ -327,8 +348,6 @@ void BradsTotallyOriginalServer()
 				inObjects[i].Read(iStream);
 			}
 		}
-
-		
 
 		ALLEGRO_EVENT events;
 
@@ -394,8 +413,17 @@ void BradsTotallyOriginalServer()
 		}
 		al_flip_display();
 		al_clear_to_color(al_map_rgb(0,0,0));
+
+		//wait for the frame to end
+		int currentPeriod = al_get_timer_count(timer) - currentTime;
+		while (currentPeriod < FRAMERATE)
+		{
+			currentPeriod = al_get_timer_count(timer) - currentTime;
+		}
+		if (currentTime < 5000)
+			al_set_timer_count(timer, 0);
 	}
-	al_destroy_display(display);
+	al_destroy_display(display);	
 }
 
 TCPSocketPtr StartClientConnection()
@@ -425,6 +453,12 @@ void BradsLessOriginalClient()
 {
 	TCPSocketPtr clientSocket = StartClientConnection();
 	clientSocket->SetNonBlockingMode(true);
+
+	//timer	
+	ALLEGRO_TIMER* timer = GiveMeATimer(0.001);
+	int currentTime = al_get_timer_count(timer);
+	int lastTime = 0;
+	float deltaTime = 0;
 
 	bool exit = false;
 	const int numObjects = 1;
@@ -459,6 +493,20 @@ void BradsLessOriginalClient()
 
 	while (!exit) //GameLoop
 	{
+		//Timer
+		currentTime = al_get_timer_count(timer);
+		deltaTime = currentTime - lastTime;
+		lastTime = currentTime;
+
+		//send Data
+		OutputMemoryBitStream oStream = OutputMemoryBitStream();
+
+		for (int i = 0; i < numObjects; i++)
+		{
+			outRectangles[i].Write(oStream);
+		}
+		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
+
 		// Recieve data
 		char buffer[4096];
 		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
@@ -475,18 +523,7 @@ void BradsLessOriginalClient()
 			{
 				rain[j].Read(iStream);
 			}
-		}
-		
-
-		//send Data
-		OutputMemoryBitStream oStream = OutputMemoryBitStream();
-
-		for (int i = 0; i < numObjects; i++)
-		{
-			outRectangles[i].Write(oStream);
-		}
-		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
-			
+		}		
 
 		ALLEGRO_EVENT events;
 
@@ -554,8 +591,19 @@ void BradsLessOriginalClient()
 		}
 		al_flip_display();
 		al_clear_to_color(al_map_rgb(0, 0, 0));
+
+		//wait for the frame to end
+		int currentPeriod = al_get_timer_count(timer) - currentTime;
+		while (currentPeriod < FRAMERATE)
+		{
+			currentPeriod = al_get_timer_count(timer) - currentTime;
+		}
+		if (currentTime < 5000)
+			al_set_timer_count(timer, 0);
 	}
 	al_destroy_display(display);
+
+	
 }
 
 int main(int argc, const char** argv)
@@ -575,6 +623,7 @@ int main(int argc, const char** argv)
 	if (!al_init()) return -1;
 
 	al_init_primitives_addon();
+
 	al_install_keyboard();
 
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server"; // check if the command on the executable is 'server'
