@@ -58,6 +58,8 @@ public:
 
 	//Queue
 	void SortPacketQueue();
+	int FindMinIndex(int sortedIndex);
+	void InsertMinIndexToEnd(int minIndex);
 
 private:
 

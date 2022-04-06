@@ -401,11 +401,57 @@ void Networker::renderGameObjects()
 	}
 }
 
-//Not finished lol, will finish today
+
 void Networker::SortPacketQueue()
 {
 	for (int i = 1; i <= mPacketQueue.size(); ++i)
 	{
-		
+		int min = FindMinIndex(mPacketQueue.size() - i);
+		InsertMinIndexToEnd(min);
 	}
+}
+
+
+int Networker::FindMinIndex(int sortedIndex)
+{
+	int minIndex = -1;
+	int minVal = INT_MAX;
+	for (int i = 0; i < mPacketQueue.size(); i++)
+	{
+		std::pair<int, float> currentPacketTime = mPacketQueue.front();
+		mPacketQueue.pop();
+
+		if (currentPacketTime.first <= minVal && i <= sortedIndex)
+		{
+			minIndex = i;
+			minVal = currentPacketTime.first;
+		}
+		mPacketQueue.push(currentPacketTime);
+	}
+
+	return minIndex; 
+}
+
+void Networker::InsertMinIndexToEnd(int minIndex)
+{
+	if (minIndex == -1)
+	{
+		return;
+	}
+
+	std::pair<int, float> minVal;
+	for (int i = 0; i < mPacketQueue.size(); i++)
+	{
+		pair<int, float> currentPacket = mPacketQueue.front();
+		mPacketQueue.pop();
+		if (i != minIndex)
+		{
+			mPacketQueue.push(currentPacket);
+		}
+		else
+		{
+			minVal = currentPacket;
+		}
+	}
+	mPacketQueue.push(minVal);
 }
