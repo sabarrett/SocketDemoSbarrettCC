@@ -34,11 +34,11 @@ class NetworkManager
 		~NetworkManager();
 
 		void init(SocketAddress address, std::string name);
-		void update();
+		void update(GameObject objects[]);
 
 		//maybe pass in a socket to use here, or have one in network manager
 		void SendHello();
-		void SendPackets(); //GameObject objects[]
+		void SendPackets(GameObject objects[]); //GameObject objects[]
 		void ReceivePackets(InputMemoryBitStream& inputStream);
 
 		int getID();

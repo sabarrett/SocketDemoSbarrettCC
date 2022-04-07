@@ -26,14 +26,14 @@ void NetworkManager::init(SocketAddress address, std::string name)
 	mName = name;
 }
 
-void NetworkManager::update() 
+void NetworkManager::update(GameObject objects[])
 {
 	mLastHello += 0.00167; //trying to do something with sdl timer for this
 	mLastInputPacket += 0.00167;
 
 	if (mLastInputPacket > TIME_BETWEEN_PACKETS)
 	{
-		SendPackets();
+		SendPackets(objects);
 	}
 }
 
@@ -53,7 +53,7 @@ void NetworkManager::SendHello()
 	}
 }
 
-void NetworkManager::SendPackets()
+void NetworkManager::SendPackets(GameObject objects[])
 {
 	if (mCurrentState == Hello && mLastHello > TIME_BETWEEN_PACKETS)
 	{
