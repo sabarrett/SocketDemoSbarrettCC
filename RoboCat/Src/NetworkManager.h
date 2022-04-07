@@ -2,6 +2,7 @@
 
 #include "GameObject.h"
 #include "RoboCatPCH.h"
+#include <vector>
 
 const float TIME_BETWEEN_PACKETS = 0.5f;
 
@@ -22,6 +23,8 @@ class NetworkManager
 		std::string mName;
 
 		//int mGameObjectCount;
+		//vector<int> mGameObjectPosX; //maybe just have array parameter instead of this
+		//vector<int> mGameObjectPosY;
 
 		SocketAddress mAddress;
 		TCPSocketPtr mSocket;
@@ -35,7 +38,7 @@ class NetworkManager
 
 		//maybe pass in a socket to use here, or have one in network manager
 		void SendHello();
-		void SendPackets();
+		void SendPackets(); //GameObject objects[]
 		void ReceivePackets(InputMemoryBitStream& inputStream);
 
 		int getID();

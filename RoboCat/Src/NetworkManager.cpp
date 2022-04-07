@@ -26,13 +26,15 @@ void NetworkManager::init(SocketAddress address, std::string name)
 	mName = name;
 }
 
-void NetworkManager::update() //sdl_timer
+void NetworkManager::update() 
 {
-	//mLastHello += timer. //trying to do something with sdl timer for this
-	//mLastInputPacket +=
+	mLastHello += 0.00167; //trying to do something with sdl timer for this
+	mLastInputPacket += 0.00167;
 
-	//if (mLastInputPacket > TIME_BETWEEN_PACKETS
-		//SendPackets();
+	if (mLastInputPacket > TIME_BETWEEN_PACKETS)
+	{
+		SendPackets();
+	}
 }
 
 void NetworkManager::SendHello()

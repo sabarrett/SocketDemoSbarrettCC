@@ -218,6 +218,7 @@ int main(int argc, const char** argv)
 	InputSystem* mpInputSystem = new InputSystem(); //do i need this to be a pointer and create it?
 	GameObject mGameObjects[MAX_OBJECT_COUNT]; //possibly make this an array with MAX_OBJECT_COUNT
 	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
+	NetworkManager mNetworkManager;
 	
 	//average time between frames is 16.67 milliseconds
 		//could be useful for determining time between packets better in network manager
@@ -298,6 +299,9 @@ int main(int argc, const char** argv)
 		}
 
 		//now i need to move and send this info
+		mNetworkManager.update(); //update and then send packets from there?
+		//mNetworkManagerSever().update(); //if i make separate code for the server
+
 		mpGraphicsLibrary->render(); //render at the very end
 	}
 	
