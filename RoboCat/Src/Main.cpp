@@ -1,5 +1,5 @@
 
-#include "RoboCatPCH.h"
+//#include "RoboCatPCH.h"
 #include "InputSystem.h"
 #include "GraphicsLibrary.h"
 #include "Colour.h"
@@ -299,7 +299,7 @@ int main(int argc, const char** argv)
 		}
 
 		//now i need to move and send this info
-		mNetworkManager.update(); //update and then send packets from there?
+		mNetworkManager.update(mGameObjects); //update and then send packets from there?
 		//mNetworkManagerSever().update(); //if i make separate code for the server
 
 		mpGraphicsLibrary->render(); //render at the very end
