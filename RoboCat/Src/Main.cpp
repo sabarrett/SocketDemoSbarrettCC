@@ -349,7 +349,7 @@ class GameState
 				SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::PLAYER, mPlayer->getX(), mPlayer->getY());
 				mReceivedPackets.push(new Packet(ReceivePacket(sock, &otherAddr, mInputSystem), static_cast<long int>(time(NULL)) + rand() % 6 - 3));
 
-				while (static_cast <long int> (time(NULL)) - mReceivedPackets.top()->getTimeStamp() < timeBeforeProcessing)
+				while (!mReceivedPackets.empty() && static_cast <long int> (time(NULL)) - mReceivedPackets.top()->getTimeStamp() < timeBeforeProcessing)
 				{
 					Packet* temp = mReceivedPackets.top();
 					mReceivedPackets.pop();
@@ -425,43 +425,46 @@ class GameState
 					SocketUtil::ReportError("Error receiving packet");
 				}
 				else if (bytesReceived == 0)
-					return;
+					return nullptr;
 				else
 				{
 					int* packet = (int*)buffer;
 					return packet;
 				}
 			}
+			return nullptr;
 		}
 
 		void processPacket(int* packet)
 		{
-			switch (packet[0])
+			if (packet != nullptr)
 			{
+				switch (packet[0])
+				{
 				case PacketTypes::UPDATE:
 				{
 					switch (packet[1])
 					{
-						case ObjectTypes::PLAYER:
+					case ObjectTypes::PLAYER:
+					{
+						otherPlayer->setX(packet[2]);
+						otherPlayer->setY(packet[3]);
+						break;
+					}
+					case ObjectTypes::COIN:
+					{
+						vCoins.clear();
+						for (int i = 2; i < 20; i += 2)
 						{
-							otherPlayer->setX(packet[2]);
-							otherPlayer->setY(packet[3]);
-							break;
+							vCoins.push_back(new CoinObject(packet[i], packet[i + 1]));
 						}
-						case ObjectTypes::COIN:
-						{
-							vCoins.clear();
-							for (int i = 2; i < 20; i += 2)
-							{
-								vCoins.push_back(new CoinObject(packet[i], packet[i + 1]));
-							}
-							break;
-						}
-						case ObjectTypes::TOMATO:
-						{
-							tomato = new TomatoObject(packet[2], packet[3]);
-							break;
-						}
+						break;
+					}
+					case ObjectTypes::TOMATO:
+					{
+						tomato = new TomatoObject(packet[2], packet[3]);
+						break;
+					}
 					}
 					break;
 				}
@@ -469,6 +472,7 @@ class GameState
 				{
 					SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
 					break;
+				}
 				}
 			}
 		}
