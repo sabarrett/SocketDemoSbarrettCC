@@ -50,6 +50,8 @@ using std::deque;
 using std::unordered_map;
 using std::string;
 using std::unordered_set;
+using std::pair;
+using std::priority_queue;
 
 class RoboCat;
 class GameObject;

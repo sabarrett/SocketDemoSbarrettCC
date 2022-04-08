@@ -86,7 +86,7 @@ int main(int argc, const char** argv)
 	SocketAddressPtr addressToSendTo;
 	SocketAddressPtr addressRecievedFrom;
 
-	vector<std::pair<int, void*>> unprocessedData = vector<std::pair<int, void*>>();
+	priority_queue<pair<int, void*>> unprocessedData = priority_queue<pair<int, void*>>();
 
 	string currentBackground;
 
@@ -164,8 +164,8 @@ int main(int argc, const char** argv)
 		} while (unprocessedData.size() < 1);
 	}
 
-	// we don't need the starting messages stored
-	unprocessedData.clear();
+	// clearing the queue
+	unprocessedData = priority_queue<pair<int, void*>>();
 
 	//  Graphics init
 	GraphicsLibrary gl(SCREEN_X, SCREEN_Y);
@@ -216,9 +216,9 @@ int main(int argc, const char** argv)
 		}
 		else
 		{
-			//gameWorld.Update();
+			gameWorld.Update(userIsCreator, std::ref(joinerInputs));
 			//ProcessWorldState();
-			NetworkManager::HandleIncomingWorldStatePackets(std::ref(gameWorld),listeningSocket, addressRecievedFrom);
+			NetworkManager::HandleIncomingWorldStatePackets(std::ref(gameWorld), std::ref(unprocessedData));
 			NetworkManager::HandleOutgoingInputPackets(std::ref(joinerInputs), sendingSocket, addressToSendTo);
 		}
 
