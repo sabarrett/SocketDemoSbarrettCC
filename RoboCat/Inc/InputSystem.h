@@ -1,6 +1,16 @@
 #pragma once
 #include <allegro5/allegro.h>
-#include "GraphicsSystems.h";
+#include "GraphicsSystems.h"
+
+#include <vector>
+#include <string>
+#include <map>
+#include <utility>
+
+using std::vector;
+using std::pair;
+using std::string;
+using std::map;
 
 enum KEYCODES
 {

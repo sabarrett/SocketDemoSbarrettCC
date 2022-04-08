@@ -1,9 +1,15 @@
 #pragma once
-#include <utility>
 #include <GraphicsSystems.h>
+
+#include <vector>
 #include <string>
+#include <map>
+#include <utility>
 
-
+using std::vector;
+using std::pair;
+using std::string;
+using std::map;
 
 enum ClassId
 {
@@ -17,6 +23,7 @@ class GameObject
 {
 public:
 
+	GameObject() {};
 	virtual ~GameObject();
 	virtual void Draw();
 

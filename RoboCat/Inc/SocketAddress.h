@@ -1,3 +1,15 @@
+#pragma once
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include "Windows.h"
+#include "WinSock2.h"
+#include "Ws2tcpip.h"
+#include <memory>
+typedef int socklen_t;
+
+using std::shared_ptr;
+
 class SocketAddress
 {
 public:

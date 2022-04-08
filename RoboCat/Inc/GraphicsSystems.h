@@ -3,6 +3,13 @@
 #include <allegro5/allegro_image.h>
 #include <vector>
 #include <string>
+#include <map>
+#include <utility>
+
+using std::vector;
+using std::pair;
+using std::string;
+using std::map;
 
 class GraphicsSystems
 {

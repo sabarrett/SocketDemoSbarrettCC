@@ -382,6 +382,7 @@
     <ClInclude Include="Inc\InputSystem.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
+    <ClInclude Include="Inc\Network.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
     <ClInclude Include="Inc\RoboMath.h" />
     <ClInclude Include="Inc\SocketAddress.h" />
@@ -392,6 +393,7 @@
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
+    <ClCompile Include="Network.cpp" />
     <ClCompile Include="Src\GameObjects.cpp" />
     <ClCompile Include="Src\GraphicsSystems.cpp" />
     <ClCompile Include="Src\InputSystem.cpp" />

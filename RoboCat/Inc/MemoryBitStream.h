@@ -1,8 +1,24 @@
+#pragma once
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include "Windows.h"
+#include "WinSock2.h"
+#include "Ws2tcpip.h"
+#include <memory>
+typedef int socklen_t;
+
+#include "RoboMath.h"
 
 #include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <iostream>
+
+//using std::vector;
+//using std::shared_ptr;
+
+using namespace std;
 
 class GameObject;
 
