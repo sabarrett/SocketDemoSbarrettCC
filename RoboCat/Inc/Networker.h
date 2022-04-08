@@ -21,6 +21,13 @@ enum PacketType
 	PACKET_INVALID
 };
 
+struct GamePacket
+{
+	char* buffer;
+	int32_t byteRecieve;
+	float dispatchTime;
+};
+
 //Networker is singleton (we only want one networker at a time)
 class Networker
 {
@@ -50,6 +57,7 @@ public:
 	//Update game state
 	PacketType receiveGameObjectState();
 	void sendGameObjectState(int networkID, PacketType packetHeader);
+	PacketType processPacket(GamePacket gamePacket);
 
 	//Map
 	void addGameObject(GameObject* objectToAdd, int networkID);
