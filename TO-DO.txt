@@ -22,7 +22,7 @@ Questions:
 ---------------------------------------------------------------
 Notes and Ideas:
 
-. Use TransmissionData.h - make a derived class?
+. Use TransmissionData.h - make GameObject derived classes also derive from and override functions
 . Use Timimg.h and .cpp
 . Use InFlightPacket.h and .cpp
 . Use DeliveryNotificationManager.h and .cpp
@@ -31,7 +31,11 @@ Notes and Ideas:
 --> Chapter 7 slide 14 gives a good explanation of how this can be done
 
 . Figure out how to read and write PacketSquenceNumber, AckRange, and hasAcks in our Networker (see DeliveryNotificationManager.cpp's reads from inInputStream)
-. Override TransmissionData::HandleDeliveryFailure() and HandleDeliverySuccess()
+
+. Sync PacketSequenceNumbers on server and client!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+. Add a DeliveryNotificationManager* to Networker, handle cleanup as well
+. Not sure where yet, but keep checking for timeouts on sent packets (if they did not receive acks, I think this is in DeliveryNotificationmanager), but use  get transmission data in InFlightpacket to handle success or failure on ack and on timeout
+--> Investigate functions in DeliveryNotificationManager and figure out how to implement them with out stuff
 
 -----------------------------------------------------------------
 
@@ -40,7 +44,7 @@ Simulating Latency/Jitter
 1. Along with header, send a float for arrival time
 	Note: Arrival time should be +/- a random amount, for simulating jitter
 
-2. Insert packet into a queue (couple ways to do this)
+2. Insert inflightpacket into a queue (couple ways to do this)
 	Note: one way the professor recommended is to enqueue the bytes recieve and split it that way (memory management yaaaaay)
 
 3. Sort Queue based on arrival time (this will simulate jitter)

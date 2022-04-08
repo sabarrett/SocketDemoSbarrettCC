@@ -10,6 +10,7 @@
 #include "Rock.h"
 #include "Wall.h"
 #include "PlayerController.h"
+#include "InFlightPacket.h"
 #include "RoboCatPCH.h"
 
 enum PacketType
@@ -56,10 +57,10 @@ public:
 	void updateGameObjects();
 	void renderGameObjects();
 
-	//Queue
-	void SortPacketQueue();
-	int FindMinIndex(int sortedIndex);
-	void InsertMinIndexToEnd(int minIndex);
+	////Queue
+	//void sortPacketQueue();
+	//int findMinIndex(int sortedIndex);
+	//void insertMinIndexToEnd(int minIndex);
 
 private:
 
@@ -70,9 +71,10 @@ private:
 	//Data
 	TCPSocketPtr* mpTCPSocket;
 	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
-	std::queue<std::pair<int, float>> mPacketQueue; //Might wanna change types depending on how we store the packets
+	//std::queue<InFlightPacket*> mInFlightPacketsQueue;
+	std::priority_queue<float, InFlightPacket*, std::greater<int>> mInFlightPacketsQueue;
 	int mArrivalTime; 
-	bool mIsInit;
+	bool mbIsInitted;
 
 	//Data for GameObject replication
 	GraphicsLibrary* mpGraphicsLibrary;

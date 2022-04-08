@@ -13,7 +13,7 @@ Networker::~Networker()
 
 void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour, float arrivalTime)
 {
-	if (mIsInit)
+	if (mbIsInitted)
 	{
 		cleanup();
 	}
@@ -23,7 +23,8 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 
 	mpTCPSocket = new TCPSocketPtr;
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
-	mPacketQueue = std::queue<std::pair<int, float>>();
+	//mPacketQueue = std::queue<std::pair<int, float>>();
+	mInFlightPacketsQueue = std::priority_queue<float, InFlightPacket*, std::greater<int>>();
 
 	//Data for GameObject replication
 	mpGraphicsLibrary = graphicsLibrary;
@@ -32,7 +33,7 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	mPlayerMoveSpeed = playerMoveSpeed;
 	mWallColour = wallColour;
 
-	mIsInit = true;
+	mbIsInitted = true;
 }
 
 void Networker::cleanup()
@@ -52,7 +53,7 @@ void Networker::cleanup()
 
 	SocketUtil::CleanUp();
 
-	mIsInit = false;
+	mbIsInitted = false;
 }
 
 bool Networker::initServer(std::string port)
@@ -169,6 +170,9 @@ PacketType Networker::receiveGameObjectState()
 	if (byteRecieve > 0)
 	{
 		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
+
+		//TO-DO: Read InFlightPacket squence number, SET SEQUENCE NUMBER AND SYNC BETWEEN HOSTS SOMEHOW
+		InFlightPacket* pInFlightPacket = new InFlightPacket();
 
 		//Start reading
 		PacketType packetHeader;
@@ -317,7 +321,8 @@ PacketType Networker::receiveGameObjectState()
 
 void Networker::sendGameObjectState(int ID, PacketType packetHeader)
 {
-	int time = mArrivalTime + (-100 + rand() & (100 - -100 + 1)); // MIN + rand() % (MAX - MIN + 1), calculates a random number int between a neg and pos value
+	//TO-DO: Create InFlightPacket squence number, SET SEQUENCE NUMBER AND SYNC BETWEEN HOSTS SOMEHOW, set transmission data in InFlightpacket
+	InFlightPacket* pInFlightPacket = new InFlightPacket();
 
 	OutputMemoryBitStream OMBStream;
 	OMBStream.Write(packetHeader);
@@ -375,6 +380,9 @@ void Networker::sendGameObjectState(int ID, PacketType packetHeader)
 		return;
 	}
 
+	//TO-DO: Collect InFlightPackets in queue and send all of them when it gets too full (size() > maxSize)
+	//TO-DO: Add time to pInFlightPacket's timeDispatched
+	int time = mArrivalTime + (-100 + rand() & (100 - -100 + 1)); // MIN + rand() % (MAX - MIN + 1), calculates a random number int between a neg and pos value
 	(*mpTCPSocket)->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
 }
 
@@ -402,56 +410,56 @@ void Networker::renderGameObjects()
 }
 
 
-void Networker::SortPacketQueue()
-{
-	for (int i = 1; i <= mPacketQueue.size(); ++i)
-	{
-		int min = FindMinIndex(mPacketQueue.size() - i);
-		InsertMinIndexToEnd(min);
-	}
-}
-
-
-int Networker::FindMinIndex(int sortedIndex)
-{
-	int minIndex = -1;
-	int minVal = INT_MAX;
-	for (int i = 0; i < mPacketQueue.size(); i++)
-	{
-		std::pair<int, float> currentPacketTime = mPacketQueue.front();
-		mPacketQueue.pop();
-
-		if (currentPacketTime.first <= minVal && i <= sortedIndex)
-		{
-			minIndex = i;
-			minVal = currentPacketTime.first;
-		}
-		mPacketQueue.push(currentPacketTime);
-	}
-
-	return minIndex; 
-}
-
-void Networker::InsertMinIndexToEnd(int minIndex)
-{
-	if (minIndex == -1)
-	{
-		return;
-	}
-
-	std::pair<int, float> minVal;
-	for (int i = 0; i < mPacketQueue.size(); i++)
-	{
-		pair<int, float> currentPacket = mPacketQueue.front();
-		mPacketQueue.pop();
-		if (i != minIndex)
-		{
-			mPacketQueue.push(currentPacket);
-		}
-		else
-		{
-			minVal = currentPacket;
-		}
-	}
-	mPacketQueue.push(minVal);
-}
+//void Networker::sortPacketQueue()
+//{
+//	for (int i = 1; i <= mPacketQueue.size(); ++i)
+//	{
+//		int min = findMinIndex(mPacketQueue.size() - i);
+//		insertMinIndexToEnd(min);
+//	}
+//}
+//
+//
+//int Networker::findMinIndex(int sortedIndex)
+//{
+//	int minIndex = -1;
+//	int minVal = INT_MAX;
+//	for (int i = 0; i < mPacketQueue.size(); i++)
+//	{
+//		std::pair<int, float> currentPacketTime = mPacketQueue.front();
+//		mPacketQueue.pop();
+//
+//		if (currentPacketTime.first <= minVal && i <= sortedIndex)
+//		{
+//			minIndex = i;
+//			minVal = currentPacketTime.first;
+//		}
+//		mPacketQueue.push(currentPacketTime);
+//	}
+//
+//	return minIndex; 
+//}
+//
+//void Networker::insertMinIndexToEnd(int minIndex)
+//{
+//	if (minIndex == -1)
+//	{
+//		return;
+//	}
+//
+//	std::pair<int, float> minVal;
+//	for (int i = 0; i < mPacketQueue.size(); i++)
+//	{
+//		pair<int, float> currentPacket = mPacketQueue.front();
+//		mPacketQueue.pop();
+//		if (i != minIndex)
+//		{
+//			mPacketQueue.push(currentPacket);
+//		}
+//		else
+//		{
+//			minVal = currentPacket;
+//		}
+//	}
+//	mPacketQueue.push(minVal);
+//}
