@@ -14,6 +14,8 @@ Game::~Game()
 
 void Game::init()
 {
+	mpInputSystem = new InputSystem();
+
 	mpGraphicsLib->loadImage(FILE_PATH + BACKGROUND_FILE, "background");
 	mpGraphicsLib->loadImage(FILE_PATH + HOMER_FILE, "homer");
 	mpGraphicsLib->drawImage("background", 0, 0);
@@ -45,4 +47,6 @@ void Game::update()
 
 void Game::render()
 {
+	mpGraphicsLib->render();
+	mpGraphicsLib2->render();
 }
