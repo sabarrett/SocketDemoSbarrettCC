@@ -339,6 +339,7 @@ class GameState
 				{
 					tomato->Update(mTimePerFrame);
 					SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::TOMATO, tomato->getX(), tomato->getY());
+					SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
 					CheckForCollisions(mPlayer);
 					CheckForCollisions(otherPlayer);
 				}
@@ -348,23 +349,17 @@ class GameState
 				}
 				SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::PLAYER, mPlayer->getX(), mPlayer->getY());
 				int* temp = ReceivePacket(sock, &otherAddr);
-				if (temp != nullptr)
-					cout << temp[0] << endl;
 				mReceivedPackets.push(new Packet(temp, static_cast<long int>(time(NULL)) + rand() % 6 - 3));
 
-				//cout << mReceivedPackets.empty() << endl;
 				while (!mReceivedPackets.empty() && static_cast <long int> (time(NULL)) - mReceivedPackets.top()->getTimeStamp() < timeBeforeProcessing)
 				{
-					cout << mReceivedPackets.top()->getBuffer()[0] << endl;
-					Packet* temp = mReceivedPackets.top();
+					Packet* tempPacket = mReceivedPackets.top();
 					mReceivedPackets.pop();
-					if (temp != nullptr)
+					if (tempPacket != nullptr)
 					{
-						//cout << mReceivedPackets.top()->getBuffer()[0] << endl;
-						//cout << temp->getBuffer()[0] << endl;
-						processPacket(temp->getBuffer());
+						processPacket(tempPacket->getBuffer());
 					}
-					delete temp;
+					delete tempPacket;
 				}
 
 				for (auto& coin : vCoins)
@@ -388,22 +383,20 @@ class GameState
 		void SendPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType,
 			int pos_x, int pos_y)
 		{
-			int packet[25];
+			const int packetSize = sizeof(int) * 25;
+			int packet[packetSize / sizeof(int)];
 			packet[0] = packetType;
 			packet[1] = objectType;
 			packet[2] = pos_x;
 			packet[3] = pos_y;
 
-			char* bytePacket = (char*)packet;
 			if (rand() % 16 != 5)
 			{
-				//cout << rand() % 16 << endl;
-				int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
+				int bytesSent = ptr->SendTo((char*)packet, packetSize, *addr);
 				if (bytesSent <= 0)
 				{
 					SocketUtil::ReportError("Client SendTo");
 				}
-				//cout << "sent packet" << endl;
 			}
 		}
 		void SendCoinPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType, vector<CoinObject*> coins)
@@ -411,7 +404,7 @@ class GameState
 			int packet[25];
 			packet[0] = packetType;
 			packet[1] = objectType;
-			for (int i = 2; i < 20; i += 2)
+			for (int i = 2; i < 22; i += 2)
 			{
 				packet[i] = coins[i / 2 - 1]->getX();
 				packet[i + 1] = coins[i / 2 - 1]->getY();
@@ -425,7 +418,6 @@ class GameState
 				{
 					SocketUtil::ReportError("Client SendTo");
 				}
-				//cout << "sent coin packet" << endl;
 			}
 		}
 		int* ReceivePacket(UDPSocketPtr ptr, SocketAddress* addr)
@@ -441,10 +433,14 @@ class GameState
 					return nullptr;
 				else
 				{
-					//cout << "received packet" << endl;
-					int* packet = (int*)buffer;
-					//cout << packet[0] << endl;
-					return packet;
+					char* packet = new char[100];
+					for (int i = 0; i < 100; i++)
+					{
+						packet[i] = buffer[i];
+					}
+					int* pac = (int*)packet;
+					cout << pac[2] << ", " << pac[3] << endl;
+					return pac;
 				}
 			}
 			return nullptr;
@@ -469,11 +465,13 @@ class GameState
 					}
 					case ObjectTypes::COIN:
 					{
+						cout << "coin packet received" << endl;
 						vCoins.clear();
-						for (int i = 2; i < 20; i += 2)
+						for (int i = 2; i < 22; i += 2)
 						{
 							vCoins.push_back(new CoinObject(packet[i], packet[i + 1]));
 						}
+						cout << vCoins.size() << endl;
 						break;
 					}
 					case ObjectTypes::TOMATO:
