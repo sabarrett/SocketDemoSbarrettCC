@@ -9,6 +9,7 @@
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_primitives.h>
 #include <thread>
+#include <cstdlib>
 #include "Score.h"
 
 enum class PacketType
@@ -36,7 +37,7 @@ Game::Game()
 		mBalls = new ball*[10];
 		
 		for (int i = 0; i < 10; i++) {
-			mBalls[i] = new ball(-1.0f, -1.0f, 15, paddleColor);
+			mBalls[i] = new ball(-0.1f, -0.1f, 15, paddleColor);
 			mBalls[i]->id = i;
 			mBalls[i]->pos = new position();
 			mBalls[i]->pos->y = al_get_display_height(mDisplay) / 2 + i * 25;
@@ -278,62 +279,94 @@ void Game::Receive()
 		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
 		if (bytesReceived > 0)
 		{
-			InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
-			PacketType type;
-			iStream.Read(type);
+
+			int num = rand() % 100 + 1;
+
+			if (num >= 25)
+			{
+				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
+				PacketType type;
+				iStream.Read(type);
 
 
-			if (type == PacketType::PT_PADDLE)
-			{
-				int yPos;
-				iStream.Read(yPos);
-
-				UpdateNetworkedPaddle(yPos);
-			}
-			if (type == PacketType::PT_BALL) 
-			{
-				int tempID;
-				iStream.Read(tempID);
-				iStream.Read(mBalls[tempID]->pos->x);
-				iStream.Read(mBalls[tempID]->pos->y);
-			}
-			if (type == PacketType::PT_SCORE)
-			{
-				iStream.Read(mScoreOne->points);
-				iStream.Read(mScoreTwo->points);
-			}
-			if (type == PacketType::PT_WIN) 
-			{
-				
-				iStream.Read(mWinningPlayer);
-
-				if (!mWinningPlayer) 
+				if (type == PacketType::PT_PADDLE)
 				{
-					std::cout << " Player 1  Won" << std::endl;
-					mRunning = false;
+					int yPos;
+					iStream.Read(yPos);
+					std::cout << "Y pos: " << yPos << std::endl;
+					UpdateNetworkedPaddle(yPos);
 				}
-				else 
+				if (type == PacketType::PT_BALL)
 				{
-					std::cout << " Player 2  Won" << std::endl;
-					mRunning = false;
+					int tempID;
+					iStream.Read(tempID);
+					iStream.Read(mBalls[tempID]->pos->x);
+					iStream.Read(mBalls[tempID]->pos->y);
+				}
+				if (type == PacketType::PT_SCORE)
+				{
+					iStream.Read(mScoreOne->points);
+					iStream.Read(mScoreTwo->points);
+				}
+				if (type == PacketType::PT_WIN)
+				{
+
+					iStream.Read(mWinningPlayer);
+
+					if (!mWinningPlayer)
+					{
+						std::cout << " Player 1  Won" << std::endl;
+						mRunning = false;
+					}
+					else
+					{
+						std::cout << " Player 2  Won" << std::endl;
+						mRunning = false;
+					}
+
+				}
+				else  if (bytesReceived < 0)
+				{
+					if (bytesReceived == -10035)
+					{
+
+					}
+					else if (bytesReceived == -10054)
+					{
+						mRunning = false;
+						LOG("User disconnected: %s", "<Insert ID here>");
+					}
+				}
+			}
+			else
+			{
+				//std::cout << "Dropping Packet.." << std::endl;
+
+				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
+				PacketType type;
+				iStream.Read(type);
+				if (type == PacketType::PT_PADDLE)
+				{
+					//std::cout << "Type: Paddle" << std::endl;
+				}
+				if (type == PacketType::PT_BALL)
+				{
+					//std::cout << "Type: Ball" << std::endl;
+				}
+				if (type == PacketType::PT_SCORE)
+				{
+					//std::cout << "Type: Score" << std::endl;
+				}
+				if (type == PacketType::PT_WIN)
+				{
+					//std::cout << "Type: Win" << std::endl;
 				}
 
+				//Drop packet
 			}
-		}
-		else  if (bytesReceived < 0)
-		{
-			if (bytesReceived == -10035)
-			{
 
-			}
-			else if (bytesReceived == -10054)
-			{
-				mRunning = false;
-				LOG("User disconnected: %s", "<Insert ID here>");
-			}
 		}
 	}
-	
 }
 
 void Game::Render()
