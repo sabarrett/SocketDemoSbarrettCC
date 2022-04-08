@@ -15,6 +15,7 @@ InputSystem.h
 
 //Include allegro libraries for input
 #include <allegro5/allegro.h>
+#include <allegro5/events.h>
 
 enum KeyCode
 {

@@ -4,7 +4,7 @@
 #include "RoboCatPCH.h"
 #include <vector>
 
-const float TIME_BETWEEN_PACKETS = 0.5f;
+const float TIME_BETWEEN_PACKETS = 0.25f;
 
 enum NetworkStates
 {
