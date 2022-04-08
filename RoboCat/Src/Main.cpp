@@ -344,16 +344,26 @@ class GameState
 				}
 				else
 				{
-					mReceivedPackets.push(new Packet(ReceivePacket(sock, &otherAddr, mInputSystem), static_cast<long int>(time(NULL)) + rand() % 6 - 3));
+					mReceivedPackets.push(new Packet(ReceivePacket(sock, &otherAddr), static_cast<long int>(time(NULL)) + rand() % 6 - 3));
 				}
 				SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::PLAYER, mPlayer->getX(), mPlayer->getY());
-				mReceivedPackets.push(new Packet(ReceivePacket(sock, &otherAddr, mInputSystem), static_cast<long int>(time(NULL)) + rand() % 6 - 3));
+				int* temp = ReceivePacket(sock, &otherAddr);
+				if (temp != nullptr)
+					cout << temp[0] << endl;
+				mReceivedPackets.push(new Packet(temp, static_cast<long int>(time(NULL)) + rand() % 6 - 3));
 
+				//cout << mReceivedPackets.empty() << endl;
 				while (!mReceivedPackets.empty() && static_cast <long int> (time(NULL)) - mReceivedPackets.top()->getTimeStamp() < timeBeforeProcessing)
 				{
+					cout << mReceivedPackets.top()->getBuffer()[0] << endl;
 					Packet* temp = mReceivedPackets.top();
 					mReceivedPackets.pop();
-					processPacket(temp->getBuffer());
+					if (temp != nullptr)
+					{
+						//cout << mReceivedPackets.top()->getBuffer()[0] << endl;
+						//cout << temp->getBuffer()[0] << endl;
+						processPacket(temp->getBuffer());
+					}
 					delete temp;
 				}
 
@@ -387,11 +397,13 @@ class GameState
 			char* bytePacket = (char*)packet;
 			if (rand() % 16 != 5)
 			{
+				//cout << rand() % 16 << endl;
 				int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
 				if (bytesSent <= 0)
 				{
 					SocketUtil::ReportError("Client SendTo");
 				}
+				//cout << "sent packet" << endl;
 			}
 		}
 		void SendCoinPacket(UDPSocketPtr ptr, SocketAddress* addr, int packetType, int objectType, vector<CoinObject*> coins)
@@ -413,9 +425,10 @@ class GameState
 				{
 					SocketUtil::ReportError("Client SendTo");
 				}
+				//cout << "sent coin packet" << endl;
 			}
 		}
-		int* ReceivePacket(UDPSocketPtr ptr, SocketAddress* addr, InputSystem* mInputSystem)
+		int* ReceivePacket(UDPSocketPtr ptr, SocketAddress* addr)
 		{
 			char buffer[100];
 			{
@@ -428,7 +441,9 @@ class GameState
 					return nullptr;
 				else
 				{
+					//cout << "received packet" << endl;
 					int* packet = (int*)buffer;
+					//cout << packet[0] << endl;
 					return packet;
 				}
 			}
@@ -439,6 +454,7 @@ class GameState
 		{
 			if (packet != nullptr)
 			{
+				cout << packet[0] << endl;
 				switch (packet[0])
 				{
 				case PacketTypes::UPDATE:
