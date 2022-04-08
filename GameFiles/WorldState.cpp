@@ -106,8 +106,6 @@ void WorldState::Read(InputMemoryBitStream& stream)
 		
 		tempObj = mpGameObjectLinker->GetGameObject(networkID);
 
-		// TODO: Investigate the create instances
-
 		if (tempObj == nullptr)
 		{
 			switch (classID)
@@ -128,14 +126,7 @@ void WorldState::Read(InputMemoryBitStream& stream)
 			mGameObjects.push_back(tempObj);
 		}
 		
-		if (tempObj == nullptr)
-		{
-			tempObj->Read(stream);
-		}
-		else
-		{
-			std::cout << "error: tempObj was nullptr" << std::endl;
-		}
+		tempObj->Read(stream);
 	}
 }
 
