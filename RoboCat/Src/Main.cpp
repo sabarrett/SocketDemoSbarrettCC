@@ -15,6 +15,7 @@
 #include "GameFiles/Key.h"
 #include "GameFiles/WorldState.h"
 #include "GameFiles/NetworkManager.h"
+#include <windows.h>
 
 ///          TODO
 ///  X - Handle one player disconnecting on the other player's end
@@ -202,8 +203,18 @@ int main(int argc, const char** argv)
 
 
 	// `````````````````````````  main game loop  ``````````````````````````` 
+
+	std::chrono::system_clock::time_point lastTime = std::chrono::system_clock::now();
+	std::chrono::system_clock::time_point startTime = std::chrono::system_clock::now();
+	int deltaTime;
+	int timestep = 16;
+
 	while (true)
 	{
+		deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - lastTime).count();
+		startTime = lastTime;
+		lastTime = std::chrono::system_clock::now();
+
 		inputSys.Update(userIsCreator, std::ref(gameWorld), std::ref(joinerInputs));
 
 		if (userIsCreator)
@@ -222,12 +233,19 @@ int main(int argc, const char** argv)
 			NetworkManager::HandleOutgoingInputPackets(std::ref(joinerInputs), sendingSocket, addressToSendTo);
 		}
 
-
 		//  Render
 
 		gameWorld.Render(currentBackground);
 
-		;
+
+		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() < 16)
+		{
+			//Lol
+			//Lmao.
+			//Rofl.
+			//I am a comedic GOD.
+			std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() << std::endl;
+		}
 	}
 
 
