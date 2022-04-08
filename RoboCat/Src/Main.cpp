@@ -47,25 +47,13 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
+	Game* mpGame = new Game();
+
 	SocketUtil::StaticInit();
 
 	UDPSocketPtr cliSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 	UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 
-	GraphicsLib* gLib = new GraphicsLib(SCREEN_SIZE_X, SCREEN_SIZE_Y);
-	gLib->loadImage(FILE_PATH + BACKGROUND_FILE, "background");
-	gLib->drawImage("background", 0, 0);
-	gLib->loadImage(FILE_PATH + HOMER_FILE, "homer");
-	gLib->drawImage("homer", 0, 100);
-	gLib->render();
-
-	GraphicsLib* gLib2 = new GraphicsLib(SCREEN_SIZE_X, SCREEN_SIZE_Y);
-	gLib2->loadImage(FILE_PATH + BACKGROUND_FILE, "background");
-	gLib2->drawImage("background", 0, 0);
-	gLib2->loadImage(FILE_PATH + QUIMBY_FILE, "homer");
-	gLib2->drawImage("homer", 1500, 100);
-	gLib2->render();
-		
 	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
 	{
 		SocketAddressPtr cliAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9000");
@@ -99,9 +87,9 @@ int main(int argc, const char** argv)
 		std::cout << "Received message from " << fromAddr.ToString() << ": " << msg << std::endl;
 	});
 
-
-
 	srvThread.join();
+
+	mpGame->gameLoop();
 
 	SocketUtil::CleanUp();
 

@@ -27,6 +27,8 @@ void Game::init()
 	mpGraphicsLib->drawImage("background", 0, 0);
 	mpGraphicsLib->drawImage("quimby", 1500, 100);
 	mpGraphicsLib->render();
+
+	isPlaying = true;
 }
 
 void Game::cleanup()
@@ -36,14 +38,35 @@ void Game::cleanup()
 
 void Game::gameLoop()
 {
-	input();
-	update();
-	render();
+	while (isPlaying == true)
+	{
+		input();
+		update();
+		render();
+	}
 }
 
 void Game::input()
 {
+	switch (mpInputSystem->getKeyboardInput())
+	{
+	case KeyCode::Esc:
+		isPlaying = false;
+		break;
 
+	case KeyCode::W:
+
+	case KeyCode::S:
+
+	case KeyCode::D:
+
+	case KeyCode::A:
+
+	case KeyCode::E:
+
+	default:
+		break;
+	}
 }
 
 void Game::update()
@@ -53,6 +76,9 @@ void Game::update()
 
 void Game::render()
 {
+	mpGraphicsLib->drawImage("background", 0, 0);
 	mpGraphicsLib->render();
+
+	mpGraphicsLib2->drawImage("background", 0, 0);
 	mpGraphicsLib2->render();
 }

@@ -27,4 +27,6 @@ private:
 	GraphicsLib* mpGraphicsLib;
 	GraphicsLib* mpGraphicsLib2;
 	InputSystem* mpInputSystem;
+
+	bool isPlaying;
 };
