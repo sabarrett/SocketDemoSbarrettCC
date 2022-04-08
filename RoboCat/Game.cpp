@@ -31,18 +31,24 @@ void Game::init()
 
 void Game::cleanup()
 {
+
 }
 
 void Game::gameLoop()
 {
+	input();
+	update();
+	render();
 }
 
 void Game::input()
 {
+
 }
 
 void Game::update()
 {
+
 }
 
 void Game::render()
