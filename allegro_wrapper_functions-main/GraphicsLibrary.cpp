@@ -25,17 +25,7 @@ GraphicsLibrary::GraphicsLibrary(float screenSizeX, float screenSizeY)
 //Destructor
 GraphicsLibrary::~GraphicsLibrary()
 {
-	//Delete bitmaps
-	std::vector<std::pair<std::string, ALLEGRO_BITMAP*>>::iterator iterator;
-	for (iterator = mBitmapPointersVector.begin(); iterator != mBitmapPointersVector.end(); ++iterator)
-	{
-		al_destroy_bitmap(iterator->second);
-	}
-	mBitmapPointersVector.clear();
-
-	//Clean up display
-	al_destroy_display(mpDisplay);
-	mpDisplay = nullptr;
+	CleanUp();
 }
 
 bool GraphicsLibrary::init()
@@ -132,4 +122,20 @@ void GraphicsLibrary::drawTintedImage(std::string imageIdentifier, float posX, f
 			al_draw_tinted_bitmap(iterator->second, colour, posX, posY, 0);
 		}
 	}
+}
+
+// bb
+void GraphicsLibrary::CleanUp()
+{
+	//Delete bitmaps
+	std::vector<std::pair<std::string, ALLEGRO_BITMAP*>>::iterator iterator;
+	for (iterator = mBitmapPointersVector.begin(); iterator != mBitmapPointersVector.end(); ++iterator)
+	{
+		al_destroy_bitmap(iterator->second);
+	}
+	mBitmapPointersVector.clear();
+
+	//Clean up display
+	al_destroy_display(mpDisplay);
+	mpDisplay = nullptr;
 }

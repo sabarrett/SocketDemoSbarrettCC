@@ -135,11 +135,12 @@ bool NetworkManager::HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPS
 }
 
 
-bool NetworkManager::HandleIncomingWorldStatePackets(WorldState& gameWorld, priority_queue<pair<int, void*>>& unprocessedDataPackets)
+bool NetworkManager::HandleIncomingWorldStatePackets(WorldState& gameWorld, priority_queue<pair<int, void*>>& unprocessedDataPackets, system_clock::time_point& lastConnectionTime)
 {
 	if (unprocessedDataPackets.size() > 0)
 	{
-		if (unprocessedDataPackets.top().first > timeOfLastWorldState)// only the newest world state
+		lastConnectionTime = system_clock::now();
+		if (unprocessedDataPackets.top().first > timeOfLastWorldState)// only world states newer than our current one
 		{
 			timeOfLastWorldState = unprocessedDataPackets.top().first;
 
@@ -150,6 +151,11 @@ bool NetworkManager::HandleIncomingWorldStatePackets(WorldState& gameWorld, prio
 
 		// clearing the queue
 		unprocessedDataPackets = priority_queue<pair<int, void*>>();
+	}
+	else if (duration_cast<milliseconds>(system_clock::now() - lastConnectionTime).count() > CONNECTION_TIMOUT)
+	{
+		std::cout << "\n\nERROR: IT HAS BEEN " << CONNECTION_TIMOUT/1000 << " SECONDS SINCE YOU HAVE RECIEVED DATA FROM CREATOR. CLOSING GAME NOW.\n\n";
+		return false;
 	}
 
 	return true;

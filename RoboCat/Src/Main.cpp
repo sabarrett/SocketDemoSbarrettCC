@@ -19,6 +19,8 @@
 
 ///          TODO
 ///  X - Handle one player disconnecting on the other player's end
+///		X - Joiner doesn't crash, should DC when worldstate takes too long to update
+///		X - Creator doesn't crash, joiner should send a "all-ok" message if the Joiner hasn't pressed an input in a while
 ///  X - Update gameobjects via a frame delta time (to prevent desync due to game speed)
 ///  X - Unreliability Simulation -
 ///            Packets are occasionally "dropped," by random chance or by some algorithm.
@@ -107,7 +109,9 @@ int main(int argc, const char** argv)
 		"The creator(c) of the game and the joiner(j) have different moves available\n" <<
 		"Left Click (c) - Creates a lock that moves from the left to the right.\n" <<
 		"Left Clock (j) - Creates a key that moves from the right to the left.\n\n" <<
-		"If a lock and key touch then they spawn a coin.\n\n";
+		"If a lock and key touch then they spawn a coin.\n\n" <<
+		
+		"Another thing to note is that any errors in connection will be displayed in the command line.\n\n";
 
 	// pre-game menu
 	std::cout << "\n\nWould you like to create (type c) or join (type j) a match of this game?\n";
@@ -132,7 +136,7 @@ int main(int argc, const char** argv)
 		addressRecievedFrom = SocketAddressFactory::CreateIPv4FromString((NetworkManager::ACCEPT_ALL_ADDRESS + std::to_string(CREATOR_PORT+5)));
 		//HandleListening(closingConnections, listeningSocket, addressToSendTo, unprocessedData, waitingForConnection);
 		//something about this thread is cursed, throws errors in the actual implementation of thread
-		listeningThread = std::thread(NetworkManager:: HandleListening, std::ref(connectionsOpen), listeningSocket, addressRecievedFrom, std::ref(unprocessedData));
+		listeningThread = std::thread(NetworkManager:: HandleListening, ref(connectionsOpen), listeningSocket, addressRecievedFrom, ref(unprocessedData));
 
 		do
 		{
@@ -155,7 +159,7 @@ int main(int argc, const char** argv)
 		NetworkManager::SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
 
 		addressRecievedFrom = SocketAddressFactory::CreateIPv4FromString((NetworkManager::ACCEPT_ALL_ADDRESS + std::to_string( JOINER_PORT + 5)));
-		listeningThread = std::thread(NetworkManager::HandleListening, std::ref(connectionsOpen), listeningSocket, addressRecievedFrom, std::ref(unprocessedData));
+		listeningThread = std::thread(NetworkManager::HandleListening, ref(connectionsOpen), listeningSocket, addressRecievedFrom, ref(unprocessedData));
 		do
 		{
 			Sleep(500); // wait 0.5 second
@@ -203,51 +207,63 @@ int main(int argc, const char** argv)
 	vector<JoinerInput> joinerInputs;
 
 
-	// `````````````````````````  main game loop  ``````````````````````````` 
+	system_clock::time_point lastTime = system_clock::now();
+	system_clock::time_point startTime = system_clock::now();
 
-	std::chrono::system_clock::time_point lastTime = std::chrono::system_clock::now();
-	std::chrono::system_clock::time_point startTime = std::chrono::system_clock::now();
+	system_clock::time_point lastTimeOfConnection = system_clock::now();
+
+
 	int deltaTime;
 	int timestep = 16;
+	bool isGameRunning = true;
 
-	while (true)
+	// `````````````````````````  main game loop  ``````````````````````````` 
+	while (isGameRunning)
 	{
-		deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - lastTime).count();
+		deltaTime = duration_cast<milliseconds>(system_clock::now() - lastTime).count();
 		startTime = lastTime;
-		lastTime = std::chrono::system_clock::now();
+		lastTime = system_clock::now();
 
-		inputSys.Update(userIsCreator, std::ref(gameWorld), std::ref(joinerInputs));
+
+
+		inputSys.Update(userIsCreator, ref(gameWorld), ref(joinerInputs));
 
 		if (userIsCreator)
 		{
-			NetworkManager::HandleIncomingInputPackets(std::ref(unprocessedData), std::ref(joinerInputs)); // this way player 2's inputs don't just get squashed by player 1's world state being definitive
-			gameWorld.Update(userIsCreator, std::ref(joinerInputs));
-			//ProcessWorldState();
+			// processing Joiner's inputs before update means that their spawned pieces get exported in the world state
+			if(!NetworkManager::HandleIncomingInputPackets(ref(unprocessedData), ref(joinerInputs)))			
+			{
+				isGameRunning = false;
+			}
+			gameWorld.Update(userIsCreator, ref(joinerInputs));
 
-			NetworkManager::HandleOutgoingWorldStatePackets(std::ref(gameWorld), sendingSocket, addressToSendTo);
+			NetworkManager::HandleOutgoingWorldStatePackets(ref(gameWorld), sendingSocket, addressToSendTo);
 		}
 		else
 		{
-			gameWorld.Update(userIsCreator, std::ref(joinerInputs));
+			gameWorld.Update(userIsCreator, ref(joinerInputs));
 			//ProcessWorldState();
-			NetworkManager::HandleIncomingWorldStatePackets(std::ref(gameWorld), std::ref(unprocessedData));
-			NetworkManager::HandleOutgoingInputPackets(std::ref(joinerInputs), sendingSocket, addressToSendTo);
+			if (!NetworkManager::HandleIncomingWorldStatePackets(ref(gameWorld), ref(unprocessedData), ref(lastTimeOfConnection)))
+			{
+				isGameRunning = false;
+			}
+			NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo);
 		}
-
-		//  Render
 
 		gameWorld.Render(currentBackground);
 
 
-		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() < 16)
+		while (duration_cast<milliseconds>(system_clock::now() - startTime).count() < 16)
 		{
-			//std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() << std::endl;
+			// makes the program maintain a maximum framerate
+			//std::cout << duration_cast<milliseconds>(system_clock::now() - startTime).count() << std::endl;
 		}
 	}
 
 
 	// ______________________________   Clean Up ______________________________
 
+	gl.CleanUp();
 	connectionsOpen = false;
 
 	listeningThread.join();

@@ -7,6 +7,8 @@ namespace NetworkManager
 {
     // can probably be bigger since we're using UDP
     const int BUFFER_SIZE = 4096;
+    const int CONNECTION_TIMOUT = 7 * 1000; // * 1000 converts to milliseconds
+
 
     const string HOME_ADDRESS = "127.0.0.1:";
     const string ACCEPT_ALL_ADDRESS = "0.0.0.0:";
@@ -24,7 +26,7 @@ namespace NetworkManager
     bool HandleIncomingInputPackets(priority_queue<pair<int, void*>>& unprocessedData, vector<JoinerInput>& joinerInputs);
     bool HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
     // joiner
-    bool HandleIncomingWorldStatePackets(WorldState& gameWorld, priority_queue<pair<int, void*>>& unprocessedDataPackets);
+    bool HandleIncomingWorldStatePackets(WorldState& gameWorld, priority_queue<pair<int, void*>>& unprocessedDataPackets, system_clock::time_point& connectionTimer);
     bool HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
 }
 

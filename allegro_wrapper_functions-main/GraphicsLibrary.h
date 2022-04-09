@@ -67,4 +67,5 @@ public:
 
 	//bb and Nick added these!
 	bool HandleDrawImages();
+	void CleanUp();
 };
