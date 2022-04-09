@@ -137,7 +137,7 @@ void InputSystem::Update(bool isCreator, WorldState& gameWorld, vector<JoinerInp
 		if (!wasHoldingLeftMouseLastFrame)
 		{
 			wasHoldingLeftMouseLastFrame = true;
-			std::cout << "\nLeft Clicked\n";
+			//std::cout << "\nLeft Clicked\n";
 
 			if (isCreator)
 			{
@@ -156,14 +156,14 @@ void InputSystem::Update(bool isCreator, WorldState& gameWorld, vector<JoinerInp
 		if (!wasHoldingMiddleMouseLastFrame)
 		{
 			wasHoldingMiddleMouseLastFrame = true;
-			std::cout << "\nMiddle Clicked\n";
+			//std::cout << "\nMiddle Clicked\n";
 		}
 		break;
 	case MouseButton::RightMouse:
 		if (!wasHoldingRightMouseLastFrame)
 		{
 			wasHoldingRightMouseLastFrame = true;
-			std::cout << "\nRight Clicked\n";
+			//std::cout << "\nRight Clicked\n";
 		}
 		break;
 	case MouseButton::None:

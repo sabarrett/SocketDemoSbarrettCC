@@ -6,7 +6,7 @@
 namespace NetworkManager
 {
     // can probably be bigger since we're using UDP
-    const int BUFFER_SIZE = 4096 * 8;
+    const int BUFFER_SIZE = 4096;
 
     const string HOME_ADDRESS = "127.0.0.1:";
     const string ACCEPT_ALL_ADDRESS = "0.0.0.0:";

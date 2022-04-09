@@ -54,13 +54,13 @@ void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr& listen
 		char buffer[BUFFER_SIZE];
 		listeningSocket->ReceiveFrom(buffer, BUFFER_SIZE, *(addressRecievedFrom));
 
-		LOG("%s", "In handleListening after Recieve\n");
+		//LOG("%s", "In handleListening after Recieve\n");
 
 
 		if (buffer != nullptr)
 		{
 			string msgRecieved(static_cast<char*>(buffer), BUFFER_SIZE);
-			LOG("Recieved message: %s", msgRecieved.c_str());
+			//LOG("Recieved message: %s", msgRecieved.c_str());
 			unprocessedData.push(std::pair<int, void*>(time(0), buffer));
 		}
 	}
