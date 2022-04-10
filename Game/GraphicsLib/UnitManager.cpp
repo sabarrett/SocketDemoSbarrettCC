@@ -37,6 +37,11 @@ void UnitManager::addUnit(int x, int y, Sprite sprite)
 	mUnits.push_back(new Unit(x, y, sprite));
 }
 
+void UnitManager::addUnit(int x, int y, Sprite sprite, int type)
+{
+	mUnits.push_back(new Unit(x, y, sprite, type));
+}
+
 void UnitManager::addUnit(int x, int y, Animation anim1, Animation anim2)
 {
 	mUnits.push_back(new Unit(x, y, anim1, anim2));
@@ -52,10 +57,12 @@ void UnitManager::deleteUnit(int unitLoc)
 
 void UnitManager::deleteAllUnits()
 {
-	while (mUnits.size() > 0)
+	while (mUnits.size() > 1)
 	{
-		deleteUnit(0);
+		deleteUnit(1);
 	}
+
+	//addUnit(-1000, -1000);
 }
 
 void UnitManager::deleteRandomUnit()
@@ -229,16 +236,29 @@ void UnitManager::draw(GraphicsSystem* gSystem)
 	}
 }
 
-Vector2D* UnitManager::getAllUnitsLocation()
+vector<vector<int>> UnitManager::getAllUnitsLocation()
 {
-	Vector2D* loc = new Vector2D[mUnits.size()];
+	vector<vector<int>> locs;
+
+	cout << "BIG WHOOP" << endl;
 
 	for (int i = 0; i < mUnits.size(); i++)
 	{
-		loc[i] = Vector2D( getUnit(i)->mX, getUnit(i)->mY );
+		Unit newUnit = *getUnit(i);
+		vector<int> loc = vector<int>();
+		loc.push_back(newUnit.mType);
+		loc.push_back(newUnit.mX);
+		loc.push_back(newUnit.mY);
+		locs.push_back(loc);
+		//loc[i] = Vector2D( getUnit(i)->mX, getUnit(i)->mY );
 	}
 
-	return loc;
+	for (int i = 0; i < locs.size(); i++)
+	{
+		cout << "new Loc " << locs[i][0] << " " << locs[i][1] << " " << locs[i][2] << endl;
+	}
+
+	return locs;
 }
 
 int* UnitManager::getAllUnitsTypes()

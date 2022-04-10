@@ -161,15 +161,15 @@ void Game::placeUnit(int type)
 	{
 	case 1:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 0 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
 		break;
 	case 2:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
 		break;
 	case 3:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 6 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
 		break;
 	default:
 		break;
@@ -187,15 +187,15 @@ void Game::placeUnit(int type, int xLoc, int yLoc)
 	{
 	case 1:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 0 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
 		break;
 	case 2:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
 		break;
 	case 3:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 6 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
 		break;
 	default:
 		break;
@@ -236,9 +236,9 @@ void Game::updateWorldState(Unit* units[4096])
 }
 */
 
-Unit* Game::getUnitData()
+vector<vector<int>> Game::getUnitData()
 {
-	return mpUnitManager->getAllUnits();
+	return mpUnitManager->getAllUnitsLocation();
 }
 
 

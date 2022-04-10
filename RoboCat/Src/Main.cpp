@@ -34,6 +34,11 @@
 GameListener* gameListener;// = new GameListener();
 PerformanceTracker* pPerformanceTracker;
 
+void runGame()
+{
+	Game::getInstance()->doLoop();
+}
+
 void DoTcpServer()
 {
 	// Create socket
@@ -109,25 +114,55 @@ void DoTcpServer()
 				return;
 			}
 
+			Game::getInstance()->deleteAllUnits();
+
 			std::string receivedMsg(buffer, bytesReceived);
-			LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			vector<vector<int>> data;
+
+			string del1 = "\n";
+			string del2 = " ";
+
+			size_t pos = 0;
+			size_t pos2 = 0;
+			std::string token;
+			while ((pos = receivedMsg.find(del1)) != std::string::npos) {
+				token = receivedMsg.substr(0, pos);
+				vector<int> unitData;
+				while ((pos2 = token.find(del2)) != std::string::npos) {
+					string token2 = token.substr(0, pos);
+					unitData.push_back(stoi(token2));
+					//cout << stoi(token2) << " ";
+					token.erase(0, pos2 + del2.length());
+				}
+				//cout <<"\n";
+				data.push_back(unitData);
+				receivedMsg.erase(0, pos + del1.length());
+			}
+
+			for (int i = 0; i < data.size(); i++)
+			{
+				Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2]);
+			}
+
+			//LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 			std::cout << ">";
 		}
 		});
 	while (!quit) // Need to add a quit here to have it really exit!
 	{
-		std::cout << ">";
-		std::string returnMsg = "TestBack";
-		//std::getline(std::cin, returnMsg);
-		if (returnMsg == "/quit")
+		runGame();
+		if (Game::getInstance()->getWorldStateChanged())
 		{
-			quit = true;
+			Game::getInstance()->setWorldStateChanged(false);
+			vector<vector<int>> data = Game::getInstance()->getUnitData();
+			string msg = "";
+			for (int i = 1; i < data.size(); i++)
+			{
+				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " \n";
+			}
+			connSocket->Send(msg.c_str(), msg.length());
 		}
-		else
-		{
-			connSocket->Send(returnMsg.c_str(), returnMsg.length());
-		}
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		//std::this_thread::sleep_for(std::chrono::seconds(1)); //SECONDWAIT
 	}
 	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveThread.join();
@@ -197,12 +232,55 @@ void DoTcpClient(std::string port)
 				return;
 			}
 
+			Game::getInstance()->deleteAllUnits();
+
 			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Server: %s", receivedMsg.c_str());
+			vector<vector<int>> data;
+
+			string del1 = "\n";
+			string del2 = " ";
+
+			size_t pos = 0;
+			size_t pos2 = 0;
+			std::string token;
+			while ((pos = receivedMsg.find(del1)) != std::string::npos) {
+				token = receivedMsg.substr(0, pos);
+				vector<int> unitData;
+				while ((pos2 = token.find(del2)) != std::string::npos) {
+					string token2 = token.substr(0, pos);
+					unitData.push_back(stoi(token2));
+					//cout << stoi(token2) << " ";
+					token.erase(0, pos2 + del2.length());
+				}
+				//cout << "\n";
+				data.push_back(unitData);
+				receivedMsg.erase(0, pos + del1.length());
+			}
+
+			for (int i = 0; i < data.size(); i++)
+			{
+				Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2]);
+			}
+
+			//LOG("%s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
+			std::cout << ">";
 		}
 		});
 	while (!quit)
 	{
+		runGame();
+		if (Game::getInstance()->getWorldStateChanged())
+		{
+			Game::getInstance()->setWorldStateChanged(false);
+			vector<vector<int>> data = Game::getInstance()->getUnitData();
+			string msg = "";
+			for (int i = 1; i < data.size(); i++)
+			{
+				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " \n";
+			}
+			clientSocket->Send(msg.c_str(), msg.length());
+		}
+		/*
 		std::cout << ">";
 		std::string msg = "Test";
 		//std::getline(std::cin, msg);
@@ -210,8 +288,10 @@ void DoTcpClient(std::string port)
 		{
 			quit = true;
 		}
-		clientSocket->Send(msg.c_str(), msg.length());
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		//Game::getInstance()->getUnitData();
+		//clientSocket->Send(msg.c_str(), msg.length());
+		*/
+		//std::this_thread::sleep_for(std::chrono::seconds(1));//SECONDWAIT
 	}
 	clientSocket->~TCPSocket();
 	receiveThread.join();
@@ -316,11 +396,6 @@ void DoThreadExample()
 	t1.join();
 	t2.join();
 	t3.join();
-}
-
-void runGame()
-{
-	Game::getInstance()->doLoop();
 }
 
 void shutGame()

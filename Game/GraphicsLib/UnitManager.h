@@ -25,6 +25,7 @@ public:
 	void addUnit();
 	void addUnit(int x, int y);
 	void addUnit(int x, int y, Sprite sprite);
+	void addUnit(int x, int y, Sprite sprite, int type);
 	void addUnit(int x, int y, Animation anim1, Animation anim2);
 
 	//DELETE UNIT
@@ -63,7 +64,7 @@ public:
 	void update(double deltaTime);
 	void draw(GraphicsSystem* gSystem);
 
-	Vector2D* getAllUnitsLocation();
+	vector<vector<int>> getAllUnitsLocation();
 	int* getAllUnitsTypes();
 	Unit* getAllUnits();
 };
