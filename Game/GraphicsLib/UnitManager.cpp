@@ -42,6 +42,11 @@ void UnitManager::addUnit(int x, int y, Sprite sprite, int type)
 	mUnits.push_back(new Unit(x, y, sprite, type));
 }
 
+void UnitManager::addUnit(int x, int y, Sprite sprite, int type, int uID)
+{
+	mUnits.push_back(new Unit(x, y, sprite, type, uID));
+}
+
 void UnitManager::addUnit(int x, int y, Animation anim1, Animation anim2)
 {
 	mUnits.push_back(new Unit(x, y, anim1, anim2));

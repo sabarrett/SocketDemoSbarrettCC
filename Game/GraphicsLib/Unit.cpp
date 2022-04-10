@@ -8,6 +8,7 @@ Unit::Unit()
 	mX = 0;
 	mY = 0;
 	mCurrentAnim = 0;
+	mUnitID = rand() % 100001;
 }
 
 Unit::Unit(int x, int y)
@@ -18,6 +19,7 @@ Unit::Unit(int x, int y)
 	mX = x;
 	mY = y;
 	mCurrentAnim = 0;
+	mUnitID = rand() % 100001;
 }
 
 Unit::Unit(int x, int y, Sprite newsprite)
@@ -29,6 +31,7 @@ Unit::Unit(int x, int y, Sprite newsprite)
 	mX = x;
 	mY = y;
 	mCurrentAnim = 0;
+	mUnitID = rand() % 100001;
 }
 
 Unit::Unit(int x, int y, Sprite newsprite, int type)
@@ -41,6 +44,20 @@ Unit::Unit(int x, int y, Sprite newsprite, int type)
 	mY = y;
 	mType = type;
 	mCurrentAnim = 0;
+	mUnitID = rand() % 100001;
+}
+
+Unit::Unit(int x, int y, Sprite newsprite, int type, int uID)
+{
+	//Filled constructor
+	Animation anim = Animation();
+	anim.addSprite(newsprite);
+	mAnimations = vector<Animation>(2, anim);
+	mX = x;
+	mY = y;
+	mType = type;
+	mCurrentAnim = 0;
+	mUnitID = uID;
 }
 
 Unit::Unit(int x, int y, Animation anim1, Animation anim2)
@@ -51,6 +68,7 @@ Unit::Unit(int x, int y, Animation anim1, Animation anim2)
 	mX = x;
 	mY = y;
 	mCurrentAnim = 0;
+	mUnitID = rand() % 100001;
 }
 
 Unit::~Unit()

@@ -5,32 +5,18 @@
 #include <iostream>
 #include <cassert>
 #include <string>
-
-#include <iostream>
 #include <sstream>
-#include <cassert>
-#include <string>
 
+//Game Includes
 #include <PerformanceTracker.h>
 #include <MemoryTracker.h>
-#include <string>
-
 #include <Game.h>
 #include "allegro5/allegro.h"
 #include <EventSystem.h>
 #include <GameEventSystem.h>
 #include <GameListener.h>
 
-// Problem: Game Loop
-//
-// updateInput(); (make sure to not block here!)
-//		conn->Receive(); !!! This blocks !!!
-//			Two solutions:
-//				- Non-Blocking Mode
-//					On Receive(), check for -10035; that means "nothings wrong, but I didn't receive any data either"
-// update();
-// render();
-// goto beginning;
+
 GameListener* gameListener;// = new GameListener();
 PerformanceTracker* pPerformanceTracker;
 
@@ -101,8 +87,23 @@ void DoTcpServer()
 	std::thread receiveThread([&connSocket, &quit, &incomingAddress]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
+			//TODO: Recieve Acknowledgement
+			/*
+			* if (recieved)
+			* set Acknowledged true
+			* recieve bytes
+			* else
+			* set !Acknowledged
+			*/
 			char buffer[8192];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
+			//TODO: Send Acknowledgement
+			/*
+			* if(Acknowledged){
+			* send Acknowledged
+			* else{
+			* send NotAcknowledged
+			*/
 			if (bytesReceived == 0)
 			{
 				std::cout << incomingAddress.ToString() << " has disconnected";
@@ -219,8 +220,24 @@ void DoTcpClient(std::string port)
 	std::thread receiveThread([&clientSocket, &quit]() {
 		while (!quit)
 		{
+			//TODO: Recieve Acknowledgement
+			/*
+			* if (recieved)
+			* set Acknowledged true
+			* recieve bytes
+			* else
+			* set !Acknowledged
+			*/
 			char buffer[8192];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+
+			//TODO: Send Acknowledgement
+			/*
+			* if(Acknowledged){
+			* send Acknowledged
+			* else{
+			* send NotAcknowledged
+			*/
 			if (bytesReceived == 0)
 			{
 				std::cout << "Server disconnected";
@@ -233,6 +250,7 @@ void DoTcpClient(std::string port)
 			}
 
 			Game::getInstance()->deleteAllUnits();
+
 
 			std::string receivedMsg(buffer, bytesReceived);
 			vector<vector<int>> data;

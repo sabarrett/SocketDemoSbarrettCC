@@ -21,6 +21,7 @@ private:
 	Unit(int x, int y);
 	Unit(int x, int y, Sprite newsprite);
 	Unit(int x, int y, Sprite newsprite, int type);
+	Unit(int x, int y, Sprite newsprite, int type, int uID);
 	Unit(int x, int y, Animation anim1, Animation anim2);
 	~Unit();
 
@@ -38,5 +39,6 @@ public:
 	int mType;
 	int mX, mY = 0;
 	int mCurrentAnim;
+	int mUnitID;
 	friend class UnitManager;
 };
