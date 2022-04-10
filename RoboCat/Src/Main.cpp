@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <list>
 
 using namespace std;
 int windowWidth = 800;
@@ -238,6 +239,21 @@ ALLEGRO_TIMER* GiveMeATimer(float incr)
 	return timer;
 }
 
+//class ClientInPacket
+//{
+//public:
+//	ClientPacket();
+//	//~ClientPacket();
+//	CircleClass inCircle;
+//	RainParticle inRain[10];
+//};
+//
+//ClientPacket::ClientPacket()
+//{
+//
+//}
+
+
 TCPSocketPtr StartServer()
 {
 	TCPSocketPtr listeningSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
@@ -299,7 +315,7 @@ void BradsTotallyOriginalServer()
 	}
 
 	RectangleObject inObjects[numObjects];
-	
+
 	ALLEGRO_DISPLAY* display;
 	display = al_create_display(windowWidth, windowHeight);
 
@@ -315,7 +331,6 @@ void BradsTotallyOriginalServer()
 
 	while (!exit) //GameLoop
 	{
-
 		//Timer
 		currentTime = al_get_timer_count(timer);
 		deltaTime = currentTime - lastTime;
@@ -523,6 +538,7 @@ void BradsLessOriginalClient()
 			{
 				rain[j].Read(iStream);
 			}
+			
 		}		
 
 		ALLEGRO_EVENT events;
@@ -568,7 +584,6 @@ void BradsLessOriginalClient()
 				xAxis = 1;
 				xMove = true;
 			}
-
 			else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 			{
 				xAxis = -1;
@@ -602,8 +617,6 @@ void BradsLessOriginalClient()
 			al_set_timer_count(timer, 0);
 	}
 	al_destroy_display(display);
-
-	
 }
 
 int main(int argc, const char** argv)
