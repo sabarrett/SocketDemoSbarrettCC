@@ -154,28 +154,31 @@ void Game::switchAnim()
 
 void Game::placeUnit(int type)
 {
-	int x = rand() % mpSystem->mpGraphicsSystem->getWidth();
-	int y = rand() % mpSystem->mpGraphicsSystem->getHeight();
-	Sprite sprite;
-	switch (type)
+	if (mpUnitManager->getUnitCount() < 20)
 	{
-	case 1:
-		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 0 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
-		break;
-	case 2:
-		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
-		break;
-	case 3:
-		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 6 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
-		break;
-	default:
-		break;
+		int x = rand() % mpSystem->mpGraphicsSystem->getWidth();
+		int y = rand() % mpSystem->mpGraphicsSystem->getHeight();
+		Sprite sprite;
+		switch (type)
+		{
+		case 1:
+			sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 0 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
+			mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
+			break;
+		case 2:
+			sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
+			mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
+			break;
+		case 3:
+			sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 6 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
+			mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
+			break;
+		default:
+			break;
+		}
+		//std::cout << type << endl;
+		//add a unit
 	}
-	//std::cout << type << endl;
-	//add a unit
 }
 
 void Game::placeUnit(int type, int xLoc, int yLoc)
@@ -207,7 +210,10 @@ void Game::placeUnit(int type, int xLoc, int yLoc)
 void Game::deleteUnits()
 {
 	//erase all units in a vicinity
-	mpUnitManager->deleteRandomUnit();
+	if (mpUnitManager->getUnitCount() > 1)
+	{
+		mpUnitManager->deleteRandomUnit();
+	}
 }
 
 void Game::deleteAllUnits()

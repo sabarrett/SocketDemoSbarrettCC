@@ -67,4 +67,5 @@ public:
 	vector<vector<int>> getAllUnitsLocation();
 	int* getAllUnitsTypes();
 	Unit* getAllUnits();
+	int getUnitCount();
 };

@@ -56,13 +56,13 @@ void GameListener::handleEvent(const Event& theEvent)
 
 		mpGame->placeUnit(placeUnitEvent.getX());
 		mpGame->setWorldStateChanged(true);
-		cout << "setting to true b";
+	//	cout << "setting to true b";
 	}
 	//delete units
 	else if (theEvent.getType() == 7)
 	{
 
-		//std::cout << "I am deleteing a unity :)" << endl;
+		std::cout << "I am deleteing a unity :)" << endl;
 		const DeleteUnitsEvent& deleteUnitsEvent = static_cast<const DeleteUnitsEvent&>(theEvent);
 
 		//erase all units in a vicinity

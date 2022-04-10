@@ -101,7 +101,7 @@ void DoTcpServer()
 	std::thread receiveThread([&connSocket, &quit, &incomingAddress]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
-			char buffer[4096];
+			char buffer[8192];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
@@ -155,7 +155,7 @@ void DoTcpServer()
 		{
 			Game::getInstance()->setWorldStateChanged(false);
 			vector<vector<int>> data = Game::getInstance()->getUnitData();
-			string msg = "";
+			string msg = " ";
 			for (int i = 1; i < data.size(); i++)
 			{
 				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " \n";
@@ -219,7 +219,7 @@ void DoTcpClient(std::string port)
 	std::thread receiveThread([&clientSocket, &quit]() {
 		while (!quit)
 		{
-			char buffer[4096];
+			char buffer[8192];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
@@ -273,7 +273,7 @@ void DoTcpClient(std::string port)
 		{
 			Game::getInstance()->setWorldStateChanged(false);
 			vector<vector<int>> data = Game::getInstance()->getUnitData();
-			string msg = "";
+			string msg = " ";
 			for (int i = 1; i < data.size(); i++)
 			{
 				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " \n";

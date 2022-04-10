@@ -69,7 +69,7 @@ void UnitManager::deleteRandomUnit()
 {
 	if (mUnits.size() > 0)
 	{
-		deleteUnit(rand() % mUnits.size());
+		deleteUnit(rand() % (mUnits.size() -1) + 1);
 	}
 }
 
@@ -279,4 +279,9 @@ Unit* UnitManager::getAllUnits()
 		units[i] = *getUnit(i);
 	}
 	return units;
+}
+
+int UnitManager::getUnitCount()
+{
+	return mUnits.size();
 }
