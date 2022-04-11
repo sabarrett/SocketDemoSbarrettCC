@@ -13,11 +13,8 @@ Assignment Requirements:
 ---------------------------------------------------------------
 Questions:
 
-. TCP always resends dropped packets, and keeps a queue of things to resend so nothing arrives out of order?
-. Where do the layers come into play in our previous assignment? Transport layer, Network layer, Link layer?
-
 . For the assignment, are we combining TCP with a custom UDP solution?
-. Are we replacing or Send and Receive code in our NetworkManager? Do we port over all the serialization and deserialization code to the DeliveryNotificationManager, or do we keep it and call functions from DeliveryNotificationManager in our NetworkManager?
+	--> UDP + our custom reliability code
 
 ---------------------------------------------------------------
 Notes and Ideas:
@@ -34,7 +31,7 @@ Notes and Ideas:
 
 . Sync PacketSequenceNumbers on server and client!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 . Add a DeliveryNotificationManager* to Networker, handle cleanup as well
-. Not sure where yet, but keep checking for timeouts on sent packets (if they did not receive acks, I think this is in DeliveryNotificationmanager), but use  get transmission data in InFlightpacket to handle success or failure on ack and on timeout
+. Not sure where yet, but keep checking for timeouts on sent packets (if they did not receive acks, I think this is in DeliveryNotificationManager), but use  get transmission data in InFlightpacket to handle success or failure on ack and on timeout
 --> Investigate functions in DeliveryNotificationManager and figure out how to implement them with out stuff
 
 -----------------------------------------------------------------

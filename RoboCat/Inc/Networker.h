@@ -10,7 +10,7 @@
 #include "Rock.h"
 #include "Wall.h"
 #include "PlayerController.h"
-#include "InFlightPacket.h"
+#include "DeliveryNotificationManager.h"
 #include "RoboCatPCH.h"
 
 enum PacketType
@@ -21,12 +21,12 @@ enum PacketType
 	PACKET_INVALID
 };
 
-struct GamePacket
-{
-	char* buffer;
-	int32_t byteRecieve;
-	float dispatchTime;
-};
+//struct GamePacket
+//{
+//	char* buffer;
+//	int32_t byteRecieve;
+//	float dispatchTime;
+//};
 
 //Networker is singleton (we only want one networker at a time)
 class Networker
@@ -45,7 +45,7 @@ public:
 		return mInstance;
 	};
 
-	void init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour, float arrivalTime);
+	void init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIdentifier, std::string playerSpriteIdentifier, float playerMoveSpeed, Colour wallColour/*, float arrivalTime*/);
 	void cleanup();
 
 	~Networker();
@@ -57,7 +57,8 @@ public:
 	//Update game state
 	PacketType receiveGameObjectState();
 	void sendGameObjectState(int networkID, PacketType packetHeader);
-	PacketType processPacket(GamePacket gamePacket);
+	void checkTimedOutPackets();
+	//PacketType processPacket(GamePacket gamePacket);
 
 	//Map
 	void addGameObject(GameObject* objectToAdd, int networkID);
@@ -80,8 +81,9 @@ private:
 	TCPSocketPtr* mpTCPSocket;
 	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
 	//std::queue<InFlightPacket*> mInFlightPacketsQueue;
-	std::priority_queue<float, InFlightPacket*, std::greater<int>> mInFlightPacketsQueue;
-	int mArrivalTime; 
+	DeliveryNotificationManager* pDeliveryNotificationManager;
+	std::priority_queue<std::pair<float, OutputMemoryBitStream>, std::vector<std::pair<float, OutputMemoryBitStream>>, std::greater<std::pair<float, OutputMemoryBitStream>>> mOutputBitStreamQueue;
+	//int mArrivalTime;
 	bool mbIsInitted;
 
 	//Data for GameObject replication

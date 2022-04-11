@@ -340,7 +340,7 @@ int main(int argc, const char** argv)
 	{
 		//Setup network manager
 		pNetworkManager = pNetworkManager->GetInstance();
-		pNetworkManager->init(pGraphics, ROCK_SPRITE_IDENTIFIER, PLAYER_SPRITE_IDENTIFIER, playerMoveSpeed, wallColour, 60);
+		pNetworkManager->init(pGraphics, ROCK_SPRITE_IDENTIFIER, PLAYER_SPRITE_IDENTIFIER, playerMoveSpeed, wallColour/*, 60*/);
 
 		//Prompt for isServer or not
 		std::string input;
@@ -420,6 +420,9 @@ int main(int argc, const char** argv)
 
 					//Network update - receive packets
 					packetTypeReceived = pNetworkManager->receiveGameObjectState();
+
+					//Network check for and deal with timed out packets
+					pNetworkManager->checkTimedOutPackets();
 
 					//If you receive a new GameObject, increment the network ID to keep spawning in sync!
 					if (packetTypeReceived == PacketType::PACKET_CREATE)

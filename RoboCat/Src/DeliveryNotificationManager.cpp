@@ -127,7 +127,7 @@ void DeliveryNotificationManager::ProcessAcks( InputMemoryBitStream& inInputStre
 		AckRange ackRange;
 		ackRange.Read( inInputStream );
 
-		//for each InfilghtPacket with a sequence number less than the start, handle delivery failure...
+		//for each InflightPacket with a sequence number less than the start, handle delivery failure...
 		PacketSequenceNumber nextAckdSequenceNumber = ackRange.GetStart();
 		uint32_t onePastAckdSequenceNumber = nextAckdSequenceNumber + ackRange.GetCount();
 		while( nextAckdSequenceNumber < onePastAckdSequenceNumber && !mInFlightPackets.empty() )
