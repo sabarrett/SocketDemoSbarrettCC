@@ -20,6 +20,7 @@ public:
 	static const uint32_t	kUpdateCC = 'UPDT';
 	//notifies peers that the game will be starting soon
 	static const uint32_t	kStartCC = 'STRT';
+	static const uint32_t	kAckCC = 'ACKN';
 	static const int		kMaxPacketsPerFrameCount = 10;
 
 	enum class NetworkManagerState
@@ -51,6 +52,7 @@ private:
 	void	SendHelloPacket();
 	void	UpdateStarting();
 	void	UpdateSendActionPacket();
+	
 
 public:
 
@@ -66,6 +68,7 @@ private:
 	void	HandleUpdatePacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress);
 	void	ProcessPacketsPlaying(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress);
 	void	ProcessPacketsDelay(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress);
+
 
 public:
 	void	HandleConnectionReset(const SocketAddress& inFromAddress);
@@ -124,12 +127,26 @@ private:
 		int seed;
 	};
 
+
+	map<int,OutputMemoryBitStream*> mInFlightPackets;
+
+	void AddInFlightPacket(OutputMemoryBitStream&);
+
+	void ClearInFlightPacket(int, InputMemoryBitStream&);
+
 	void	UpdateBytesSentLastFrame();
 	void	ReadIncomingPacketsIntoQueue();
 	void	ProcessQueuedPackets();
 
 	void	UpdateHighestPlayerId(uint32_t inId);
 	void	EnterPlayingState();
+
+	void WritePendingAcks(OutputMemoryBitStream&);
+
+	void ProcessNewAcks(InputMemoryBitStream&);
+	void ProcessSequenceNum(int);
+
+	void WriteNextSequenceNum(OutputMemoryBitStream&);
 
 	//these should stay ordered!
 	typedef map< uint32_t, SocketAddress > IntToSocketAddrMap;
@@ -176,5 +193,13 @@ private:
 	NetworkManagerState	mState;
 
 	vector<ActionData> mActionVec;
+
+
+	int mNextOutgoingSequenceNumber;
+	int mDispatchedPacketCount;
+	int mNextExpectedSequenceNumber;
+	
+	vector<int> mPendingAcks;
+	
 };
 
