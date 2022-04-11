@@ -19,20 +19,12 @@ Questions:
 ---------------------------------------------------------------
 Notes and Ideas:
 
-. Use TransmissionData.h - make GameObject derived classes also derive from and override functions
-. Use Timimg.h and .cpp
-. Use InFlightPacket.h and .cpp
-. Use DeliveryNotificationManager.h and .cpp
-. Use AckRange.h and .cpp
-
 --> Chapter 7 slide 14 gives a good explanation of how this can be done
 
-. Figure out how to read and write PacketSquenceNumber, AckRange, and hasAcks in our Networker (see DeliveryNotificationManager.cpp's reads from inInputStream)
-
-. Sync PacketSequenceNumbers on server and client!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-. Add a DeliveryNotificationManager* to Networker, handle cleanup as well
-. Not sure where yet, but keep checking for timeouts on sent packets (if they did not receive acks, I think this is in DeliveryNotificationManager), but use  get transmission data in InFlightpacket to handle success or failure on ack and on timeout
---> Investigate functions in DeliveryNotificationManager and figure out how to implement them with out stuff
+. Sync PacketSequenceNumbers on server and client!
+	--> Not needed I don't think
+. Change packets to UDP
+. Handle success or failure in TransmissionData (make GameObject derived classes also derive from and override functions)
 
 -----------------------------------------------------------------
 
