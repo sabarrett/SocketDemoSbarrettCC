@@ -86,7 +86,7 @@ void NetworkManager::ProcessIncomingPackets()
 void NetworkManager::ReadIncomingPacketsIntoQueue()
 {
 	//should we just keep a static one?
-	char packetMem[ 1500 ];
+	char packetMem[ 8192 ];
 	int packetSize = sizeof( packetMem );
 	InputMemoryBitStream inputStream( packetMem, packetSize * 8 );
 	SocketAddress fromAddress;
@@ -114,8 +114,10 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 			totalReadByteCount += readByteCount;
 
 			if( RoboMath::GetRandomFloat() >= m_dropPacketChance )
+			//if (RoboMath::GetRandomFloat() >= 0)
 			{
 				float simulatedReceivedTime = Timing::sInstance.GetTimef() + m_simulatedLatency + (m_jitter * RoboMath::GetRandomFloat());
+				//float simulatedReceivedTime = Timing::sInstance.GetTimef();
 				mPacketQueue.emplace( simulatedReceivedTime, inputStream, fromAddress );
 			}
 		}
@@ -143,12 +145,37 @@ void NetworkManager::ProcessQueuedPackets()
 			break;
 		}
 	}
+
+	//std::vector<int> indicesToDelete;
+	//for (size_t i = 0; i < mSentPacketsList.size(); i++)
+	//{
+	//	if (Timing::sInstance.GetTimef() > mSentPacketsList[i].GetSentTime())
+	//	{
+	//		m_socketPtrUDP->SendTo(mSentPacketsList[i].GetPacketBuffer().GetBufferPtr(), mSentPacketsList[i].GetPacketBuffer().GetByteLength(), mSentPacketsList[i].GetFromAddress());
+	//		indicesToDelete.push_back(i);
+	//	}
+	//}
+	//for (size_t i = 0; i < indicesToDelete.size(); i++)
+	//{
+	//	//delete mSentPacketsList[indicesToDelete[i]];
+	//	//mSentPacketsList.erase(mSentPacketsList.begin() + indicesToDelete[i]);
+	//}
+	//indicesToDelete.clear();
 }
 
-void NetworkManager::SendPacket( const OutputMemoryBitStream& inOutputStream, const SocketAddress& inFromAddress )
+void NetworkManager::SendPacket(OutputMemoryBitStream& inOutputStream, const SocketAddress& inFromAddress )
 {
+	//if (RoboMath::GetRandomFloat() >= m_dropPacketChance)
+	//{
+	//	float simulatedSendTime = Timing::sInstance.GetTimef() + m_simulatedLatency + (m_jitter * RoboMath::GetRandomFloat());
+	//	SentPacket packet = SentPacket(simulatedSendTime, inOutputStream, inFromAddress);
+	//	SentPacket pocket(simulatedSendTime, inOutputStream, inFromAddress);
+	//	mSentPacketsList.push_back(pocket);
+	//	//m_socketPtrUDP->SendTo(mSentPacketsList[0]->GetPacketBuffer().GetBufferPtr(), mSentPacketsList[0]->GetPacketBuffer().GetByteLength(), mSentPacketsList[0]->GetFromAddress());
+	//}
+
 	int sentByteCount = m_socketPtrUDP->SendTo( inOutputStream.GetBufferPtr(), inOutputStream.GetByteLength(), inFromAddress );
-	if( sentByteCount > 0 )
+	if (sentByteCount > 0)
 	{
 		mBytesSentThisFrame += sentByteCount;
 	}
@@ -169,6 +196,13 @@ NetworkManager::ReceivedPacket::ReceivedPacket( float inReceivedTime, InputMemor
 	mReceivedTime( inReceivedTime ),
 	mFromAddress( inFromAddress ),
 	mPacketBuffer( ioInputMemoryBitStream )
+{
+}
+
+NetworkManager::SentPacket::SentPacket(float inSentTime,OutputMemoryBitStream& OutputMemoryBitStream, const SocketAddress& inToAddress) :
+	mSentTime(inSentTime),
+	mToAddress(inToAddress),
+	mPacketBuffer(OutputMemoryBitStream)
 {
 }
 

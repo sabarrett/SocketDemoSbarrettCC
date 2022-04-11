@@ -18,7 +18,7 @@ public:
 	virtual void	ProcessPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress) = 0;
 	virtual void	HandleConnectionReset(const SocketAddress& inFromAddress) { (void)inFromAddress; }
 
-	void	SendPacket(const OutputMemoryBitStream& inOutputStream, const SocketAddress& inFromAddress);
+	void	SendPacket(OutputMemoryBitStream& inOutputStream, const SocketAddress& inFromAddress);
 
 	const WeightedTimedMovingAverage& GetBytesReceivedPerSecond()	const { return mBytesReceivedPerSecond; }
 	const WeightedTimedMovingAverage& GetBytesSentPerSecond()		const { return mBytesSentPerSecond; }
@@ -54,6 +54,22 @@ private:
 		SocketAddress			mFromAddress;
 
 	};
+	class SentPacket
+	{
+	public:
+		SentPacket(float inSentTime, OutputMemoryBitStream& OutputMemoryBitStream, const SocketAddress& inFromAddress);
+
+		const	SocketAddress& GetFromAddress()	const { return mToAddress; }
+		float					GetSentTime()	const { return mSentTime; }
+		OutputMemoryBitStream& GetPacketBuffer() { return mPacketBuffer; }
+
+	private:
+
+		float					mSentTime;
+		OutputMemoryBitStream	mPacketBuffer;
+		SocketAddress			mToAddress;
+
+	};
 
 	void	UpdateBytesSentLastFrame();
 	
@@ -75,6 +91,7 @@ protected:
 	virtual void	ReadIncomingPacketsIntoQueue();
 
 	queue< ReceivedPacket, list< ReceivedPacket > >	mPacketQueue;
+	vector<SentPacket>	mSentPacketsList;
 
 	TCPSocketPtr m_socketPtrTCP;
 	UDPSocketPtr m_socketPtrUDP;
