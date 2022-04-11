@@ -9,8 +9,19 @@
 #if _WIN32
 
 const std::string ASSET_PATH = "Images\\";
+
 Network* ClientNetwork;
 Network* ServerNetwork;
+
+GraphicsSystems* Graphics;
+InputSystem* Inputs;
+
+
+std::vector<ClassId> typesOfGameobjects;
+std::vector<GameObject*> spawnedGameObjects;
+
+int ScreenSizeX = 800;
+int ScreenSizeY = 600;
 
 void DoTcpServer(std::string port)
 {
@@ -117,16 +128,6 @@ void DoTcpClient(std::string port)
 	ClientNetwork->init(Graphics, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
 
 }
-
-GraphicsSystems* Graphics;
-InputSystem* Inputs;
-
-
-std::vector<ClassId> typesOfGameobjects;
-std::vector<GameObject*> spawnedGameObjects;
-
-int ScreenSizeX = 800;
-int ScreenSizeY = 600;
 
 bool initGame()
 {
@@ -355,8 +356,14 @@ int main(int argc, const char** argv)
 			run = false;
 		}
 
-		ClientNetwork->receive();
-		ServerNetwork->receive();
+		if (!isServer)
+		{
+			ClientNetwork->receive();
+		}
+		else
+		{
+			ServerNetwork->receive();
+		}
 	}
 
 	initCleanup();
