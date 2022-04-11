@@ -2,14 +2,25 @@
 
 #include "Util/RoboCatPCH.h"
 #include "Util/NetworkEnums.h"
+#include "Client/NetworkManagerClient.h"
 #include "SDL.h"
 #include "SDL_image.h"
 #undef main
 
 #include <string>
 #include <vector>
+#include <queue>
 
 class GameObject;
+
+struct Inputs
+{
+	const Uint8* m_keyStates;
+	int m_moveInput;
+	int m_mouseX;
+	int m_mouseY;
+	bool m_leftClickDown;
+};
 
 class Game {
 
@@ -28,27 +39,27 @@ public:
 	void CreateGameWindow(char* title, int width, int height);
 	void LoadTexture(std::string assetPath);
 
+	// Connect
+	void ConnectToServer(std::string address, std::string port);
+
 	// General
-	GameObject* CreateObject(int type, int UID, uint8_t textureID);
-	GameObject* GetObjectByUID(int UID);
 	void DestroyObject(GameObject* gameObject);
-	bool CheckIfObjectExistsWithUID(int UID);
 
 	// Get
 	bool Running() { return m_isRunning; };
-	const Uint8* getKeyStates() { return m_keyStates; }
-	SDL_Renderer* getRenderer() { return m_renderer; }
+	//const Uint8* getKeyStates() { return m_keyStates; }
+	Inputs* GetInput() { return &m_input; }
+	SDL_Renderer* GetRenderer() { return m_renderer; }
 
 	// Set
-	void setPlayerID(int UID) { m_myPlayerUID = UID; }
+	void CopyNetworkObjectsVector(std::vector<GameObject*> inAllObjects) { m_allObjects = inAllObjects; };
 
-	// Networking
-	void ConnectToServer(std::string address, std::string port);
+	// Network Simulation
+	void SetLatency(float latency) { m_networkManager.SetSimulatedLatency(latency); }
+	void SetJitter(float jitter) { m_networkManager.SetSimulatedJitter(jitter); }
+	void SetDrop(float drop) { m_networkManager.SetDropPacketChance(drop); }
+
 private:
-	void ReceiveTCP(); // Handle in data from TCP socket -> Handshake, playerID assignment
-	void ReceiveUDP(); // Handle in data from UDP socket -> World State Updates
-	void HandleWorldStatePacket(InputMemoryBitStream* inStream);
-
 	// Game
 	bool m_isRunning;
 	SDL_Window* m_window;
@@ -57,15 +68,7 @@ private:
 	std::vector<GameObject*> m_allObjects;
 
 	// Input;
-	const Uint8* m_keyStates;
-	int m_moveInput;
-	int m_mouseX;
-	int m_mouseY;
-	bool m_leftClickDown;
-	int m_myPlayerUID; // UID of the object move commands from this client will target
-
-	// Networking
-	TCPSocketPtr clientSocketTCP;
-	UDPSocketPtr clientSocketUDP;
-	SocketAddressPtr serverAddress;
+	Inputs m_input;
+	
+	NetworkManagerClient m_networkManager;
 };

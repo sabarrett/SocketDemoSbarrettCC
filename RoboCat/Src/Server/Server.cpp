@@ -5,11 +5,11 @@
 #include <iostream>
 #include <string>
 
-int Server::Init()
+int Server::Init(int newPort)
 {
 	// Create listener socket
-	m_listenSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	if (m_listenSocket == nullptr)
+	m_socketPtrTCP = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	if (m_socketPtrTCP == nullptr)
 	{
 		SocketUtil::ReportError("Creating listening socket");
 		ExitProcess(1);
@@ -17,7 +17,8 @@ int Server::Init()
 
 	// Bind listener to address:port, trying other ports if 64200 is taken - allows for multiple unique instances on one device.
 	bool socketBound = false;
-	int port = 64200;
+	//int port = 64200;
+	int port = newPort;
 	while (!socketBound && port <= 64300)
 	{
 		std::string IPAddr = StringUtils::Sprintf("0.0.0.0:%d", port);
@@ -26,7 +27,7 @@ int Server::Init()
 		{
 			SocketUtil::ReportError("Creating listen address");
 		}
-		if (m_listenSocket->Bind(*listenAddress) != NO_ERROR)
+		if (m_socketPtrTCP->Bind(*listenAddress) != NO_ERROR)
 		{
 			SocketUtil::ReportError("Binding listening socket");
 			port++;
@@ -38,7 +39,7 @@ int Server::Init()
 		}
 	}
 
-	m_SocketPtrUDP = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
+	m_socketPtrUDP = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 	socketBound = false;
 	while (!socketBound && port <= 64300)
 	{
@@ -48,7 +49,7 @@ int Server::Init()
 		{
 			SocketUtil::ReportError("Creating client address");
 		}
-		if (m_SocketPtrUDP->Bind(*clientUDPAddress) != NO_ERROR)
+		if (m_socketPtrUDP->Bind(*clientUDPAddress) != NO_ERROR)
 		{
 			SocketUtil::ReportError("Binding UDP client socket");
 			port++;
@@ -58,11 +59,11 @@ int Server::Init()
 			socketBound = true;
 			LOG("Bound Server UDP socket to       %s", myIPAddr.c_str());
 		}
-		m_SocketPtrUDP->SetNonBlockingMode(true);
+		m_socketPtrUDP->SetNonBlockingMode(true);
 	}
 
 	// Listen() - Listen on socket -> Non-blocking; tells OS we care about incoming connections on this socket
-	if (m_listenSocket->Listen() != NO_ERROR)
+	if (m_socketPtrTCP->Listen() != NO_ERROR)
 	{
 		SocketUtil::ReportError("Listening on listening socket");
 		ExitProcess(1);
@@ -101,7 +102,7 @@ void Server::DoNetworking()
 {
 	AcceptIncomingConnections();
 
-	HandleIncomingPackets();
+	ProcessIncomingPackets();
 
 	SendWorldUpdatePackets();
 }
@@ -109,11 +110,10 @@ void Server::DoNetworking()
 void Server::AcceptIncomingConnections()
 {
 	// Do non-blocking accept loop while running
-	m_listenSocket->SetNonBlockingMode(true);
+	m_socketPtrTCP->SetNonBlockingMode(true);
 	SocketAddress incomingAddress;
 	TCPSocketPtr TCPconnSocket;
-	UDPSocketPtr UDPconnSocket;
-	TCPconnSocket = m_listenSocket->Accept(incomingAddress);
+	TCPconnSocket = m_socketPtrTCP->Accept(incomingAddress);
 	if (TCPconnSocket != nullptr)
 	{
 		Connection connection;
@@ -123,7 +123,7 @@ void Server::AcceptIncomingConnections()
 		connection.connectionID = m_nextConnectionID;
 		m_nextConnectionID++;
 		m_connections.push_back(connection);
-		//LOG("-------------Accepted connection from %s-------------", *incomingAddress->ToString().c_str());
+		//LOG("-------------Accepted connection from %s-------------", incomingAddress->ToString().c_str());
 
 		OutputMemoryBitStream outStream;
 		outStream.Write(PKTTYPE_SETPLAYERID);
@@ -138,50 +138,37 @@ void Server::AcceptIncomingConnections()
 	}
 }
 
-void Server::HandleIncomingPackets()
+void Server::ProcessPacket(InputMemoryBitStream& inStream, const SocketAddress& inFromAddress)
 {
-	for (size_t i = 0; i < m_connections.size(); i++)
-	{
-		if (m_connections[i].SocketPtrTCP != nullptr)
-		{
-			char buffer[4096];
-			int32_t bytesReceived = 1;
-			while (bytesReceived > 0)
-			{
-				SocketAddress fromAddr;
-				bytesReceived = m_SocketPtrUDP->ReceiveFrom(buffer, 4096, fromAddr);
+	SocketAddress fromAddress = inFromAddress; // <-- Declaring to hide an unreference warning from compiler - Keeping inFromAddress because its useful.
 
-				InputMemoryBitStream inStream(buffer, bytesReceived);
-				uint32_t packetType;
-				inStream.Read(packetType);
-				switch (packetType)
-				{
-				case PKTTYPE_MOVEOBJECT:
-					int targetID;
-					uint8_t move;
-					inStream.Read(targetID);
-					inStream.Read(move);
-					for (size_t j = 0; j < m_allObjects.size(); j++)
-					{
-						if (m_allObjects[j]->GetUID() == targetID)
-						{
-							m_allObjects[j]->AddVelocityFromInput(move);
-						}
-					}
-					break;
-				case PKTTYPE_CREATEOBJECT:
-					uint8_t textureID;
-					int xPos;
-					int yPos;
-					inStream.Read(textureID);
-					inStream.Read(xPos);
-					inStream.Read(yPos);
-					GameObject* object = CreateObject(GAMEOBJECT_COLLECTABLE, textureID);
-					object->SetPosition((float)xPos, (float)yPos);
-					break;
-				}
-			}
-		}
+	 uint32_t packetType;
+	 inStream.Read(packetType);
+	 switch (packetType)
+	 {
+	 case PKTTYPE_MOVEOBJECT:
+	 	int targetID;
+	 	uint8_t move;
+	 	inStream.Read(targetID);
+	 	inStream.Read(move);
+	 	for (size_t j = 0; j < m_allObjects.size(); j++)
+	 	{
+	 		if (m_allObjects[j]->GetUID() == targetID)
+	 		{
+	 			m_allObjects[j]->AddVelocityFromInput(move);
+	 		}
+	 	}
+	 	break;
+	 case PKTTYPE_CREATEOBJECT:
+	 	uint8_t textureID;
+	 	int xPos;
+	 	int yPos;
+	 	inStream.Read(textureID);
+	 	inStream.Read(xPos);
+	 	inStream.Read(yPos);
+	 	GameObject* object = CreateObject(GAMEOBJECT_COLLECTABLE, textureID);
+	 	object->SetPosition((float)xPos, (float)yPos);
+	 	break;
 	}
 }
 
@@ -202,7 +189,8 @@ void Server::SendWorldUpdatePackets()
 		if (m_connections[i].SocketPtrTCP != nullptr)
 		{
 			//std::cout << "WORLD-STATE SIZE: " << outStream.GetByteLength() << "\n";
-			m_SocketPtrUDP->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), m_connections[i].socketAddress);
+			SendPacket(outStream, m_connections[i].socketAddress);
+			//m_SocketPtrUDP->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), m_connections[i].socketAddress);
 		}
 	}
 }

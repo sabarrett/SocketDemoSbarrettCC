@@ -384,17 +384,24 @@ Copy /Y "$(SolutionDir)RoboCat\Assets\*" "$(TargetDir)Assets\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Client\NetworkManagerClient.cpp" />
     <ClCompile Include="Src\Server\Server.cpp" />
     <ClCompile Include="Src\Client\CollectableGameObject.cpp" />
     <ClCompile Include="Src\Client\ColorChangerGameObject.cpp" />
+    <ClCompile Include="Src\Util\AckRange.cpp" />
+    <ClCompile Include="Src\Util\DeliveryNotificationManager.cpp" />
+    <ClCompile Include="Src\Util\InFlightPacket.cpp" />
     <ClCompile Include="Src\Util\MemoryBitStream.cpp" />
+    <ClCompile Include="Src\Util\NetworkManager.cpp" />
     <ClCompile Include="Src\Util\OutputWindow.cpp" />
     <ClCompile Include="Src\Util\RoboCatPCH.cpp" />
+    <ClCompile Include="Src\Util\RoboMath.cpp" />
     <ClCompile Include="Src\Util\SocketAddress.cpp" />
     <ClCompile Include="Src\Util\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\Util\SocketUtil.cpp" />
     <ClCompile Include="Src\Util\StringUtils.cpp" />
     <ClCompile Include="Src\Util\TCPSocket.cpp" />
+    <ClCompile Include="Src\Util\Timing.cpp" />
     <ClCompile Include="Src\Util\UDPSocket.cpp" />
     <ClInclude Include="Inc\Client\CollectableGameObject.h" />
     <ClInclude Include="Inc\Client\ColorChangerGameObject.h" />
@@ -403,11 +410,16 @@ Copy /Y "$(SolutionDir)RoboCat\Assets\*" "$(TargetDir)Assets\"</Command>
     <ClCompile Include="Src\Client\Game.cpp" />
     <ClCompile Include="Src\Client\GameObject.cpp" />
     <ClCompile Include="Src\Main.cpp" />
+    <ClInclude Include="Inc\Client\NetworkManagerClient.h" />
     <ClInclude Include="Inc\Server\Server.h" />
+    <ClInclude Include="Inc\Util\AckRange.h" />
     <ClInclude Include="Inc\Util\ByteSwap.h" />
+    <ClInclude Include="Inc\Util\DeliveryNotificationManager.h" />
+    <ClInclude Include="Inc\Util\InFlightPacket.h" />
     <ClInclude Include="Inc\Util\LinkingContext.h" />
     <ClInclude Include="Inc\Util\MemoryBitStream.h" />
     <ClInclude Include="Inc\Util\NetworkEnums.h" />
+    <ClInclude Include="Inc\Util\NetworkManager.h" />
     <ClInclude Include="Inc\Util\OutputWindow.h" />
     <ClInclude Include="Inc\Util\RoboCatPCH.h" />
     <ClInclude Include="Inc\Util\RoboCatShared.h" />
@@ -417,7 +429,10 @@ Copy /Y "$(SolutionDir)RoboCat\Assets\*" "$(TargetDir)Assets\"</Command>
     <ClInclude Include="Inc\Util\SocketUtil.h" />
     <ClInclude Include="Inc\Util\StringUtils.h" />
     <ClInclude Include="Inc\Util\TCPSocket.h" />
+    <ClInclude Include="Inc\Util\Timing.h" />
+    <ClInclude Include="Inc\Util\TransmissionData.h" />
     <ClInclude Include="Inc\Util\UDPSocket.h" />
+    <ClInclude Include="Inc\Util\WeightedTimedMovingAverage.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="libpng16-16.dll">

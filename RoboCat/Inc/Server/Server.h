@@ -2,6 +2,7 @@
 #include "Client/GameObject.h"
 #include "Util/NetworkEnums.h"
 #include "Util/RoboCatPCH.h"
+#include "Util/NetworkManager.h"
 #undef main
 
 #include <string>
@@ -9,26 +10,27 @@
 
 class GameObject;
 
-class Server {
+class Server : public NetworkManager {
 
 public:
 	Server() {};
 	~Server() {};
 
 	// Core functions
-	int Init();
+	int Init(int port);
 	void Update();
 	void CleanUp();
 
 	GameObject* CreateObject(int type, uint8_t textureID);
 	void DestroyObject(GameObject* gameObject);
 
+	virtual void	ProcessPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress) override;
+
 	// Get
 	bool Running() { return m_isRunning; };
 private:
 	void DoNetworking();
 	void AcceptIncomingConnections();
-	void HandleIncomingPackets();
 	void SendWorldUpdatePackets();
 
 	bool m_isRunning;
@@ -44,8 +46,6 @@ private:
 		SocketAddress socketAddress;
 		int connectionID;
 	};
-	TCPSocketPtr m_listenSocket;
-	UDPSocketPtr m_SocketPtrUDP;
 	std::vector<Connection> m_connections;
 
 	int m_nextUID = 0;

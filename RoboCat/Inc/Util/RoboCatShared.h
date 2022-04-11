@@ -68,3 +68,4 @@ class GameObject;
 #include "SocketUtil.h"
 #include "OutputWindow.h"
 #include "DeliveryNotificationManager.h"
+#include "WeightedTimedMovingAverage.h"

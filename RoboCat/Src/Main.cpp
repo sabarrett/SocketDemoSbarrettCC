@@ -46,68 +46,88 @@ int main(int argc, const char** argv)
 		std::cout
 			<< "TYPE \"/connect x.x.x.x portNumber\" to connect to server\n"
 			<< "TYPE \"/host to host server\n";
-		std::string launchCommand;
-		std::getline(std::cin, launchCommand);
-		char* inputC = new char[launchCommand.length() + 1];
-		strcpy(inputC, launchCommand.c_str());
-		char delim[] = " ";
-		char* ptr = strtok(inputC, delim);
-		while (ptr != NULL)
+		string space_delimiter = " ";
+		std::string command;
+		std::getline(std::cin, command);
+		vector<string> cinInput{};
+
+		size_t pos = 0;
+		while ((pos = command.find(space_delimiter)) != string::npos) 
 		{
-			if (strcmp(ptr, "/connect") == 0)
-			{
-				ptr = strtok(NULL, delim);
-				std::string newAddress(ptr);
-				ptr = strtok(NULL, delim);
-				std::string newPort(ptr);
+			cinInput.push_back(command.substr(0, pos));
+			command.erase(0, pos + space_delimiter.length());
+		}
+		cinInput.push_back(command.substr(0, pos));
+		if (cinInput[0] == "/connect" && cinInput.size() >= 3)
+		{
+			game->ConnectToServer(cinInput[1], cinInput[2]);
+			enteredValidCommand = true;
+		}
+		if (cinInput[0] == "/host" && cinInput.size() >= 2)
+		{
+			server = new Server;
 
-				game->ConnectToServer(newAddress, newPort);
+			int port = stoi(cinInput[1]);
+			server->Init(port);
+			game->ConnectToServer("127.0.0.1", StringUtils::Sprintf("%d", port));
+			enteredValidCommand = true;
+		}
 
-				ptr = NULL;
-				enteredValidCommand = true;
+	}
+
+	std::thread cinThread([&game]() 
+		{
+		std::cout
+			<< "TYPE \"/latency x\" to set latency in seconds\n"
+			<< "TYPE \"/jitter x\" to set max jitter in seconds\n"
+			<< "TYPE \"/drop x\" to set drop chance 0-1, with 1 being 100%\n";
+		while (game->Running())
+		{
+			string space_delimiter = " ";
+			std::string command;
+			std::getline(std::cin, command);
+			vector<string> cinInput{};
+
+			size_t pos = 0;
+			while ((pos = command.find(space_delimiter)) != string::npos) {
+				cinInput.push_back(command.substr(0, pos));
+				command.erase(0, pos + space_delimiter.length());
 			}
-			else if (ptr != NULL && strcmp(ptr, "/host") == 0)
+			cinInput.push_back(command.substr(0, pos));
+			if (cinInput[0] == "/latency" && cinInput.size() >= 2)
 			{
-				server = new Server;
-				int port = server->Init();
-
-				game->ConnectToServer("127.0.0.1", StringUtils::Sprintf("%d", port));
-
-				ptr = NULL;
-				enteredValidCommand = true;
+				game->SetLatency(stof(cinInput[1]));
 			}
-			else
+			if (cinInput[0] == "/jitter" && cinInput.size() >= 2)
 			{
-				ptr = NULL;
+				game->SetJitter(stof(cinInput[1]));
+			}
+			if (cinInput[0] == "/drop" && cinInput.size() >= 2)
+			{
+				game->SetDrop(stof(cinInput[1]));
 			}
 		}
-	}
+		});
+
+
 
 	while (game->Running())
 	{
 		frameStart = SDL_GetTicks();
-
+		Timing::sInstance.Update();
 		if (server)
 		{
 			server->Update();
 		}
 		game->Update();
 		game->Draw();
-		game->DoNetworking();
+		//game->DoNetworking();
 
-		/*frameTime = SDL_GetTicks() - frameStart;
-		if (frameDelay > frameTime)
-		{
-			SDL_Delay(frameDelay - frameTime);
-		}*/
 		frameTime = SDL_GetTicks() - frameStart;
 		while(frameDelay > frameTime)
 		{
 			frameTime = SDL_GetTicks() - frameStart;
 		}
-
-		frameTime = SDL_GetTicks() - frameStart;
-		std::cout << "FPS: " << (1000/frameTime) << "\n";
 		frame++;
 	}
 	if (server)
@@ -133,27 +153,3 @@ int main(int argc, const char** argv)
 //clientSocket->Bind(*clientAddress);
 //serverSocket->Bind(*serverAddress);
 //
-//std::thread serverThread([&serverSocket]() {
-//	char buffer[4096];
-//	SocketAddress fromAddress;
-//	int bytesReceived = serverSocket->ReceiveFrom(buffer, 4096, fromAddress);
-//	if (bytesReceived <= 0)
-//	{
-//		SocketUtil::ReportError("ByesRecieved <= 0");
-//		return;
-//	}
-//	std::string msg(buffer, bytesReceived);
-//	std::cout << fromAddress.ToString() << ": " << msg.c_str() << "\n";
-//
-//	});
-//
-//
-//std::string msg("Hello, sir.");
-//int bytesSent = clientSocket->SendTo(msg.c_str(), msg.length(), *serverAddress);
-//std::cout << bytesSent << "\n";
-//if (bytesSent <= 0)
-//{
-//	SocketUtil::ReportError("None Sended");
-//}
-//
-//serverThread.join();
