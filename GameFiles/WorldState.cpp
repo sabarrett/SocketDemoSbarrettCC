@@ -40,14 +40,28 @@ void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs, int d
 
 void WorldState::Render(string background)
 {
+	//std::cout << 5.1 << '\n';
 	mpGraphicsLibrary->drawImage(background, 0, 0);
 
+	//std::cout << 5.2 << '\n';
 	for each (GameObject * var in mGameObjects)
 	{
+		//std::cout << 5.3 << '\n';
 		var->Render(mpGraphicsLibrary);
+		//std::cout << 5.4 << '\n';
+
 	}
 
-	mpGraphicsLibrary->render();
+	//std::cout << 5.6 << '\n';
+	if (mGameObjects.size() > 1)
+	{
+		std::cout << "If this message doesn't end with a period, then Allegro's render caused the crash";
+		mpGraphicsLibrary->render();
+		std::cout << ".\n";
+	}
+	//std::cout << 5.9 << '\n';
+
+
 }
 
 void WorldState::CreateLock()

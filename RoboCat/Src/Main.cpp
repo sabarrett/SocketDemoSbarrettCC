@@ -229,35 +229,46 @@ int main(int argc, const char** argv)
 		startTime = lastTime;
 		lastTime = system_clock::now();
 
-		inputSys.Update(userIsCreator, ref(gameWorld), ref(joinerInputs));
+		//std::cout << 0 << '\n';
 
+		inputSys.Update(userIsCreator, ref(gameWorld), ref(joinerInputs));
+		//std::cout << 1 << '\n';
 		if (userIsCreator)
 		{
+			//std::cout << 2 << '\n';
 			// processing Joiner's inputs before update means that their spawned pieces get exported in the world state
 			if(!NetworkManager::HandleIncomingInputPackets(ref(unprocessedData), ref(joinerInputs), ref(lastTimeOfRecievingConnection)))
 			{
 				isGameRunning = false;
 			}
+			//std::cout << 3 << '\n';
 			gameWorld.Update(userIsCreator, ref(joinerInputs), deltaTime);
 
+			//std::cout << 4 << '\n';
 			NetworkManager::HandleOutgoingWorldStatePackets(ref(gameWorld), sendingSocket, addressToSendTo, deltaTime);
 		}
 		else
 		{
+			//std::cout << 2 << '\n';
 			gameWorld.Update(userIsCreator, ref(joinerInputs), deltaTime);
 			//ProcessWorldState();
+			//std::cout << 3 << '\n';
 			if (!NetworkManager::HandleIncomingWorldStatePackets(ref(gameWorld), ref(unprocessedData), ref(lastTimeOfRecievingConnection)))
 			{
 				isGameRunning = false;
 			}
 			NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo, ref(lastTimeOfSendingConnection), deltaTime);
+			//std::cout << 4 << '\n';
 		}
 
+		//std::cout << 5 << '\n';
 		gameWorld.Render(currentBackground);
+		//std::cout << 6 << '\n';
 
 
 		while (duration_cast<milliseconds>(system_clock::now() - startTime).count() < 16)
 		{
+			;
 			// makes the program maintain a maximum framerate
 			//std::cout << duration_cast<milliseconds>(system_clock::now() - startTime).count() << std::endl;
 		}

@@ -116,6 +116,7 @@ bool NetworkManager::HandleIncomingInputPackets(priority_queue<pair<int, void*>>
 {
 	while(unprocessedData.size() > 0)
 	{
+		std::cout << "currently have " << unprocessedData.size() << " inputs left to process.\n";
 		lastConnectionTime = system_clock::now();
 		char* buffer = (char*)(unprocessedData.top().second);
 		InputMemoryBitStream inStream = InputMemoryBitStream(buffer, BUFFER_SIZE);
@@ -134,26 +135,49 @@ bool NetworkManager::HandleIncomingInputPackets(priority_queue<pair<int, void*>>
 
 bool NetworkManager::HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr &sendingSocket, SocketAddressPtr &sendingAddress, int delta)
 {
-	OutputMemoryBitStream stream;
-	gameWorld.Write(stream);
-
-	currentDelayBetweenPacketSend -= delta;
-	if (currentDelayBetweenPacketSend < 1)
-	{
-		if (rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
-			sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress);
-		else
-			std::cout << "deliberately dropped a packet\n";
-
-		if (rand() % 101 > PACKET_DELAY_CHANCE_PERCENT)
+	bool allGood = true;
+	if(isDelayingAPacket)
+	{ 
+		currentDelayBetweenPacketSend -= delta;
+		if (currentDelayBetweenPacketSend < 1)
 		{
-			currentDelayBetweenPacketSend = PACKET_DELAY_TIME;
-			std::cout << "next packet deliberately delayed by " << PACKET_DELAY_TIME / 1000 << " seconds\n";
+			isDelayingAPacket = false;
+			std::cout << "delayed packet sent!\n";
+
+			if (!sendingSocket->SendTo(delayedStream.GetBufferPtr(), delayedStream.GetByteLength(), *sendingAddress))
+			{
+				SocketUtil::ReportError("Sending outgoing delayed Packet");
+				allGood = false;
+			}
+			delayedStream = OutputMemoryBitStream();
 		}
 	}
+	
+	if (((rand() % 100) + 1) > PACKET_DROP_CHANCE_PERCENT) // if we shouldn't drop a packet
+	{
+		if (!isDelayingAPacket && (rand() % 101) < PACKET_DELAY_CHANCE_PERCENT) // if we should delay a packet
+		{
+			isDelayingAPacket = true;
+			currentDelayBetweenPacketSend = PACKET_DELAY_TIME;
+			std::cout << "current packet deliberately delayed by " << PACKET_DELAY_TIME / 1000 << " seconds\n";
+			gameWorld.Write(delayedStream);
+		}
+		else
+		{
+			gameWorld.Write(stream);
+			if(!sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress))
+			{
+				SocketUtil::ReportError("Sending outgoing Packet");
+				allGood = false;
+			}
+			stream = OutputMemoryBitStream();
+		}
+	}
+	else
+		std::cout << "deliberately dropped a packet\n";
 
 	
-	return true;
+	return allGood;
 }
 
 
@@ -185,10 +209,8 @@ bool NetworkManager::HandleIncomingWorldStatePackets(WorldState& gameWorld, prio
 
 bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress, system_clock::time_point& lastTimeOfSendingConnection, int delta)
 {
-	OutputMemoryBitStream outStream;
 	bool allGood = true;
 	bool goodToClearInputs = true;
-
 
 	// connection_timeout / 5 to give breathing room for the packet to send before dc, as well as if a few get dropped 
     if (duration_cast<milliseconds>(system_clock::now() - lastTimeOfSendingConnection).count() > CONNECTION_TIMOUT / 5)
@@ -197,42 +219,60 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 		joinerInputs.push_back(JoinerInput(JoinerInput::CONNECTION_CONFIRMATION_MESSAGE, Location{ 0,0 }));
 	}
 
-	currentDelayBetweenPacketSend -= delta;
 
-	if (currentDelayBetweenPacketSend < 1)
+	if(isDelayingAPacket)
 	{
-		// making these two sepeate ifs so that this is called by default and we don't need to repeat its code for the if above
-		if (joinerInputs.size() > 0)
+		currentDelayBetweenPacketSend -= delta;
+		if (currentDelayBetweenPacketSend < 1)
 		{
-			lastTimeOfSendingConnection = system_clock::now();
-			JoinerInput::Write(outStream, std::ref(joinerInputs));
+			isDelayingAPacket = false;
+			std::cout << "delayed packet sent!\n";
 
-			if (rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
+			if ((sendingSocket->SendTo(delayedStream.GetBufferPtr(), delayedStream.GetByteLength(), *sendingAddress)) < 0)
 			{
-				if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), *sendingAddress)) < 0)
+				SocketUtil::ReportError("Sending outgoing delayed Packet");
+				allGood = false;
+			}
+			delayedStream = OutputMemoryBitStream();
+
+		}
+	}
+
+	if (joinerInputs.size() > 0)
+	{
+		lastTimeOfSendingConnection = system_clock::now();
+
+		if (((rand() % 100) + 1) > PACKET_DROP_CHANCE_PERCENT) // if we shouldn't drop a packet
+		{
+			if (!isDelayingAPacket && ((rand() % 101) < PACKET_DELAY_CHANCE_PERCENT)) // if we should delay a packet
+			{
+				isDelayingAPacket = true;
+				currentDelayBetweenPacketSend = PACKET_DELAY_TIME;
+
+				JoinerInput::Write(delayedStream, std::ref(joinerInputs));
+
+				std::cout << "current packet deliberately delayed by " << PACKET_DELAY_TIME / 1000 << " seconds\n";
+			}
+			else
+			{
+				
+				JoinerInput::Write(stream, std::ref(joinerInputs));
+
+				if ((sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress)) < 0)
 				{
 					SocketUtil::ReportError("Sending outgoingPacket");
 					allGood = false;
 				}
-
-				if (rand() % 101 > PACKET_DELAY_CHANCE_PERCENT)
-				{
-					currentDelayBetweenPacketSend = PACKET_DELAY_TIME;
-					std::cout << "next packet deliberately delayed by " << PACKET_DELAY_TIME / 1000 << " seconds\n";
-				}
+				stream = OutputMemoryBitStream();
 			}
-			else
-				std::cout << "deliberately dropped a packet\n";
 		}
-	}
-	else
-	{
-		goodToClearInputs = false;
+		else
+			std::cout << "deliberately dropped a packet\n";
 	}
 
 
-	if(goodToClearInputs)
-		joinerInputs.clear();
+
+	joinerInputs.clear();
 
 	return allGood;
 }
