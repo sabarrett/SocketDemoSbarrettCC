@@ -62,13 +62,16 @@ void PacketManager::SendPacket(Packet_PlayerInfo pkt) {
 	writestream.Write(pkt.nickname);
 }
 
-bool PacketManager::HandleInput(TCPSocket* socket) {
-	if (!socket->HasRead()) return true;
+bool PacketManager::HandleInput(UDPSocketPtr socket, SocketAddress& out_addr) {
+
 
 	char buffer[1024];
-	int byteCount = socket->Receive(buffer, 1024);
+	int byteCount = socket->ReceiveFrom(buffer, 1024, out_addr);
 	if (byteCount < 0) {
 		return false;
+	}
+	if (byteCount == 0) {
+		return true;
 	}
 
 	std::vector<Packet*> packets;
@@ -101,11 +104,11 @@ void PacketManager::ProcessPacket(Packet* packet) {
 	delete packet;
 }
 
-void PacketManager::SendPacket(TCPSocket* socket, Packet* packet) {
+void PacketManager::SendPacket(UDPSocketPtr socket, const SocketAddress& addr, Packet* packet) {
 	
 	OutputMemoryBitStream outstream;
 	unsigned int typeID = (unsigned int)packet->type;
 	outstream.Write(typeID);
 	packet->Write(outstream);
-	socket->Send(outstream.GetBufferPtr(), outstream.GetByteLength());
+	socket->SendTo(outstream.GetBufferPtr(), outstream.GetByteLength(), addr);
 }

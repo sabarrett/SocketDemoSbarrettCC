@@ -76,9 +76,9 @@ public:
 		handlers[i-1] = (TCPPacketHandler)handler;
 	}
 
-	bool HandleInput(TCPSocket* socket);
+	bool HandleInput(UDPSocketPtr socket, SocketAddress& out_addr);
 	void ProcessPacket(Packet* packet);
-	void SendPacket(TCPSocket* socket, Packet* packet);
+	void SendPacket(UDPSocketPtr socket, const SocketAddress& addr, Packet* packet);
 
 
 	void HandlePacket_Destroy(InputMemoryBitStream& bitstream);

@@ -299,14 +299,18 @@ StartupScreenAction StartupScreen(SocketAddress* out_address, std::string& nickn
     return StartupScreenAction::QUIT;
 }
 
-TCPSocketPtr StartHost() {
+UDPSocketPtr masterSocket;
+SocketAddress address;
+PacketManager packetManager;
+
+
+UDPSocketPtr StartHost() {
 
     //networkManager.Init(1234, );
     SocketAddress clientAddr;
-    TCPSocketPtr hostSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+    UDPSocketPtr hostSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
     hostSocket->Bind(SocketAddress(2130706433, 1234)); // localhost:1234
-    hostSocket->Listen();
-
+    hostSocket->SetNonBlockingMode(true);
 
 
     bool listening = true;
@@ -316,8 +320,11 @@ TCPSocketPtr StartHost() {
     const int textWidth = MeasureText(msg, 20);
     while (listening) {
         frameCount++;
-        if (hostSocket->HasRead()) {
-            return hostSocket->Accept(clientAddr);
+        char buf[1];
+        int bytes = hostSocket->ReceiveFrom(buf, 1, address);
+
+        if (bytes > 0) {
+            return hostSocket;
         }
         
         unsigned int o = frameCount / 10;
@@ -335,11 +342,14 @@ TCPSocketPtr StartHost() {
     return nullptr;
 }
 
-TCPSocketPtr StartConnect(SocketAddress host_address) {
+UDPSocketPtr StartConnect(SocketAddress host_address) {
 
-    TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+    UDPSocketPtr clientSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
     clientSocket->Bind(SocketAddress(2130706433, 1235));
-    clientSocket->Connect(host_address);
+    clientSocket->SetNonBlockingMode(true);
+    address = host_address;
+    char buf[1] = { 's' };
+    clientSocket->SendTo(buf, 1, address);
 
     return clientSocket;
 }
@@ -360,8 +370,6 @@ void DrawPlayer(Player player);
 void DrawBall(Ball ball);
 
 
-TCPSocketPtr masterSocket;
-PacketManager packetManager;
 
 void frame_countdown(int& count) {
     if (count > 0) count--;
@@ -436,7 +444,7 @@ int main(int argc, const char** argv)
     playerInfo.type = PacketPlayerInfo::TYPE;
     playerInfo.nickname = nickname;
 
-    packetManager.SendPacket(masterSocket.get(), &playerInfo);
+    packetManager.SendPacket(masterSocket, address, &playerInfo);
 
     if (gi.player1.hasAuthority)
         gi.player1.nickname = nickname;
@@ -448,7 +456,7 @@ int main(int argc, const char** argv)
     while (!shouldClose)    // Detect window close button or ESC key
     {
 
-        bool connected = packetManager.HandleInput(masterSocket.get());
+        bool connected = packetManager.HandleInput(masterSocket, address);
         if (!connected) break;
 
         if (!gi.gameOver)
@@ -712,7 +720,7 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
                     testDestroy.X = i;
                     testDestroy.Y = j;
 
-                    packetManager.SendPacket(masterSocket.get(), &testDestroy);
+                    packetManager.SendPacket(masterSocket, address, &testDestroy);
                 }
                 gi.backgroundColor = gi.brickList[i][j].brickColor;
             }
@@ -781,7 +789,7 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
         movePacket.position = ball.position;
         movePacket.velocity = ball.velocity;
 
-        packetManager.SendPacket(masterSocket.get(), &movePacket);
+        packetManager.SendPacket(masterSocket, address, &movePacket);
     }
 
     ball.impact = Vector2Scale(ball.impact, 0.95);
@@ -818,7 +826,7 @@ void GameInit::UpdatePlayer(Player& player) {
             movePacket.position = player.position;
             movePacket.velocity = player.velocity;
 
-            packetManager.SendPacket(masterSocket.get(), &movePacket);
+            packetManager.SendPacket(masterSocket, address, &movePacket);
         }
     }
 
