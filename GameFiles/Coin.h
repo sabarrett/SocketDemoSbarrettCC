@@ -9,7 +9,7 @@ private:
 	~Coin();
 protected:
 public:
-	virtual void Update(WorldState* gameWorld);
+	virtual void Update(WorldState* gameWorld, int delta);
 
 	CLASS_IDENTIFICATION('COIN', Coin)
 };

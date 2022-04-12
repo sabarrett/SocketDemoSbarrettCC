@@ -15,7 +15,7 @@ class GameObject
 	public:
 		enum { mClassId = 'GOBJ' };
 		virtual uint32_t GetClassId() const { return mClassId; }
-		virtual void Update(WorldState* gameWorld) = 0;
+		virtual void Update(WorldState* gameWorld, int delta) = 0;
 		virtual void Write(OutputMemoryBitStream &stream);
 		virtual void Read(InputMemoryBitStream &stream);
 		virtual void Render(GraphicsLibrary* gl);

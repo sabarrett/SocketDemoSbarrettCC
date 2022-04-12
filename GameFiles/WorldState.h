@@ -19,7 +19,7 @@ class WorldState
 	public:
 		WorldState(GraphicsLibrary* gl);
 		~WorldState();
-		void Update(bool isCreator, vector<JoinerInput>& joinerInput);
+		void Update(bool isCreator, vector<JoinerInput>& joinerInput, int delta);
 		void Render(string background);
 
 		void CreateLock();

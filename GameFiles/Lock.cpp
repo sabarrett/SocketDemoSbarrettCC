@@ -17,8 +17,9 @@ Lock::~Lock()
 {
 }
 
-void Lock::Update(WorldState* gameWorld)
+void Lock::Update(WorldState* gameWorld, int delta)
 {
 	if (mGraphicsData.mX > 1500) mGraphicsData.mX = 0;
-	mGraphicsData.mX++;
+
+	mGraphicsData.mX += MOVE_SPEED * delta;
 }

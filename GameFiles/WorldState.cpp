@@ -18,7 +18,7 @@ WorldState::~WorldState()
 	mpGraphicsLibrary = nullptr;
 }
 
-void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs)
+void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs, int delta)
 {
 	if (isCreator)
 	{
@@ -32,7 +32,7 @@ void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs)
 
 	for(int i = 0; i < mGameObjects.size(); i++)
 	{
-		mGameObjects[i]->Update(this);
+		mGameObjects[i]->Update(this, delta);
 	}
 
 	RemoveUnneededGameObjects();

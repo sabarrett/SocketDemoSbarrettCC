@@ -137,7 +137,11 @@ bool NetworkManager::HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPS
 {
 	OutputMemoryBitStream stream;
 	gameWorld.Write(stream);
-	sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress);
+
+	
+	if(rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
+		sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress);
+	
 	return true;
 }
 
@@ -189,10 +193,13 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 		lastTimeOfSendingConnection = system_clock::now();
 		JoinerInput::Write(outStream, std::ref(joinerInputs));
 
-		if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), *sendingAddress)) < 0)
+		if (rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
 		{
-			SocketUtil::ReportError("Sending outgoingPacket");
-			allGood = false;
+			if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), *sendingAddress)) < 0)
+			{
+				SocketUtil::ReportError("Sending outgoingPacket");
+				allGood = false;
+			}
 		}
 	}
 	

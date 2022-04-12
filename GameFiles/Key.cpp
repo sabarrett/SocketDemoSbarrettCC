@@ -18,10 +18,11 @@ Key::~Key()
 {
 }
 
-void Key::Update(WorldState* gameWorld)
+void Key::Update(WorldState* gameWorld, int delta)
 {
 	if (mGraphicsData.mX < 0) mGraphicsData.mX = 1500;
-	mGraphicsData.mX--;
+
+	mGraphicsData.mX -= MOVE_SPEED * delta;
 
 	for (int i = 0; i < gameWorld->mGameObjects.size(); i++)
 	{
