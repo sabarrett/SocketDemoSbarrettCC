@@ -74,6 +74,9 @@ Brick brickList[BRICK_ROWS][BRICK_COLUMNS] = { 0 };
 Player player1, player2;
 Ball ball1, ball2;
 
+Vector2 cameraOffset;
+Color backgroundColor = RAYWHITE;
+
 
 const int NUM_PHYS_OBJ = 20;
 PhysObject* physicsObjects[NUM_PHYS_OBJ]; // id 0 & 1 are for players, the rest are balls
@@ -88,11 +91,11 @@ void HandleDestroy(TCPPacketDestroy* destroy) {
     brickList[destroy->X][destroy->Y].isDead = true;
     if (player1.hasAuthority) {
         player2.score++;
-        player2.scoreFrames += 10;
+        player2.scoreFrames += player2.scoreFrames + 10;
     }
     else {
         player1.score++;
-        player2.scoreFrames += 10;
+        player2.scoreFrames += player2.scoreFrames + 10;
     }
       
 }
@@ -220,7 +223,7 @@ StartupScreenAction StartupScreen(SocketAddress* out_address, std::string& nickn
 
         ClearBackground(RAYWHITE);
 
-
+       
         DrawTextbox(selectedField == 1, nickBox, nickBuf,"Enter Nickname", framesCounter);
 
         DrawTextbox(selectedField == 2, addrBox, addrBuf, "Type IP", framesCounter);
@@ -344,7 +347,6 @@ void DrawBrick(Brick brick);
 void DrawPlayer(Player player);
 void DrawBall(Ball ball);
 
-Vector2 cameraOffset;
 
 TCPSocketPtr masterSocket;
 TCPPacketManager packetManager;
@@ -453,10 +455,13 @@ int main(int argc, const char** argv)
             Camera2D camera = { 0 };
             camera.offset = Vector2{0, 0 };
             camera.zoom = 1.0f;
-            camera.offset = Vector2Add(cameraOffset, camera.offset);
+            camera.offset = Vector2Scale(cameraOffset, 3);
             BeginMode2D(camera);
-            ClearBackground(RAYWHITE);
+            ClearBackground(backgroundColor);
 
+          
+
+            DrawRectangle(10, 10, screenWidth-20, screenHeight-20, RAYWHITE);
             //Draw Player
 
             DrawPlayer(player1);
@@ -538,13 +543,15 @@ void DrawBrick(Brick brick) {
     DrawRectangleRec(rect, brick.brickColor);
     Vector2 btmL = { rect.x, rect.y + rect.height };
     Vector2 topR = { rect.x + rect.width, rect.y };
+    float oX = -cameraOffset.x * 1.5;
+    float oY = -cameraOffset.y * 1.5;
     Vector2 points[6] = {
         { btmL.x, btmL.y },
-        { btmL.x + 10, btmL.y + 10},
+        { btmL.x + 10 + oX, btmL.y + 10 + oY},
         { topR.x, btmL.y },
-        { topR.x + 10, btmL.y + 10},
+        { topR.x + 10 + oX, btmL.y + 10 + oY},
         { topR.x, topR.y },
-        { topR.x + 10, topR.y + 10},
+        { topR.x + 10 + oX, topR.y + 10 + oY},
     };
     Color color = brick.brickColor;
     color.r *= 0.8;
@@ -687,7 +694,7 @@ void UpdateBall(Player& owner, Ball& ball) {
                 brickList[i][j].isDead = true;
                 if (ball.hasAuthority) {
                     owner.score++;
-                    owner.scoreFrames += 10;
+                    owner.scoreFrames += owner.scoreFrames + 10;
 
                     TCPPacketDestroy testDestroy;
                     testDestroy.type = TCPPacketType::DESTROY;
@@ -696,6 +703,7 @@ void UpdateBall(Player& owner, Ball& ball) {
 
                     packetManager.SendPacket(masterSocket.get(), &testDestroy);
                 }
+                backgroundColor = brickList[i][j].brickColor;
             }
         }
     }
@@ -752,7 +760,7 @@ void UpdateBall(Player& owner, Ball& ball) {
     if (velDelta.x != 0 || velDelta.y != 0) {
         ball.bounceFrames = 5;
         ball.impact = Vector2{ fabs(velDelta.x), fabs(velDelta.y) };
-        cameraOffset = velDelta;
+        cameraOffset = Vector2Scale(velDelta, -1);
     }
 
     if (ball.hasAuthority && (startVel.x != ball.velocity.x || startVel.y != ball.velocity.y) ) {
@@ -818,7 +826,7 @@ void UpdatePlayer(Player& player) {
 
 
     if (player.bumpFrames > 0)  player.bumpFrames--;
-    if (player.scoreFrames > 0) player.scoreFrames--;
+    if (player.scoreFrames > 0) player.scoreFrames -= 1 + player.scoreFrames/100;
 }
 
 void UpdateGame()
@@ -833,7 +841,7 @@ void UpdateGame()
 
     UpdatePhysObjs();
 
-    cameraOffset = Vector2Scale(cameraOffset, 0.9);
+    cameraOffset = Vector2Scale(cameraOffset, 0.95);
 
     //Reset
     gameOver = true;
