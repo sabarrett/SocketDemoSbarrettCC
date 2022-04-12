@@ -23,11 +23,11 @@ namespace NetworkManager
     
         // Derived Connection Functions for in-game use
     // creator
-    bool HandleIncomingInputPackets(priority_queue<pair<int, void*>>& unprocessedData, vector<JoinerInput>& joinerInputs);
+    bool HandleIncomingInputPackets(priority_queue<pair<int, void*>>& unprocessedData, vector<JoinerInput>& joinerInputs, system_clock::time_point& lastConnectionTime);
     bool HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
     // joiner
     bool HandleIncomingWorldStatePackets(WorldState& gameWorld, priority_queue<pair<int, void*>>& unprocessedDataPackets, system_clock::time_point& connectionTimer);
-    bool HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
+    bool HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress, system_clock::time_point& lastTimeOfSendingConnection);
 }
 
 

@@ -5,13 +5,13 @@
 JoinerInput::JoinerInput(InputActionIDs initalType, Location loc)
 {
 	timeOfCreation = time(0);
-	initalType = type;
+	inputIDType = initalType;
 	location = loc;
 }
 
 void JoinerInput::Write(OutputMemoryBitStream& stream)
 {
-	stream.Write(type);
+	stream.Write(inputIDType);
 	stream.Write(timeOfCreation);
 	stream.Write(location.x);
 	stream.Write(location.y);
@@ -34,7 +34,7 @@ void JoinerInput::Read(InputMemoryBitStream& stream, vector<JoinerInput>& joiner
 	for (int i = 0; i < count; i++)
 	{
 		JoinerInput current;
-		stream.Read(current.type);
+		stream.Read(current.inputIDType);
 		stream.Read(current.timeOfCreation);
 		stream.Read(current.location.x);
 		stream.Read(current.location.y);

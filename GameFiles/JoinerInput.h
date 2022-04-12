@@ -9,11 +9,12 @@ class JoinerInput
 
 	enum InputActionIDs
 	{
-		JOINER_KEY_SPAWN
+		JOINER_KEY_SPAWN,
+		CONNECTION_CONFIRMATION_MESSAGE
 	};
 
 	time_t timeOfCreation;
-	InputActionIDs type;
+	InputActionIDs inputIDType;
 	Location location;
 
 	JoinerInput(InputActionIDs initalType, Location loc);

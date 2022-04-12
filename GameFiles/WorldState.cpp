@@ -24,7 +24,8 @@ void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs)
 	{
 		for (int i = 0; i < joinerInputs.size(); i++)
 		{
-			CreateKey(joinerInputs[i].location.x, joinerInputs[i].location.y);
+			if(joinerInputs[i].inputIDType == JoinerInput::JOINER_KEY_SPAWN)
+				CreateKey(joinerInputs[i].location.x, joinerInputs[i].location.y);
 		}
 		joinerInputs.clear();
 	}

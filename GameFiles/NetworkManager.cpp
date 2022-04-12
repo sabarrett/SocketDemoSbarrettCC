@@ -113,14 +113,21 @@ void NetworkManager::SetUpSending(int portToSendTo, int portUsedForSending, UDPS
 
 
 // updates
-bool NetworkManager::HandleIncomingInputPackets(priority_queue<pair<int, void*>>& unprocessedData, vector<JoinerInput>& joinerInputs)
+bool NetworkManager::HandleIncomingInputPackets(priority_queue<pair<int, void*>>& unprocessedData, vector<JoinerInput>& joinerInputs, system_clock::time_point& lastConnectionTime)
 {
 	while(unprocessedData.size() > 0)
 	{
-		char buffer[BUFFER_SIZE]{ *(static_cast<char*>(unprocessedData.top().second)) };
+		lastConnectionTime = system_clock::now();
+		char* buffer = (char*)(unprocessedData.top().second);
 		InputMemoryBitStream inStream = InputMemoryBitStream(buffer, BUFFER_SIZE);
 		JoinerInput::Read(inStream, joinerInputs);
 		unprocessedData.pop();
+	}
+
+	if (duration_cast<milliseconds>(system_clock::now() - lastConnectionTime).count() > CONNECTION_TIMOUT)
+	{
+		std::cout << "\n\nERROR: IT HAS BEEN " << CONNECTION_TIMOUT / 1000 << " SECONDS SINCE YOU HAVE RECIEVED DATA FROM JOINER. CLOSING GAME NOW.\n\n";
+		return false;
 	}
 
 	return true;
@@ -161,17 +168,26 @@ bool NetworkManager::HandleIncomingWorldStatePackets(WorldState& gameWorld, prio
 	return true;
 }
 
-bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress)
+bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress, system_clock::time_point& lastTimeOfSendingConnection)
 {
 	OutputMemoryBitStream outStream;
 	bool allGood = true;
 
 	 //std::cout << "JoinerOut1\n";
 
+
+	// connection_timeout / 2 to give breathing room for 
+    if (duration_cast<milliseconds>(system_clock::now() - lastTimeOfSendingConnection).count() > CONNECTION_TIMOUT / 2)
+	{
+		std::cout << "\n\nIT HAS BEEN " << CONNECTION_TIMOUT / 1000 / 2 << " SECONDS SINCE INPUT, SENDING A CONNECTION CONFIRMATION NOW.\n\n";
+		joinerInputs.push_back(JoinerInput(JoinerInput::CONNECTION_CONFIRMATION_MESSAGE, Location{ 0,0 }));
+	}
+
+	// making these two sepeate ifs so that this is called by default and we don't need to repeat its code for the if above
 	if (joinerInputs.size() > 0)
 	{
-		
-		JoinerInput::Write(outStream, joinerInputs);
+		lastTimeOfSendingConnection = system_clock::now();
+		JoinerInput::Write(outStream, std::ref(joinerInputs));
 
 		if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), *sendingAddress)) < 0)
 		{

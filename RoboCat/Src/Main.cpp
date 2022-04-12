@@ -18,21 +18,21 @@
 #include <windows.h>
 
 ///          TODO
-///  X - Handle one player disconnecting on the other player's end
-///		X - Joiner doesn't crash, should DC when worldstate takes too long to update
-///		X - Creator doesn't crash, joiner should send a "all-ok" message if the Joiner hasn't pressed an input in a while
+///  O - Handle one player disconnecting on the other player's end
+///		O - Joiner doesn't crash, should DC when worldstate takes too long to update
+///		O - Creator doesn't crash, joiner should send a "all-ok" message if the Joiner hasn't pressed an input in a while
 ///  X - Update gameobjects via a frame delta time (to prevent desync due to game speed)
 ///  X - Unreliability Simulation -
-///            Packets are occasionally "dropped," by random chance or by some algorithm.
-///            Dropped packets are registered as having been sent by the sender, but do not actually call the socket's send() function. 
-///            Random delay is introduced to some packet's send time, and packets can be delivered out of order.
+///     X - Packets are occasionally "dropped," by random chance or by some algorithm.
+///     X - Dropped packets are registered as having been sent by the sender, but do not actually call the socket's send() function. 
+///     X - Random delay is introduced to some packet's send time, and packets can be delivered out of order.
 ///  X - Reliability - 
-///            Game state is sent through a reliability layer. Important data is sent through guaranteed mechanisms, 
+///     X - Game state is sent through a reliability layer. Important data is sent through guaranteed mechanisms, 
 ///            while data that does not require guaranteed delivery is sent through simpler mechanisms.
-///            Important data is resilient to jitter, out - of - order delivery, and high latency.
+///     X - Important data is resilient to jitter, out - of - order delivery, and high latency.
 ///  X - Game Complexity - 
-///            There are at least 3 distinct game object types with different data requirements.
-///         Some game objects require complex types, such as collections or pointers, which are properly replicated.
+///     X - There are at least 3 distinct game object types with different data requirements.
+///     X - Some game objects require complex types, such as collections or pointers, which are properly replicated.
 ///  X - Code Cleanliness - 
 ///            Spacing is consistent, variable naming is consistent.
 ///            Often - repeated code is organized into functions or classes, as appropriate.
@@ -210,7 +210,8 @@ int main(int argc, const char** argv)
 	system_clock::time_point lastTime = system_clock::now();
 	system_clock::time_point startTime = system_clock::now();
 
-	system_clock::time_point lastTimeOfConnection = system_clock::now();
+	system_clock::time_point lastTimeOfRecievingConnection = system_clock::now();
+	system_clock::time_point lastTimeOfSendingConnection = system_clock::now();
 
 
 	int deltaTime;
@@ -231,7 +232,7 @@ int main(int argc, const char** argv)
 		if (userIsCreator)
 		{
 			// processing Joiner's inputs before update means that their spawned pieces get exported in the world state
-			if(!NetworkManager::HandleIncomingInputPackets(ref(unprocessedData), ref(joinerInputs)))			
+			if(!NetworkManager::HandleIncomingInputPackets(ref(unprocessedData), ref(joinerInputs), ref(lastTimeOfRecievingConnection)))
 			{
 				isGameRunning = false;
 			}
@@ -243,11 +244,11 @@ int main(int argc, const char** argv)
 		{
 			gameWorld.Update(userIsCreator, ref(joinerInputs));
 			//ProcessWorldState();
-			if (!NetworkManager::HandleIncomingWorldStatePackets(ref(gameWorld), ref(unprocessedData), ref(lastTimeOfConnection)))
+			if (!NetworkManager::HandleIncomingWorldStatePackets(ref(gameWorld), ref(unprocessedData), ref(lastTimeOfRecievingConnection)))
 			{
 				isGameRunning = false;
 			}
-			NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo);
+			NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo, ref(lastTimeOfSendingConnection));
 		}
 
 		gameWorld.Render(currentBackground);
