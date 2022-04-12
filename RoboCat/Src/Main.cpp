@@ -37,7 +37,7 @@ int main(int argc, const char** argv)
 	int gameObjectIDs = 2;
 
 	Networker* pNetworker = new Networker();
-	GameData* gameData = gameData->getInstance();
+	GameData* gameData = GameData::getInstance();
 	
 	// ---------------------- Intro Screen ----------------------
 	string input = "";
@@ -200,34 +200,28 @@ int main(int argc, const char** argv)
 				pIS->update();
 				inputData = pIS->getInputData();
 				
-	
-					for (auto& bullet : gameData->bulletsVector)
+				//std::cout << gameData->bulletsVector.size() << std::endl;
+
+				for (auto& bullet : gameData->bulletsVector)
+				{
+					if (bullet != nullptr)
 					{
-						if (bullet != nullptr)
-						{
-  							pGL->drawImage("bullet", bullet->mPosX, bullet->mPosY);
-							bullet->Update(dt);
-							bullet->SendBullet(connSocket);
-						}
+						pGL->drawImage("bullet", bullet->mPosX, bullet->mPosY);
+						bullet->Update(dt);
+						bullet->SendBullet(connSocket);
 					}
-				
+				}
 
 				if (inputData.keyPressed_ESCAPE)
 				{
-					isGameRunning = false;
 					//std::cout << "Escape Pressed" << std::endl;
-				}
-				if (inputData.keyPressed_R)
-				{
-					//std::cout << "R Pressed" << std::endl;
+					isGameRunning = false;
 				}
 				if (inputData.keyPressed_A)
 				{
 					//std::cout << "A Pressed" << std::endl;
 					gameData->player1->Move(-dt * gameData->player1->GetSpeed());
 					gameData->player1->SendPlayer(connSocket);
-					//std::cout << "dt = " << dt << std::endl;
-					//std::cout << "speed = " << player1->GetSpeed() << std::endl;
 				}
 				if (inputData.keyPressed_D)
 				{
@@ -245,13 +239,11 @@ int main(int argc, const char** argv)
 					//std::cout << "Space Pressed" << std::endl;
 				}
 
-				
 					for (auto& bullet : gameData->bulletsVector)
 					{
 						if (bullet != nullptr)
 						{
-							//check bullet y is <= player y + playersize
-							//check bullet x is >= player x - bulletsize / 2 and <= player x + playersize
+							// If bullet hits client's player
 							if (bullet->mPosY <= gameData->player2->mPosY + PLAYER_SIZE + OFFSET_HIT &&
 								bullet->mPosX >= gameData->player2->mPosX - BULLET_SIZE &&
 								bullet->mPosX <= gameData->player2->mPosX + PLAYER_SIZE &&
@@ -269,6 +261,7 @@ int main(int argc, const char** argv)
 								bullet = nullptr;
 								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), bullet), gameData->bulletsVector.end());
 							}
+							// If bullet hits host's player
 							else if (bullet->mPosY <= gameData->player1->mPosY + PLAYER_SIZE &&
 								bullet->mPosX >= gameData->player1->mPosX - BULLET_SIZE &&
 								bullet->mPosX <= gameData->player1->mPosX + PLAYER_SIZE &&
@@ -300,8 +293,6 @@ int main(int argc, const char** argv)
 							}
 						}
 					}
-				
-
 		
 					for (auto& effect : gameData->effectsVector)
 					{
@@ -317,7 +308,6 @@ int main(int argc, const char** argv)
 						}
 					}
 				
-
 				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->mPosX, gameData->player1->mPosY);
 				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->mPosX, gameData->player2->mPosY);
 				pGL->render();

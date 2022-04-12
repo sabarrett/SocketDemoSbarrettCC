@@ -16,8 +16,8 @@ const string EFFECT_SPRITE_FILENAME = "Effect.png";
 const string EFFECT_COVER_FILENAME = "EffectCover.png";
 
 // Screen Resolution
-const float RESOLUTION_X = 1920.0;
-const float RESOLUTION_Y = 1080.0;
+const float RESOLUTION_X = 800.0;
+const float RESOLUTION_Y = 600.0;
 
 // Sprites sizes
 const float PLAYER_SIZE = 80.0;

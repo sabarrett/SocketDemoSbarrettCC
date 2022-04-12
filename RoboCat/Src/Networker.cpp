@@ -3,7 +3,7 @@
 
 Networker::Networker()
 {
-	//gameData = gameData->getInstance();
+	gameData = GameData::getInstance();
 }
 
 Networker::~Networker()
