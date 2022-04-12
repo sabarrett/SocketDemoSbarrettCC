@@ -67,6 +67,7 @@ public:
 	//GAME FUNCTIONS
 	void update(double deltaTime);
 	void draw(GraphicsSystem* gSystem);
+	void updatePositions(int xVel, int yVel);
 
 	vector<vector<int>> getAllUnitsLocation();
 	vector<int> getDeletedUnits();

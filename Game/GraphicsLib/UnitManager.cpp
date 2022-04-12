@@ -273,6 +273,14 @@ void UnitManager::draw(GraphicsSystem* gSystem)
 	}
 }
 
+void UnitManager::updatePositions(int xVel, int yVel)
+{
+	for (int i = 0; i < mUnits.size(); i++)
+	{
+		mUnits[i]->movePos(xVel, yVel);
+	}
+}
+
 vector<vector<int>> UnitManager::getAllUnitsLocation()
 {
 	vector<vector<int>> locs;

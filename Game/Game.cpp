@@ -250,6 +250,11 @@ void Game::updateUnitLocation(int id, int xLoc, int yLoc)
 	unitWithID(id)->mY = yLoc;
 }
 
+void Game::addUnitTranslation(int velX, int velY)
+{
+	mpUnitManager->updatePositions(velX, velY);
+}
+
 /*
 void Game::updateWorldState(Unit* units[4096])
 {
@@ -270,6 +275,8 @@ vector<int> Game::getUnitDeletion()
 {
 	return mpUnitManager->getDeletedUnits();
 }
+
+
 
 
 

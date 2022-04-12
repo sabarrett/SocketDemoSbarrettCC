@@ -29,6 +29,7 @@ private:
 	void update(double deltaTime);
 	void draw(GraphicsSystem* gSystem);
 	void setAnimation(int newAnimation);
+	void movePos(int xVel, int yVel);
 
 	//Get current animation
 	int getAnimation();

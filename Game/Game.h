@@ -80,6 +80,7 @@ public:
 	void updateWorldState(int xLoc[], int yLoc[], int type[]);
 	Unit* unitWithID(int id);
 	void updateUnitLocation(int id, int xLoc, int yLoc);
+	void addUnitTranslation(int velX, int velY);
 	//void updateWorldState(Unit* units[4096]);
 	vector<vector<int>> getUnitData();
 	vector<int> getUnitDeletion();
