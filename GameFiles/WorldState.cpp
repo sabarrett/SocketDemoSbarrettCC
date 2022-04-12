@@ -55,9 +55,9 @@ void WorldState::Render(string background)
 	//std::cout << 5.6 << '\n';
 	if (mGameObjects.size() > 1)
 	{
-		std::cout << "If this message doesn't end with a period, then Allegro's render caused the crash";
+		std::cout << "Allegro's render crashed";
 		mpGraphicsLibrary->render();
-		std::cout << ".\n";
+		std::cout << "\r";
 	}
 	//std::cout << 5.9 << '\n';
 
