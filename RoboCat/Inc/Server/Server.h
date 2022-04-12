@@ -13,7 +13,7 @@ class GameObject;
 class Server : public NetworkManager {
 
 public:
-	Server() {};
+	Server(){};
 	~Server() {};
 
 	// Core functions
@@ -25,6 +25,11 @@ public:
 	void DestroyObject(GameObject* gameObject);
 
 	virtual void	ProcessPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress) override;
+
+	// Network Simulation
+	void SetLatency(float latency) { SetSimulatedLatency(latency); }
+	void SetJitter(float jitter) { SetSimulatedJitter(jitter); }
+	void SetDrop(float drop) { SetDropPacketChance(drop); }
 
 	// Get
 	bool Running() { return m_isRunning; };
@@ -38,15 +43,20 @@ private:
 
 	std::vector<GameObject*> m_allObjects;
 
+	
 	// Networking
 	struct Connection
 	{
+		Connection() :
+			mDeliveryNotificationManager(false,true)
+		{};
 		TCPSocketPtr SocketPtrTCP;
 		UDPSocketPtr SocketPtrUDP;
 		SocketAddress socketAddress;
 		int connectionID;
+		DeliveryNotificationManager	mDeliveryNotificationManager;
 	};
-	std::vector<Connection> m_connections;
+	std::vector<Connection*> m_connections;
 
 	int m_nextUID = 0;
 };

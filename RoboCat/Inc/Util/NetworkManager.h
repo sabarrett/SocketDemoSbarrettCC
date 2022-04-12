@@ -61,13 +61,14 @@ private:
 
 		const	SocketAddress& GetFromAddress()	const { return mToAddress; }
 		float					GetSentTime()	const { return mSentTime; }
-		OutputMemoryBitStream& GetPacketBuffer() { return mPacketBuffer; }
-
+		OutputMemoryBitStream GetPacketBuffer() { return mPacketBuffer; }
+		int					sentFramesAgo;
 	private:
 
 		float					mSentTime;
 		OutputMemoryBitStream	mPacketBuffer;
 		SocketAddress			mToAddress;
+		
 
 	};
 
@@ -91,7 +92,8 @@ protected:
 	virtual void	ReadIncomingPacketsIntoQueue();
 
 	queue< ReceivedPacket, list< ReceivedPacket > >	mPacketQueue;
-	vector<SentPacket>	mSentPacketsList;
+	vector<SentPacket*>	mSentPacketsList;
+	std::vector<int> indicesToDelete;
 
 	TCPSocketPtr m_socketPtrTCP;
 	UDPSocketPtr m_socketPtrUDP;

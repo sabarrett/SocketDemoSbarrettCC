@@ -32,7 +32,6 @@ public:
 	void Init(char* title, int width, int height);
 	void Update();
 	void Draw();
-	void DoNetworking();
 	void CleanUp();
 
 	// Inits

@@ -17,6 +17,9 @@ public:
 	uint32_t			GetDispatchedPacketCount()	const	{ return mDispatchedPacketCount; }
 	
 	const deque< InFlightPacket >&	GetInFlightPackets()	const	{ return mInFlightPackets; }
+
+	void				SetShouldProccessAcks(bool inShouldProcessAcks) { mShouldProcessAcks = inShouldProcessAcks; }
+	void				SetShouldSendAcks(bool inShouldSendAcks) { mShouldSendAcks = inShouldSendAcks; }
 	
 private:
 	

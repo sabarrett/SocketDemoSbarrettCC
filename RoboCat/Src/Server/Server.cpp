@@ -74,6 +74,7 @@ int Server::Init(int newPort)
 	object->SetPosition(800, 450);
 
 	m_isRunning = true;
+
 	return port;
 }
 
@@ -116,11 +117,11 @@ void Server::AcceptIncomingConnections()
 	TCPconnSocket = m_socketPtrTCP->Accept(incomingAddress);
 	if (TCPconnSocket != nullptr)
 	{
-		Connection connection;
+		Connection* connection = new Connection;
 		TCPconnSocket->SetNonBlockingMode(true);
-		connection.SocketPtrTCP = TCPconnSocket;
-		connection.socketAddress = incomingAddress;
-		connection.connectionID = m_nextConnectionID;
+		connection->SocketPtrTCP = TCPconnSocket;
+		connection->socketAddress = incomingAddress;
+		connection->connectionID = m_nextConnectionID;
 		m_nextConnectionID++;
 		m_connections.push_back(connection);
 		//LOG("-------------Accepted connection from %s-------------", incomingAddress->ToString().c_str());
@@ -140,42 +141,54 @@ void Server::AcceptIncomingConnections()
 
 void Server::ProcessPacket(InputMemoryBitStream& inStream, const SocketAddress& inFromAddress)
 {
-	SocketAddress fromAddress = inFromAddress; // <-- Declaring to hide an unreference warning from compiler - Keeping inFromAddress because its useful.
-
-	 uint32_t packetType;
-	 inStream.Read(packetType);
-	 switch (packetType)
-	 {
-	 case PKTTYPE_MOVEOBJECT:
-	 	int targetID;
-	 	uint8_t move;
-	 	inStream.Read(targetID);
-	 	inStream.Read(move);
-	 	for (size_t j = 0; j < m_allObjects.size(); j++)
-	 	{
-	 		if (m_allObjects[j]->GetUID() == targetID)
-	 		{
-	 			m_allObjects[j]->AddVelocityFromInput(move);
-	 		}
-	 	}
-	 	break;
-	 case PKTTYPE_CREATEOBJECT:
-	 	uint8_t textureID;
-	 	int xPos;
-	 	int yPos;
-	 	inStream.Read(textureID);
-	 	inStream.Read(xPos);
-	 	inStream.Read(yPos);
-	 	GameObject* object = CreateObject(GAMEOBJECT_COLLECTABLE, textureID);
-	 	object->SetPosition((float)xPos, (float)yPos);
-	 	break;
+	SocketAddress fromAddress = inFromAddress; // <-- Declaring to hide an unreference warning from compiler - Also keeping inFromAddress because its useful.
+	for (size_t i = 0; i < m_connections.size(); i++)
+	{
+		if (m_connections[i]->socketAddress == fromAddress)
+		{
+			uint32_t packetType;
+			inStream.Read(packetType);
+			switch (packetType)
+			{
+			case PKTTYPE_MOVEOBJECT:
+				if (m_connections[i]->mDeliveryNotificationManager.ReadAndProcessState(inStream))
+				{
+					int targetID;
+					uint8_t move;
+					inStream.Read(targetID);
+					inStream.Read(move);
+					for (size_t j = 0; j < m_allObjects.size(); j++)
+					{
+						if (m_allObjects[j]->GetUID() == targetID)
+						{
+							m_allObjects[j]->AddVelocityFromInput(move);
+						}
+					}
+				}
+				break;
+			case PKTTYPE_CREATEOBJECT:
+				if (m_connections[i]->mDeliveryNotificationManager.ReadAndProcessState(inStream))
+				{
+					uint8_t textureID;
+					int xPos;
+					int yPos;
+					inStream.Read(textureID);
+					inStream.Read(xPos);
+					inStream.Read(yPos);
+					GameObject* object = CreateObject(GAMEOBJECT_COLLECTABLE, textureID);
+					object->SetPosition((float)xPos, (float)yPos);
+				}
+				break;
+		}
+		}
 	}
 }
 
 void Server::SendWorldUpdatePackets()
 {
 	OutputMemoryBitStream outStream;
-	outStream.Write(PKTTYPE_WORLDSTATE);
+	//outStream.Write(PKTTYPE_WORLDSTATE);
+	//mDeliveryNotificationManager.WriteState(outStream);
 	outStream.Write(m_allObjects.size());
 	for (size_t j = 0; j < m_allObjects.size(); j++)
 	{
@@ -186,13 +199,37 @@ void Server::SendWorldUpdatePackets()
 	}
 	for (size_t i = 0; i < m_connections.size(); i++)
 	{
-		if (m_connections[i].SocketPtrTCP != nullptr)
+		if (m_connections[i]->SocketPtrTCP != nullptr)
 		{
-			//std::cout << "WORLD-STATE SIZE: " << outStream.GetByteLength() << "\n";
-			SendPacket(outStream, m_connections[i].socketAddress);
+			OutputMemoryBitStream packet;
+			packet.Write(PKTTYPE_WORLDSTATE);
+			m_connections[i]->mDeliveryNotificationManager.WriteState(packet);
+			packet.WriteBytes(outStream.GetBufferPtr(),outStream.GetByteLength());
+			SendPacket(packet, m_connections[i]->socketAddress);
 			//m_SocketPtrUDP->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), m_connections[i].socketAddress);
 		}
 	}
+
+	//for (size_t i = 0; i < m_connections.size(); i++)
+	//{
+	//	if (m_connections[i]->SocketPtrTCP != nullptr)
+	//	{
+	//		OutputMemoryBitStream outStream;
+	//		outStream.Write(PKTTYPE_WORLDSTATE);
+	//		m_connections[i]->mDeliveryNotificationManager.WriteState(outStream);
+	//		outStream.Write(m_allObjects.size());
+	//		for (size_t j = 0; j < m_allObjects.size(); j++)
+	//		{
+	//			outStream.Write(m_allObjects[j]->GetUID());
+	//			outStream.Write(m_allObjects[j]->GetType());
+	//			outStream.Write(m_allObjects[j]->GetContainsUpdatedInfo());
+	//			m_allObjects[j]->Write(&outStream);
+	//		}
+	//		//std::cout << "WORLD-STATE SIZE: " << outStream.GetByteLength() << "\n";
+	//		SendPacket(outStream, m_connections[i]->socketAddress);
+	//		//m_SocketPtrUDP->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), m_connections[i].socketAddress);
+	//	}
+	//}
 }
 
 GameObject* Server::CreateObject(int type, uint8_t textureID)
@@ -241,7 +278,7 @@ void Server::CleanUp()
 
 	for (size_t i = 0; i < m_connections.size(); i++)
 	{
-		if (m_connections[i].SocketPtrTCP != nullptr)
+		if (m_connections[i]->SocketPtrTCP != nullptr)
 		{
 			m_connections.erase(m_connections.begin() + i);
 		}

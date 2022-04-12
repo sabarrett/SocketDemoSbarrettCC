@@ -74,7 +74,10 @@ void NetworkManagerClient::ProcessPacket(InputMemoryBitStream& inInputStream, co
 	switch (packetType)
 	{
 	case PKTTYPE_WORLDSTATE:
-		HandleWorldStatePacket(&inInputStream);
+		if (mDeliveryNotificationManager.ReadAndProcessState(inInputStream))
+		{
+			HandleWorldStatePacket(&inInputStream);
+		}
 		break;
 	case PKTTYPE_SETPLAYERID: // MOVE
 		int UID;
@@ -93,6 +96,7 @@ void NetworkManagerClient::SendOutgoingPackets()
 		OutputMemoryBitStream inputPacket;
 		uint32_t OutPacketType = PKTTYPE_MOVEOBJECT;
 		inputPacket.Write(OutPacketType);
+		mDeliveryNotificationManager.WriteState(inputPacket);
 		inputPacket.Write(m_myPlayerUID);
 		inputPacket.Write(input->m_moveInput);
 		SendPacket(inputPacket, *m_serverAddress);
@@ -105,6 +109,7 @@ void NetworkManagerClient::SendOutgoingPackets()
 		uint32_t OutPacketType = PKTTYPE_CREATEOBJECT;
 		uint8_t textureID = 6;
 		inputPacket.Write(OutPacketType);
+		mDeliveryNotificationManager.WriteState(inputPacket);
 		inputPacket.Write(textureID);
 		inputPacket.Write(input->m_mouseX);
 		inputPacket.Write(input->m_mouseY);

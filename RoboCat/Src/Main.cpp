@@ -75,12 +75,20 @@ int main(int argc, const char** argv)
 
 	}
 
-	std::thread cinThread([&game]() 
+	std::thread cinThread([&game, server]() 
 		{
 		std::cout
 			<< "TYPE \"/latency x\" to set latency in seconds\n"
 			<< "TYPE \"/jitter x\" to set max jitter in seconds\n"
 			<< "TYPE \"/drop x\" to set drop chance 0-1, with 1 being 100%\n";
+		    
+		if (server)
+		{
+			std::cout << "And change the server settings with:\n"
+				<< "\"/slatency x\"\n"
+				<< "\"/sjitter x\"\n"
+				<< "\"/sdrop x\"\n";
+		}
 		while (game->Running())
 		{
 			string space_delimiter = " ";
@@ -105,6 +113,18 @@ int main(int argc, const char** argv)
 			if (cinInput[0] == "/drop" && cinInput.size() >= 2)
 			{
 				game->SetDrop(stof(cinInput[1]));
+			}
+			if (cinInput[0] == "/slatency" && cinInput.size() >= 2 && server)
+			{
+				server->SetLatency(stof(cinInput[1]));
+			}
+			if (cinInput[0] == "/sjitter" && cinInput.size() >= 2 && server)
+			{
+				server->SetJitter(stof(cinInput[1]));
+			}
+			if (cinInput[0] == "/sdrop" && cinInput.size() >= 2 && server)
+			{
+				server->SetDrop(stof(cinInput[1]));
 			}
 		}
 		});

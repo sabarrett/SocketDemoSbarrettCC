@@ -113,13 +113,8 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 			++receivedPacketCount;
 			totalReadByteCount += readByteCount;
 
-			if( RoboMath::GetRandomFloat() >= m_dropPacketChance )
-			//if (RoboMath::GetRandomFloat() >= 0)
-			{
-				float simulatedReceivedTime = Timing::sInstance.GetTimef() + m_simulatedLatency + (m_jitter * RoboMath::GetRandomFloat());
-				//float simulatedReceivedTime = Timing::sInstance.GetTimef();
-				mPacketQueue.emplace( simulatedReceivedTime, inputStream, fromAddress );
-			}
+			float receivedTime = Timing::sInstance.GetTimef();
+			mPacketQueue.emplace(receivedTime, inputStream, fromAddress );
 		}
 	}
 
@@ -131,53 +126,43 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 
 void NetworkManager::ProcessQueuedPackets()
 {
-	//look at the front packet...
+	//Read queued receive packets
 	while( !mPacketQueue.empty() )
 	{
 		ReceivedPacket& nextPacket = mPacketQueue.front();
-		if( Timing::sInstance.GetTimef() > nextPacket.GetReceivedTime() )
-		{
-			ProcessPacket( nextPacket.GetPacketBuffer(), nextPacket.GetFromAddress() );
-			mPacketQueue.pop();
-		}
-		else
-		{
-			break;
-		}
+		ProcessPacket( nextPacket.GetPacketBuffer(), nextPacket.GetFromAddress() );
+		mPacketQueue.pop();
 	}
 
-	//std::vector<int> indicesToDelete;
-	//for (size_t i = 0; i < mSentPacketsList.size(); i++)
-	//{
-	//	if (Timing::sInstance.GetTimef() > mSentPacketsList[i].GetSentTime())
-	//	{
-	//		m_socketPtrUDP->SendTo(mSentPacketsList[i].GetPacketBuffer().GetBufferPtr(), mSentPacketsList[i].GetPacketBuffer().GetByteLength(), mSentPacketsList[i].GetFromAddress());
-	//		indicesToDelete.push_back(i);
-	//	}
-	//}
-	//for (size_t i = 0; i < indicesToDelete.size(); i++)
-	//{
-	//	//delete mSentPacketsList[indicesToDelete[i]];
-	//	//mSentPacketsList.erase(mSentPacketsList.begin() + indicesToDelete[i]);
-	//}
-	//indicesToDelete.clear();
+	// Send queued sent packets
+	auto it = mSentPacketsList.begin();
+	while (it != mSentPacketsList.end())
+	{
+		// Once the scheduled send time has arrived, send the packet - simulating the jitter/latency.
+		if (Timing::sInstance.GetTimef() > (*it)->GetSentTime())
+		{
+			int sentByteCount = m_socketPtrUDP->SendTo((*it)->GetPacketBuffer().GetBufferPtr(), (*it)->GetPacketBuffer().GetByteLength(), (*it)->GetFromAddress());
+			if (sentByteCount > 0)
+			{
+				mBytesSentThisFrame += sentByteCount;
+			}
+			delete (*it);
+			it = mSentPacketsList.erase(it);
+		}
+		else 
+		{
+			++it;
+		}
+	}
 }
 
 void NetworkManager::SendPacket(OutputMemoryBitStream& inOutputStream, const SocketAddress& inFromAddress )
 {
-	//if (RoboMath::GetRandomFloat() >= m_dropPacketChance)
-	//{
-	//	float simulatedSendTime = Timing::sInstance.GetTimef() + m_simulatedLatency + (m_jitter * RoboMath::GetRandomFloat());
-	//	SentPacket packet = SentPacket(simulatedSendTime, inOutputStream, inFromAddress);
-	//	SentPacket pocket(simulatedSendTime, inOutputStream, inFromAddress);
-	//	mSentPacketsList.push_back(pocket);
-	//	//m_socketPtrUDP->SendTo(mSentPacketsList[0]->GetPacketBuffer().GetBufferPtr(), mSentPacketsList[0]->GetPacketBuffer().GetByteLength(), mSentPacketsList[0]->GetFromAddress());
-	//}
-
-	int sentByteCount = m_socketPtrUDP->SendTo( inOutputStream.GetBufferPtr(), inOutputStream.GetByteLength(), inFromAddress );
-	if (sentByteCount > 0)
+	if (RoboMath::GetRandomFloat() >= m_dropPacketChance)
 	{
-		mBytesSentThisFrame += sentByteCount;
+		float simulatedSendTime = Timing::sInstance.GetTimef() + m_simulatedLatency + (m_jitter * RoboMath::GetRandomFloat());
+		SentPacket* packet = new SentPacket(simulatedSendTime, inOutputStream, inFromAddress);
+		mSentPacketsList.push_back(packet);
 	}
 }
 
@@ -199,10 +184,11 @@ NetworkManager::ReceivedPacket::ReceivedPacket( float inReceivedTime, InputMemor
 {
 }
 
-NetworkManager::SentPacket::SentPacket(float inSentTime,OutputMemoryBitStream& OutputMemoryBitStream, const SocketAddress& inToAddress) :
+NetworkManager::SentPacket::SentPacket(float inSentTime, OutputMemoryBitStream& OutputMemoryBitStream, const SocketAddress& inToAddress) :
 	mSentTime(inSentTime),
 	mToAddress(inToAddress),
-	mPacketBuffer(OutputMemoryBitStream)
+	mPacketBuffer(OutputMemoryBitStream),
+	sentFramesAgo(0)
 {
 }
 
