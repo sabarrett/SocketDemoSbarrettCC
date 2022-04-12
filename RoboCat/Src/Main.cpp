@@ -366,12 +366,18 @@ int main(int argc, const char** argv)
 		{
 			//-------------------------Server code-------------------------
 
+			//Prompt for client IP address
+			std::string clientIP;
+			std::cout << "Enter client IP address: \n";
+			std::cin >> clientIP;
+
 			//Prompt for port number
 			std::string portNumber;
 			std::cout << "Enter port number: \n";
 			std::cin >> portNumber;
 
-			bHasConnectd = pNetworkManager->initServer(portNumber);
+			//bHasConnectd = pNetworkManager->initServer(portNumber);
+			bHasConnectd = pNetworkManager->connectUDP(clientIP, portNumber);
 			if (bHasConnectd)
 				std::cout << "main.cpp --> server initted.\n";
 
@@ -393,7 +399,8 @@ int main(int argc, const char** argv)
 			std::cout << "Enter port number: \n";
 			std::cin >> portNumber;
 
-			bHasConnectd = pNetworkManager->connect(serverIP, portNumber);
+			//bHasConnectd = pNetworkManager->connect(serverIP, portNumber);
+			bHasConnectd = pNetworkManager->connectUDP(serverIP, portNumber);
 			if (bHasConnectd)
 				std::cout << "main.cpp --> client connected.\n";
 
