@@ -252,7 +252,7 @@ void Game::updateUnitLocation(int id, int xLoc, int yLoc)
 
 void Game::addUnitTranslation(int velX, int velY)
 {
-	mpUnitManager->updatePositions(velX, velY);
+	mpUnitManager->updatePositions(velX*10, velY*10);
 }
 
 /*

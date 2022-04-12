@@ -411,7 +411,6 @@
     <ClInclude Include="Inc\Timing.h" />
     <ClInclude Include="Inc\TransmissionData.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
-    <ClCompile Include="..\Game\main.cpp" />
     <ClCompile Include="..\Game\WASDEvent.cpp" />
     <ClCompile Include="Src\AckRange.cpp" />
     <ClCompile Include="Src\DeliveryNotificationManager.cpp" />

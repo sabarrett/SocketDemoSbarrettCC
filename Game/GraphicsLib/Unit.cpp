@@ -93,8 +93,8 @@ void Unit::setAnimation(int newAnimation)
 
 void Unit::movePos(int xVel, int yVel)
 {
-	mX += xVel;
-	mY += yVel;
+	mX -= xVel;
+	mY -= yVel;
 }
 
 int Unit::getAnimation()

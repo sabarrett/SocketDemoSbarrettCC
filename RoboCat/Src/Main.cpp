@@ -682,6 +682,7 @@ void shutGame()
 #if _WIN32
 int main(int argc, const char** argv)
 {
+	cout << "0" << endl;
 	UNREFERENCED_PARAMETER(argc);
 	UNREFERENCED_PARAMETER(argv);
 #else

@@ -73,9 +73,10 @@ void GameListener::handleEvent(const Event& theEvent)
 	
 	else if (theEvent.getType() == 20)
 	{
-		const WASDEvent& deleteUnitsEvent = static_cast<const WASDEvent&>(theEvent);
+		const WASDEvent& moveEvent = static_cast<const WASDEvent&>(theEvent);
 
-		//GAVIN do your stuff here to move units :)
+		mpGame->addUnitTranslation(moveEvent.dir.getX(), moveEvent.dir.getY());
+		mpGame->setWorldStateChanged(true);
 	}
 	
 
