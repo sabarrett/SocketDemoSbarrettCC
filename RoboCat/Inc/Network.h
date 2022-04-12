@@ -40,6 +40,4 @@ private:
 	std::string mDeanSprite;
 	std::string mAmongSprite;
 	std::string mScottSprite;
-
-	OutputMemoryBitStream outBitStreamTest; // ADDED FOR RECEIVE AND SEND IN NETWORK
 };

@@ -74,6 +74,9 @@ void DoTcpServer(std::string port)
 	}
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+
+	connSocket->SetNonBlockingMode(true);
+
 	Network* ServerNetwork = new Network();
 	ServerNetwork->init(Graphics, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
 	Networks = ServerNetwork;
@@ -126,6 +129,9 @@ void DoTcpClient(std::string port)
 	}
 
 	LOG("%s", "Connected to server!");
+
+	clientSocket->SetNonBlockingMode(true);
+
 	Network* ClientNetwork = new Network();
 	ClientNetwork->init(Graphics, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
 	Networks = ClientNetwork;

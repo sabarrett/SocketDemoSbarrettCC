@@ -114,21 +114,19 @@ void Network::send(PacketType packetTypeHead, GameObject* object)
 	}
 
 	// Send
-	outBitStreamTest = outBitStream;
-	(mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetBitLength());
+	(mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetByteLength());
 }
 
 void Network::receive()
 {
 	// Variables
-	//char buffer[1024];
-	int32_t byteReceive = (mTCPSocket)->Receive(outBitStreamTest.GetBufferPtr(), outBitStreamTest.GetBitLength()); // BUFFER VALUE FINE, INFINITE LOOP IN TCPSOCKET.CPP RECEIVE FUNCTION
+	char buffer[1024];
+	int32_t byteReceive = (mTCPSocket)->Receive(buffer, 1024);
 
-	// Make sure there's something to read
 	if (byteReceive > 0)
 	{
 		// Variables
-		InputMemoryBitStream inputBitStream = InputMemoryBitStream(outBitStreamTest.GetBufferPtr(), outBitStreamTest.GetBitLength());
+		InputMemoryBitStream inputBitStream = InputMemoryBitStream(buffer, byteReceive * 8);
 		PacketType packetTypeHead;
 		int networkID;
 		ClassId objectID;
