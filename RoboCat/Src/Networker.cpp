@@ -16,7 +16,7 @@ void Networker::SetSocket(TCPSocketPtr newSocket)
 	inSocket = newSocket;
 }
 
-GameObjectType Networker::ReceivePackage(int& currentMaxID, bool& isGameRunning)
+GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 {
 	GameObjectType type = GameObjectType::ENUM_SIZE;
 	int id = 0;

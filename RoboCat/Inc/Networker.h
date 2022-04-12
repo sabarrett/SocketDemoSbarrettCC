@@ -14,7 +14,7 @@ public:
 
 	void SetSocket(TCPSocketPtr newSocket);
 
-	GameObjectType ReceivePackage(int& currentMaxID, bool& isGameRunning);
+	GameObjectType ReceivePacket(int& currentMaxID, bool& isGameRunning);
 
 
 private:
