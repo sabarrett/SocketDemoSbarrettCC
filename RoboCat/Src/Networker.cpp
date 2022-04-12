@@ -111,10 +111,19 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 					{
 						if (bullet->getGameID() == id)
 						{
-							std::cout << "Bullet spawn 7" << std::endl;
-							bullet->mPosX = (-1 * x + RESOLUTION_X);
-							bullet->mPosY = (-1 * y + RESOLUTION_Y);
-							bullet->gotDestroyed = gotDestroyed;
+							if (gotDestroyed)
+							{
+								delete bullet;
+								bullet = nullptr;
+								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
+							}
+							else
+							{
+								std::cout << "Bullet spawn 7" << std::endl;
+								bullet->setX(-1 * x + RESOLUTION_X);
+								bullet->setY(-1 * y + RESOLUTION_Y);
+								bullet->gotDestroyed = false;
+							}
 						}
 					}
 				}

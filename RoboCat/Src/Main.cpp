@@ -156,7 +156,7 @@ int main(int argc, const char** argv)
 
 			gameData->player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			gameData->player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
-			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->mPosX, gameData->player2->mPosY);
+			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 
 			std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
 				{
@@ -211,7 +211,7 @@ int main(int argc, const char** argv)
 				{
 					if (bullet != nullptr)
 					{
-						pGL->drawImage("bullet", bullet->mPosX, bullet->mPosY);
+						pGL->drawImage("bullet", bullet->getX(), bullet->getY());
 						bullet->Update(dt);
 						std::cout << "Bullet spawn 2" << std::endl;
 						bullet->SendBullet(connSocket);
@@ -239,9 +239,9 @@ int main(int argc, const char** argv)
 				if (inputData.keyPressed_SPACE)
 				{
 					std::cout << "Bullet spawn 3" << std::endl;
-					Bullet* newBullet = new Bullet(gameObjectIDs, gameData->player1->mPosX + PLAYER_SIZE / 2 - BULLET_SIZE / 2, gameData->player1->mPosY - PLAYER_SIZE / 2, "bullet", BULLET_SPEED, true);
+					Bullet* newBullet = new Bullet(gameObjectIDs, gameData->player1->getX() + PLAYER_SIZE / 2 - BULLET_SIZE / 2, gameData->player1->getY() - PLAYER_SIZE / 2, "bullet", BULLET_SPEED, true);
 					gameObjectIDs++;
-					pGL->drawImage(newBullet->mImageIdentifier, newBullet->mPosX, newBullet->mPosX);
+					pGL->drawImage(newBullet->mImageIdentifier, newBullet->getX(), newBullet->getX());
 					gameData->bulletsVector.push_back(newBullet);
 					//std::cout << "Space Pressed" << std::endl;
 				}
@@ -251,54 +251,57 @@ int main(int argc, const char** argv)
 						if (bullet != nullptr)
 						{
 							// If bullet hits client's player
-							if (bullet->mPosY <= gameData->player2->mPosY + PLAYER_SIZE + OFFSET_HIT &&
-								bullet->mPosX >= gameData->player2->mPosX - BULLET_SIZE &&
-								bullet->mPosX <= gameData->player2->mPosX + PLAYER_SIZE &&
-								bullet->mPosY >= gameData->player2->mPosY - BULLET_SIZE / 2)
+							if (bullet->getY() <= gameData->player2->getY() + PLAYER_SIZE + OFFSET_HIT &&
+								bullet->getX() >= gameData->player2->getX() - BULLET_SIZE &&
+								bullet->getX() <= gameData->player2->getX() + PLAYER_SIZE &&
+								bullet->getY() >= gameData->player2->getY() - BULLET_SIZE / 2)
 							{
 								//std::cout << "BULLET HIT";
-								pGL->drawImage("bulletCover", bullet->mPosX, bullet->mPosY);
+								pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
 
-								Effect* newEffect = new Effect(gameObjectIDs, bullet->mPosX + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->mPosY - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
+								Effect* newEffect = new Effect(gameObjectIDs, bullet->getX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
 								newEffect->SendEffect(connSocket);
 								gameObjectIDs++;
-								pGL->drawImage(newEffect->mImageIdentifier, newEffect->mPosX, newEffect->mPosY);
+								pGL->drawImage(newEffect->mImageIdentifier, newEffect->getX(), newEffect->getY());
 								gameData->effectsVector.push_back(newEffect);
 
+								delete bullet;
 								bullet = nullptr;
-								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), bullet), gameData->bulletsVector.end());
+								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
 							}
 							// If bullet hits host's player
-							else if (bullet->mPosY <= gameData->player1->mPosY + PLAYER_SIZE &&
-								bullet->mPosX >= gameData->player1->mPosX - BULLET_SIZE &&
-								bullet->mPosX <= gameData->player1->mPosX + PLAYER_SIZE &&
-								bullet->mPosY >= gameData->player1->mPosY - BULLET_SIZE / 2 - OFFSET_HIT)
+							else if (bullet->getY() <= gameData->player1->getY() + PLAYER_SIZE &&
+								bullet->getX() >= gameData->player1->getX() - BULLET_SIZE &&
+								bullet->getX() <= gameData->player1->getX() + PLAYER_SIZE &&
+								bullet->getY() >= gameData->player1->getY() - BULLET_SIZE / 2 - OFFSET_HIT)
 							{
 								//std::cout << "BULLET HIT";
-								pGL->drawImage("bulletCover", bullet->mPosX, bullet->mPosY);
+								pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
 
-								Effect* newEffect = new Effect(gameObjectIDs, bullet->mPosX + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->mPosY - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
+								Effect* newEffect = new Effect(gameObjectIDs, bullet->getX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
 								newEffect->SendEffect(connSocket);
 								gameObjectIDs++;
-								pGL->drawImage(newEffect->mImageIdentifier, newEffect->mPosX, newEffect->mPosY);
+								pGL->drawImage(newEffect->mImageIdentifier, newEffect->getX(), newEffect->getY());
 								gameData->effectsVector.push_back(newEffect);
 
 								bullet->gotDestroyed = true;
 								std::cout << "Bullet spawn 4" << std::endl;
 								bullet->SendBullet(connSocket);
 
+								delete bullet;
 								bullet = nullptr;
-								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), bullet), gameData->bulletsVector.end());
+								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
 							}
-							else if (bullet->mPosY <= 0 || bullet->mPosY >= RESOLUTION_Y)
+							else if (bullet->getY() <= 0 || bullet->getY() >= RESOLUTION_Y)
 							{
 								std::cout << "Bullet spawn 5" << std::endl;
-								pGL->drawImage("bulletCover", bullet->mPosX, bullet->mPosY);
+								pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
 								bullet->gotDestroyed = true;
 								bullet->SendBullet(connSocket);
 
+								delete bullet;
 								bullet = nullptr;
-								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), bullet), gameData->bulletsVector.end());
+								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
 							}
 						}
 					}
@@ -310,15 +313,17 @@ int main(int argc, const char** argv)
 							effect->Update(dt);
 							if (effect->mTimer >= MAX_EFFECT_TIME)
 							{
-								pGL->drawImage("effectCover", effect->mPosX, effect->mPosY);
+								pGL->drawImage("effectCover", effect->getX(), effect->getY());
+
+								delete effect;
 								effect = nullptr;
-								gameData->effectsVector.erase(std::remove(gameData->effectsVector.begin(), gameData->effectsVector.end(), effect), gameData->effectsVector.end());
+								gameData->effectsVector.erase(std::remove(gameData->effectsVector.begin(), gameData->effectsVector.end(), nullptr), gameData->effectsVector.end());
 							}
 						}
 					}
 				
-				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->mPosX, gameData->player1->mPosY);
-				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->mPosX, gameData->player2->mPosY);
+				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->getX(), gameData->player1->getY());
+				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 				pGL->render();
 			}
 
@@ -392,7 +397,7 @@ int main(int argc, const char** argv)
 
 			gameData->player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			gameData->player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
-			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->mPosX, gameData->player2->mPosY);
+			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 
 			std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
 				{
@@ -447,20 +452,14 @@ int main(int argc, const char** argv)
 				pIS->update();
 				inputData = pIS->getInputData();
 
-
+				gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
 				for (auto& bullet : gameData->bulletsVector)
 				{
+					gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
 					if (bullet != nullptr)
 					{
-						pGL->drawImage("bullet", bullet->mPosX, bullet->mPosY);
+						pGL->drawImage("bullet", bullet->getX(), bullet->getY());
 						//std::cout << bullet->mPosX << "   " << bullet->mPosY << std::endl;
-						if (bullet->gotDestroyed)
-						{
-							//std::cout << "Bullet got destroyed" << std::endl;
-							//pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
-							gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), bullet), gameData->bulletsVector.end());
-							bullet = nullptr;
-						}
 					}
 				}
 
@@ -498,20 +497,21 @@ int main(int argc, const char** argv)
 				{
 					if (effect != nullptr)
 					{
-						pGL->drawImage("effect", effect->mPosX, effect->mPosY);
+						pGL->drawImage("effect", effect->getX(), effect->getY());
 						effect->Update(dt);
 						if (effect->mTimer >= MAX_EFFECT_TIME)
 						{
-							pGL->drawImage("effectCover", effect->mPosX, effect->mPosY);
+							pGL->drawImage("effectCover", effect->getX(), effect->getY());
+							delete effect;
 							effect = nullptr;
-							gameData->effectsVector.erase(std::remove(gameData->effectsVector.begin(), gameData->effectsVector.end(), effect), gameData->effectsVector.end());
+							gameData->effectsVector.erase(std::remove(gameData->effectsVector.begin(), gameData->effectsVector.end(), nullptr), gameData->effectsVector.end());
 						}
 					}
 				}
 
 
-				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->mPosX, gameData->player1->mPosY);
-				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->mPosX, gameData->player2->mPosY);
+				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->getX(), gameData->player1->getY());
+				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 				pGL->render();
 			}
 

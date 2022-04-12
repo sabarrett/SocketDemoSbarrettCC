@@ -60,10 +60,13 @@ void Player::Read(InputMemoryBitStream& inStream)
 
 void Player::SendPlayer(TCPSocketPtr socketPtr)
 {
-	OutputMemoryBitStream stream;
-	Write(stream);
-	socketPtr->Send(stream.GetBufferPtr(), stream.GetBitLength());
-	mIsFiring = false;
+	if (socketPtr)
+	{
+		OutputMemoryBitStream stream;
+		Write(stream);
+		socketPtr->Send(stream.GetBufferPtr(), stream.GetBitLength());
+		mIsFiring = false;
+	}
 	//send(inSocket, stream.GetBufferPtr(), stream.GetBitLength(), 0);
 }
 

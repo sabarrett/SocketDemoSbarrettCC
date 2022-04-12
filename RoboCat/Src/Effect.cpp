@@ -63,9 +63,12 @@ void Effect::Read(InputMemoryBitStream& inStream)
 
 void Effect::SendEffect(TCPSocketPtr inSocket)
 {
-	OutputMemoryBitStream stream;
-	Write(stream);
-	inSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
+	if (inSocket)
+	{
+		OutputMemoryBitStream stream;
+		Write(stream);
+		inSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
+	}
 }
 
 void Effect::ReceiveEffect(TCPSocketPtr inSocket)

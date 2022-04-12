@@ -67,9 +67,12 @@ void Bullet::Read(InputMemoryBitStream& inStream)
 
 void Bullet::SendBullet(TCPSocketPtr inSocket)
 {
-	OutputMemoryBitStream stream;
-	Write(stream);
-	inSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
+	if (inSocket)
+	{
+		OutputMemoryBitStream stream;
+		Write(stream);
+		inSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
+	}
 	//send(inSocket, stream.GetBufferPtr(), stream.GetBitLength(), 0);
 }
 
