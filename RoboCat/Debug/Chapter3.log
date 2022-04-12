@@ -1,0 +1,18 @@
+﻿  RoboCatPCH.cpp
+  Network.cpp
+E:\GitProjects\College\SocketDemo\RoboCat\Network.cpp(51,20): warning C4018: '<': signed/unsigned mismatch
+  Main.cpp
+E:\GitProjects\College\SocketDemo\RoboCat\Src\Main.cpp(190,20): warning C4018: '<': signed/unsigned mismatch
+E:\GitProjects\College\SocketDemo\RoboCat\Src\Main.cpp(187,40): warning C4100: 'isServer': unreferenced formal parameter
+E:\GitProjects\College\SocketDemo\RoboCat\Src\Main.cpp(306,21): warning C4018: '<': signed/unsigned mismatch
+E:\GitProjects\College\SocketDemo\RoboCat\Src\Main.cpp(272,26): warning C4100: 'isServer': unreferenced formal parameter
+  MemoryBitStream.cpp
+  OutputWindow.cpp
+  SocketAddress.cpp
+  SocketAddressFactory.cpp
+  SocketUtil.cpp
+  StringUtils.cpp
+  TCPSocket.cpp
+  UDPSocket.cpp
+  Generating Code...
+  Chapter3.vcxproj -> E:\GitProjects\College\SocketDemo\RoboCat\Bin\Debug\SocketDemo.exe

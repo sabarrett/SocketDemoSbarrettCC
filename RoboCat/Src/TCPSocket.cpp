@@ -50,6 +50,7 @@ int32_t	TCPSocket::Send( const void* inData, size_t inLen )
 	return bytesSentCount;
 }
 
+// BREAKS HERE, INFINITE LOOP?
 int32_t	TCPSocket::Receive( void* inData, size_t inLen )
 {
 	int bytesReceivedCount = recv( mSocket, static_cast< char* >( inData ), inLen, 0 );

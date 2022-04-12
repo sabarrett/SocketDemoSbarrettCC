@@ -50,6 +50,7 @@ public:
 	void		WriteBits( const void* inData, uint32_t inBitCount );
 
 	const 	char*	GetBufferPtr()		const	{ return mBuffer; }
+	char*	GetBufferPtr()	{ return mBuffer; } // ADDED THIS FROM RECEIVE IN NETWORK
 	uint32_t		GetBitLength()		const	{ return mBitHead; }
 	uint32_t		GetByteLength()		const	{ return ( mBitHead + 7 ) >> 3; }
 
