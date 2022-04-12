@@ -148,6 +148,7 @@ int main(int argc, const char** argv)
 			}
 		}
 		});
+	
 
 
 
@@ -161,7 +162,6 @@ int main(int argc, const char** argv)
 		}
 		game->Update();
 		game->Draw();
-		//game->DoNetworking();
 
 		frameTime = SDL_GetTicks() - frameStart;
 		while(frameDelay > frameTime)
@@ -176,20 +176,11 @@ int main(int argc, const char** argv)
 	}
 	game->CleanUp();
 
-	
-
 	SocketUtil::CleanUp();
+
+
+	std::cout << "\n\n\nGame Closed, enter anything to confirm.\n";
+	cinThread.join();
 
 	return 0;
 }
-
-
-//UDPSocketPtr clientSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-//UDPSocketPtr serverSocket = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-//
-//SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:65000");
-//SocketAddressPtr serverAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:65001");
-//
-//clientSocket->Bind(*clientAddress);
-//serverSocket->Bind(*serverAddress);
-//

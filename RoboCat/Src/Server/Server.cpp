@@ -184,19 +184,31 @@ void Server::ProcessPacket(InputMemoryBitStream& inStream, const SocketAddress& 
 	}
 }
 
+void Server::HandleConnectionReset(const SocketAddress& inFromAddress)
+{
+	for (size_t i = 0; i < m_connections.size(); i++)
+	{
+		if (m_connections[i]->socketAddress == inFromAddress)
+		{
+			m_connections.erase(m_connections.begin() + i);
+		}
+	}
+}
+
 void Server::SendWorldUpdatePackets()
 {
-	OutputMemoryBitStream outStream;
-	//outStream.Write(PKTTYPE_WORLDSTATE);
-	//mDeliveryNotificationManager.WriteState(outStream);
-	outStream.Write(m_allObjects.size());
+	// Write worldstate content
+	OutputMemoryBitStream worldStateContent;
+	worldStateContent.Write(m_allObjects.size());
 	for (size_t j = 0; j < m_allObjects.size(); j++)
 	{
-		outStream.Write(m_allObjects[j]->GetUID());
-		outStream.Write(m_allObjects[j]->GetType());
-		outStream.Write(m_allObjects[j]->GetContainsUpdatedInfo());
-		m_allObjects[j]->Write(&outStream);
+		worldStateContent.Write(m_allObjects[j]->GetUID());
+		worldStateContent.Write(m_allObjects[j]->GetType());
+		worldStateContent.Write(m_allObjects[j]->GetContainsUpdatedInfo());
+		m_allObjects[j]->Write(&worldStateContent);
 	}
+
+	// Write a header, append the worldstate, and send
 	for (size_t i = 0; i < m_connections.size(); i++)
 	{
 		if (m_connections[i]->SocketPtrTCP != nullptr)
@@ -204,32 +216,10 @@ void Server::SendWorldUpdatePackets()
 			OutputMemoryBitStream packet;
 			packet.Write(PKTTYPE_WORLDSTATE);
 			m_connections[i]->mDeliveryNotificationManager.WriteState(packet);
-			packet.WriteBytes(outStream.GetBufferPtr(),outStream.GetByteLength());
+			packet.WriteBytes(worldStateContent.GetBufferPtr(), worldStateContent.GetByteLength());
 			SendPacket(packet, m_connections[i]->socketAddress);
-			//m_SocketPtrUDP->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), m_connections[i].socketAddress);
 		}
 	}
-
-	//for (size_t i = 0; i < m_connections.size(); i++)
-	//{
-	//	if (m_connections[i]->SocketPtrTCP != nullptr)
-	//	{
-	//		OutputMemoryBitStream outStream;
-	//		outStream.Write(PKTTYPE_WORLDSTATE);
-	//		m_connections[i]->mDeliveryNotificationManager.WriteState(outStream);
-	//		outStream.Write(m_allObjects.size());
-	//		for (size_t j = 0; j < m_allObjects.size(); j++)
-	//		{
-	//			outStream.Write(m_allObjects[j]->GetUID());
-	//			outStream.Write(m_allObjects[j]->GetType());
-	//			outStream.Write(m_allObjects[j]->GetContainsUpdatedInfo());
-	//			m_allObjects[j]->Write(&outStream);
-	//		}
-	//		//std::cout << "WORLD-STATE SIZE: " << outStream.GetByteLength() << "\n";
-	//		SendPacket(outStream, m_connections[i]->socketAddress);
-	//		//m_SocketPtrUDP->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), m_connections[i].socketAddress);
-	//	}
-	//}
 }
 
 GameObject* Server::CreateObject(int type, uint8_t textureID)

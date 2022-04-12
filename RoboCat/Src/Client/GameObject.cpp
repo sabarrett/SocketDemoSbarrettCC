@@ -56,8 +56,8 @@ void GameObject::AddVelocityFromInput(uint8_t moveInput)
 void GameObject::Draw(SDL_Renderer* renderer, SDL_Texture* texture)
 {
 	SDL_Rect dstRect;
-	dstRect.x = (int)m_xPos;
-	dstRect.y = (int)m_yPos;
+	dstRect.x = (int)m_xPos-16;
+	dstRect.y = (int)m_yPos-16;
 	dstRect.h = 32;
 	dstRect.w = 32;
 	SDL_RenderCopy(renderer, texture, NULL, &dstRect);

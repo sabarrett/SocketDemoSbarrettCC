@@ -78,9 +78,6 @@ void NetworkManager::ProcessIncomingPackets()
 	ReadIncomingPacketsIntoQueue();
 
 	ProcessQueuedPackets();
-
-	UpdateBytesSentLastFrame();
-
 }
 
 void NetworkManager::ReadIncomingPacketsIntoQueue()
@@ -165,17 +162,6 @@ void NetworkManager::SendPacket(OutputMemoryBitStream& inOutputStream, const Soc
 		mSentPacketsList.push_back(packet);
 	}
 }
-
-void NetworkManager::UpdateBytesSentLastFrame()
-{
-	if( mBytesSentThisFrame > 0 )
-	{
-		mBytesSentPerSecond.UpdatePerSecond( static_cast< float >( mBytesSentThisFrame ) );
-
-		mBytesSentThisFrame = 0;
-	}
-}
-
 
 NetworkManager::ReceivedPacket::ReceivedPacket( float inReceivedTime, InputMemoryBitStream& ioInputMemoryBitStream, const SocketAddress& inFromAddress ) :
 	mReceivedTime( inReceivedTime ),

@@ -68,16 +68,9 @@ private:
 		float					mSentTime;
 		OutputMemoryBitStream	mPacketBuffer;
 		SocketAddress			mToAddress;
-		
-
 	};
-
-	void	UpdateBytesSentLastFrame();
 	
 	void	ProcessQueuedPackets();
-
-
-
 
 	WeightedTimedMovingAverage	mBytesReceivedPerSecond;
 	WeightedTimedMovingAverage	mBytesSentPerSecond;
@@ -93,7 +86,6 @@ protected:
 
 	queue< ReceivedPacket, list< ReceivedPacket > >	mPacketQueue;
 	vector<SentPacket*>	mSentPacketsList;
-	std::vector<int> indicesToDelete;
 
 	TCPSocketPtr m_socketPtrTCP;
 	UDPSocketPtr m_socketPtrUDP;

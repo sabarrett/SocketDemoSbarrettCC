@@ -74,8 +74,8 @@ void ColorChangerGameObject::AddTargetObject(GameObject* targetObject)
 void ColorChangerGameObject::Draw(SDL_Renderer* renderer, SDL_Texture* texture)
 {
 	SDL_Rect dstRect;
-	dstRect.x = (int)m_xPos;
-	dstRect.y = (int)m_yPos;
+	dstRect.x = (int)m_xPos-64;
+	dstRect.y = (int)m_yPos-64;
 	dstRect.h = 128;
 	dstRect.w = 128;
 	SDL_RenderCopy(renderer, texture, NULL, &dstRect);

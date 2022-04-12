@@ -25,6 +25,7 @@ public:
 	void DestroyObject(GameObject* gameObject);
 
 	virtual void	ProcessPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress) override;
+	virtual void	HandleConnectionReset(const SocketAddress& inFromAddress) override;
 
 	// Network Simulation
 	void SetLatency(float latency) { SetSimulatedLatency(latency); }

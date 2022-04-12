@@ -47,6 +47,10 @@ void NetworkManagerClient::ReceiveTCP()
 {
 	char buffer[4096];
 	int32_t bytesReceived = 1;
+	if (m_socketPtrTCP == nullptr)
+	{
+		HandleConnectionReset(*m_serverAddress);
+	}
 	while (bytesReceived > 0)
 	{
 		bytesReceived = m_socketPtrTCP->Receive(buffer, 4096);
@@ -85,6 +89,11 @@ void NetworkManagerClient::ProcessPacket(InputMemoryBitStream& inInputStream, co
 		m_myPlayerUID = UID;
 		break;
 	}
+}
+
+void NetworkManagerClient::HandleConnectionReset(const SocketAddress& inFromAddress)
+{
+	m_game->CloseGame();
 }
 
 

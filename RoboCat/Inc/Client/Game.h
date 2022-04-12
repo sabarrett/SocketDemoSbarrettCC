@@ -42,6 +42,7 @@ public:
 	void ConnectToServer(std::string address, std::string port);
 
 	// General
+	void CloseGame() { m_isRunning = false; }
 	void DestroyObject(GameObject* gameObject);
 
 	// Get

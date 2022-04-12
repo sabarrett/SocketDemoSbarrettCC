@@ -92,7 +92,7 @@ void Game::Update()
 	}
 	
 
-
+	// Do Networking
 	m_networkManager.ProcessIncomingPackets();
 	m_networkManager.SendOutgoingPackets();
 }

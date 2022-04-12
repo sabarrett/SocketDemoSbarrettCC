@@ -14,6 +14,7 @@ public:
 	void	SendOutgoingPackets();
 
 	virtual void	ProcessPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress) override;
+	virtual void	HandleConnectionReset(const SocketAddress& inFromAddress) override;
 
 	const	WeightedTimedMovingAverage& GetAvgRoundTripTime()	const { return mAvgRoundTripTime; }
 	float									GetRoundTripTime()		const { return mAvgRoundTripTime.GetValue(); }
