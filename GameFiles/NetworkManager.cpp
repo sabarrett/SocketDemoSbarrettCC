@@ -144,12 +144,12 @@ bool NetworkManager::HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPS
 		if (rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
 			sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress);
 		else
-			std::cout << "deliberately dropped a packet";
+			std::cout << "deliberately dropped a packet\n";
 
 		if (rand() % 101 > PACKET_DELAY_CHANCE_PERCENT)
 		{
 			currentDelayBetweenPacketSend = PACKET_DELAY_TIME;
-			std::cout << "next packet deliberately delayed by " << PACKET_DELAY_TIME / 1000 << " seconds ";
+			std::cout << "next packet deliberately delayed by " << PACKET_DELAY_TIME / 1000 << " seconds\n";
 		}
 	}
 
@@ -223,7 +223,7 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 				}
 			}
 			else
-				std::cout << "deliberately dropped a packet";
+				std::cout << "deliberately dropped a packet\n";
 		}
 	}
 	else
