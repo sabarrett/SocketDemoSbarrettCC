@@ -17,6 +17,7 @@ inline float ConvertFromFixed( uint32_t inNumber, float inMin, float inPrecision
 }
 
 
+
 class OutputMemoryBitStream
 {
 public:
@@ -63,6 +64,8 @@ public:
 	
 	void		Write( const Vector3& inVector );	
 	void		Write( const Quaternion& inQuat );
+
+	void		Write(const Vector2& inVector);
 
 	void Write( const std::string& inString )
 	{
@@ -137,6 +140,7 @@ public:
 
 	void		ResetToCapacity( uint32_t inByteCapacity )				{ mBitCapacity = inByteCapacity << 3; mBitHead = 0; }
 
+	void		Read(Vector2& outVector);
 
 	void Read( std::string& inString )
 	{

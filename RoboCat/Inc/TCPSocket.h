@@ -1,3 +1,4 @@
+class TCPPacket;
 class TCPSocket
 {
 public:
@@ -9,9 +10,13 @@ public:
 	int32_t							Send( const void* inData, size_t inLen );
 	int32_t							Receive( void* inBuffer, size_t inLen );
 	int								SetNonBlockingMode(bool inShouldBeNonBlocking);
+
+	bool HasRead();
+	bool HasWrite();
 private:
 	friend class SocketUtil;
 	TCPSocket( SOCKET inSocket ) : mSocket( inSocket ) {}
 	SOCKET		mSocket;
+	bool mIsNonBlocking = false;
 };
 typedef shared_ptr< TCPSocket > TCPSocketPtr;

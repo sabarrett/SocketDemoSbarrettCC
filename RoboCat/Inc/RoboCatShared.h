@@ -1,6 +1,8 @@
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN
 	#define NOMINMAX
+	#define NOUSER  
+	#define NOGDI	
 
 	#include "Windows.h"
 	#include "WinSock2.h"
@@ -24,6 +26,7 @@
 	const int SOCKET_ERROR = -1;
 #endif
 
+#include <raylib.h>
 
 #include "memory"
 
@@ -62,3 +65,4 @@ class GameObject;
 #include "TCPSocket.h"
 #include "SocketUtil.h"
 #include "OutputWindow.h"
+#include "TCPPacket.h"
