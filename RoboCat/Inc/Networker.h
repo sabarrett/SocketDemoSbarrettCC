@@ -51,12 +51,18 @@ public:
 	~Networker();
 
 	//Starting and connect to server
-	bool initServer(std::string port);
-	bool connect(std::string serverIpAddress, std::string port);
+	//bool initServer(std::string port);
+	//bool connect(std::string serverIpAddress, std::string port);
+
+	bool connectUDP(std::string otherUserIpAddress, std::string port);
 
 	//Update game state
-	PacketType receiveGameObjectState();
-	void sendGameObjectState(int networkID, PacketType packetHeader);
+	//PacketType receiveGameObjectState();
+	//void sendGameObjectState(int networkID, PacketType packetHeader);
+
+	//Update game state - UDP
+	PacketType receiveGameObjectStateUDP();
+	void sendGameObjectStateUDP(int networkID, PacketType packetHeader);
 	void checkTimedOutPackets();
 	//PacketType processPacket(GamePacket gamePacket);
 
@@ -78,7 +84,9 @@ private:
 	static Networker* mInstance;
 
 	//Data
-	TCPSocketPtr* mpTCPSocket;
+	//TCPSocketPtr* mpTCPSocket;
+	UDPSocketPtr* mpUDPSocket;
+	SocketAddressPtr* mpSocketAddressPtr;
 	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
 	//std::queue<InFlightPacket*> mInFlightPacketsQueue;
 	DeliveryNotificationManager* pDeliveryNotificationManager;

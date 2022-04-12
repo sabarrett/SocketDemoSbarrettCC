@@ -68,11 +68,7 @@ int UDPSocket::ReceiveFrom( void* inToReceive, int inMaxLength, SocketAddress& o
 
 UDPSocket::~UDPSocket()
 {
-#if _WIN32
-	closesocket( mSocket );
-#else
-	close( mSocket );
-#endif
+	CleanupSocket();
 }
 
 
@@ -98,3 +94,11 @@ int UDPSocket::SetNonBlockingMode( bool inShouldBeNonBlocking )
 	}
 }
 
+void UDPSocket::CleanupSocket()
+{
+#if _WIN32
+	closesocket(mSocket);
+#else
+	close(mSocket);
+#endif
+}

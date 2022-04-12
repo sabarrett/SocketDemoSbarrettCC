@@ -21,7 +21,8 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	std::srand(time(NULL));
 	//mArrivalTime = arrivalTime;
 
-	mpTCPSocket = new TCPSocketPtr;
+	//mpTCPSocket = new TCPSocketPtr;
+	mpUDPSocket = new UDPSocketPtr;
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
 	//mPacketQueue = std::queue<std::pair<int, float>>();
 	pDeliveryNotificationManager = new DeliveryNotificationManager(true, true);
@@ -52,76 +53,131 @@ void Networker::cleanup()
 	delete pDeliveryNotificationManager;
 	pDeliveryNotificationManager = nullptr;
 
-	(*mpTCPSocket)->CleanupSocket();
-	delete mpTCPSocket;
-	mpTCPSocket = nullptr;
+	//(*mpTCPSocket)->CleanupSocket();
+	//delete mpTCPSocket;
+	//mpTCPSocket = nullptr;
+
+	(*mpUDPSocket)->CleanupSocket();
+	delete mpUDPSocket;
+	mpUDPSocket = nullptr;
 
 	SocketUtil::CleanUp();
 
 	mbIsInitted = false;
 }
 
-bool Networker::initServer(std::string port)
+//bool Networker::initServer(std::string port)
+//{
+//	SocketUtil::StaticInit();
+//
+//	//Create Socket
+//	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+//	if (sock == nullptr)
+//	{
+//		SocketUtil::ReportError("Creating Listenting Socket");
+//		ExitProcess(1);
+//	}
+//	std::cout << "Listening Socket Succesfully Created!\n";
+//
+//	//Create and Bind Address
+//	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);
+//	if (listenAddress == nullptr)
+//	{
+//		SocketUtil::ReportError("Creating Listening Address");
+//		ExitProcess(1);
+//	}
+//
+//	if (sock->Bind(*listenAddress) != NO_ERROR)
+//	{
+//		SocketUtil::ReportError("Binding listening socket");
+//		ExitProcess(1);
+//	}
+//	std::cout << "Listening Socket Succesfully Binded!\n";
+//
+//	if (sock->Listen() != NO_ERROR)
+//	{
+//		SocketUtil::ReportError("Listening on socket");
+//		ExitProcess(1);
+//	}
+//	std::cout << "Listening Socket Listening\n";
+//
+//	//Accept Connection
+//	std::cout << "Waiting for connection...\n";
+//
+//	sock->SetNonBlockingMode(false);
+//	SocketAddress incomingAddress;
+//	TCPSocketPtr connSocket = sock->Accept(incomingAddress);
+//
+//	while (connSocket == nullptr)
+//		connSocket = sock->Accept(incomingAddress);
+//
+//
+//	*mpTCPSocket = connSocket;
+//
+//	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
+//
+//	if (mpTCPSocket != nullptr)
+//		return true;
+//	return false;
+//}
+
+//bool Networker::connect(std::string serverIpAddress, std::string port)
+//{
+//	SocketUtil::StaticInit();
+//
+//	//Create Socket
+//	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+//
+//	if (sock == nullptr)
+//	{
+//		SocketUtil::ReportError("Creating Client Socket");
+//		ExitProcess(1);
+//		return false;
+//	}
+//
+//	string address = "0.0.0.0:0";
+//	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
+//	if (clientAddress == nullptr)
+//	{
+//		SocketUtil::ReportError("Creating Client Address");
+//		ExitProcess(1);
+//		return false;
+//	}
+//
+//	if (sock->Bind(*clientAddress) != NO_ERROR)
+//	{
+//		SocketUtil::ReportError("Binding Client Socket");
+//		ExitProcess(1);
+//	}
+//	LOG("%s", "Client Socket Succesfully Binded!");
+//
+//	SocketAddressPtr srvAddress = SocketAddressFactory::CreateIPv4FromString(serverIpAddress + ":" + port);
+//	if (srvAddress == nullptr)
+//	{
+//		SocketUtil::ReportError("Creating Server Address");
+//		ExitProcess(1);
+//	}
+//
+//	if (sock->Connect(*srvAddress) != NO_ERROR)
+//	{
+//		SocketUtil::ReportError("Connecting To Server");
+//		ExitProcess(1);
+//	}
+//	LOG("%s", "Succesfully Connect to the Server!");
+//
+//	*mpTCPSocket = sock;
+//
+//	if (mpTCPSocket != nullptr)
+//		return true;
+//	return false;
+//}
+
+bool Networker::connectUDP(std::string otherUserIpAddress, std::string port)
 {
 	SocketUtil::StaticInit();
 
 	//Create Socket
-	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-	if (sock == nullptr)
-	{
-		SocketUtil::ReportError("Creating Listenting Socket");
-		ExitProcess(1);
-	}
-	std::cout << "Listening Socket Succesfully Created!\n";
-
-	//Create and Bind Address
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);
-	if (listenAddress == nullptr)
-	{
-		SocketUtil::ReportError("Creating Listening Address");
-		ExitProcess(1);
-	}
-
-	if (sock->Bind(*listenAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Binding listening socket");
-		ExitProcess(1);
-	}
-	std::cout << "Listening Socket Succesfully Binded!\n";
-
-	if (sock->Listen() != NO_ERROR)
-	{
-		SocketUtil::ReportError("Listening on socket");
-		ExitProcess(1);
-	}
-	std::cout << "Listening Socket Listening\n";
-
-	//Accept Connection
-	std::cout << "Waiting for connection...\n";
-
-	sock->SetNonBlockingMode(false);
-	SocketAddress incomingAddress;
-	TCPSocketPtr connSocket = sock->Accept(incomingAddress);
-
-	while (connSocket == nullptr)
-		connSocket = sock->Accept(incomingAddress);
-
-
-	*mpTCPSocket = connSocket;
-
-	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
-
-	if (mpTCPSocket != nullptr)
-		return true;
-	return false;
-}
-
-bool Networker::connect(std::string serverIpAddress, std::string port)
-{
-	SocketUtil::StaticInit();
-
-	//Create Socket
-	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	UDPSocketPtr sock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
 
 	if (sock == nullptr)
 	{
@@ -146,23 +202,17 @@ bool Networker::connect(std::string serverIpAddress, std::string port)
 	}
 	LOG("%s", "Client Socket Succesfully Binded!");
 
-	SocketAddressPtr srvAddress = SocketAddressFactory::CreateIPv4FromString(serverIpAddress + ":" + port);
-	if (srvAddress == nullptr)
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString(otherUserIpAddress + ":" + port);
+	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
 		ExitProcess(1);
 	}
 
-	if (sock->Connect(*srvAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Connecting To Server");
-		ExitProcess(1);
-	}
-	LOG("%s", "Succesfully Connect to the Server!");
+	*mpUDPSocket = sock;
+	*mpSocketAddressPtr = sockAddress;
 
-	*mpTCPSocket = sock;
-
-	if (mpTCPSocket != nullptr)
+	if (mpUDPSocket != nullptr)
 		return true;
 	return false;
 }
@@ -317,6 +367,7 @@ PacketType Networker::processPacket(GamePacket gamePacket)
 }
 */
 
+/*
 PacketType Networker::receiveGameObjectState()
 {
 	char buffer[1024];
@@ -495,6 +546,259 @@ void Networker::sendGameObjectState(int ID, PacketType packetHeader)
 	//float timeDispatched = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
 	//OMBStream.Write(timeDispatched);
 	
+	OMBStream.Write(mGameObjectsVec[ID].second->getNetworkID());
+	OMBStream.Write(mGameObjectsVec[ID].second->getGameObjectType());
+
+	//Logic depends on packer header type
+	switch (packetHeader)
+	{
+	case PacketType::PACKET_CREATE:
+	case PacketType::PACKET_UPDATE:
+
+		switch (mGameObjectsVec[ID].second->getGameObjectType())
+		{
+		case GameObjectType::ROCK:
+		case GameObjectType::PLAYER:
+			OMBStream.Write(mGameObjectsVec[ID].second->getPosition().first);
+			OMBStream.Write(mGameObjectsVec[ID].second->getPosition().second);
+			break;
+
+		case GameObjectType::WALL:
+			Wall* wall = (Wall*)mGameObjectsVec[ID].second;
+			OMBStream.Write(wall->getPosition().first);
+			OMBStream.Write(wall->getPosition().second);
+			OMBStream.Write(wall->getWallSizeX());
+			OMBStream.Write(wall->getWallSizeY());
+			OMBStream.Write(wall->getWallThickness());
+			break;
+		}
+
+		break;
+
+	case PacketType::PACKET_DELETE:
+	{
+		//Delete it on the sender's end
+		if (mGameObjectsVec.size() > 0)
+		{
+			std::vector<std::pair<int, GameObject*>>::iterator it;
+			for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
+			{
+				//DO NOT DELETE A PLAYER
+				if (it->first == ID && it->second->getGameObjectType() != GameObjectType::PLAYER)
+				{
+					mGameObjectsVec.erase(it);
+
+					break;
+				}
+			}
+		}
+	}
+
+	break;
+
+	default:
+		return;
+	}
+
+	//Add packet data to queue in randomised order --> done through timeDispatched +- random and the priority_queue's sorting
+	float timeDispatched = Timing::sInstance.GetTimef() + (-100 + rand() & (100 - -100 + 1));
+	mOutputBitStreamQueue.push(std::make_pair(timeDispatched, OMBStream));
+
+	//If the queue has more than 10 elements is it
+	if (mOutputBitStreamQueue.size() >= 10)
+	{
+		//Iterate though the queue
+		for (int i = 0; i < mOutputBitStreamQueue.size(); i++)
+		{
+			//Drop some packets
+			if (i % 3 != 0)
+			{
+				//Send packet
+				(*mpTCPSocket)->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
+			}
+		}
+	}
+}
+*/
+
+PacketType Networker::receiveGameObjectStateUDP()
+{
+	char buffer[1024];
+	int32_t byteRecieve = (*mpTCPSocket)->Receive(buffer, 1024);
+
+	//GamePacket packet;
+	//packet.buffer = buffer;
+	//packet.byteRecieve = byteRecieve;
+	//packet.dispatchTime = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
+
+	if (byteRecieve > 0)
+	{
+		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
+
+		//Read sequence number
+		if (pDeliveryNotificationManager->ReadAndProcessState(IMBStream))
+		{
+			//Start reading
+			PacketType packetHeader;
+			IMBStream.Read(packetHeader);
+			//float dispatchTime;
+			//IMBStream.Read(dispatchTime);
+			int networkID;
+			IMBStream.Read(networkID);
+			GameObjectType receiveType;
+			IMBStream.Read(receiveType);
+
+			//Logic depends on packer header type
+			switch (packetHeader)
+			{
+			case PacketType::PACKET_CREATE:
+			{
+				float posX;
+				float posY;
+
+				IMBStream.Read(posX);
+				IMBStream.Read(posY);
+
+				switch (receiveType)
+				{
+				case GameObjectType::ROCK:
+				{
+					Rock* newRock = new Rock(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mRockSpriteIdentifier);
+					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newRock));
+					newRock = nullptr;
+
+					break;
+				}
+
+				case GameObjectType::PLAYER:
+				{
+					PlayerController* newPlayerController = new PlayerController(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mPlayerMoveSpeed, mPlayerSpriteIdentifier);
+					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newPlayerController));
+					newPlayerController = nullptr;
+
+					break;
+
+				}
+
+				case GameObjectType::WALL:
+				{
+					float sizeX;
+					float sizeY;
+					float thickness;
+
+					IMBStream.Read(sizeX);
+					IMBStream.Read(sizeY);
+					IMBStream.Read(thickness);
+
+					Wall* newWall = new Wall(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), sizeX, sizeY, mWallColour, thickness);
+					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newWall));
+					newWall = nullptr;
+
+					break;
+				}
+				}
+
+				break;
+			}
+
+			case PacketType::PACKET_UPDATE:
+
+				if (mGameObjectsVec[networkID].second != nullptr)
+				{
+					float x;
+					float y;
+
+					switch (receiveType)
+					{
+					case GameObjectType::ROCK:
+					case GameObjectType::PLAYER:
+
+						IMBStream.Read(x);
+						IMBStream.Read(y);
+						mGameObjectsVec[networkID].second->setPos(std::make_pair(x, y));
+						break;
+
+					case GameObjectType::WALL:
+					{
+						float sizeX;
+						float sizeY;
+						float thiccness;
+
+						Wall* wall = (Wall*)mGameObjectsVec[networkID].second;
+						IMBStream.Read(x);
+						IMBStream.Read(y);
+
+						wall->setPos(std::make_pair(x, y));
+
+						IMBStream.Read(sizeX);
+						IMBStream.Read(sizeY);
+						IMBStream.Read(thiccness);
+
+						wall->setWallSizeX(sizeX);
+						wall->setWallSizeY(sizeY);
+						wall->setWallThickness(thiccness);
+
+						break;
+					}
+					}
+				}
+				else
+				{
+					//Report error
+					std::cout << "ERROR: CANNOT UPDATE GAMEOBJECT ID " << networkID << " BECAUSE IT IS NOT IN THE NETWORK MANAGER MAP.\n";
+				}
+
+				break;
+
+			case PacketType::PACKET_DELETE:
+			{
+				//Delete element in map
+				if (mGameObjectsVec.size() > 0)
+				{
+					std::vector<std::pair<int, GameObject*>>::iterator it;
+					for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
+					{
+						//DO NOT DELETE A PLAYER
+						if (it->first == networkID && it->second->getGameObjectType() != GameObjectType::PLAYER)
+						{
+							mGameObjectsVec.erase(it);
+
+							break;
+						}
+					}
+				}
+
+				break;
+			}
+
+			default:
+				return PacketType::PACKET_INVALID;
+			}
+
+			return packetHeader;
+		}
+	}
+	else if (byteRecieve == -10053 || byteRecieve == -10054)
+	{
+		LOG("%s", "Disconnected From Server");
+		exit(0);
+	}
+	return PacketType::PACKET_INVALID;
+}
+
+void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
+{
+	OutputMemoryBitStream OMBStream;
+
+	//Write state sent (packet sequence number and acks)
+	pDeliveryNotificationManager->WriteState(OMBStream);
+
+	//Write packet header
+	OMBStream.Write(packetHeader);
+
+	//float timeDispatched = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
+	//OMBStream.Write(timeDispatched);
+
 	OMBStream.Write(mGameObjectsVec[ID].second->getNetworkID());
 	OMBStream.Write(mGameObjectsVec[ID].second->getGameObjectType());
 

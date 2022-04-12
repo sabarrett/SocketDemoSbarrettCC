@@ -16,6 +16,7 @@ public:
 	*/
 
 	int SetNonBlockingMode( bool inShouldBeNonBlocking );
+	void CleanupSocket();
 
 private:
 	friend class SocketUtil;
