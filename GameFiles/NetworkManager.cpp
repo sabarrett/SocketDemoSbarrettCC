@@ -180,10 +180,10 @@ bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInput
 	 //std::cout << "JoinerOut1\n";
 
 
-	// connection_timeout / 2 to give breathing room for 
-    if (duration_cast<milliseconds>(system_clock::now() - lastTimeOfSendingConnection).count() > CONNECTION_TIMOUT / 2)
+	// connection_timeout / 5 to give breathing room for the packet to send, as well as if a few get dropped 
+    if (duration_cast<milliseconds>(system_clock::now() - lastTimeOfSendingConnection).count() > CONNECTION_TIMOUT / 5)
 	{
-		std::cout << "\n\nIT HAS BEEN " << CONNECTION_TIMOUT / 1000 / 2 << " SECONDS SINCE INPUT, SENDING A CONNECTION CONFIRMATION NOW.\n\n";
+		//std::cout << "\n\nIT HAS BEEN " << CONNECTION_TIMOUT / 1000 / 5 << " SECONDS SINCE INPUT, SENDING A CONNECTION CONFIRMATION NOW.\n\n";
 		joinerInputs.push_back(JoinerInput(JoinerInput::CONNECTION_CONFIRMATION_MESSAGE, Location{ 0,0 }));
 	}
 
