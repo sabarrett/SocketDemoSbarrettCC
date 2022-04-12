@@ -606,68 +606,68 @@ void DrawPlayer(Player player) {
 
 void GameInit::InitGame(bool isHost)
 {
-    gi.gameOver = false;
+    gameOver = false;
 
     //Setting bricks to screen
-    gi.bricks = { gi.screenWidth/ gi.BRICK_COLUMNS,40};
+    bricks = {screenWidth/BRICK_COLUMNS,40};
 
     //Init Player
-    gi.player1.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 8 };
-    gi.player1.size = { gi.screenWidth / 10, 20 };
-    gi.player1.playerColor = { 0,0,255,255 };
-    gi.player1.id = 0;
-    gi.player1.active = true;
-    gi.player1.isMe = isHost;
-    gi.player1.hasAuthority = isHost;
+    player1.position = {screenWidth / 2, screenHeight * 7 / 8 };
+    player1.size = {screenWidth / 10, 20 };
+    player1.playerColor = { 0,0,255,255 };
+    player1.id = 0;
+    player1.active = true;
+    player1.isMe = isHost;
+    player1.hasAuthority = isHost;
 
     //Init Ball
-    gi.ball1.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 10 };
-    gi.ball1.velocity = { -2,4 };
-    gi.ball1.ballColor = gi.player1.playerColor;
-    gi.ball1.radius = 7.0;
-    gi.ball1.id = 1;
-    gi.ball1.ownerID = gi.player1.id;
-    gi.ball1.active = true;
-    gi.ball1.hasAuthority = isHost;
+    ball1.position = {screenWidth / 2, screenHeight * 7 / 10 };
+    ball1.velocity = { -2,4 };
+    ball1.ballColor = player1.playerColor;
+    ball1.radius = 7.0;
+    ball1.id = 1;
+    ball1.ownerID = player1.id;
+    ball1.active = true;
+    ball1.hasAuthority = isHost;
 
 
     //Init Player 2
-    gi.player2.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 8 };
-    gi.player2.size = { gi.screenWidth / 10, 20 };
-    gi.player2.playerColor = { 255,0,0,255 };
-    gi.player2.id = 10;
-    gi.player2.active = true;
-    gi.player2.isMe = !isHost;
-    gi.player2.hasAuthority = !isHost;
+    player2.position = { screenWidth / 2, screenHeight * 7 / 8 };
+    player2.size = {screenWidth / 10, 20 };
+    player2.playerColor = { 255,0,0,255 };
+    player2.id = 10;
+    player2.active = true;
+    player2.isMe = !isHost;
+    player2.hasAuthority = !isHost;
 
     //Init Ball 2
-    gi.ball2.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 10 };
-    gi.ball2.velocity = { 2,4 };
-    gi.ball2.ballColor = gi.player2.playerColor;
-    gi.ball2.radius = 7.0;
-    gi.ball2.id = 11;
-    gi.ball2.ownerID = gi.player2.id;
-    gi.ball2.active = true;
-    gi.ball2.hasAuthority = !isHost;
+    ball2.position = {screenWidth / 2, screenHeight * 7 / 10 };
+    ball2.velocity = { 2,4 };
+    ball2.ballColor = player2.playerColor;
+    ball2.radius = 7.0;
+    ball2.id = 11;
+    ball2.ownerID = player2.id;
+    ball2.active = true;
+    ball2.hasAuthority = !isHost;
 
     //Init Bricks
-    for (int i = 0; i < gi.BRICK_ROWS; i++)
+    for (int i = 0; i < BRICK_ROWS; i++)
     {
-        for (int j = 0; j < gi.BRICK_COLUMNS; j++)
+        for (int j = 0; j < BRICK_COLUMNS; j++)
         {
             float hue = RandomFloat(0.0f,360.0f);
             float saturation = RandomFloat(0.42f, 0.98f);
             float value = RandomFloat(0.4f,0.9f);
-            gi.brickList[i][j].position = { j * gi.bricks.x + gi.bricks.x / 2, i * gi.bricks.y + 50 };
-            gi.brickList[i][j].brickColor = ColorFromHSV(hue, saturation, value);
-            gi.brickList[i][j].isDead = false;
+            brickList[i][j].position = { j * bricks.x + bricks.x / 2, i * bricks.y + 50 };
+            brickList[i][j].brickColor = ColorFromHSV(hue, saturation, value);
+            brickList[i][j].isDead = false;
         }
     }
 
-    gi.physicsObjects[gi.player1.id] = &gi.player1;
-    gi.physicsObjects[gi.player2.id] = &gi.player2;
-    gi.physicsObjects[gi.ball1.id] = &gi.ball1;
-    gi.physicsObjects[gi.ball2.id] = &gi.ball2;
+    physicsObjects[player1.id] = &player1;
+    physicsObjects[player2.id] = &player2;
+    physicsObjects[ball1.id] = &ball1;
+    physicsObjects[ball2.id] = &ball2;
 }
 
 float GameInit::RandomFloat(float min, float max)
@@ -681,11 +681,10 @@ float GameInit::RandomFloat(float min, float max)
 }
 
 void GameInit::UpdatePhysObjs() {
-    for (int i = 0; i < gi.NUM_PHYS_OBJ; i++) {
-        PhysObject* obj = gi.physicsObjects[i];
+    for (int i = 0; i < NUM_PHYS_OBJ; i++) {
+        PhysObject* obj = physicsObjects[i];
         if (obj)
             obj->position = Vector2Add(obj->position, obj->velocity);
-        
     }
 }
 
@@ -693,16 +692,16 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
 
     Vector2 startVel = ball.velocity;
     //Brick Collision
-    for (int i = 0; i < gi.BRICK_ROWS; i++)
+    for (int i = 0; i < BRICK_ROWS; i++)
     {
-        for (int j = 0; j < gi.BRICK_COLUMNS; j++)
+        for (int j = 0; j < BRICK_COLUMNS; j++)
         {
-            if (gi.brickList[i][j].isDead == false && CheckCollisionCircleRec(ball.position, ball.radius, gi.brickList[i][j].rect()))
+            if (brickList[i][j].isDead == false && CheckCollisionCircleRec(ball.position, ball.radius, brickList[i][j].rect()))
             {
-                Vector2 normal = { ball.position.x - gi.brickList[i][j].position.x, ball.position.y - gi.brickList[i][j].position.y };
+                Vector2 normal = { ball.position.x - brickList[i][j].position.x, ball.position.y - brickList[i][j].position.y };
                 normal = Vector2Normalize(normal);
                 ball.velocity = Vector2Reflect(ball.velocity, normal);
-                gi.brickList[i][j].isDead = true;
+                brickList[i][j].isDead = true;
                 if (ball.hasAuthority) {
                     owner.score++;
                     owner.scoreFrames += owner.scoreFrames + 10;
@@ -714,7 +713,7 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
 
                     packetManager.SendPacket(masterSocket.get(), &testDestroy);
                 }
-                gi.backgroundColor = gi.brickList[i][j].brickColor;
+                backgroundColor = brickList[i][j].brickColor;
             }
         }
     }
@@ -730,10 +729,10 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
     }
 
     //Wall Collision
-    if (ball.position.x + ball.radius >= gi.screenWidth)
+    if (ball.position.x + ball.radius >= screenWidth)
     {
         ball.velocity.x *= -1;
-        ball.position.x = gi.screenWidth - ball.radius; // resolve pen
+        ball.position.x = screenWidth - ball.radius; // resolve pen
     } 
     else if (ball.position.x - ball.radius <= 0)
     {
@@ -745,9 +744,9 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
 
     
 
-    if (ball.position.y - ball.radius >= gi.screenHeight)
+    if (ball.position.y - ball.radius >= screenHeight)
     {
-        ball.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 10 };
+        ball.position = {screenWidth / 2, screenHeight * 7 / 10 };
         ball.velocity = { 0,-4 };
     }
     else if (ball.position.y < 0)
@@ -771,7 +770,7 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
     if (velDelta.x != 0 || velDelta.y != 0) {
         ball.bounceFrames = 5;
         ball.impact = Vector2{ fabs(velDelta.x), fabs(velDelta.y) };
-        gi.cameraOffset = Vector2Scale(velDelta, -1);
+        cameraOffset = Vector2Scale(velDelta, -1);
     }
 
     if (ball.hasAuthority && (startVel.x != ball.velocity.x || startVel.y != ball.velocity.y) ) {
@@ -829,9 +828,9 @@ void GameInit::UpdatePlayer(Player& player) {
         player.position.x = player.size.x / 2;
         player.velocity.x = 0;
     }
-    if (player.position.x + player.size.x / 2 > gi.screenWidth)
+    if (player.position.x + player.size.x / 2 > screenWidth)
     {
-        player.position.x = gi.screenWidth - player.size.x / 2;
+        player.position.x = screenWidth - player.size.x / 2;
         player.velocity.x = 0;
     }
 
@@ -844,30 +843,30 @@ void GameInit::UpdateGame()
 {
 
    
-    gi.UpdatePlayer(gi.player1);
-    gi.UpdatePlayer(gi.player2);
+    UpdatePlayer(player1);
+    UpdatePlayer(player2);
    
-    gi.UpdateBall(gi.player1, gi.ball1);
-    gi.UpdateBall(gi.player2, gi.ball2);
+    UpdateBall(player1, ball1);
+    UpdateBall(player2, ball2);
 
-    gi.UpdatePhysObjs();
+    UpdatePhysObjs();
 
-    gi.cameraOffset = Vector2Scale(gi.cameraOffset, 0.95);
+    cameraOffset = Vector2Scale(cameraOffset, 0.95);
 
     //Reset
-    gi.gameOver = true;
-    for (int i = 0; i < gi.BRICK_ROWS; i++)
+    gameOver = true;
+    for (int i = 0; i < BRICK_ROWS; i++)
     {
-        for (int j = 0; j < gi.BRICK_COLUMNS; j++)
+        for (int j = 0; j < BRICK_COLUMNS; j++)
         {
-            if (gi.brickList[i][j].isDead == false)
+            if (brickList[i][j].isDead == false)
             {
-                gi.gameOver = false;
+                gameOver = false;
             }
         }
     }
-    if (gi.gameOver)
+    if (gameOver)
     {
-        gi.InitGame(gi.player1.isMe);
+        InitGame(player1.isMe);
     }
 }
