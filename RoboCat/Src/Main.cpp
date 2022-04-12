@@ -31,7 +31,8 @@ int main(int argc, const char** argv)
 #endif
 
 	SocketUtil::StaticInit();
-
+	SocketUtil::CleanUp();
+	SocketUtil::StaticInit();
 	// ---------------------- General Game Data ----------------------
 	bool isGameRunning = true;
 	int gameObjectIDs = 2;
@@ -228,7 +229,12 @@ int main(int argc, const char** argv)
 
 				if (inputData.keyPressed_ESCAPE)
 				{
-					//std::cout << "Escape Pressed" << std::endl;
+					std::cout << "Escape Pressed" << std::endl;
+
+					OutputMemoryBitStream stream;
+					stream.Write(GameObjectType::END_OF_GAME);
+					
+					connSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
 					isGameRunning = false;
 				}
 				if (inputData.keyPressed_A)
@@ -481,8 +487,11 @@ int main(int argc, const char** argv)
 
 				if (inputData.keyPressed_ESCAPE)
 				{
+					std::cout << "Escape Pressed" << std::endl;
+					OutputMemoryBitStream stream;
+					stream.Write(GameObjectType::END_OF_GAME);
+					clientSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
 					isGameRunning = false;
-					//std::cout << "Escape Pressed" << std::endl;
 				}
 				if (inputData.keyPressed_R)
 				{

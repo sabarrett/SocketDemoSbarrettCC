@@ -5,6 +5,7 @@ enum GameObjectType
 	PLAYER,
 	BULLET,
 	EFFECT,
+	END_OF_GAME,
 	ENUM_SIZE
 };
 
