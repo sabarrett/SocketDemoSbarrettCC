@@ -25,7 +25,8 @@
 ///  X - Unreliability Simulation -
 ///     O - Packets are occasionally "dropped," by random chance or by some algorithm.
 ///     O - Dropped packets are registered as having been sent by the sender, but do not actually call the socket's send() function. 
-///     X - Random delay is introduced to some packet's send time, and packets can be delivered out of order.
+///     O - Random delay is introduced to some packet's send time, 
+///		X - and packets can be delivered out of order.
 ///  X - Reliability - 
 ///     X - Game state is sent through a reliability layer. Important data is sent through guaranteed mechanisms, 
 ///            while data that does not require guaranteed delivery is sent through simpler mechanisms.
@@ -240,7 +241,7 @@ int main(int argc, const char** argv)
 			}
 			gameWorld.Update(userIsCreator, ref(joinerInputs), deltaTime);
 
-			NetworkManager::HandleOutgoingWorldStatePackets(ref(gameWorld), sendingSocket, addressToSendTo);
+			NetworkManager::HandleOutgoingWorldStatePackets(ref(gameWorld), sendingSocket, addressToSendTo, deltaTime);
 		}
 		else
 		{
@@ -250,7 +251,7 @@ int main(int argc, const char** argv)
 			{
 				isGameRunning = false;
 			}
-			NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo, ref(lastTimeOfSendingConnection));
+			NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo, ref(lastTimeOfSendingConnection), deltaTime);
 		}
 
 		gameWorld.Render(currentBackground);

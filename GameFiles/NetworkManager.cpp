@@ -133,14 +133,26 @@ bool NetworkManager::HandleIncomingInputPackets(priority_queue<pair<int, void*>>
 	return true;
 }
 
-bool NetworkManager::HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr &sendingSocket, SocketAddressPtr &sendingAddress)
+bool NetworkManager::HandleOutgoingWorldStatePackets(WorldState& gameWorld, UDPSocketPtr &sendingSocket, SocketAddressPtr &sendingAddress, int delta)
 {
 	OutputMemoryBitStream stream;
 	gameWorld.Write(stream);
 
-	
-	if(rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
-		sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress);
+	currentDelayBetweenPacketSend -= delta;
+	if (currentDelayBetweenPacketSend < 1)
+	{
+		if (rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
+			sendingSocket->SendTo(stream.GetBufferPtr(), stream.GetByteLength(), *sendingAddress);
+		else
+			std::cout << "deliberately dropped a packet";
+
+		if (rand() % 101 > PACKET_DELAY_CHANCE_PERCENT)
+		{
+			currentDelayBetweenPacketSend = PACKET_DELAY_TIME;
+			std::cout << "next packet deliberately delayed by " << PACKET_DELAY_TIME / 1000 << " seconds ";
+		}
+	}
+
 	
 	return true;
 }
@@ -172,39 +184,56 @@ bool NetworkManager::HandleIncomingWorldStatePackets(WorldState& gameWorld, prio
 	return true;
 }
 
-bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress, system_clock::time_point& lastTimeOfSendingConnection)
+bool NetworkManager::HandleOutgoingInputPackets(vector<JoinerInput>& joinerInputs, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress, system_clock::time_point& lastTimeOfSendingConnection, int delta)
 {
 	OutputMemoryBitStream outStream;
 	bool allGood = true;
+	bool goodToClearInputs = true;
 
-	 //std::cout << "JoinerOut1\n";
 
-
-	// connection_timeout / 5 to give breathing room for the packet to send, as well as if a few get dropped 
+	// connection_timeout / 5 to give breathing room for the packet to send before dc, as well as if a few get dropped 
     if (duration_cast<milliseconds>(system_clock::now() - lastTimeOfSendingConnection).count() > CONNECTION_TIMOUT / 5)
 	{
 		//std::cout << "\n\nIT HAS BEEN " << CONNECTION_TIMOUT / 1000 / 5 << " SECONDS SINCE INPUT, SENDING A CONNECTION CONFIRMATION NOW.\n\n";
 		joinerInputs.push_back(JoinerInput(JoinerInput::CONNECTION_CONFIRMATION_MESSAGE, Location{ 0,0 }));
 	}
 
-	// making these two sepeate ifs so that this is called by default and we don't need to repeat its code for the if above
-	if (joinerInputs.size() > 0)
-	{
-		lastTimeOfSendingConnection = system_clock::now();
-		JoinerInput::Write(outStream, std::ref(joinerInputs));
+	currentDelayBetweenPacketSend -= delta;
 
-		if (rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
+	if (currentDelayBetweenPacketSend < 1)
+	{
+		// making these two sepeate ifs so that this is called by default and we don't need to repeat its code for the if above
+		if (joinerInputs.size() > 0)
 		{
-			if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), *sendingAddress)) < 0)
+			lastTimeOfSendingConnection = system_clock::now();
+			JoinerInput::Write(outStream, std::ref(joinerInputs));
+
+			if (rand() % 101 > PACKET_DROP_CHANCE_PERCENT)
 			{
-				SocketUtil::ReportError("Sending outgoingPacket");
-				allGood = false;
+				if ((sendingSocket->SendTo(outStream.GetBufferPtr(), outStream.GetByteLength(), *sendingAddress)) < 0)
+				{
+					SocketUtil::ReportError("Sending outgoingPacket");
+					allGood = false;
+				}
+
+				if (rand() % 101 > PACKET_DELAY_CHANCE_PERCENT)
+				{
+					currentDelayBetweenPacketSend = PACKET_DELAY_TIME;
+					std::cout << "next packet deliberately delayed by " << PACKET_DELAY_TIME / 1000 << " seconds\n";
+				}
 			}
+			else
+				std::cout << "deliberately dropped a packet";
 		}
 	}
-	
-	//std::cout << "JoinerOut3\n";
-	joinerInputs.clear();
+	else
+	{
+		goodToClearInputs = false;
+	}
+
+
+	if(goodToClearInputs)
+		joinerInputs.clear();
 
 	return allGood;
 }
