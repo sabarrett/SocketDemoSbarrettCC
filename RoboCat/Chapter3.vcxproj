@@ -92,6 +92,9 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <OutDir>Bin\$(Configuration)\</OutDir>
+    <Allegro_AddonImage>true</Allegro_AddonImage>
+    <Allegro_AddonTTF>true</Allegro_AddonTTF>
+    <Allegro_AddonFont>true</Allegro_AddonFont>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">
     <LinkIncremental>true</LinkIncremental>
@@ -371,12 +374,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Inc\AckRange.h" />
+    <ClInclude Include="..\allegro_wrapper_functions-main\Colour.h" />
+    <ClInclude Include="..\allegro_wrapper_functions-main\GraphicsLibrary.h" />
+    <ClInclude Include="..\allegro_wrapper_functions-main\InputSystem.h" />
+    <ClInclude Include="Inc\Bullet.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\DeliveryNotificationManager.h" />
     <ClInclude Include="Inc\InFlightPacket.h" />
+    <ClInclude Include="Inc\Effect.h" />
+    <ClInclude Include="Inc\GameData.h" />
+    <ClInclude Include="Inc\GameObject.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
+    <ClInclude Include="Inc\Networker.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
+    <ClInclude Include="Inc\Player.h" />
     <ClInclude Include="Inc\RoboMath.h" />
     <ClInclude Include="Inc\SocketAddress.h" />
     <ClInclude Include="Inc\SocketAddressFactory.h" />
@@ -390,10 +402,19 @@
     <ClInclude Include="Inc\UDPSocket.h" />
     <ClCompile Include="Src\AckRange.cpp" />
     <ClCompile Include="Src\DeliveryNotificationManager.cpp" />
+    <ClCompile Include="Src\GameData.cpp" />
     <ClCompile Include="Src\InFlightPacket.cpp" />
+    <ClCompile Include="..\allegro_wrapper_functions-main\Colour.cpp" />
+    <ClCompile Include="..\allegro_wrapper_functions-main\GraphicsLibrary.cpp" />
+    <ClCompile Include="..\allegro_wrapper_functions-main\InputSystem.cpp" />
+    <ClCompile Include="Src\Bullet.cpp" />
+    <ClCompile Include="Src\Effect.cpp" />
+    <ClCompile Include="Src\GameObject.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
+    <ClCompile Include="Src\Networker.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
+    <ClCompile Include="Src\Player.cpp" />
     <ClCompile Include="Src\SocketAddress.cpp" />
     <ClCompile Include="Src\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />

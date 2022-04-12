@@ -140,7 +140,10 @@ void DeliveryNotificationManager::ProcessAcks( InputMemoryBitStream& inInputStre
 				//copy this so we can remove it before handling the failure- we don't want to find it when checking for state
 				auto copyOfInFlightPacket = nextInFlightPacket;
 				mInFlightPackets.pop_front();
-				HandlePacketDeliveryFailure( copyOfInFlightPacket );
+				HandlePacketDeliveryFailure(copyOfInFlightPacket);
+				// if at least one packet was last - we resend all effects, since these are the only objects that don't get send every frame, but sent only once
+				/*GameData* gameData = GameData::getInstance();
+				gameData->resendAllEffects();*/
 			}
 			else if( nextInFlightPacketSequenceNumber == nextAckdSequenceNumber )
 			{
