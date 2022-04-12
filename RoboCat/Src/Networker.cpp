@@ -26,16 +26,16 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 	char buffer[128];
 	int32_t bytesReceived = inSocket->Receive(buffer, 128);
 
-	if (bytesReceived == 0)
-	{
-		LOG("%s", " Connection gracefully closed. Press enter to exit!");
-		isGameRunning = false;
-	}
-	if (bytesReceived < 0)
-	{
-		LOG("%s", " Connection forcefully closed. Press enter to exit!");
-		isGameRunning = false;
-	}
+	//if (bytesReceived == 0)
+	//{
+	//	LOG("%s", " Connection gracefully closed. Press enter to exit!");
+	//	isGameRunning = false;
+	//}
+	//if (bytesReceived < 0)
+	//{
+	//	LOG("%s", " Connection forcefully closed. Press enter to exit!");
+	//	isGameRunning = false;
+	//}
 	if (bytesReceived > 0)
 	{
 		InputMemoryBitStream stream(buffer, 128);

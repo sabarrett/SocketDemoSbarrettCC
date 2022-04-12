@@ -138,6 +138,7 @@ int main(int argc, const char** argv)
 		}
 		LOG(" Accepted connection from %s", incomingAddress.ToString().c_str());
 
+		connSocket->SetNonBlockingMode(true);
 		pNetworker->SetSocket(connSocket);
 
 		// If Graphics and Input initialized correctly
@@ -158,33 +159,33 @@ int main(int argc, const char** argv)
 			gameData->player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 
-			std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
-				{
-					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-					//GameData* gameData = GameData::getInstance();
+			//std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
+			//	{
+			//		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			//		//GameData* gameData = GameData::getInstance();
 
-					while (isGameRunning)
-					{
-						switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
-						{
-						case GameObjectType::PLAYER:
-						{
-							/*if (gameData->player2->GetIsFiring())
-							{
-								std::cout << "Bullet spawn 1" << std::endl;
-								Bullet* newBullet = new Bullet(gameObjectIDs, gameData->player2->mPosX + PLAYER_SIZE / 2 - BULLET_SIZE / 2, gameData->player2->mPosY + PLAYER_SIZE * 3 / 2, "bullet", BULLET_SPEED, false);
-								gameObjectIDs++;
-								gameData->bulletsVector.push_back(newBullet);
-							}*/
-							break;
-						}
-						default:
-						{
-							break;
-						}
-						}
-					}
-				});
+			//		while (isGameRunning)
+			//		{
+			//			switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
+			//			{
+			//			case GameObjectType::PLAYER:
+			//			{
+			//				/*if (gameData->player2->GetIsFiring())
+			//				{
+			//					std::cout << "Bullet spawn 1" << std::endl;
+			//					Bullet* newBullet = new Bullet(gameObjectIDs, gameData->player2->mPosX + PLAYER_SIZE / 2 - BULLET_SIZE / 2, gameData->player2->mPosY + PLAYER_SIZE * 3 / 2, "bullet", BULLET_SPEED, false);
+			//					gameObjectIDs++;
+			//					gameData->bulletsVector.push_back(newBullet);
+			//				}*/
+			//				break;
+			//			}
+			//			default:
+			//			{
+			//				break;
+			//			}
+			//			}
+			//		}
+			//	});
 
 			// ---------------------- Time related ----------------------
 			clock_t start, end;
@@ -204,6 +205,8 @@ int main(int argc, const char** argv)
 				// Updates
 				pIS->update();
 				inputData = pIS->getInputData();
+
+				pNetworker->ReceivePacket(gameObjectIDs, isGameRunning);
 				
 				//std::cout << gameData->bulletsVector.size() << std::endl;
 
@@ -327,7 +330,7 @@ int main(int argc, const char** argv)
 				pGL->render();
 			}
 
-			receiveThread.join();
+			//receiveThread.join();
 		}
 
 		connSocket->Close();
@@ -379,6 +382,7 @@ int main(int argc, const char** argv)
 		}
 		LOG("%s", " Connected to server!");
 
+		clientSocket->SetNonBlockingMode(true);
 		pNetworker->SetSocket(clientSocket);
 
 		// If Graphics and Input initialized correctly
@@ -399,40 +403,40 @@ int main(int argc, const char** argv)
 			gameData->player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 
-			std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
-				{
-					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-					//GameData* gameData = GameData::getInstance();
+			//std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
+			//	{
+			//		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			//		//GameData* gameData = GameData::getInstance();
 
-					while (isGameRunning)
-					{
-						switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
-						{
-						case GameObjectType::BULLET:
-						{
-							//std::cout << "Received a bullet" << std::endl;
-							//for (auto& bullet : bulletsVector)
-							//{
-							//	if (bullet != nullptr)
-							//	{
-							//		if (bullet->gotDestroyed)
-							//		{
-							//			//std::cout << "Bullet got destroyed" << std::endl;
-							//			//pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
-							//			bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
-							//			bullet = nullptr;
-							//		}
-							//		else
-							//		{
-							//			bullet->mImageIdentifier = "bullet";
-							//		}
-							//	}
-							//}
-						}
-						}
-						
-					}
-				});
+			//		while (isGameRunning)
+			//		{
+			//			switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
+			//			{
+			//			case GameObjectType::BULLET:
+			//			{
+			//				//std::cout << "Received a bullet" << std::endl;
+			//				//for (auto& bullet : bulletsVector)
+			//				//{
+			//				//	if (bullet != nullptr)
+			//				//	{
+			//				//		if (bullet->gotDestroyed)
+			//				//		{
+			//				//			//std::cout << "Bullet got destroyed" << std::endl;
+			//				//			//pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
+			//				//			bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
+			//				//			bullet = nullptr;
+			//				//		}
+			//				//		else
+			//				//		{
+			//				//			bullet->mImageIdentifier = "bullet";
+			//				//		}
+			//				//	}
+			//				//}
+			//			}
+			//			}
+			//			
+			//		}
+			//	});
 
 			// ---------------------- Time related ----------------------
 			clock_t start, end;
@@ -451,6 +455,8 @@ int main(int argc, const char** argv)
 				// Updates
 				pIS->update();
 				inputData = pIS->getInputData();
+
+				pNetworker->ReceivePacket(gameObjectIDs, isGameRunning);
 
 				gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
 				for (auto& bullet : gameData->bulletsVector)
@@ -515,7 +521,7 @@ int main(int argc, const char** argv)
 				pGL->render();
 			}
 
-			receiveThread.join();
+			//receiveThread.join();
 			clientSocket->Close();
 		}
 	}
