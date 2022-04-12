@@ -1,4 +1,4 @@
-class TCPPacket;
+class Packet;
 class TCPSocket
 {
 public:

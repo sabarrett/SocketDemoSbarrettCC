@@ -5,7 +5,10 @@
 #include <string>
 #include <iostream>
 #include "stdlib.h"
-#include "TCPPacket.h"
+#include "Packet.h"
+
+
+
 
 struct PhysObject {
     Vector2 position;
@@ -44,11 +47,9 @@ struct Brick {
     Color brickColor;
     int id;
     bool isDead;
-    Rectangle rect()
-    {
-        return Rectangle{ position.x - gi.bricks.x / 2, position.y - gi.bricks.y / 2, gi.screenWidth / gi.BRICK_COLUMNS, 40 };
-    }
+    Rectangle rect();
 };
+
 
 struct GameInit {
     static const int BRICK_COLUMNS = 10;
@@ -56,9 +57,9 @@ struct GameInit {
 
     const float screenWidth = 800.0;
     const float screenHeight = 450.0;
-    static Vector2 bricks;
+    Vector2 bricks;
     bool gameOver;
-    Brick brickList[gi.BRICK_ROWS][gi.BRICK_COLUMNS] = { 0 };
+    Brick brickList[BRICK_ROWS][BRICK_COLUMNS] = { 0 };
     // player 1 is always the host
     Player player1, player2;
     Ball ball1, ball2;
@@ -67,7 +68,7 @@ struct GameInit {
     Color backgroundColor = RAYWHITE;
 
     static const int NUM_PHYS_OBJ = 20;
-    PhysObject* physicsObjects[gi.NUM_PHYS_OBJ]; // id 0 & 1 are for players, the rest are balls
+    PhysObject* physicsObjects[NUM_PHYS_OBJ]; // id 0 & 1 are for players, the rest are balls
 
     void UpdateGame();
     void InitGame(bool isHost);
@@ -76,7 +77,17 @@ struct GameInit {
     void UpdateBall(Player& owner, Ball& ball);
     float RandomFloat(float min, float max);
 };
-extern struct GameInit gi;
+
+GameInit gi;
+
+
+
+Rectangle Brick::rect() {
+    return Rectangle{ position.x - gi.bricks.x / 2, position.y - gi.bricks.y / 2, gi.screenWidth / gi.BRICK_COLUMNS, 40 };
+}
+
+
+NetworkManager networkManager;
 
 enum class StartupScreenAction {
     QUIT,
@@ -84,7 +95,7 @@ enum class StartupScreenAction {
     HOST,
 };
 
-void HandleDestroy(TCPPacketDestroy* destroy) {
+void HandleDestroy(PacketDestroy* destroy) {
     gi.brickList[destroy->X][destroy->Y].isDead = true;
     if (gi.player1.hasAuthority) {
         gi.player2.score++;
@@ -97,7 +108,7 @@ void HandleDestroy(TCPPacketDestroy* destroy) {
       
 }
 
-void HandleMove(TCPPacketMove* move) {
+void HandleMove(PacketMove* move) {
     PhysObject* obj = gi.physicsObjects[move->objectID];
     if (obj->hasAuthority) {
         printf("got move packet but this client has authority\n");
@@ -110,7 +121,7 @@ void HandleMove(TCPPacketMove* move) {
     obj->velocity = move->velocity;
 }
 
-void HandlePlayerInfo(TCPPacketPlayerInfo* info) {
+void HandlePlayerInfo(PacketPlayerInfo* info) {
     if (gi.player1.hasAuthority) {
         gi.player2.nickname = info->nickname;
     }
@@ -289,10 +300,14 @@ StartupScreenAction StartupScreen(SocketAddress* out_address, std::string& nickn
 }
 
 TCPSocketPtr StartHost() {
+
+    //networkManager.Init(1234, );
     SocketAddress clientAddr;
     TCPSocketPtr hostSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
     hostSocket->Bind(SocketAddress(2130706433, 1234)); // localhost:1234
     hostSocket->Listen();
+
+
 
     bool listening = true;
     unsigned int frameCount = 0;
@@ -346,7 +361,7 @@ void DrawBall(Ball ball);
 
 
 TCPSocketPtr masterSocket;
-TCPPacketManager packetManager;
+PacketManager packetManager;
 
 void frame_countdown(int& count) {
     if (count > 0) count--;
@@ -370,16 +385,15 @@ int main(int argc, const char** argv)
 
   
 
-    packetManager.RegisterType<TCPPacketDestroy>();
-    packetManager.RegisterType<TCPPacketMove>();
-    packetManager.RegisterType<TCPPacketCreate>();
-    packetManager.RegisterType<TCPPacketPlayerInfo>();
+    packetManager.RegisterType<PacketDestroy>();
+    packetManager.RegisterType<PacketMove>();
+    packetManager.RegisterType<PacketPlayerInfo>();
 
-    packetManager.RegisterHandler<TCPPacketDestroy>(HandleDestroy);
-    packetManager.RegisterHandler<TCPPacketMove>(HandleMove);
-    packetManager.RegisterHandler<TCPPacketPlayerInfo>(HandlePlayerInfo);
+    packetManager.RegisterHandler<PacketDestroy>(HandleDestroy);
+    packetManager.RegisterHandler<PacketMove>(HandleMove);
+    packetManager.RegisterHandler<PacketPlayerInfo>(HandlePlayerInfo);
 
-    InitWindow(gi.screenWidth, gi.screenHeight, "raylib [core] example - basic window");
+    InitWindow(gi.screenWidth, gi.screenHeight, "thornton & max - assignment 3");
 
    
 
@@ -418,8 +432,8 @@ int main(int argc, const char** argv)
 
     gi.InitGame(action == StartupScreenAction::HOST);
 
-    TCPPacketPlayerInfo playerInfo;
-    playerInfo.type = TCPPacketPlayerInfo::TYPE;
+    PacketPlayerInfo playerInfo;
+    playerInfo.type = PacketPlayerInfo::TYPE;
     playerInfo.nickname = nickname;
 
     packetManager.SendPacket(masterSocket.get(), &playerInfo);
@@ -693,8 +707,8 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
                     owner.score++;
                     owner.scoreFrames += owner.scoreFrames + 10;
 
-                    TCPPacketDestroy testDestroy;
-                    testDestroy.type = TCPPacketType::DESTROY;
+                    PacketDestroy testDestroy;
+                    testDestroy.type = PacketType::DESTROY;
                     testDestroy.X = i;
                     testDestroy.Y = j;
 
@@ -761,8 +775,8 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
     }
 
     if (ball.hasAuthority && (startVel.x != ball.velocity.x || startVel.y != ball.velocity.y) ) {
-        TCPPacketMove movePacket;
-        movePacket.type = TCPPacketMove::TYPE;
+        PacketMove movePacket;
+        movePacket.type = PacketMove::TYPE;
         movePacket.objectID = ball.id;
         movePacket.position = ball.position;
         movePacket.velocity = ball.velocity;
@@ -798,8 +812,8 @@ void GameInit::UpdatePlayer(Player& player) {
 
 
         if (player.velocity.x != startX) {
-            TCPPacketMove movePacket;
-            movePacket.type = TCPPacketMove::TYPE;
+            PacketMove movePacket;
+            movePacket.type = PacketMove::TYPE;
             movePacket.objectID = player.id;
             movePacket.position = player.position;
             movePacket.velocity = player.velocity;

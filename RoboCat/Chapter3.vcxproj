@@ -128,7 +128,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <AdditionalIncludeDirectories>..\SDL\include;Inc;..\;..\raylib\include</AdditionalIncludeDirectories>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -377,13 +377,14 @@
     <ClInclude Include="Inc\InFlightPacket.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
+    <ClInclude Include="Inc\NetworkManager.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
     <ClInclude Include="Inc\RoboMath.h" />
     <ClInclude Include="Inc\SocketAddress.h" />
     <ClInclude Include="Inc\SocketAddressFactory.h" />
     <ClInclude Include="Inc\SocketUtil.h" />
     <ClInclude Include="Inc\StringUtils.h" />
-    <ClInclude Include="Inc\TCPPacket.h" />
+    <ClInclude Include="Inc\Packet.h" />
     <ClInclude Include="Inc\TCPSocket.h" />
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
@@ -395,12 +396,13 @@
     <ClCompile Include="Src\InFlightPacket.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
+    <ClCompile Include="Src\NetworkManager.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
     <ClCompile Include="Src\SocketAddress.cpp" />
     <ClCompile Include="Src\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
-    <ClCompile Include="Src\TCPPacket.cpp" />
+    <ClCompile Include="Src\Packet.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>

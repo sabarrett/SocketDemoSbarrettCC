@@ -70,5 +70,6 @@ class GameObject;
 #include "TCPSocket.h"
 #include "SocketUtil.h"
 #include "OutputWindow.h"
-#include "TCPPacket.h"
+#include "Packet.h"
 #include "DeliveryNotificationManager.h"
+#include "NetworkManager.h"
