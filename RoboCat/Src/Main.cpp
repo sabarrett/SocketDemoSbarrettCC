@@ -24,9 +24,10 @@
 ///  O - Update gameobjects via a frame delta time (to prevent desync due to game speed)
 ///  X - Unreliability Simulation -
 ///     O - Packets are occasionally "dropped," by random chance or by some algorithm.
+///			X - the input packets need to be guaranteed once dropped, they can likely just send a static id num and recieving handles unexpectedly high id num
 ///     O - Dropped packets are registered as having been sent by the sender, but do not actually call the socket's send() function. 
-///     X - Random delay is introduced to some packet's send time, (technically in, but a bit of a reach) 
-///		X - and packets can be delivered out of order.
+///     O - Random delay is introduced to some packet's send time, (technically in, but a bit of a reach) 
+///		O - and packets can be delivered out of order.
 ///  X - Reliability - 
 ///     X - Game state is sent through a reliability layer. Important data is sent through guaranteed mechanisms, 
 ///            while data that does not require guaranteed delivery is sent through simpler mechanisms.

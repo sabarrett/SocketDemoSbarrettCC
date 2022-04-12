@@ -10,8 +10,8 @@ namespace NetworkManager
     // can probably be bigger since we're using UDP
     const int BUFFER_SIZE = 4096;
     const int CONNECTION_TIMOUT = 7.0 * 1000;    // * 1000 converts to milliseconds
-    const int PACKET_DROP_CHANCE_PERCENT = 0; // goes from 0 to 100
-    const int PACKET_DELAY_CHANCE_PERCENT = 0; // goes from 0 to 100
+    const int PACKET_DROP_CHANCE_PERCENT = 10; // goes from 0 to 100
+    const int PACKET_DELAY_CHANCE_PERCENT = 5; // goes from 0 to 100
     const int PACKET_DELAY_TIME = 1.0 * 1000;  // 
 
     const string HOME_ADDRESS = "127.0.0.1:";
