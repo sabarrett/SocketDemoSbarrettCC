@@ -245,7 +245,7 @@ vector<vector<int>> UnitManager::getAllUnitsLocation()
 {
 	vector<vector<int>> locs;
 
-	cout << "BIG WHOOP" << endl;
+	//cout << "BIG WHOOP" << endl;
 
 	for (int i = 0; i < mUnits.size(); i++)
 	{
@@ -258,10 +258,12 @@ vector<vector<int>> UnitManager::getAllUnitsLocation()
 		//loc[i] = Vector2D( getUnit(i)->mX, getUnit(i)->mY );
 	}
 
+	/*
 	for (int i = 0; i < locs.size(); i++)
 	{
 		cout << "new Loc " << locs[i][0] << " " << locs[i][1] << " " << locs[i][2] << endl;
 	}
+	*/
 
 	return locs;
 }
