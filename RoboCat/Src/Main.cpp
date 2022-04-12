@@ -6,6 +6,7 @@
 #include "RectangleObject.h"
 #include "RainParticle.h"
 #include "CircleClass.h"
+#include "math.h"
 
 #include <thread>
 #include <iostream>
@@ -256,15 +257,28 @@ void BradsTotallyOriginalServer()
 			inObjects[i].Draw();
 			greenCircle[i].Draw();
 		}
-		for each (CircleClass * projectile in serverProjectiles)
-		{
-			projectile->UpdatePos(0, -1);
-			projectile->Draw();
-		}
 		for each (RectangleObject * projectile in clientProjectiles)
 		{
 			projectile->Draw();
 		}
+		for each (CircleClass * projectile in serverProjectiles)
+		{
+			projectile->UpdatePos(0, -1);
+			projectile->Draw();
+			for each (RectangleObject* rects in clientProjectiles)
+			{
+				int xDist = rects->xPos - projectile->position[0];
+				int yDist = rects->yPos - projectile->position[1];
+				float dist = sqrt(exp2(xDist) + exp2(yDist));
+				if (dist < 10)
+				{
+					/*clientProjectiles.remove(rects);
+					delete(rects);
+					serverProjectiles.remove(projectile);
+					delete(projectile);*/
+				}
+			}
+		}	
 		for (int j = 0; j < numDroplets; j++)
 		{
 			rain[j].UpdatePos(1, 3);
