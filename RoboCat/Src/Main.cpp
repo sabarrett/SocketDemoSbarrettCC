@@ -65,6 +65,8 @@ const string JOINER_BACKGROUND = "background3.jpg";
 const int CREATOR_PORT = 8080;
 const int JOINER_PORT = 8100;
 
+std::atomic<bool> connectionsOpen(true);
+
 #if _WIN32
 int main(int argc, const char** argv)
 {
@@ -85,8 +87,8 @@ int main(int argc, const char** argv)
 	string userAnswer;
 	
 	// connection-related
+
 	bool userIsCreator;
-	bool connectionsOpen = true;
 	int listeningPort;
 	std::thread listeningThread;
 	UDPSocketPtr listeningSocket;
@@ -139,7 +141,7 @@ int main(int argc, const char** argv)
 		addressRecievedFrom = SocketAddressFactory::CreateIPv4FromString((NetworkManager::ACCEPT_ALL_ADDRESS + std::to_string(CREATOR_PORT+5)));
 		//HandleListening(closingConnections, listeningSocket, addressToSendTo, unprocessedData, waitingForConnection);
 		//something about this thread is cursed, throws errors in the actual implementation of thread
-		listeningThread = std::thread(NetworkManager:: HandleListening, ref(connectionsOpen), listeningSocket, addressRecievedFrom, ref(unprocessedData));
+		listeningThread = std::thread(NetworkManager::HandleListening, &(connectionsOpen), listeningSocket, addressRecievedFrom, ref(unprocessedData));
 
 		do
 		{
@@ -162,14 +164,13 @@ int main(int argc, const char** argv)
 		NetworkManager::SetUpInitialListening(listeningPort, listeningSocket, listeningAddress);
 
 		addressRecievedFrom = SocketAddressFactory::CreateIPv4FromString((NetworkManager::ACCEPT_ALL_ADDRESS + std::to_string( JOINER_PORT + 5)));
-		listeningThread = std::thread(NetworkManager::HandleListening, ref(connectionsOpen), listeningSocket, addressRecievedFrom, ref(unprocessedData));
+		listeningThread = std::thread(NetworkManager::HandleListening, &(connectionsOpen), listeningSocket, addressRecievedFrom, ref(unprocessedData));
 		do
 		{
 			Sleep(500); // wait 0.5 second
 			std::cout << '.';
 		} while (unprocessedData.size() < 1);
 	}
-
 
 	std::cout << "\n\nStarting the game!\n";
 
@@ -227,8 +228,6 @@ int main(int argc, const char** argv)
 		deltaTime = duration_cast<milliseconds>(system_clock::now() - lastTime).count();
 		startTime = lastTime;
 		lastTime = system_clock::now();
-
-
 
 		inputSys.Update(userIsCreator, ref(gameWorld), ref(joinerInputs));
 

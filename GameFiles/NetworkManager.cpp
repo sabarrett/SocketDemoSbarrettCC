@@ -14,9 +14,8 @@ void NetworkManager::SetUpInitialListening(int& port, UDPSocketPtr& listeningSoc
 	}
 	//LOG("%s", "created listening socket");
 
-	// lol true sets it to blocking mode, idk why
-	/*if(listeningSocket->SetNonBlockingMode(true) != NO_ERROR)
-		SocketUtil::ReportError("Error Setting To Blocking mode");*/
+	if(listeningSocket->SetNonBlockingMode(true) != NO_ERROR)
+		SocketUtil::ReportError("Error Setting To Non-blocking mode");
 
 	listeningAddress = SocketAddressFactory::CreateIPv4FromString((ACCEPT_ALL_ADDRESS + std::to_string(port++)));
 	if (listeningAddress == nullptr)
@@ -42,22 +41,22 @@ void NetworkManager::SetUpInitialListening(int& port, UDPSocketPtr& listeningSoc
 	LOG("Your port is %i\n", static_cast<int>(port));
 	//LOG("%s", "socket is now listening");
 }
-void NetworkManager::HandleListening(bool& connectionsOpen, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom, priority_queue<pair<int, void*>>& unprocessedData)
+void NetworkManager::HandleListening(std::atomic<bool>* connectionsOpen, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom, priority_queue<pair<int, void*>>& unprocessedData)
 {
 	std::cout << "Listening Now!";
 
-	while (connectionsOpen)
+	while (connectionsOpen->load())
 	{
 		//LOG("%s", "In handleListening before Recieve\n");
 
 		//  TODO, look into what length this buffer should be, make a better one
 		char buffer[BUFFER_SIZE];
-		listeningSocket->ReceiveFrom(buffer, BUFFER_SIZE, *(addressRecievedFrom));
+		int byteCount = listeningSocket->ReceiveFrom(buffer, BUFFER_SIZE, *(addressRecievedFrom));
 
 		//LOG("%s", "In handleListening after Recieve\n");
 
 
-		if (buffer != nullptr)
+		if (buffer != nullptr && byteCount > 0)
 		{
 			string msgRecieved(static_cast<char*>(buffer), BUFFER_SIZE);
 			//LOG("Recieved message: %s", msgRecieved.c_str());

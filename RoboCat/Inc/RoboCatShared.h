@@ -38,6 +38,7 @@
 #include <thread>
 #include <stack>
 #include <typeinfo>
+#include <atomic>
 
 using std::stack;
 using std::thread;
@@ -59,6 +60,8 @@ using std::ref;
 
 class RoboCat;
 class GameObject;
+
+
 
 #include "RoboMath.h"
 

@@ -3,6 +3,8 @@
 #include "GameFiles/JoinerInput.h"
 #include "WorldState.h"
 
+
+
 namespace NetworkManager
 {
     // can probably be bigger since we're using UDP
@@ -20,7 +22,7 @@ namespace NetworkManager
 
         // "Primitive" Connection Functions
     void SetUpInitialListening(int& port, UDPSocketPtr& listeningSocket, SocketAddressPtr& listeningAddress);
-    void HandleListening(bool& connectionsOpen, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom, priority_queue<pair<int, void*>>& unprocessedData);
+    void HandleListening(std::atomic<bool>* connectionsOpen, UDPSocketPtr& listeningSocket, SocketAddressPtr& addressRecievedFrom, priority_queue<pair<int, void*>>& unprocessedData);
     
     void SetUpSending(int portToSendTo, int portUsedForSending, UDPSocketPtr& sendingSocket, SocketAddressPtr& sendingAddress);
     
