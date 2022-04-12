@@ -1,3 +1,7 @@
+#include "InFlightPacket.h"
+#include "MemoryBitStream.h"
+#include "Timing.h"
+#include "TransmissionData.h"
 
 class DeliveryNotificationManager
 {
