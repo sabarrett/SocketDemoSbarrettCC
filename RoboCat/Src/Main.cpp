@@ -7,19 +7,6 @@
 #include "stdlib.h"
 #include "TCPPacket.h"
 
-const int BRICK_COLUMNS = 10;
-const int BRICK_ROWS = 5;
-
-const int screenWidth = 800;
-const int screenHeight = 450;
-static Vector2 bricks;
-
-static float RandomFloat(float min, float max);
-static void InitGame(bool isHost);
-static void UpdateGame();
-bool gameOver;
-
-
 struct PhysObject {
     Vector2 position;
     Vector2 velocity;
@@ -27,10 +14,6 @@ struct PhysObject {
     bool hasAuthority;
     int id;
 };
-
-
-
-
 
 struct Player : PhysObject {
     Vector2 size;
@@ -63,23 +46,37 @@ struct Brick {
     bool isDead;
     Rectangle rect()
     {
-        return Rectangle{ position.x - bricks.x / 2, position.y - bricks.y / 2, screenWidth / BRICK_COLUMNS, 40 };
+        return Rectangle{ position.x - gi.bricks.x / 2, position.y - gi.bricks.y / 2, gi.screenWidth / gi.BRICK_COLUMNS, 40 };
     }
 };
 
+struct GameInit {
+    static const int BRICK_COLUMNS = 10;
+    static const int BRICK_ROWS = 5;
 
+    const float screenWidth = 800.0;
+    const float screenHeight = 450.0;
+    static Vector2 bricks;
+    bool gameOver;
+    Brick brickList[gi.BRICK_ROWS][gi.BRICK_COLUMNS] = { 0 };
+    // player 1 is always the host
+    Player player1, player2;
+    Ball ball1, ball2;
 
-Brick brickList[BRICK_ROWS][BRICK_COLUMNS] = { 0 };
-// player 1 is always the host
-Player player1, player2;
-Ball ball1, ball2;
+    Vector2 cameraOffset;
+    Color backgroundColor = RAYWHITE;
 
-Vector2 cameraOffset;
-Color backgroundColor = RAYWHITE;
+    static const int NUM_PHYS_OBJ = 20;
+    PhysObject* physicsObjects[gi.NUM_PHYS_OBJ]; // id 0 & 1 are for players, the rest are balls
 
-
-const int NUM_PHYS_OBJ = 20;
-PhysObject* physicsObjects[NUM_PHYS_OBJ]; // id 0 & 1 are for players, the rest are balls
+    void UpdateGame();
+    void InitGame(bool isHost);
+    void UpdatePlayer(Player& player);
+    void UpdatePhysObjs();
+    void UpdateBall(Player& owner, Ball& ball);
+    float RandomFloat(float min, float max);
+};
+extern struct GameInit gi;
 
 enum class StartupScreenAction {
     QUIT,
@@ -88,20 +85,20 @@ enum class StartupScreenAction {
 };
 
 void HandleDestroy(TCPPacketDestroy* destroy) {
-    brickList[destroy->X][destroy->Y].isDead = true;
-    if (player1.hasAuthority) {
-        player2.score++;
-        player2.scoreFrames += player2.scoreFrames + 10;
+    gi.brickList[destroy->X][destroy->Y].isDead = true;
+    if (gi.player1.hasAuthority) {
+        gi.player2.score++;
+        gi.player2.scoreFrames += gi.player2.scoreFrames + 10;
     }
     else {
-        player1.score++;
-        player2.scoreFrames += player2.scoreFrames + 10;
+        gi.player1.score++;
+        gi.player2.scoreFrames += gi.player2.scoreFrames + 10;
     }
       
 }
 
 void HandleMove(TCPPacketMove* move) {
-    PhysObject* obj = physicsObjects[move->objectID];
+    PhysObject* obj = gi.physicsObjects[move->objectID];
     if (obj->hasAuthority) {
         printf("got move packet but this client has authority\n");
         return;
@@ -114,11 +111,11 @@ void HandleMove(TCPPacketMove* move) {
 }
 
 void HandlePlayerInfo(TCPPacketPlayerInfo* info) {
-    if (player1.hasAuthority) {
-        player2.nickname = info->nickname;
+    if (gi.player1.hasAuthority) {
+        gi.player2.nickname = info->nickname;
     }
     else {
-        player1.nickname = info->nickname;
+        gi.player1.nickname = info->nickname;
     }
 }
 
@@ -138,7 +135,7 @@ void DrawTextbox(bool active, Rectangle rec, char* text, const char* placeholder
 
 StartupScreenAction StartupScreen(SocketAddress* out_address, std::string& nickname) {
     bool complete = false;
-    float centerX = screenWidth / 2.0f;
+    float centerX = gi.screenWidth / 2.0f;
     float btnWidth = 400;
 
     Rectangle nickBox = { centerX - (btnWidth * 0.5f), 100, (btnWidth * 0.7), 50 };
@@ -315,7 +312,7 @@ TCPSocketPtr StartHost() {
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        DrawText(msg, screenWidth / 2.0f - textWidth / 2.0f, screenHeight / 2.0f - 10, 20, GRAY);
+        DrawText(msg, gi.screenWidth / 2.0f - textWidth / 2.0f, gi.screenHeight / 2.0f - 10, 20, GRAY);
      
         EndDrawing();
     }
@@ -382,7 +379,7 @@ int main(int argc, const char** argv)
     packetManager.RegisterHandler<TCPPacketMove>(HandleMove);
     packetManager.RegisterHandler<TCPPacketPlayerInfo>(HandlePlayerInfo);
 
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+    InitWindow(gi.screenWidth, gi.screenHeight, "raylib [core] example - basic window");
 
    
 
@@ -419,7 +416,7 @@ int main(int argc, const char** argv)
     if (action == StartupScreenAction::CONNECT)
        masterSocket = StartConnect(address);
 
-    InitGame(action == StartupScreenAction::HOST);
+    gi.InitGame(action == StartupScreenAction::HOST);
 
     TCPPacketPlayerInfo playerInfo;
     playerInfo.type = TCPPacketPlayerInfo::TYPE;
@@ -427,10 +424,10 @@ int main(int argc, const char** argv)
 
     packetManager.SendPacket(masterSocket.get(), &playerInfo);
 
-    if (player1.hasAuthority)
-        player1.nickname = nickname;
-    if (player2.hasAuthority)
-        player2.nickname = nickname;
+    if (gi.player1.hasAuthority)
+        gi.player1.nickname = nickname;
+    if (gi.player2.hasAuthority)
+        gi.player2.nickname = nickname;
 
     bool shouldClose = false;
     // Main game loop
@@ -440,12 +437,12 @@ int main(int argc, const char** argv)
         bool connected = packetManager.HandleInput(masterSocket.get());
         if (!connected) break;
 
-        if (!gameOver)
+        if (!gi.gameOver)
         {
             // Update
             //----------------------------------------------------------------------------------
             // TODO: Update your variables here
-            UpdateGame();
+            gi.UpdateGame();
             //----------------------------------------------------------------------------------
 
 
@@ -455,33 +452,33 @@ int main(int argc, const char** argv)
             Camera2D camera = { 0 };
             camera.offset = Vector2{0, 0 };
             camera.zoom = 1.0f;
-            camera.offset = Vector2Scale(cameraOffset, 3);
+            camera.offset = Vector2Scale(gi.cameraOffset, 3);
             BeginMode2D(camera);
-            ClearBackground(backgroundColor);
+            ClearBackground(gi.backgroundColor);
 
           
 
-            DrawRectangle(10, 10, screenWidth-20, screenHeight-20, RAYWHITE);
+            DrawRectangle(10, 10, gi.screenWidth-20, gi.screenHeight-20, RAYWHITE);
             //Draw Player
 
-            DrawPlayer(player1);
-            DrawPlayer(player2);
+            DrawPlayer(gi.player1);
+            DrawPlayer(gi.player2);
 
             //Draw Ball
-            if (ball1.active)
-                DrawBall(ball1);
-            if (ball2.active)
-                DrawBall(ball2);
+            if (gi.ball1.active)
+                DrawBall(gi.ball1);
+            if (gi.ball2.active)
+                DrawBall(gi.ball2);
             
 
 
             //Draw Bricks
-            for (int i = 0; i < BRICK_ROWS; i++)
+            for (int i = 0; i < gi.BRICK_ROWS; i++)
             {
-                for (int j = 0; j < BRICK_COLUMNS; j++)
+                for (int j = 0; j < gi.BRICK_COLUMNS; j++)
                 {
-                    if (brickList[i][j].isDead == false)
-                        DrawBrick(brickList[i][j]);
+                    if (gi.brickList[i][j].isDead == false)
+                        DrawBrick(gi.brickList[i][j]);
                        
                 }
             }
@@ -489,19 +486,19 @@ int main(int argc, const char** argv)
 
             char scoreBuf[20];
   
-            int textsize1 = 20 + player1.scoreFrames;    
-            itoa(player1.score, scoreBuf, 10);
+            int textsize1 = 20 + gi.player1.scoreFrames;
+            itoa(gi.player1.score, scoreBuf, 10);
             DrawText(scoreBuf, 20, GetScreenHeight() - textsize1 - 45, textsize1, BLUE);
 
-            int textsize2 = 20 + player2.scoreFrames;
-            itoa(player2.score, scoreBuf, 10);
-            DrawText(scoreBuf, screenWidth - MeasureText(scoreBuf, textsize2) - 45, GetScreenHeight() - textsize2 - 45, textsize2, RED);
+            int textsize2 = 20 + gi.player2.scoreFrames;
+            itoa(gi.player2.score, scoreBuf, 10);
+            DrawText(scoreBuf, gi.screenWidth - MeasureText(scoreBuf, textsize2) - 45, GetScreenHeight() - textsize2 - 45, textsize2, RED);
 
-            const char* nick1 = player1.nickname.c_str();
+            const char* nick1 = gi.player1.nickname.c_str();
             DrawText(nick1, 20, GetScreenHeight() - 20, 20, BLUE);
 
-            const char* nick2 = player2.nickname.c_str();
-            DrawText(nick2, screenWidth - MeasureText(nick2, 20) - 20, GetScreenHeight() - 20, 20, RED);
+            const char* nick2 = gi.player2.nickname.c_str();
+            DrawText(nick2, gi.screenWidth - MeasureText(nick2, 20) - 20, GetScreenHeight() - 20, 20, RED);
         }
         EndMode2D();
         EndDrawing();
@@ -515,7 +512,7 @@ int main(int argc, const char** argv)
 
         const char* msg = "Game Over";
         const int textWidth = MeasureText(msg, 20);
-        DrawText(msg, screenWidth / 2.0f - textWidth / 2.0f, screenHeight / 2.0f - 10, 20, GRAY);
+        DrawText(msg, gi.screenWidth / 2.0f - textWidth / 2.0f, gi.screenHeight / 2.0f - 10, 20, GRAY);
         shouldClose = WindowShouldClose();
         EndDrawing();
     }
@@ -543,8 +540,8 @@ void DrawBrick(Brick brick) {
     DrawRectangleRec(rect, brick.brickColor);
     Vector2 btmL = { rect.x, rect.y + rect.height };
     Vector2 topR = { rect.x + rect.width, rect.y };
-    float oX = -cameraOffset.x * 1.5;
-    float oY = -cameraOffset.y * 1.5;
+    float oX = -gi.cameraOffset.x * 1.5;
+    float oY = -gi.cameraOffset.y * 1.5;
     Vector2 points[6] = {
         { btmL.x, btmL.y },
         { btmL.x + 10 + oX, btmL.y + 10 + oY},
@@ -593,73 +590,73 @@ void DrawPlayer(Player player) {
     DrawTriangleStrip(points, 6, BLACK);
 }
 
-void InitGame(bool isHost)
+void GameInit::InitGame(bool isHost)
 {
-    gameOver = false;
+    gi.gameOver = false;
 
     //Setting bricks to screen
-    bricks = { screenWidth/ BRICK_COLUMNS,40};
+    gi.bricks = { gi.screenWidth/ gi.BRICK_COLUMNS,40};
 
     //Init Player
-    player1.position = { screenWidth / 2, screenHeight * 7 / 8 };
-    player1.size = { screenWidth / 10, 20 };
-    player1.playerColor = { 0,0,255,255 };
-    player1.id = 0;
-    player1.active = true;
-    player1.isMe = isHost;
-    player1.hasAuthority = isHost;
+    gi.player1.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 8 };
+    gi.player1.size = { gi.screenWidth / 10, 20 };
+    gi.player1.playerColor = { 0,0,255,255 };
+    gi.player1.id = 0;
+    gi.player1.active = true;
+    gi.player1.isMe = isHost;
+    gi.player1.hasAuthority = isHost;
 
     //Init Ball
-    ball1.position = { screenWidth / 2, screenHeight * 7 / 10 };
-    ball1.velocity = { -2,4 };
-    ball1.ballColor = player1.playerColor;
-    ball1.radius = 7.0;
-    ball1.id = 1;
-    ball1.ownerID = player1.id;
-    ball1.active = true;
-    ball1.hasAuthority = isHost;
+    gi.ball1.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 10 };
+    gi.ball1.velocity = { -2,4 };
+    gi.ball1.ballColor = gi.player1.playerColor;
+    gi.ball1.radius = 7.0;
+    gi.ball1.id = 1;
+    gi.ball1.ownerID = gi.player1.id;
+    gi.ball1.active = true;
+    gi.ball1.hasAuthority = isHost;
 
 
     //Init Player 2
-    player2.position = { screenWidth / 2, screenHeight * 7 / 8 };
-    player2.size = { screenWidth / 10, 20 };
-    player2.playerColor = { 255,0,0,255 };
-    player2.id = 10;
-    player2.active = true;
-    player2.isMe = !isHost;
-    player2.hasAuthority = !isHost;
+    gi.player2.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 8 };
+    gi.player2.size = { gi.screenWidth / 10, 20 };
+    gi.player2.playerColor = { 255,0,0,255 };
+    gi.player2.id = 10;
+    gi.player2.active = true;
+    gi.player2.isMe = !isHost;
+    gi.player2.hasAuthority = !isHost;
 
     //Init Ball 2
-    ball2.position = { screenWidth / 2, screenHeight * 7 / 10 };
-    ball2.velocity = { 2,4 };
-    ball2.ballColor = player2.playerColor;
-    ball2.radius = 7.0;
-    ball2.id = 11;
-    ball2.ownerID = player2.id;
-    ball2.active = true;
-    ball2.hasAuthority = !isHost;
+    gi.ball2.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 10 };
+    gi.ball2.velocity = { 2,4 };
+    gi.ball2.ballColor = gi.player2.playerColor;
+    gi.ball2.radius = 7.0;
+    gi.ball2.id = 11;
+    gi.ball2.ownerID = gi.player2.id;
+    gi.ball2.active = true;
+    gi.ball2.hasAuthority = !isHost;
 
     //Init Bricks
-    for (int i = 0; i < BRICK_ROWS; i++)
+    for (int i = 0; i < gi.BRICK_ROWS; i++)
     {
-        for (int j = 0; j < BRICK_COLUMNS; j++)
+        for (int j = 0; j < gi.BRICK_COLUMNS; j++)
         {
             float hue = RandomFloat(0.0f,360.0f);
             float saturation = RandomFloat(0.42f, 0.98f);
             float value = RandomFloat(0.4f,0.9f);
-            brickList[i][j].position = { j * bricks.x + bricks.x / 2, i * bricks.y + 50 };
-            brickList[i][j].brickColor = ColorFromHSV(hue, saturation, value);
-            brickList[i][j].isDead = false;
+            gi.brickList[i][j].position = { j * gi.bricks.x + gi.bricks.x / 2, i * gi.bricks.y + 50 };
+            gi.brickList[i][j].brickColor = ColorFromHSV(hue, saturation, value);
+            gi.brickList[i][j].isDead = false;
         }
     }
 
-    physicsObjects[player1.id] = &player1;
-    physicsObjects[player2.id] = &player2;
-    physicsObjects[ball1.id] = &ball1;
-    physicsObjects[ball2.id] = &ball2;
+    gi.physicsObjects[gi.player1.id] = &gi.player1;
+    gi.physicsObjects[gi.player2.id] = &gi.player2;
+    gi.physicsObjects[gi.ball1.id] = &gi.ball1;
+    gi.physicsObjects[gi.ball2.id] = &gi.ball2;
 }
 
-float RandomFloat(float min, float max)
+float GameInit::RandomFloat(float min, float max)
 {
     float t = max - min;
     float x = (float)rand() / (float)(RAND_MAX / 1.0f);
@@ -669,29 +666,29 @@ float RandomFloat(float min, float max)
     return out;
 }
 
-void UpdatePhysObjs() {
-    for (int i = 0; i < NUM_PHYS_OBJ; i++) {
-        PhysObject* obj = physicsObjects[i];
+void GameInit::UpdatePhysObjs() {
+    for (int i = 0; i < gi.NUM_PHYS_OBJ; i++) {
+        PhysObject* obj = gi.physicsObjects[i];
         if (obj)
             obj->position = Vector2Add(obj->position, obj->velocity);
         
     }
 }
 
-void UpdateBall(Player& owner, Ball& ball) {
+void GameInit::UpdateBall(Player& owner, Ball& ball) {
 
     Vector2 startVel = ball.velocity;
     //Brick Collision
-    for (int i = 0; i < BRICK_ROWS; i++)
+    for (int i = 0; i < gi.BRICK_ROWS; i++)
     {
-        for (int j = 0; j < BRICK_COLUMNS; j++)
+        for (int j = 0; j < gi.BRICK_COLUMNS; j++)
         {
-            if (brickList[i][j].isDead == false && CheckCollisionCircleRec(ball.position, ball.radius, brickList[i][j].rect()))
+            if (gi.brickList[i][j].isDead == false && CheckCollisionCircleRec(ball.position, ball.radius, gi.brickList[i][j].rect()))
             {
-                Vector2 normal = { ball.position.x - brickList[i][j].position.x, ball.position.y - brickList[i][j].position.y };
+                Vector2 normal = { ball.position.x - gi.brickList[i][j].position.x, ball.position.y - gi.brickList[i][j].position.y };
                 normal = Vector2Normalize(normal);
                 ball.velocity = Vector2Reflect(ball.velocity, normal);
-                brickList[i][j].isDead = true;
+                gi.brickList[i][j].isDead = true;
                 if (ball.hasAuthority) {
                     owner.score++;
                     owner.scoreFrames += owner.scoreFrames + 10;
@@ -703,7 +700,7 @@ void UpdateBall(Player& owner, Ball& ball) {
 
                     packetManager.SendPacket(masterSocket.get(), &testDestroy);
                 }
-                backgroundColor = brickList[i][j].brickColor;
+                gi.backgroundColor = gi.brickList[i][j].brickColor;
             }
         }
     }
@@ -719,10 +716,10 @@ void UpdateBall(Player& owner, Ball& ball) {
     }
 
     //Wall Collision
-    if (ball.position.x + ball.radius >= screenWidth)
+    if (ball.position.x + ball.radius >= gi.screenWidth)
     {
         ball.velocity.x *= -1;
-        ball.position.x = screenWidth - ball.radius; // resolve pen
+        ball.position.x = gi.screenWidth - ball.radius; // resolve pen
     } 
     else if (ball.position.x - ball.radius <= 0)
     {
@@ -734,9 +731,9 @@ void UpdateBall(Player& owner, Ball& ball) {
 
     
 
-    if (ball.position.y - ball.radius >= screenHeight)
+    if (ball.position.y - ball.radius >= gi.screenHeight)
     {
-        ball.position = { screenWidth / 2, screenHeight * 7 / 10 };
+        ball.position = { gi.screenWidth / 2, gi.screenHeight * 7 / 10 };
         ball.velocity = { 0,-4 };
     }
     else if (ball.position.y < 0)
@@ -760,7 +757,7 @@ void UpdateBall(Player& owner, Ball& ball) {
     if (velDelta.x != 0 || velDelta.y != 0) {
         ball.bounceFrames = 5;
         ball.impact = Vector2{ fabs(velDelta.x), fabs(velDelta.y) };
-        cameraOffset = Vector2Scale(velDelta, -1);
+        gi.cameraOffset = Vector2Scale(velDelta, -1);
     }
 
     if (ball.hasAuthority && (startVel.x != ball.velocity.x || startVel.y != ball.velocity.y) ) {
@@ -779,7 +776,7 @@ void UpdateBall(Player& owner, Ball& ball) {
 }
 
 
-void UpdatePlayer(Player& player) {
+void GameInit::UpdatePlayer(Player& player) {
     float startX = player.velocity.x;
 
     if (player.hasAuthority) {
@@ -818,9 +815,9 @@ void UpdatePlayer(Player& player) {
         player.position.x = player.size.x / 2;
         player.velocity.x = 0;
     }
-    if (player.position.x + player.size.x / 2 > screenWidth)
+    if (player.position.x + player.size.x / 2 > gi.screenWidth)
     {
-        player.position.x = screenWidth - player.size.x / 2;
+        player.position.x = gi.screenWidth - player.size.x / 2;
         player.velocity.x = 0;
     }
 
@@ -829,34 +826,34 @@ void UpdatePlayer(Player& player) {
     if (player.scoreFrames > 0) player.scoreFrames -= 1 + player.scoreFrames/100;
 }
 
-void UpdateGame()
+void GameInit::UpdateGame()
 {
 
    
-    UpdatePlayer(player1);
-    UpdatePlayer(player2);
+    gi.UpdatePlayer(gi.player1);
+    gi.UpdatePlayer(gi.player2);
    
-    UpdateBall(player1, ball1);
-    UpdateBall(player2, ball2);
+    gi.UpdateBall(gi.player1, gi.ball1);
+    gi.UpdateBall(gi.player2, gi.ball2);
 
-    UpdatePhysObjs();
+    gi.UpdatePhysObjs();
 
-    cameraOffset = Vector2Scale(cameraOffset, 0.95);
+    gi.cameraOffset = Vector2Scale(gi.cameraOffset, 0.95);
 
     //Reset
-    gameOver = true;
-    for (int i = 0; i < BRICK_ROWS; i++)
+    gi.gameOver = true;
+    for (int i = 0; i < gi.BRICK_ROWS; i++)
     {
-        for (int j = 0; j < BRICK_COLUMNS; j++)
+        for (int j = 0; j < gi.BRICK_COLUMNS; j++)
         {
-            if (brickList[i][j].isDead == false)
+            if (gi.brickList[i][j].isDead == false)
             {
-                gameOver = false;
+                gi.gameOver = false;
             }
         }
     }
-    if (gameOver)
+    if (gi.gameOver)
     {
-        InitGame(player1.isMe);
+        gi.InitGame(gi.player1.isMe);
     }
 }
