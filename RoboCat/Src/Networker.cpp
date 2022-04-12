@@ -624,7 +624,7 @@ void Networker::sendGameObjectState(int ID, PacketType packetHeader)
 PacketType Networker::receiveGameObjectStateUDP()
 {
 	char buffer[1024];
-	int32_t byteRecieve = (*mpTCPSocket)->Receive(buffer, 1024);
+	int32_t byteRecieve = (*mpUDPSocket)->ReceiveFrom(buffer, 1024, (**mpSocketAddressPtr));
 
 	//GamePacket packet;
 	//packet.buffer = buffer;
@@ -867,7 +867,7 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 			if (i % 3 != 0)
 			{
 				//Send packet
-				(*mpTCPSocket)->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
+				(*mpUDPSocket)->SendTo(OMBStream.GetBufferPtr(), OMBStream.GetBitLength(), (**mpSocketAddressPtr));
 			}
 		}
 	}
