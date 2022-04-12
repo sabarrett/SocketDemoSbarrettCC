@@ -3,13 +3,13 @@
 namespace
 {
 	const float kTimeBetweenHellos = 1.f;
-	const float kStartDelay = 1.0f;
+	const float kStartDelay = 0.0f;
 	const int	kSubTurnsPerTurn = 3;
 	const int	kMaxPlayerCount = 4;
 }
 NetworkManager::NetworkManager() :
 	mBytesSentThisFrame(0),
-	mDropPacketChance(0.f),
+	mDropPacketChance(0.1f),
 	mSimulatedLatency(0.f),
 	mBytesReceivedPerSecond(WeightedTimedMovingAverage(1.f)),
 	mBytesSentPerSecond(WeightedTimedMovingAverage(1.f)),
@@ -25,10 +25,20 @@ NetworkManager::NetworkManager() :
 	mNextExpectedSequenceNumber(0),
 	mDispatchedPacketCount(0)
 {
+	mPendingAcks.clear();
 }
 
 NetworkManager::~NetworkManager()
 {
+	TransmissionData* temp;
+	int size = mInFlightPackets.size();
+	for (int i = 0; i < size; i++)
+	{
+		temp = mInFlightPackets.begin()->second;
+		mInFlightPackets.erase(mInFlightPackets.begin());
+		delete(temp);
+		temp = nullptr;
+	}
 }
 
 bool NetworkManager::InitAsMasterPeer(uint16_t inPort, const string& inName)
@@ -37,7 +47,6 @@ bool NetworkManager::InitAsMasterPeer(uint16_t inPort, const string& inName)
 	{
 		return false;
 	}
-
 	//master peer at init means guaranteed first player id
 	mPlayerId = 1;
 	mHighestPlayerId = mPlayerId;
@@ -139,7 +148,10 @@ void NetworkManager::UpdateSayingHello(bool inForce)
 void NetworkManager::SendHelloPacket()
 {
 	OutputMemoryBitStream helloPacket;
-	AddInFlightPacket(helloPacket);
+
+	TransmissionDataHello* newData = new TransmissionDataHello(mName);
+	newData->mPacketType = kHelloCC;
+	AddInFlightPacket(newData, helloPacket);
 	helloPacket.Write(kHelloCC);
 	helloPacket.Write(mName);
 	std::cout << "Saying hello" << std::endl;
@@ -162,21 +174,36 @@ void NetworkManager::UpdateSendActionPacket()
 {
 		//we need to send a turn packet to all of our peers
 		OutputMemoryBitStream packet;
-		AddInFlightPacket(packet);
+
+
+		TransmissionDataUpdate* newData = new TransmissionDataUpdate(mPlayerId);
+		newData->mPacketType = kUpdateCC;
+		AddInFlightPacket(newData, packet);
+
+		//std::cout << newData->sequenceID << " Update" << std::endl;
+
+
 		packet.Write(kUpdateCC);
 		packet.Write(mPlayerId);
-		packet.Write(mActionVec.size());
-		for (uint32_t i = 0; i < mActionVec.size(); i++)
+		uint32_t size = mActionVec.size();
+		packet.Write(size);
+		//std::cout << "Num actions sent: " << size << std::endl;
+		if (size > 0)
 		{
-			mActionVec[i].Write(packet);
+			for (uint32_t i = 0; i < size; i++)
+			{
+				mActionVec[i].Write(packet);
+				newData->mData.push_back(mActionVec[i]);
+			}
 		}
-		
-		WritePendingAcks(packet);
 
-		for (auto& iter : mPlayerToSocketMap)
-		{
-			SendPacket(packet, iter.second);
-		}
+			WritePendingAcks(packet);
+
+			for (auto& iter : mPlayerToSocketMap)
+			{
+				SendPacket(packet, iter.second);
+			}
+		
 		mActionVec.clear();
 }
 
@@ -185,6 +212,7 @@ void NetworkManager::ProcessPacket(InputMemoryBitStream& inInputStream, const So
 	int sequenceID;
 	inInputStream.Read(sequenceID);
 	ProcessSequenceNum(sequenceID);
+	//std::cout << "Recieved packet #" << sequenceID << std::endl;
 	switch (mState)
 	{
 	case NetworkManagerState::NMS_Hello:
@@ -286,11 +314,15 @@ void NetworkManager::HandleWelcomePacket(InputMemoryBitStream& inInputStream)
 
 	//now we need to send out an intro packet to every peer in the socket map
 	OutputMemoryBitStream outPacket;
-	AddInFlightPacket(outPacket);
+
+	TransmissionDataIntro* newData = new TransmissionDataIntro(mName, mPlayerId);
+	newData->mPacketType = kIntroCC;
+	AddInFlightPacket(newData, outPacket);
 	outPacket.Write(kIntroCC);
 	outPacket.Write(mPlayerId);
 	outPacket.Write(mName);
 
+	
 	WritePendingAcks(outPacket);
 
 	for (auto& iter : mPlayerToSocketMap)
@@ -338,7 +370,9 @@ void NetworkManager::HandleHelloPacket(InputMemoryBitStream& inInputStream, cons
 	{
 		//sorry, can't join if full
 		OutputMemoryBitStream outPacket;
-		AddInFlightPacket(outPacket);
+		TransmissionData* newData = new TransmissionData;
+		AddInFlightPacket(newData, outPacket);
+		newData->mPacketType = kNotJoinableCC;
 		outPacket.Write(kNotJoinableCC);
 		WritePendingAcks(outPacket);
 		SendPacket(outPacket, inFromAddress);
@@ -350,19 +384,20 @@ void NetworkManager::HandleHelloPacket(InputMemoryBitStream& inInputStream, cons
 		//it'll only contain the new player's name
 		string name;
 		inInputStream.Read(name);
-
 		OutputMemoryBitStream outputStream;
-		AddInFlightPacket(outputStream);
+		TransmissionDataWelcome* newPacket = new TransmissionDataWelcome;
+		newPacket->mPacketType = kWelcomeCC;
+		AddInFlightPacket(newPacket, outputStream);
+		
 		outputStream.Write(kWelcomeCC);
 		//we'll assign the next possible player id to this player
 		mHighestPlayerId++;
 		outputStream.Write(mHighestPlayerId);
-
+		newPacket->mHighestID = mHighestPlayerId;
 		//write our player id
 		outputStream.Write(mPlayerId);
-
+		newPacket->mID = mPlayerId;
 		outputStream.Write(mPlayerCount);
-
 		//now write the player to socket map
 		for (auto& iter : mPlayerToSocketMap)
 		{
@@ -388,9 +423,15 @@ void NetworkManager::HandleHelloPacket(InputMemoryBitStream& inInputStream, cons
 	}
 	else
 	{
+		string name;
+		inInputStream.Read(name);
 		//talk to the master peer, not me
+
+		TransmissionData* newData = new TransmissionData;
+
 		OutputMemoryBitStream outPacket;
-		AddInFlightPacket(outPacket);
+		AddInFlightPacket(newData, outPacket);
+		newData->mPacketType = kNotMasterPeerCC;
 		outPacket.Write(kNotMasterPeerCC);
 		mMasterPeerAddr.Write(outPacket);
 		WritePendingAcks(outPacket);
@@ -417,6 +458,13 @@ void NetworkManager::HandleIntroPacket(InputMemoryBitStream& inInputStream, cons
 		mSocketToPlayerMap.emplace(inFromAddress, playerId);
 		mPlayerNameMap.emplace(playerId, name);
 	}
+	else //Masterpeer does need to read in the info in order for the acknowledgement to work
+	{
+		int playerId;
+		string name;
+		inInputStream.Read(playerId); //Just read them in, doesn't need to do anything else
+		inInputStream.Read(name);
+	}
 }
 
 void NetworkManager::HandleStartPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress)
@@ -431,7 +479,7 @@ void NetworkManager::HandleStartPacket(InputMemoryBitStream& inInputStream, cons
 		//the time to start, based on latency/jitter
 		mState = NetworkManagerState::NMS_Starting;
 		mTimeToStart = kStartDelay - Timing::sInstance.GetDeltaTime();
-		Game::getInstance()->startGame();
+		
 	}
 }
 
@@ -447,6 +495,7 @@ void NetworkManager::ProcessPacketsPlaying(InputMemoryBitStream& inInputStream, 
 		break;
 	default:
 		//ignore anything else
+		std::cout << "anything else" << std::endl;
 		break;
 	}
 }
@@ -466,15 +515,18 @@ void NetworkManager::HandleUpdatePacket(InputMemoryBitStream& inInputStream, con
 			std::cout << "We received turn data for a different player Id...stop trying to cheat!" << std::endl;
 			return;
 		}
-		int size;
+		uint32_t size;
 		inInputStream.Read(size);
-
-		for (int i = 0; i < size; i++)
+		//std::cout << "Num actions read: " << size << std::endl;
+		if (size > 0)
 		{
-			ActionData data;
-			data.Read(inInputStream);
-			Game::getInstance()->HandleAction(data.type, data.postion, data.seed);
-			
+			for (int i = 0; i < size; i++)
+			{
+				ActionData data;
+				data.Read(inInputStream);
+				Game::getInstance()->HandleAction(data.type, data.postion, data.seed);
+
+			}
 		}
 
 		
@@ -577,7 +629,7 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 			}
 			else
 			{
-				LOG("Dropped packet!", 0);
+				//LOG("Dropped packet!", 0);
 				//dropped!
 			}
 		}
@@ -621,6 +673,7 @@ void NetworkManager::UpdateHighestPlayerId(uint32_t inId)
 void NetworkManager::EnterPlayingState()
 {
 	mState = NetworkManagerState::NMS_Playing;
+	Game::getInstance()->startGame();
 }
 
 void NetworkManager::SendPacket(const OutputMemoryBitStream& inOutputStream, const SocketAddress& inToAddress)
@@ -640,7 +693,10 @@ void NetworkManager::TryStartGame()
 		std::cout << "Sending start" << std::endl;
 		//let everyone know
 		OutputMemoryBitStream outPacket;
-		AddInFlightPacket(outPacket);
+		TransmissionDataStart* newData = new TransmissionDataStart;
+		newData->mPacketType = kStartCC;
+		AddInFlightPacket(newData, outPacket);
+		
 		outPacket.Write(kStartCC);
 		WritePendingAcks(outPacket);
 		for (auto& iter : mPlayerToSocketMap)
@@ -705,31 +761,41 @@ void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
 	}
 }
 
-void NetworkManager::AddInFlightPacket(OutputMemoryBitStream& output)
+void NetworkManager::AddInFlightPacket(TransmissionData* data, OutputMemoryBitStream& output)
 {
 	int sequenceNumber = mNextOutgoingSequenceNumber;
 	output.Write(sequenceNumber);
+	//std::cout << "Sending packet #" << sequenceNumber << " " <<std::endl;
 	++mDispatchedPacketCount;
-	mInFlightPackets.emplace(sequenceNumber, &output);
-	mNextOutgoingSequenceNumber++;
 
+	data->sequenceID = sequenceNumber;
+
+	mInFlightPackets.emplace(sequenceNumber, data);
+	mNextOutgoingSequenceNumber++;
 }
 
 void NetworkManager::WritePendingAcks(OutputMemoryBitStream& output)
 {
-	int size = mPendingAcks.size();
+	uint32_t size = mPendingAcks.size();
 	output.Write(size);
-	for (int i = 0; i < size; i++)
+	//std::cout << "Num of acks " << size << std::endl;
+	if (size > 0)
 	{
-		output.Write(mPendingAcks[i]);
+		for (int i = 0; i < size; i++)
+		{
+			output.Write(mPendingAcks[i]);
+			//std::cout << mPendingAcks[i] << std::endl;
+		}
 	}
 	mPendingAcks.clear();
 }
 
 void NetworkManager::ProcessNewAcks(InputMemoryBitStream& input)
 {
-	int Acks;
+	TransmissionData* temp;
+	uint32_t Acks;
 	input.Read(Acks);
+	//std::cout << "Acks: " << Acks << std::endl;
 	if (Acks > 0)
 	{
 		for (int i = 0; i < Acks; i++)
@@ -737,24 +803,33 @@ void NetworkManager::ProcessNewAcks(InputMemoryBitStream& input)
 			int sequenceNum;
 			input.Read(sequenceNum);
 			int size = mInFlightPackets.size();
-			map<int, OutputMemoryBitStream*>::iterator itr = mInFlightPackets.begin();
+			map<int, TransmissionData*>::iterator itr = mInFlightPackets.begin();
 			for (int j = 0; j < size; j++)
 			{
 				if (itr->first < sequenceNum)
 				{
-					std::cout << sequenceNum << " Packet dropped, resending" << std::endl;
-					mInFlightPackets.erase(mInFlightPackets.begin());
+					//std::cout << itr->first << " < " << sequenceNum << std::endl;
+					temp = itr->second;
+					temp->handleDeliveryFailure();
+					mInFlightPackets.erase(itr);
 					itr = mInFlightPackets.begin();
+					delete(temp);
+					temp = nullptr;
 				}
 				else if (itr->first == sequenceNum)
 				{
-					std::cout << sequenceNum << " Packet delivered" << std::endl;
-					mInFlightPackets.erase(mInFlightPackets.begin());
+					temp = itr->second;
+					//std::cout << sequenceNum << " Packet delivered" << std::endl;
+					temp->handleDeliverySuccess();
+					mInFlightPackets.erase(itr);
 					itr = mInFlightPackets.begin();
+					delete(temp);
+					temp = nullptr;
 				}
 				else if (itr->first > sequenceNum)
 				{
-					std::cout << sequenceNum << " No news" << std::endl;
+					//std::cout << sequenceNum << " No news" << std::endl;
+					break;
 				}
 			}
 		}
@@ -765,19 +840,56 @@ void NetworkManager::ProcessSequenceNum(int sequenceNum)
 {
 	if (sequenceNum == mNextExpectedSequenceNumber)
 	{
+		//std::cout << sequenceNum << " equals " << mNextExpectedSequenceNumber << std::endl;
 		mNextExpectedSequenceNumber = sequenceNum + 1;
 		mPendingAcks.push_back(sequenceNum);
 	}
 	else if (sequenceNum > mNextExpectedSequenceNumber)
 	{
+		//std::cout << sequenceNum << " greater than " << mNextExpectedSequenceNumber << std::endl;
 		mNextExpectedSequenceNumber = sequenceNum + 1;
 		
 		mPendingAcks.push_back(sequenceNum);
+		
 	}
 	else
 	{
+		//std::cout << sequenceNum << " less than " << mNextExpectedSequenceNumber << std::endl;
 		return;
 	}
 
 }
 
+
+
+void NetworkManager::TransmissionDataUpdate::handleDeliveryFailure()
+{
+	std::cout << sequenceID << " Action packet dropped, resending" << std::endl;
+	NetworkManager* pNetManager = Game::getInstance()->getNetworkManager();
+	for (int i = 0; i < mData.size(); i++)
+	{
+		pNetManager->mActionVec.push_back(mData[i]);
+	}
+	mData.clear();
+}
+
+void NetworkManager::TransmissionDataHello::handleDeliveryFailure()
+{
+	std::cout << sequenceID << " hello packet dropped, resending" << std::endl;
+}
+
+void NetworkManager::TransmissionDataIntro::handleDeliveryFailure()
+{
+	std::cout << sequenceID << " intro packet dropped, resending" << std::endl;
+}
+
+void NetworkManager::TransmissionDataWelcome::handleDeliveryFailure()
+{
+	std::cout << sequenceID << " welcome packet dropped, resending" << std::endl;
+}
+void NetworkManager::TransmissionDataStart::handleDeliveryFailure()
+{
+	std::cout << sequenceID << " start packet dropped, resending" << std::endl;
+	NetworkManager* pNetManager = Game::getInstance()->getNetworkManager();
+	pNetManager->TryStartGame();
+}

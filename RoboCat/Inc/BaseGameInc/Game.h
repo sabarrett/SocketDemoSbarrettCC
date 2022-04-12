@@ -33,7 +33,7 @@ public:
 	GraphicsBufferManager* getGraphicsBufferManager() const { return mpGraphicsBufferManager; };
 	UnitManager* getUnitManager() const { return mpUnitManager; };
 	MemoryManager* getMemoryManager() const { return mpMemoryManager; };
-
+	NetworkManager* getNetworkManager() const { return mpNetworkManager; };
 	void startGame() { gameStarted = true; };
 
 	enum class ActionTypes

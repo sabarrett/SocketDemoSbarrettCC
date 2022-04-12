@@ -6,6 +6,7 @@
 class NetworkManager : public Trackable
 {
 public:
+
 	//sent when first trying to join
 	static const uint32_t	kHelloCC = 'HELO';
 	//sent when accepted by master peer
@@ -20,7 +21,6 @@ public:
 	static const uint32_t	kUpdateCC = 'UPDT';
 	//notifies peers that the game will be starting soon
 	static const uint32_t	kStartCC = 'STRT';
-	static const uint32_t	kAckCC = 'ACKN';
 	static const int		kMaxPacketsPerFrameCount = 10;
 
 	enum class NetworkManagerState
@@ -48,6 +48,8 @@ public:
 	void	SendOutgoingPackets();
 
 private:
+	friend struct TransmissionData;
+
 	void	UpdateSayingHello(bool inForce = false);
 	void	SendHelloPacket();
 	void	UpdateStarting();
@@ -55,7 +57,6 @@ private:
 	
 
 public:
-
 	void	ProcessPacket(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress);
 private:
 	void	ProcessPacketsHello(InputMemoryBitStream& inInputStream, const SocketAddress& inFromAddress);
@@ -127,12 +128,10 @@ private:
 		int seed;
 	};
 
+	
 
-	map<int,OutputMemoryBitStream*> mInFlightPackets;
+	
 
-	void AddInFlightPacket(OutputMemoryBitStream&);
-
-	void ClearInFlightPacket(int, InputMemoryBitStream&);
 
 	void	UpdateBytesSentLastFrame();
 	void	ReadIncomingPacketsIntoQueue();
@@ -200,6 +199,63 @@ private:
 	int mNextExpectedSequenceNumber;
 	
 	vector<int> mPendingAcks;
-	
-};
 
+	struct TransmissionData : public Trackable
+	{
+		TransmissionData() {};
+		~TransmissionData() {};
+		virtual void handleDeliveryFailure() { std::cout << sequenceID << " Packet dropped, resending" << std::endl; };
+		virtual void handleDeliverySuccess() {};
+		int sequenceID;
+		uint32_t mPacketType;
+	};
+
+	struct TransmissionDataUpdate : public TransmissionData
+	{
+		TransmissionDataUpdate(uint32_t id) {mPlayerID = id;};
+		void handleDeliveryFailure();
+		//virtual void handleDeliverySuccess();
+
+		vector<ActionData> mData;
+		uint32_t mPlayerID;
+	};
+
+	struct TransmissionDataHello : public TransmissionData
+	{
+		TransmissionDataHello(string name) { mName = name; };
+		void handleDeliveryFailure();
+		//virtual void handleDeliverySuccess();
+
+		string mName;
+	};
+
+	struct TransmissionDataWelcome : public TransmissionData
+	{
+		TransmissionDataWelcome() { };
+		void handleDeliveryFailure();
+		//virtual void handleDeliverySuccess();
+
+		uint32_t mHighestID;
+		uint32_t mID;
+	};
+
+	struct TransmissionDataIntro : public TransmissionData
+	{
+		TransmissionDataIntro(string name, int id) { mName = name; mID = id; };
+		void handleDeliveryFailure();
+		//virtual void handleDeliverySuccess();
+
+		uint32_t mID;
+		string mName;
+	};
+
+	struct TransmissionDataStart : public TransmissionData
+	{
+		TransmissionDataStart() {};
+		void handleDeliveryFailure();
+		//virtual void handleDeliverySuccess();
+	};
+
+	map<int, TransmissionData*> mInFlightPackets;
+	void AddInFlightPacket(TransmissionData*, OutputMemoryBitStream&);
+};
