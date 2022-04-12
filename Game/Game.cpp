@@ -231,6 +231,11 @@ void Game::updateWorldState(int xLoc[], int yLoc[], int type[])
 	}
 }
 
+void Game::addUnitTranslation(int velX, int velY)
+{
+	mpUnitManager->updatePositions(velX, velY);
+}
+
 /*
 void Game::updateWorldState(Unit* units[4096])
 {
@@ -246,6 +251,8 @@ vector<vector<int>> Game::getUnitData()
 {
 	return mpUnitManager->getAllUnitsLocation();
 }
+
+
 
 
 

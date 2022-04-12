@@ -77,6 +77,7 @@ public:
 	void deleteUnits();
 	void deleteAllUnits();
 	void updateWorldState(int xLoc[], int yLoc[], int type[]);
+	void addUnitTranslation(int velX, int velY);
 	//void updateWorldState(Unit* units[4096]);
 	vector<vector<int>> getUnitData();
 };
