@@ -402,6 +402,7 @@
     <ClInclude Include="Inc\UDPSocket.h" />
     <ClCompile Include="Src\AckRange.cpp" />
     <ClCompile Include="Src\DeliveryNotificationManager.cpp" />
+    <ClCompile Include="Src\GameData.cpp" />
     <ClCompile Include="Src\InFlightPacket.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\Colour.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\GraphicsLibrary.cpp" />

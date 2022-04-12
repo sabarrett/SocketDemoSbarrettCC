@@ -1,3 +1,6 @@
+#include "Bullet.h"
+#include "Effect.h"
+#include "Player.h"
 #pragma once
 
 // Name of the game
@@ -36,17 +39,15 @@ const float MAX_EFFECT_TIME = 700;
 
 class GameData
 {
-private:
-	static GameData* instance;
-	GameData();
+protected:
+	GameData() {};
+	static GameData* instance_;
 
 public:
-	static GameData* getInstance() 
-	{
-		if (!instance)
-			instance = new GameData;
-		return instance;
-	}
+	GameData(GameData& other) = delete;
+	void operator=(const GameData&) = delete;
+
+	static GameData* getInstance();
 
 	Player* player1;
 	Player* player2;

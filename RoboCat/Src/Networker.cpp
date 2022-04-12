@@ -3,7 +3,7 @@
 
 Networker::Networker()
 {
-	gameData = gameData->getInstance();
+	//gameData = gameData->getInstance();
 }
 
 Networker::~Networker()
@@ -122,6 +122,6 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 			}
 		}
 
-		return type;
 	}
+	return type;
 }

@@ -15,7 +15,7 @@
 std::mutex mtx;
 
 //Initialize pointer to zero so that it can be initialized in first call to getInstance
-GameData* GameData::instance = 0;
+//GameData* GameData::instance = 0;
 
 int main(int argc, const char** argv)
 {
@@ -158,8 +158,11 @@ int main(int argc, const char** argv)
 			gameData->player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->mPosX, gameData->player2->mPosY);
 
-			std::thread receiveThread([&isGameRunning, &gameObjectIDs, gameData, pNetworker]()
+			std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
 				{
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+					GameData* gameData = GameData::getInstance();
+
 					while (isGameRunning)
 					{
 						switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
@@ -319,7 +322,10 @@ int main(int argc, const char** argv)
 				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->mPosX, gameData->player2->mPosY);
 				pGL->render();
 			}
+
+			receiveThread.join();
 		}
+
 		connSocket->Close();
 		listenSocket->Close();
 		connSocket = nullptr;
@@ -389,8 +395,11 @@ int main(int argc, const char** argv)
 			Player* player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			pGL->drawImage(player2->mImageIdentifier, player2->mPosX, player2->mPosY);
 
-			std::thread receiveThread([&isGameRunning, &gameObjectIDs, gameData, pNetworker]()
+			std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
 				{
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+					GameData* gameData = GameData::getInstance();
+
 					while (isGameRunning)
 					{
 						switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
@@ -506,6 +515,8 @@ int main(int argc, const char** argv)
 				pGL->drawImage(player2->mImageIdentifier, player2->mPosX, player2->mPosY);
 				pGL->render();
 			}
+
+			receiveThread.join();
 			clientSocket->Close();
 		}
 	}
