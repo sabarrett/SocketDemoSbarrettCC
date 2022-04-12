@@ -382,7 +382,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="WASDEvent.cpp" />
+    <ClInclude Include="..\Game\WASDEvent.h" />
     <ClInclude Include="Inc\AckRange.h" />
     <ClInclude Include="..\Game\DeleteUnitsEvent.h" />
     <ClInclude Include="..\Game\EscEvent.h" />
@@ -411,6 +411,8 @@
     <ClInclude Include="Inc\Timing.h" />
     <ClInclude Include="Inc\TransmissionData.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
+    <ClCompile Include="..\Game\main.cpp" />
+    <ClCompile Include="..\Game\WASDEvent.cpp" />
     <ClCompile Include="Src\AckRange.cpp" />
     <ClCompile Include="Src\DeliveryNotificationManager.cpp" />
     <ClCompile Include="Src\InFlightPacket.cpp" />
@@ -434,7 +436,6 @@
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
     <ClInclude Include="sendDataEvent.h" />
-    <ClInclude Include="WASDEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">
@@ -445,6 +446,11 @@
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Game\.sln" />
+    <None Include="..\Game\assignment2.vcxproj" />
+    <None Include="..\Game\assignment2.vcxproj.filters" />
+    <None Include="..\Game\assignment2.vcxproj.user" />
+    <None Include="..\Game\GameLib.sln" />
     <None Include="..\Game\packages.config" />
     <None Include="packages.config" />
   </ItemGroup>

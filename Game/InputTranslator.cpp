@@ -84,19 +84,19 @@ void InputTranslator::handleEvent(const Event& theEvent)
 		}
 		else if (keyEvent.getState() == "W")
 		{
-			mpESystem->fireEvent(WASDEvent(new Vector2D(0, 1)));
+			mpESystem->fireEvent(WASDEvent(Vector2D(0, 1)));
 		}
 		else if (keyEvent.getState() == "A")
 		{
-			mpESystem->fireEvent(WASDEvent(new Vector2D(-1, 0)));
+			mpESystem->fireEvent(WASDEvent(Vector2D(-1, 0)));
+		}
+		else if (keyEvent.getState() == "S")
+		{
+			mpESystem->fireEvent(WASDEvent(Vector2D(0, -1)));
 		}
 		else if (keyEvent.getState() == "D")
 		{
-			mpESystem->fireEvent(WASDEvent(new Vector2D(0, -1)));
-		}
-		else if (keyEvent.getState() == "D")
-		{
-			mpESystem->fireEvent(WASDEvent(new Vector2D(1, 0)));
+			mpESystem->fireEvent(WASDEvent(Vector2D(1, 0)));
 		}
 	}
 }
