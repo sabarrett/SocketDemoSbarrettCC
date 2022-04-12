@@ -356,12 +356,14 @@ void BradsLessOriginalClient()
 		}
 		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
+		list<InputMemoryBitStream> packets;
 		// Recieve data
 		char buffer[4096];
 		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
 		int32_t bytesReceived = int32_t();
 		//LOG("%s", "Client game loop");
 		bytesReceived = clientSocket->Receive(buffer, 4096);
+
 		if (bytesReceived != -10035)
 		{
 			for (int i = 0; i < numObjects; i++)
