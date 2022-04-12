@@ -617,7 +617,7 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 			totalReadByteCount += readByteCount;
 
 			//now, should we drop the packet?
-			if (RoboMath::GetRandomFloatNonGame() >= mDropPacketChance)
+			if (RoboMath::GetRandomFloatNonGame() >= mDropPacketChance && mState >= NetworkManagerState::NMS_Playing)
 			{
 				//we made it
 				//shove the packet into the queue and we'll handle it as soon as we should...
@@ -627,6 +627,12 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 				//Simulating Jitter
 				float simulatedJitter = RoboMath::GetRandomFloat(-0.5f,0.5f);
 				simulatedReceivedTime += simulatedJitter;
+
+				mPacketQueue.emplace(simulatedReceivedTime, inputStream, fromAddress);
+			}
+			else if (mState < NetworkManagerState::NMS_Playing) //Here so that it doesn't drop packets before the game has started
+			{
+				float simulatedReceivedTime = Timing::sInstance.GetTimef() + mSimulatedLatency;
 
 				mPacketQueue.emplace(simulatedReceivedTime, inputStream, fromAddress);
 			}
@@ -867,18 +873,21 @@ void NetworkManager::ProcessSequenceNum(int sequenceNum)
 
 void NetworkManager::TransmissionDataUpdate::handleDeliveryFailure()
 {
-	std::cout << sequenceID << " Action packet dropped, resending" << std::endl;
-	NetworkManager* pNetManager = Game::getInstance()->getNetworkManager();
-	for (int i = 0; i < mData.size(); i++)
+	if (mData.size() > 0)
 	{
-		pNetManager->mActionVec.push_back(mData[i]);
+		std::cout << sequenceID << " Action packet dropped, resending" << std::endl;
+		NetworkManager* pNetManager = Game::getInstance()->getNetworkManager();
+		for (int i = 0; i < mData.size(); i++)
+		{
+			pNetManager->mActionVec.push_back(mData[i]);
+		}
+		mData.clear();
 	}
-	mData.clear();
 }
 
 void NetworkManager::TransmissionDataHello::handleDeliveryFailure()
 {
-	std::cout << sequenceID << " hello packet dropped, resending" << std::endl;
+	std::cout << sequenceID << " hello packet dropped" << std::endl;
 }
 
 void NetworkManager::TransmissionDataIntro::handleDeliveryFailure()
