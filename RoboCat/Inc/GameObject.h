@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DeliveryNotificationManager.h"
 enum GameObjectType
 {
 	PLAYER,
@@ -27,7 +27,7 @@ public:
 
 	GameObjectType mGameObjType = GameObjectType::ENUM_SIZE;
 
-
+	DeliveryNotificationManager* pDeliveryNotificationManager = nullptr;
 
 	string mImageIdentifier = "";
 	GameObject(GameObjectType gameObjType, const int gameID);

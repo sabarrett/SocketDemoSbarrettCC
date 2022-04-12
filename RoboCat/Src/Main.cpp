@@ -89,6 +89,8 @@ int main(int argc, const char** argv)
 		isGameRunning = false;
 	}
 	InputData inputData = InputData();
+	DeliveryNotificationManager* deliveryNotificationManagerPtr = new DeliveryNotificationManager(true, true);
+	pNetworker->pDeliveryNotificationManager = deliveryNotificationManagerPtr;
 
 	if (isHosting) // ------------------------------------------------------------------ HOST ------------------------------------------------------------------
 	{
@@ -139,7 +141,8 @@ int main(int argc, const char** argv)
 		}
 		LOG(" Accepted connection from %s", incomingAddress.ToString().c_str());
 
-		connSocket->SetNonBlockingMode(true);
+		//connSocket->SetNonBlockingMode(true);
+		gameData->SetSocket(connSocket);
 		pNetworker->SetSocket(connSocket);
 
 		// If Graphics and Input initialized correctly
@@ -158,36 +161,20 @@ int main(int argc, const char** argv)
 
 			gameData->player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			gameData->player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
+			gameData->player1->pDeliveryNotificationManager = deliveryNotificationManagerPtr;
+			gameData->player2->pDeliveryNotificationManager = deliveryNotificationManagerPtr;
 			pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->getX(), gameData->player1->getY());
 			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 
-			//std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
-			//	{
-			//		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-			//		//GameData* gameData = GameData::getInstance();
+			std::thread receiveThread([&isGameRunning, pNetworker]()
+				{
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-			//		while (isGameRunning)
-			//		{
-			//			switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
-			//			{
-			//			case GameObjectType::PLAYER:
-			//			{
-			//				/*if (gameData->player2->GetIsFiring())
-			//				{
-			//					std::cout << "Bullet spawn 1" << std::endl;
-			//					Bullet* newBullet = new Bullet(gameObjectIDs, gameData->player2->mPosX + PLAYER_SIZE / 2 - BULLET_SIZE / 2, gameData->player2->mPosY + PLAYER_SIZE * 3 / 2, "bullet", BULLET_SPEED, false);
-			//					gameObjectIDs++;
-			//					gameData->bulletsVector.push_back(newBullet);
-			//				}*/
-			//				break;
-			//			}
-			//			default:
-			//			{
-			//				break;
-			//			}
-			//			}
-			//		}
-			//	});
+					while (isGameRunning)
+					{
+						pNetworker->ReceivePacketIntoQueue();
+					}
+				});
 
 			// ---------------------- Time related ----------------------
 			clock_t start, end;
@@ -212,8 +199,6 @@ int main(int argc, const char** argv)
 				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->getX(), gameData->player1->getY());
 				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 
-				pNetworker->ReceivePacket(gameObjectIDs, isGameRunning);
-				
 				//std::cout << gameData->bulletsVector.size() << std::endl;
 
 				for (auto& bullet : gameData->bulletsVector)
@@ -233,7 +218,7 @@ int main(int argc, const char** argv)
 
 					OutputMemoryBitStream stream;
 					stream.Write(GameObjectType::END_OF_GAME);
-					
+
 					connSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
 					isGameRunning = false;
 				}
@@ -254,94 +239,99 @@ int main(int argc, const char** argv)
 				{
 					//std::cout << "Bullet spawn 3" << std::endl;
 					Bullet* newBullet = new Bullet(gameObjectIDs, gameData->player1->getX() + PLAYER_SIZE / 2 - BULLET_SIZE / 2, gameData->player1->getY() - PLAYER_SIZE / 2, "bullet", BULLET_SPEED, true);
+					newBullet->pDeliveryNotificationManager = deliveryNotificationManagerPtr;
 					gameObjectIDs++;
 					pGL->drawImage(newBullet->mImageIdentifier, newBullet->getX(), newBullet->getX());
 					gameData->bulletsVector.push_back(newBullet);
 					//std::cout << "Space Pressed" << std::endl;
 				}
 
-					for (auto& bullet : gameData->bulletsVector)
+				for (auto& bullet : gameData->bulletsVector)
+				{
+					if (bullet != nullptr)
 					{
-						if (bullet != nullptr)
+						// If bullet hits client's player
+						if (bullet->getY() <= gameData->player2->getY() + PLAYER_SIZE + OFFSET_HIT &&
+							bullet->getX() >= gameData->player2->getX() - BULLET_SIZE &&
+							bullet->getX() <= gameData->player2->getX() + PLAYER_SIZE &&
+							bullet->getY() >= gameData->player2->getY() - BULLET_SIZE / 2)
 						{
-							// If bullet hits client's player
-							if (bullet->getY() <= gameData->player2->getY() + PLAYER_SIZE + OFFSET_HIT &&
-								bullet->getX() >= gameData->player2->getX() - BULLET_SIZE &&
-								bullet->getX() <= gameData->player2->getX() + PLAYER_SIZE &&
-								bullet->getY() >= gameData->player2->getY() - BULLET_SIZE / 2)
-							{
-								//std::cout << "BULLET HIT";
-								pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
+							//std::cout << "BULLET HIT";
+							pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
 
-								Effect* newEffect = new Effect(gameObjectIDs, bullet->getX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
-								newEffect->SendEffect(connSocket);
-								gameObjectIDs++;
-								pGL->drawImage(newEffect->mImageIdentifier, newEffect->getX(), newEffect->getY());
-								gameData->effectsVector.push_back(newEffect);
+							Effect* newEffect = new Effect(gameObjectIDs, bullet->getX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
+							newEffect->pDeliveryNotificationManager = deliveryNotificationManagerPtr;
+							newEffect->SendEffect(connSocket);
+							gameObjectIDs++;
+							pGL->drawImage(newEffect->mImageIdentifier, newEffect->getX(), newEffect->getY());
+							gameData->effectsVector.push_back(newEffect);
 
-								delete bullet;
-								bullet = nullptr;
-								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
-							}
-							// If bullet hits host's player
-							else if (bullet->getY() <= gameData->player1->getY() + PLAYER_SIZE &&
-								bullet->getX() >= gameData->player1->getX() - BULLET_SIZE &&
-								bullet->getX() <= gameData->player1->getX() + PLAYER_SIZE &&
-								bullet->getY() >= gameData->player1->getY() - BULLET_SIZE / 2 - OFFSET_HIT)
-							{
-								//std::cout << "BULLET HIT";
-								pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
+							delete bullet;
+							bullet = nullptr;
+							gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
+						}
+						// If bullet hits host's player
+						else if (bullet->getY() <= gameData->player1->getY() + PLAYER_SIZE &&
+							bullet->getX() >= gameData->player1->getX() - BULLET_SIZE &&
+							bullet->getX() <= gameData->player1->getX() + PLAYER_SIZE &&
+							bullet->getY() >= gameData->player1->getY() - BULLET_SIZE / 2 - OFFSET_HIT)
+						{
+							//std::cout << "BULLET HIT";
+							pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
 
-								Effect* newEffect = new Effect(gameObjectIDs, bullet->getX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
-								newEffect->SendEffect(connSocket);
-								gameObjectIDs++;
-								pGL->drawImage(newEffect->mImageIdentifier, newEffect->getX(), newEffect->getY());
-								gameData->effectsVector.push_back(newEffect);
+							Effect* newEffect = new Effect(gameObjectIDs, bullet->getX() + BULLET_SIZE / 2 - EFFECT_SIZE_X / 2, bullet->getY() - BULLET_SIZE / 2 + EFFECT_SIZE_Y / 2, "effect", true);
+							newEffect->pDeliveryNotificationManager = deliveryNotificationManagerPtr;
+							newEffect->SendEffect(connSocket);
+							gameObjectIDs++;
+							pGL->drawImage(newEffect->mImageIdentifier, newEffect->getX(), newEffect->getY());
+							gameData->effectsVector.push_back(newEffect);
 
-								bullet->gotDestroyed = true;
-								//std::cout << "Bullet spawn 4" << std::endl;
-								bullet->SendBullet(connSocket);
+							bullet->gotDestroyed = true;
+							//std::cout << "Bullet spawn 4" << std::endl;
+							bullet->SendBullet(connSocket);
 
-								delete bullet;
-								bullet = nullptr;
-								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
-							}
-							else if (bullet->getY() <= 0 || bullet->getY() >= RESOLUTION_Y)
-							{
-								//std::cout << "Bullet spawn 5" << std::endl;
-								pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
-								bullet->gotDestroyed = true;
-								bullet->SendBullet(connSocket);
+							delete bullet;
+							bullet = nullptr;
+							gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
+						}
+						else if (bullet->getY() <= 0 || bullet->getY() >= RESOLUTION_Y)
+						{
+							//std::cout << "Bullet spawn 5" << std::endl;
+							pGL->drawImage("bulletCover", bullet->getX(), bullet->getY());
+							bullet->gotDestroyed = true;
+							bullet->SendBullet(connSocket);
 
-								delete bullet;
-								bullet = nullptr;
-								gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
-							}
+							delete bullet;
+							bullet = nullptr;
+							gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
 						}
 					}
-		
-					for (auto& effect : gameData->effectsVector)
-					{
-						if (effect != nullptr)
-						{
-							effect->Update(dt);
-							if (effect->mTimer >= MAX_EFFECT_TIME)
-							{
-								pGL->drawImage("effectCover", effect->getX(), effect->getY());
+				}
 
-								delete effect;
-								effect = nullptr;
-								gameData->effectsVector.erase(std::remove(gameData->effectsVector.begin(), gameData->effectsVector.end(), nullptr), gameData->effectsVector.end());
-							}
+				for (auto& effect : gameData->effectsVector)
+				{
+					if (effect != nullptr)
+					{
+						effect->Update(dt);
+						if (effect->mTimer >= MAX_EFFECT_TIME)
+						{
+							pGL->drawImage("effectCover", effect->getX(), effect->getY());
+
+							delete effect;
+							effect = nullptr;
+							gameData->effectsVector.erase(std::remove(gameData->effectsVector.begin(), gameData->effectsVector.end(), nullptr), gameData->effectsVector.end());
 						}
 					}
-				
+				}
+
+				pNetworker->ProcessQueuedPackets(gameObjectIDs, isGameRunning);
+
 				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->getX(), gameData->player1->getY());
 				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 				pGL->render();
 			}
 
-			//receiveThread.join();
+			receiveThread.join();
 		}
 
 		connSocket->Close();
@@ -393,7 +383,7 @@ int main(int argc, const char** argv)
 		}
 		LOG("%s", " Connected to server!");
 
-		clientSocket->SetNonBlockingMode(true);
+		gameData->SetSocket(clientSocket);
 		pNetworker->SetSocket(clientSocket);
 
 		// If Graphics and Input initialized correctly
@@ -412,42 +402,20 @@ int main(int argc, const char** argv)
 
 			gameData->player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
 			gameData->player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
+			gameData->player1->pDeliveryNotificationManager = deliveryNotificationManagerPtr;
+			gameData->player2->pDeliveryNotificationManager = deliveryNotificationManagerPtr;
+
 			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 
-			//std::thread receiveThread([&isGameRunning, &gameObjectIDs, pNetworker]()
-			//	{
-			//		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-			//		//GameData* gameData = GameData::getInstance();
+			std::thread receiveThread([&isGameRunning, pNetworker]()
+				{
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-			//		while (isGameRunning)
-			//		{
-			//			switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
-			//			{
-			//			case GameObjectType::BULLET:
-			//			{
-			//				//std::cout << "Received a bullet" << std::endl;
-			//				//for (auto& bullet : bulletsVector)
-			//				//{
-			//				//	if (bullet != nullptr)
-			//				//	{
-			//				//		if (bullet->gotDestroyed)
-			//				//		{
-			//				//			//std::cout << "Bullet got destroyed" << std::endl;
-			//				//			//pGL->drawImage("bulletCover", bullet->getPosX(), bullet->getPosY());
-			//				//			bulletsVector.erase(std::remove(bulletsVector.begin(), bulletsVector.end(), bullet), bulletsVector.end());
-			//				//			bullet = nullptr;
-			//				//		}
-			//				//		else
-			//				//		{
-			//				//			bullet->mImageIdentifier = "bullet";
-			//				//		}
-			//				//	}
-			//				//}
-			//			}
-			//			}
-			//			
-			//		}
-			//	});
+					while (isGameRunning)
+					{
+						pNetworker->ReceivePacketIntoQueue();
+					}
+				});
 
 			// ---------------------- Time related ----------------------
 			clock_t start, end;
@@ -471,7 +439,6 @@ int main(int argc, const char** argv)
 				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->getX(), gameData->player1->getY());
 				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 
-				pNetworker->ReceivePacket(gameObjectIDs, isGameRunning);
 
 				//gameData->bulletsVector.erase(std::remove(gameData->bulletsVector.begin(), gameData->bulletsVector.end(), nullptr), gameData->bulletsVector.end());
 				for (auto& bullet : gameData->bulletsVector)
@@ -531,6 +498,8 @@ int main(int argc, const char** argv)
 						}
 					}
 				}
+				
+				pNetworker->ProcessQueuedPackets(gameObjectIDs, isGameRunning);
 
 				gameData->player1->SendPlayer(clientSocket);
 				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->getX(), gameData->player1->getY());

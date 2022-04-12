@@ -63,6 +63,7 @@ void Player::SendPlayer(TCPSocketPtr socketPtr)
 	if (socketPtr)
 	{
 		OutputMemoryBitStream stream;
+		pDeliveryNotificationManager->WriteState(stream);
 		Write(stream);
 		socketPtr->Send(stream.GetBufferPtr(), stream.GetBitLength());
 		mIsFiring = false;
@@ -79,6 +80,7 @@ void Player::ReceivePlayer(TCPSocketPtr inSocket)
 	{
 		InputMemoryBitStream stream(buffer, 1024);
 		Read(stream);
+		pDeliveryNotificationManager->ReadAndProcessState(stream);
 	}
 }
 

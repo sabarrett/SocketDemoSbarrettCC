@@ -42,6 +42,7 @@ class GameData
 protected:
 	GameData() {};
 	static GameData* instance_;
+	TCPSocketPtr inSocket;
 
 public:
 	GameData(GameData& other) = delete;
@@ -49,8 +50,12 @@ public:
 
 	static GameData* getInstance();
 
-	Player* player1;
-	Player* player2;
+	void resendAllEffects();
+
+	void SetSocket(TCPSocketPtr newSocket);
+
+	Player* player1 = nullptr;
+	Player* player2 = nullptr;
 
 	std::vector<Bullet*> bulletsVector;
 	std::vector<Effect*> effectsVector;

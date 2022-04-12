@@ -70,9 +70,11 @@ void Bullet::SendBullet(TCPSocketPtr inSocket)
 	if (inSocket)
 	{
 		OutputMemoryBitStream stream;
+		pDeliveryNotificationManager->WriteState(stream);
 		Write(stream);
 		inSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
-	}
+	}		
+
 	//send(inSocket, stream.GetBufferPtr(), stream.GetBitLength(), 0);
 }
 
@@ -85,6 +87,7 @@ void Bullet::ReceiveBullet(TCPSocketPtr inSocket)
 	{
 		InputMemoryBitStream stream(buffer, 1024);
 		Read(stream);
+		pDeliveryNotificationManager->ReadAndProcessState(stream);
 	}
 }
 

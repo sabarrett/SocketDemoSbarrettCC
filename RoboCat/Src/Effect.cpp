@@ -66,6 +66,7 @@ void Effect::SendEffect(TCPSocketPtr inSocket)
 	if (inSocket)
 	{
 		OutputMemoryBitStream stream;
+		pDeliveryNotificationManager->WriteState(stream);
 		Write(stream);
 		inSocket->Send(stream.GetBufferPtr(), stream.GetBitLength());
 	}
@@ -79,6 +80,7 @@ void Effect::ReceiveEffect(TCPSocketPtr inSocket)
 	if (bytesReceived > 0)
 	{
 		InputMemoryBitStream stream(buffer, 1024);
+		pDeliveryNotificationManager->ReadAndProcessState(stream);
 		Read(stream);
 	}
 

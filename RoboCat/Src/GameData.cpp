@@ -10,3 +10,16 @@ GameData* GameData::getInstance()
     }
     return instance_;
 }
+
+void GameData::SetSocket(TCPSocketPtr newSocket)
+{
+    inSocket = newSocket;
+}
+
+void GameData::resendAllEffects()
+{
+    for (auto& effect : effectsVector)
+    {
+        effect->SendEffect(inSocket);
+    }
+}
