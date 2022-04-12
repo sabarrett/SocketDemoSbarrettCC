@@ -6,10 +6,12 @@
 
 #include <thread>
 
-
-
-
-
+bool is_number(const std::string& s)
+{
+	std::string::const_iterator it = s.begin();
+	while (it != s.end() && std::isdigit(*it)) ++it;
+	return !s.empty() && it == s.end();
+}
 
 #if _WIN32
 
@@ -104,27 +106,45 @@ int main(int argc, const char** argv)
 			cinInput.push_back(command.substr(0, pos));
 			if (cinInput[0] == "/latency" && cinInput.size() >= 2)
 			{
-				game->SetLatency(stof(cinInput[1]));
+				if (is_number(cinInput[1]))
+				{
+					game->SetLatency(stof(cinInput[1]));
+				}
 			}
 			if (cinInput[0] == "/jitter" && cinInput.size() >= 2)
 			{
-				game->SetJitter(stof(cinInput[1]));
+				if (is_number(cinInput[1]))
+				{
+					game->SetJitter(stof(cinInput[1]));
+				}
 			}
 			if (cinInput[0] == "/drop" && cinInput.size() >= 2)
 			{
-				game->SetDrop(stof(cinInput[1]));
+				if (is_number(cinInput[1]))
+				{
+					game->SetDrop(stof(cinInput[1]));
+				}
 			}
 			if (cinInput[0] == "/slatency" && cinInput.size() >= 2 && server)
 			{
-				server->SetLatency(stof(cinInput[1]));
+				if (is_number(cinInput[1]))
+				{
+					server->SetLatency(stof(cinInput[1]));
+				}
 			}
 			if (cinInput[0] == "/sjitter" && cinInput.size() >= 2 && server)
 			{
-				server->SetJitter(stof(cinInput[1]));
+				if (is_number(cinInput[1]))
+				{
+					server->SetJitter(stof(cinInput[1]));
+				}
 			}
 			if (cinInput[0] == "/sdrop" && cinInput.size() >= 2 && server)
 			{
-				server->SetDrop(stof(cinInput[1]));
+				if (is_number(cinInput[1]))
+				{
+					server->SetDrop(stof(cinInput[1]));
+				}
 			}
 		}
 		});
