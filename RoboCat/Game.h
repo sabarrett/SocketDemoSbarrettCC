@@ -19,6 +19,8 @@ class Game
 
 	ALLEGRO_KEYBOARD_STATE* keyboardState;
 	TCPSocketPtr TCPSocket;
+	UDPSocketPtr UDPSocket;
+	SocketAddress address;
 
 
 	bool mRunning = false;
@@ -37,7 +39,7 @@ class Game
 	void CheckCollisions(ball* ball);
 	void CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2);
 	void SendUpdatedStates();
-	int Send(const void *inData, size_t inLen);
+	int Send(const void* inData, size_t inLen, bool reliable);
 	void Receive(); 
 
 	

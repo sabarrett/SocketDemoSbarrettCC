@@ -180,7 +180,7 @@ void Game::UpdateBall(ball* ball)
 	oStream.Write(ball->pos->x);
 	oStream.Write(ball->pos->y);
 
-	Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+	Send(oStream.GetBufferPtr(), oStream.GetBitLength(), false);
 }
 
 void Game::UpdateScore()
@@ -190,7 +190,7 @@ void Game::UpdateScore()
 	oStream.Write(mScoreOne->points);
 	oStream.Write(mScoreTwo->points);
 
-	TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+	Send(oStream.GetBufferPtr(), oStream.GetBitLength(), true);
 
 	OutputMemoryBitStream o2Stream;
 	
@@ -204,7 +204,7 @@ void Game::UpdateScore()
 
 		o2Stream.Write(PacketType::PT_WIN);
 		o2Stream.Write(0);
-		Send(o2Stream.GetBufferPtr(), o2Stream.GetBitLength());
+		Send(o2Stream.GetBufferPtr(), o2Stream.GetBitLength(), true);
 	}
 	else if (mScoreTwo->points >= 20)
 	{
@@ -215,7 +215,7 @@ void Game::UpdateScore()
 
 		o2Stream.Write(PacketType::PT_WIN);
 		o2Stream.Write(1);
-		Send(o2Stream.GetBufferPtr(), o2Stream.GetBitLength());
+		Send(o2Stream.GetBufferPtr(), o2Stream.GetBitLength(), true);
 	}
 }
 
@@ -261,13 +261,21 @@ void Game::SendUpdatedStates()
 	oStream.Write(PacketType::PT_PADDLE);
 	oStream.Write(yPos);
 
-	Send(oStream.GetBufferPtr(), oStream.GetBitLength());
+	Send(oStream.GetBufferPtr(), oStream.GetBitLength(), false);
 }
 
-int Game::Send(const void* inData, size_t inLen)
+int Game::Send(const void* inData, size_t inLen, bool reliable)
 {
-
-	int temp = TCPSocket->Send(inData, inLen);
+	if (reliable) 
+	{
+		TCPSocket->Send(inData, inLen);
+	}
+	else 
+	{
+		int num = rand() % 100 + 1;
+		if (num >= 25)
+			UDPSocket->SendTo(inData, inLen, address);
+	}
 	return 0;
 }
 
@@ -277,13 +285,9 @@ void Game::Receive()
 	{
 		char buffer[1024];
 		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
+		int32_t bytesReceivedUDP = UDPSocket->ReceiveFrom(buffer, 1024, address);
 		if (bytesReceived > 0)
 		{
-
-			int num = rand() % 100 + 1;
-
-			if (num >= 25)
-			{
 				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
 				PacketType type;
 				iStream.Read(type);
@@ -337,33 +341,6 @@ void Game::Receive()
 						LOG("User disconnected: %s", "<Insert ID here>");
 					}
 				}
-			}
-			else
-			{
-				//std::cout << "Dropping Packet.." << std::endl;
-
-				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
-				PacketType type;
-				iStream.Read(type);
-				if (type == PacketType::PT_PADDLE)
-				{
-					//std::cout << "Type: Paddle" << std::endl;
-				}
-				if (type == PacketType::PT_BALL)
-				{
-					//std::cout << "Type: Ball" << std::endl;
-				}
-				if (type == PacketType::PT_SCORE)
-				{
-					//std::cout << "Type: Score" << std::endl;
-				}
-				if (type == PacketType::PT_WIN)
-				{
-					//std::cout << "Type: Win" << std::endl;
-				}
-
-				//Drop packet
-			}
 
 		}
 	}
@@ -548,13 +525,12 @@ void Game::StartServer()
 
 	TCPSocket->SetNonBlockingMode(false);
 
-	SocketAddress incomingAddress;
-	TCPSocketPtr connSocket = TCPSocket->Accept(incomingAddress);
+	TCPSocketPtr connSocket = TCPSocket->Accept(address);
 	
 	TCPSocket->~TCPSocket();
 	TCPSocket = connSocket;
 	TCPSocket->SetNonBlockingMode(false);
-	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+	LOG("Accepted connection from %s", address.ToString().c_str());
 
 
 }
