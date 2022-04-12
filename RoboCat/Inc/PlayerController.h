@@ -8,7 +8,7 @@
 #include "GameObject.h"
 #include "InputSystem.h"
 
-class PlayerController : public GameObject
+class PlayerController : public GameObject, public TransmissionData
 {
 	//-------------------------Private data-------------------------
 
@@ -30,6 +30,10 @@ public:
 	//Constructor(s)
 	PlayerController(const int networkID, GraphicsLibrary* graphicsLibrary);
 	PlayerController(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier);
+
+	//Overloaded functions
+	void HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const;
+	void HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const;
 
 	//Destructor
 	~PlayerController();

@@ -8,7 +8,7 @@
 #include "GameObject.h"
 #include "Colour.h"
 
-class Wall : public GameObject
+class Wall : public GameObject, public TransmissionData
 {
 	//-------------------------Private data-------------------------
 	float mSizeX;
@@ -23,6 +23,10 @@ public:
 	//Constructor(s)
 	Wall(const int networkID, GraphicsLibrary* graphicsLibrary);
 	Wall(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, Colour colour, float thickness);
+
+	//Overloaded functions
+	void HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const;
+	void HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const;
 
 	//Destructor
 	~Wall();

@@ -27,7 +27,7 @@ private:
 	
 	
 	InFlightPacket*		WriteSequenceNumber( OutputMemoryBitStream& inOutputStream );
-	void				WriteAckData( OutputMemoryBitStream& inOutputStream );
+	void				WriteAckData(OutputMemoryBitStream& inOutputStream) const;
 	
 	//returns wether to drop the packet- if sequence number is too low!
 	bool				ProcessSequenceNumber( InputMemoryBitStream& inInputStream );

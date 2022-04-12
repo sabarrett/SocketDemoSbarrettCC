@@ -21,6 +21,15 @@ Wall::Wall(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, fl
 	mThickness = thickness;
 }
 
+void Wall::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
+{
+	inDeliveryNotificationManager->
+}
+void Wall::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
+{
+	inDeliveryNotificationManager->
+}
+
 Wall::~Wall()
 {
 

@@ -29,6 +29,15 @@ PlayerController::PlayerController(const int networkID, GraphicsLibrary* graphic
 	mMoveSpeed = moveSpeed;
 }
 
+void PlayerController::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
+{
+	inDeliveryNotificationManager->
+}
+void PlayerController::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
+{
+	inDeliveryNotificationManager->
+}
+
 PlayerController::~PlayerController()
 {
 	//Key down

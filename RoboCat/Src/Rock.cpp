@@ -13,6 +13,15 @@ Rock::Rock(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, fl
 
 }
 
+void Rock::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
+{
+	inDeliveryNotificationManager->
+}
+void Rock::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
+{
+	inDeliveryNotificationManager->
+}
+
 Rock::~Rock()
 {
 

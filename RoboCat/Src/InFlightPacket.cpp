@@ -1,4 +1,5 @@
 #include "RoboCatPCH.h"
+#include "InFlightPacket.h"
 
 InFlightPacket::InFlightPacket( PacketSequenceNumber inSequenceNumber ) :
 mSequenceNumber( inSequenceNumber ),

@@ -6,8 +6,9 @@
 */
 
 #include "GameObject.h"
+#include "TransmissionData.h"
 
-class Rock : public GameObject
+class Rock : public GameObject, public TransmissionData
 {
 	//-------------------------Private data-------------------------
 
@@ -18,6 +19,10 @@ public:
 	//Constructor(s)
 	Rock(const int networkID, GraphicsLibrary* graphicsLibrary);
 	Rock(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, const std::string spriteIdentifier);
+
+	//Overloaded functions
+	void HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const;
+	void HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const;
 
 	//Destructor
 	~Rock();

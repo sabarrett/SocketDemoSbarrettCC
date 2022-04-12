@@ -1,4 +1,5 @@
 #include "RoboCatPCH.h"
+#include "DeliveryNotificationManager.h"
 
 namespace
 {
@@ -48,7 +49,7 @@ InFlightPacket* DeliveryNotificationManager::WriteSequenceNumber( OutputMemoryBi
 	}
 }
 
-void DeliveryNotificationManager::WriteAckData( OutputMemoryBitStream& inOutputStream )
+void DeliveryNotificationManager::WriteAckData(OutputMemoryBitStream& inOutputStream) const
 {
 	//we usually will only have one packet to ack
 	//so we'll follow that with a 0 bit if that's the case
