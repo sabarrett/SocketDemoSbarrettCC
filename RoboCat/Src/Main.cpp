@@ -1,4 +1,3 @@
-
 #include "RoboCatPCH.h"
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 #include "allegro_wrapper_functions-main/InputSystem.h"
@@ -6,6 +5,8 @@
 #include "Effect.h"
 #include <chrono>
 #include "Player.h"
+#include "Networker.h"
+#include "GameData.h"
 #include <algorithm>
 #include <mutex>
 
@@ -13,149 +14,8 @@
 
 std::mutex mtx;
 
-// Name of the game
-const string GAME_NAME = "temporary name";
-
-// Filenames and paths
-const string IMAGES_PATH = "Images/";
-const string BACKGROUND_FILENAME = "Background.png";
-const string PLAYER_SPRITE_FILENAME = "PlayerSprite.png";
-const string BULLET_SPRITE_FILENAME = "BulletSprite.png";
-const string BULLET_COVER_FILENAME = "BulletCover.png";
-const string EFFECT_SPRITE_FILENAME = "Effect.png";
-const string EFFECT_COVER_FILENAME = "EffectCover.png";
-
-// Screen Resolution
-const float RESOLUTION_X = 1920.0;
-const float RESOLUTION_Y = 1080.0;
-
-// Sprites sizes
-const float PLAYER_SIZE = 80.0;
-const float BULLET_SIZE = 30.0;
-const float EFFECT_SIZE_X = 120.0;
-const float EFFECT_SIZE_Y = 30.0;
-const float OFFSET_HIT = 1.0;
-
-// Objects speed
-const float BULLET_SPEED = 0.01;
-const float PLAYER_SPEED = 0.02;
-
-// Networking data
-const string HOST_PORT_NUMBER = "8081";
-const string CLIENT_PORT_NUMBER = "8084";
-
-// Effect duration
-const float MAX_EFFECT_TIME = 700;
-
-GameObjectType ReceivePacket(TCPSocketPtr inSocket, int& currentMaxID, Player* player2, vector<Bullet*>* bulletsVector, vector<Effect*>* effectsVector, bool& shouldExit)
-{
-	GameObjectType type = GameObjectType::ENUM_SIZE;
-	int id = 0;
-	float x = 0;
-	float y = 0;
-
-	char buffer[128];
-	int32_t bytesReceived = inSocket->Receive(buffer, 128);
-
-	if (bytesReceived == 0)
-	{
-		LOG("%s", " Connection gracefully closed. Press enter to exit!");
-		shouldExit = false;
-	}
-	if (bytesReceived < 0)
-	{
-		LOG("%s", " Connection forcefully closed. Press enter to exit!");
-		shouldExit = false;
-	}
-	if (bytesReceived > 0)
-	{
-		InputMemoryBitStream stream(buffer, 128);
-		stream.Read(type);
-		stream.Read(id);
-
-		if (id >= currentMaxID)
-		{
-			switch (type)
-			{
-			case GameObjectType::BULLET:
-			{
-				bool isGoingUpwards;
-
-				stream.Read(x);
-				stream.Read(y);
-				stream.Read(isGoingUpwards);
-
-				Bullet* bullet = new Bullet(id, -1 * x + RESOLUTION_X, -1 * y + RESOLUTION_Y, BULLET_SPEED, !isGoingUpwards);
-				bulletsVector->push_back(bullet);
-				currentMaxID = id + 1;
-				break;
-			}
-			case GameObjectType::EFFECT:
-			{
-				bool shouldDisplay;
-
-				stream.Read(x);
-				stream.Read(y);
-				stream.Read(shouldDisplay);
-
-				Effect* effect = new Effect(id, -1 * x + RESOLUTION_X, -1 * y + RESOLUTION_Y, shouldDisplay);
-				effectsVector->push_back(effect);
-				currentMaxID = id + 1;
-				break;
-			}
-			}
-		}
-		else
-		{
-			switch (type)
-			{
-			case GameObjectType::PLAYER:
-			{
-				bool isFiring;
-				bool isHit;
-
-				stream.Read(x);
-				stream.Read(y);
-				stream.Read(isFiring);
-				stream.Read(isHit);
-
-				player2->mPosX = (-1 * x + RESOLUTION_X);
-				player2->SetIsFiring(isFiring);
-				player2->SetIsHit(isHit);
-
-				break;
-			}
-			case GameObjectType::BULLET:
-			{
-				bool isMovingUpwards;
-				bool gotDestroyed;
-				stream.Read(x);
-				stream.Read(y);
-				stream.Read(isMovingUpwards);
-				stream.Read(gotDestroyed);
-
-
-				for (auto& bullet : *bulletsVector)
-				{
-					if (bullet != nullptr)
-					{
-						if (bullet->getGameID() == id)
-						{
-							bullet->mPosX = (-1 * x + RESOLUTION_X);
-							bullet->mPosY = (-1 * y + RESOLUTION_Y);
-							bullet->gotDestroyed = gotDestroyed;
-						}
-					}
-				}
-
-				break;
-			}
-			}
-		}
-
-		return type;
-	}
-}
+//Initialize pointer to zero so that it can be initialized in first call to getInstance
+GameData* GameData::instance = 0;
 
 int main(int argc, const char** argv)
 {
@@ -174,9 +34,10 @@ int main(int argc, const char** argv)
 
 	// ---------------------- General Game Data ----------------------
 	bool isGameRunning = true;
-	std::vector<Bullet*> bulletsVector;
-	std::vector<Effect*> effectsVector;
 	int gameObjectIDs = 2;
+
+	Networker* pNetworker = new Networker();
+	GameData* gameData = gameData->getInstance();
 	
 	// ---------------------- Intro Screen ----------------------
 	string input = "";
@@ -277,6 +138,8 @@ int main(int argc, const char** argv)
 		}
 		LOG(" Accepted connection from %s", incomingAddress.ToString().c_str());
 
+		pNetworker->SetSocket(connSocket);
+
 		// If Graphics and Input initialized correctly
 		if (isGameRunning)
 		{
@@ -291,17 +154,17 @@ int main(int argc, const char** argv)
 			// Draw Stuff
 			pGL->drawImage("background", 0.0, 0.0);
 
-			Player* player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
-			Player* player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
-			pGL->drawImage(player2->mImageIdentifier, player2->mPosX, player2->mPosY);
+			gameData->player1 = new Player(0, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 8 / 10 + PLAYER_SIZE / 2, PLAYER_SPEED, "player");
+			gameData->player2 = new Player(1, RESOLUTION_X / 2 - PLAYER_SIZE / 2, RESOLUTION_Y * 1 / 10 - PLAYER_SIZE / 2, PLAYER_SPEED, "player");
+			pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->mPosX, gameData->player2->mPosY);
 
-			std::thread receiveThread([&isGameRunning, &connSocket, &bulletsVector, &gameObjectIDs, &player2, &effectsVector, &pGL]()
+			std::thread receiveThread([&isGameRunning, &connSocket, &gameObjectIDs, &pGL, &gameData]()
 				{
 					while (isGameRunning)
 					{
 						if (connSocket != nullptr)
 						{							
-							switch (ReceivePacket(connSocket, gameObjectIDs, player2, &bulletsVector, &effectsVector, isGameRunning))
+							switch (pNetworker->ReceivePacket(gameObjectIDs, isGameRunning))
 							{
 								case GameObjectType::PLAYER:
 								{
@@ -508,6 +371,8 @@ int main(int argc, const char** argv)
 			ExitProcess(1);
 		}
 		LOG("%s", " Connected to server!");
+
+		pNetworker->SetSocket(clientSocket);
 
 		// If Graphics and Input initialized correctly
 		if (isGameRunning)
