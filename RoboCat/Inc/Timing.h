@@ -3,7 +3,7 @@ class Timing
 public:
 
 	Timing();
-	
+
 	void Update();
 
 	float GetDeltaTime() const { return mDeltaTime; }
@@ -12,13 +12,13 @@ public:
 
 	float GetTimef() const
 	{
-		return static_cast< float >( GetTime() );
+		return static_cast<float>(GetTime());
 	}
 
 	float GetFrameStartTime() const { return mFrameStartTimef; }
 
 
-	static Timing sInstance; 
+	static Timing sInstance;
 
 private:
 	float		mDeltaTime;

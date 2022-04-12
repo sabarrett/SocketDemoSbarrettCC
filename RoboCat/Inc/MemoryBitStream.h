@@ -100,11 +100,13 @@ public:
 		//allocate buffer of right size
 		int byteCount = ( mBitCapacity + 7 ) / 8;
 		mBuffer = static_cast< char* >( malloc( byteCount ) );
-		//copy
-		memcpy( mBuffer, inOther.mBuffer, byteCount );
+			//copy
+		memcpy(mBuffer, inOther.mBuffer, byteCount);
+		
 	}
 	
-	~InputMemoryBitStream() { if (mIsBufferOwner) { std::cout << "Freeing " << mBuffer << std::endl; free(mBuffer); }; }
+	~InputMemoryBitStream() { if (mIsBufferOwner) { //std::cout << "Freeing " << mBuffer << std::endl; 
+	free(mBuffer); }; }
 	
 	const 	char*	GetBufferPtr()		const	{ return mBuffer; }
 	uint32_t	GetRemainingBitCount() 	const { return mBitCapacity - mBitHead; }
