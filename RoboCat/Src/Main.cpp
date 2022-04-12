@@ -474,6 +474,7 @@ int main(int argc, const char** argv)
 				{
 					//std::cout << "D Pressed" << std::endl;				
 					gameData->player1->Move(dt * gameData->player1->GetSpeed());
+					gameData->player1->SendPlayer(clientSocket);
 				}
 				if (inputData.keyPressed_SPACE)
 				{
@@ -501,7 +502,6 @@ int main(int argc, const char** argv)
 				
 				pNetworker->ProcessQueuedPackets(gameObjectIDs, isGameRunning);
 
-				gameData->player1->SendPlayer(clientSocket);
 				pGL->drawImage(gameData->player1->mImageIdentifier, gameData->player1->getX(), gameData->player1->getY());
 				pGL->drawImage(gameData->player2->mImageIdentifier, gameData->player2->getX(), gameData->player2->getY());
 				pGL->render();

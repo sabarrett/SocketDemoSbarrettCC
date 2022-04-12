@@ -1,5 +1,5 @@
 #pragma once
-#include "DeliveryNotificationManager.h"
+
 enum GameObjectType
 {
 	PLAYER,

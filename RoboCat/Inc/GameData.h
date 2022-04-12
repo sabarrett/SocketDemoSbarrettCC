@@ -35,7 +35,7 @@ const string HOST_PORT_NUMBER = "8082";
 const string CLIENT_PORT_NUMBER = "8085";
 
 // Effect duration
-const float MAX_EFFECT_TIME = 700;
+const float MAX_EFFECT_TIME = 7000;
 
 class GameData
 {

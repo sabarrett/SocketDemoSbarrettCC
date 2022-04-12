@@ -39,8 +39,8 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 	float x = 0;
 	float y = 0;
 
-	char buffer[1500];
-	int32_t bytesReceived = inSocket->Receive(buffer, 1500);
+	char buffer[4096];
+	int32_t bytesReceived = inSocket->Receive(buffer, 4096);
 
 	/*if (bytesReceived == 0)
 	{
@@ -54,7 +54,7 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 	//}
 	if (bytesReceived > 0)
 	{
-		InputMemoryBitStream stream(buffer, 1500);
+		InputMemoryBitStream stream(buffer, 4096);
 		
 		stream.Read(type);
 
@@ -166,7 +166,7 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 
 void Networker::ReceivePacketIntoQueue()
 {
-	char packetMem[1500];
+	char packetMem[4096];
 	int packetSize = sizeof(packetMem);
 	InputMemoryBitStream inputStream(packetMem, packetSize * 8);
 
