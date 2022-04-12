@@ -375,6 +375,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\CircleClass.h" />
+    <ClInclude Include="Inc\RainParticle.h" />
+    <ClInclude Include="Inc\RectangleObject.h" />
     <ClInclude Include="Inc\AckRange.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\DeliveryNotificationManager.h" />
