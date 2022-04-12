@@ -1,13 +1,13 @@
 # Socket Demo
 # Running and playing instructions
-These are the step-by-step instructions for running and playing Assignment 2.
+These are the step-by-step instructions for running and playing Assignment 3.
 
 1. Build the solution and launch a command window from SocketDemo\RoboCat\Bin\Debug
 2. Run the .exe in the command window with the following arguments. For the first instance of the game, enter a port number and the username of the player.
 Exe: SocketDemo.exe 8000 Harris
 3. For all other instances once the master peer is open, give it the full address of the master peer, followed by the username.
 Exe: SocketDemo.exe 127.0.0.1:8000 Scott
-4. Once all game instances are open, press the S KEY on the master peer instance to start the game and wait 1 second.
+4. Once all game instances are open, press the S KEY on the master peer instance to start the game.
 5. The game should now be started and you can take the following actions.
 
 LEFT CLICK: Will draw the base game object on both instances. Can be held down to draw more.
