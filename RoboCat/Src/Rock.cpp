@@ -17,6 +17,7 @@ void Rock::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotifica
 {
 	inDeliveryNotificationManager->
 }
+
 void Rock::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
 	inDeliveryNotificationManager->

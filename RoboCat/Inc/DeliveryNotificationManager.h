@@ -1,8 +1,3 @@
-#include "InFlightPacket.h"
-#include "MemoryBitStream.h"
-#include "Timing.h"
-#include "TransmissionData.h"
-
 class DeliveryNotificationManager
 {
 public:
@@ -27,7 +22,7 @@ private:
 	
 	
 	InFlightPacket*		WriteSequenceNumber( OutputMemoryBitStream& inOutputStream );
-	void				WriteAckData(OutputMemoryBitStream& inOutputStream) const;
+	void				WriteAckData(OutputMemoryBitStream& inOutputStream);
 	
 	//returns wether to drop the packet- if sequence number is too low!
 	bool				ProcessSequenceNumber( InputMemoryBitStream& inInputStream );

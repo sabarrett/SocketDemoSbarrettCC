@@ -33,6 +33,7 @@ void PlayerController::HandleDeliveryFailure(DeliveryNotificationManager* inDeli
 {
 	inDeliveryNotificationManager->
 }
+
 void PlayerController::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
 	inDeliveryNotificationManager->

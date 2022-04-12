@@ -25,6 +25,7 @@ void Wall::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotifica
 {
 	inDeliveryNotificationManager->
 }
+
 void Wall::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
 	inDeliveryNotificationManager->
