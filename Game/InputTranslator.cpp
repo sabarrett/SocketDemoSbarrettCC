@@ -82,5 +82,8 @@ void InputTranslator::handleEvent(const Event& theEvent)
 			//fire exit game event
 			mpESystem->fireEvent(PlaceUnitEvent(3));
 		}
+		/*
+		* else if keyevent WASD
+		*/
 	}
 }

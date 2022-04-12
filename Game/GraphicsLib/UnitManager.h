@@ -12,6 +12,7 @@ class UnitManager : public Trackable
 {
 private:
 	vector<Unit*> mUnits;
+	vector<int> deletedUnits;
 	bool mCurrentlyPaused;
 
 public:
@@ -34,12 +35,14 @@ public:
 	void deleteAllUnits();
 	void deleteRandomUnit();
 	void deleteUnit(Unit* delUnit);
+	void deleteUnitID(int id);
 	void erase(int mouseX, int mouseY, const int UNIT_WIDTH, const int UNIT_HEIGHT);
 	void clear();
 
 	//GET UNIT
 	Unit* getUnit(int unitLoc);
 	Unit* getLastUnit();
+	Unit* getUnitWithID(int id);
 
 	//SET ANIMATIONS
 	void setUnitAnim(Unit* unit, int anim);
@@ -66,6 +69,7 @@ public:
 	void draw(GraphicsSystem* gSystem);
 
 	vector<vector<int>> getAllUnitsLocation();
+	vector<int> getDeletedUnits();
 	int* getAllUnitsTypes();
 	Unit* getAllUnits();
 	int getUnitCount();

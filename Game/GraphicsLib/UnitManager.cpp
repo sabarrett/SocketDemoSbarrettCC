@@ -74,12 +74,15 @@ void UnitManager::deleteRandomUnit()
 {
 	if (mUnits.size() > 0)
 	{
-		deleteUnit(rand() % (mUnits.size() -1) + 1);
+		int loc = rand() % (mUnits.size() - 1) + 1;
+		deletedUnits.push_back(mUnits[loc]->mUnitID);
+		deleteUnit(loc);
 	}
 }
 
 void UnitManager::deleteUnit(Unit* delUnit)
 {
+	cout << "got to delting in UM \n";
 	int counter = 0;
 	for (auto it = mUnits.begin(); it != mUnits.end(); it++)
 	{
@@ -90,6 +93,23 @@ void UnitManager::deleteUnit(Unit* delUnit)
 
 		counter++;
 	}
+
+	cout << "finished deleting in UM \n";
+}
+
+void UnitManager::deleteUnitID(int id)
+{
+	//cout << "got to delting in UM \n";
+	for (int i = 0; i < mUnits.size(); i++)
+	{
+		if (mUnits[i]->mUnitID = id)
+		{
+			deleteUnit(i);
+			return;
+		}
+	}
+	//cout << "finished deleting in UM \n";
+
 }
 
 void UnitManager::erase(int mouseX, int mouseY, const int UNIT_WIDTH, const int UNIT_HEIGHT)
@@ -122,6 +142,18 @@ Unit* UnitManager::getUnit(int unitLoc)
 Unit* UnitManager::getLastUnit()
 {
 	return mUnits.back();
+}
+
+Unit* UnitManager::getUnitWithID(int id)
+{
+	for (int i = 0; i < mUnits.size(); i++)
+	{
+		if (mUnits[i]->mUnitID == id)
+		{
+			return(mUnits[i]);
+		}
+	}
+	return nullptr;
 }
 
 //ANIMATION SETTERS
@@ -251,6 +283,7 @@ vector<vector<int>> UnitManager::getAllUnitsLocation()
 	{
 		Unit newUnit = *getUnit(i);
 		vector<int> loc = vector<int>();
+		loc.push_back(newUnit.mUnitID);
 		loc.push_back(newUnit.mType);
 		loc.push_back(newUnit.mX);
 		loc.push_back(newUnit.mY);
@@ -266,6 +299,13 @@ vector<vector<int>> UnitManager::getAllUnitsLocation()
 	*/
 
 	return locs;
+}
+
+vector<int> UnitManager::getDeletedUnits()
+{
+	vector<int> temp = deletedUnits;
+	deletedUnits.clear();
+	return temp;
 }
 
 int* UnitManager::getAllUnitsTypes()

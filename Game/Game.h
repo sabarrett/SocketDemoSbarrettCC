@@ -73,10 +73,14 @@ public:
 	void pause();
 	void switchAnim();
 	void placeUnit(int type);
-	void placeUnit(int type, int xLoc, int yLoc);
+	void placeUnit(int id, int type, int xLoc, int yLoc);
 	void deleteUnits();
+	void deleteUnit(int id);
 	void deleteAllUnits();
 	void updateWorldState(int xLoc[], int yLoc[], int type[]);
+	Unit* unitWithID(int id);
+	void updateUnitLocation(int id, int xLoc, int yLoc);
 	//void updateWorldState(Unit* units[4096]);
 	vector<vector<int>> getUnitData();
+	vector<int> getUnitDeletion();
 };

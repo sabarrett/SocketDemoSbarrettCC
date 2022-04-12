@@ -181,7 +181,7 @@ void Game::placeUnit(int type)
 	}
 }
 
-void Game::placeUnit(int type, int xLoc, int yLoc)
+void Game::placeUnit(int id, int type, int xLoc, int yLoc)
 {
 	int x = xLoc;
 	int y = yLoc;
@@ -190,15 +190,15 @@ void Game::placeUnit(int type, int xLoc, int yLoc)
 	{
 	case 1:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 0 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type, id);
 		break;
 	case 2:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 0 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type, id);
 		break;
 	case 3:
 		sprite = Sprite(mpGManager->getGBuffer("smurfs"), { 6 * SMURF_SIZE, 4 * SMURF_SIZE }, SMURF_SIZE, SMURF_SIZE);
-		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type);
+		mpUnitManager->addUnit(x - SMURF_SIZE / 2, y - SMURF_SIZE / 2, sprite, type, id);
 		break;
 	default:
 		break;
@@ -216,6 +216,12 @@ void Game::deleteUnits()
 	}
 }
 
+void Game::deleteUnit(int id)
+{
+	//cout << "got to delting \n";
+	mpUnitManager->deleteUnitID(id);
+}
+
 void Game::deleteAllUnits()
 {
 	mpUnitManager->deleteAllUnits();
@@ -223,12 +229,25 @@ void Game::deleteAllUnits()
 
 void Game::updateWorldState(int xLoc[], int yLoc[], int type[])
 {
+	/*
 	mpUnitManager->deleteAllUnits();
 	
 	for (int i = 0; i < sizeof(type); i++)
 	{
 		placeUnit(type[i], xLoc[i], yLoc[i]);
 	}
+	*/
+}
+
+Unit* Game::unitWithID(int id)
+{
+	return mpUnitManager->getUnitWithID(id);
+}
+
+void Game::updateUnitLocation(int id, int xLoc, int yLoc)
+{
+	unitWithID(id)->mX = xLoc;
+	unitWithID(id)->mY = yLoc;
 }
 
 /*
@@ -245,6 +264,11 @@ void Game::updateWorldState(Unit* units[4096])
 vector<vector<int>> Game::getUnitData()
 {
 	return mpUnitManager->getAllUnitsLocation();
+}
+
+vector<int> Game::getUnitDeletion()
+{
+	return mpUnitManager->getDeletedUnits();
 }
 
 

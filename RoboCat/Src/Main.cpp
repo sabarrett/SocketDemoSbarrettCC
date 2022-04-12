@@ -126,9 +126,11 @@ void DoTcpServer()
 			{
 				std::string receivedMsg(buffer, bytesReceived);
 				vector<vector<int>> data;
+				vector<int> deletedUnits;
 
 				string del1 = "\n";
 				string del2 = " ";
+				string del3 = "END";
 
 				//Get Package ID
 				size_t idPos = 0;
@@ -166,13 +168,18 @@ void DoTcpServer()
 
 				if (cont)
 				{
-					Game::getInstance()->deleteAllUnits();
+					//Game::getInstance()->deleteAllUnits();
 					size_t pos = 0;
 					size_t pos2 = 0;
 					std::string token;
 					cout << endl;
-					while ((pos = receivedMsg.find(del1)) != std::string::npos) {
-						token = receivedMsg.substr(0, pos);
+
+					size_t tempPos = receivedMsg.find(del3);
+					string tempMsg = receivedMsg.substr(0, tempPos);
+					receivedMsg.erase(0, tempPos + del3.length());
+					cout << tempMsg << " END\n" << receivedMsg << endl;
+					while ((pos = tempMsg.find(del1)) != std::string::npos) {
+						token = tempMsg.substr(0, pos);
 						//cout << "getting a new unit " << token << endl;
 						vector<int> unitData;
 						while ((pos2 = token.find(del2)) != std::string::npos) {
@@ -184,7 +191,15 @@ void DoTcpServer()
 						}
 						//cout <<"\n";
 						data.push_back(unitData);
-						receivedMsg.erase(0, pos + del1.length());
+						tempMsg.erase(0, pos + del1.length());
+					}
+
+					while ((pos2 = receivedMsg.find(del1)) != std::string::npos) {
+						//cout << "getting new data from unit" << endl;
+						string token2 = receivedMsg.substr(0, pos);
+						deletedUnits.push_back(stoi(token2));
+						//cout << stoi(token2) << " ";
+						receivedMsg.erase(0, pos2 + del1.length());
 					}
 
 					//cout << "got all the data " << data.size() << endl;
@@ -192,7 +207,19 @@ void DoTcpServer()
 					for (int i = 0; i < data.size(); i++)
 					{
 						//cout << "placing unit" << endl << endl;
-						Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2]);
+						if (Game::getInstance()->unitWithID(data[i][0]))
+						{
+							Game::getInstance()->updateUnitLocation(data[i][0], data[i][2], data[i][3]);
+						}
+						else
+						{
+							Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2], data[i][3]);
+						}
+					}
+
+					for (int i = 0; i < deletedUnits.size(); i++)
+					{
+						Game::getInstance()->deleteUnit(deletedUnits[i]);
 					}
 
 					//LOG("%s", receivedMsg.c_str());
@@ -234,18 +261,28 @@ void DoTcpServer()
 				int id = (rand() % 2000) + 2001;
 			}
 
-			string msg = to_string(id) + " ";
+			string msg = to_string(id) + "\n";
 
 			Game::getInstance()->setWorldStateChanged(false);
 			vector<vector<int>> data = Game::getInstance()->getUnitData();
 			for (int i = 1; i < data.size(); i++)
 			{
-				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " \n";
+				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " " + to_string(data[i][3]) + " \n";
+			}
+			msg += "END";
+			vector<int> data2 = Game::getInstance()->getUnitDeletion();
+			cout << data2.size() << endl;
+			for (int i = 0; i < data2.size(); i++)
+			{
+				msg += to_string(data2[i]) + " \n";
+				cout << data2[i] << endl;
 			}
 
-
 			unackPacks.emplace(id, std::make_pair(msg, false));
-			connSocket->Send(msg.c_str(), msg.length());
+			if (rand() % 10 != 5)
+			{
+				connSocket->Send(msg.c_str(), msg.length());
+			}
 			cout << "MINE\n" << id << endl;
 		}
 		//std::this_thread::sleep_for(std::chrono::seconds(1)); //SECONDWAIT
@@ -345,9 +382,11 @@ void DoTcpClient(std::string port)
 				std::string receivedMsg(buffer, bytesReceived);
 
 				vector<vector<int>> data;
+				vector<int> deletedUnits;
 
 				string del1 = "\n";
 				string del2 = " ";
+				string del3 = "END";
 
 				//Get Package ID
 				size_t idPos = 0;
@@ -381,27 +420,68 @@ void DoTcpClient(std::string port)
 
 				if (cont)
 				{
-					Game::getInstance()->deleteAllUnits();
+					//Game::getInstance()->deleteAllUnits();
 					size_t pos = 0;
 					size_t pos2 = 0;
 					std::string token;
-					while ((pos = receivedMsg.find(del1)) != std::string::npos) {
-						token = receivedMsg.substr(0, pos);
+					cout << endl;
+
+					size_t tempPos = receivedMsg.find(del3);
+					string tempMsg = receivedMsg.substr(0, tempPos);
+					receivedMsg.erase(0, tempPos + del3.length());
+					while ((pos = tempMsg.find(del1)) != std::string::npos) {
+						token = tempMsg.substr(0, pos);
+						cout << "getting a new unit " << token << endl;
 						vector<int> unitData;
 						while ((pos2 = token.find(del2)) != std::string::npos) {
+							cout << "getting new data from unit" << endl;
 							string token2 = token.substr(0, pos);
 							unitData.push_back(stoi(token2));
-							//cout << stoi(token2) << " ";
+							cout << stoi(token2) << " ";
 							token.erase(0, pos2 + del2.length());
 						}
-						//cout << "\n";
+						//cout <<"\n";
 						data.push_back(unitData);
-						receivedMsg.erase(0, pos + del1.length());
+						tempMsg.erase(0, pos + del1.length());
 					}
+					
+					cout << "got all the data " << data.size() << endl;
+
+					while ((pos2 = receivedMsg.find(del1)) != std::string::npos) {
+						string token2 = receivedMsg.substr(0, pos);
+						cout << "getting deleted data" << endl;
+						deletedUnits.push_back(stoi(token2));
+						//cout << stoi(token2) << " ";
+						receivedMsg.erase(0, pos2 + del1.length());
+					}
+
+					cout << "got all the data for realizies " << data.size() << " " << deletedUnits.size() << endl;
 
 					for (int i = 0; i < data.size(); i++)
 					{
-						Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2]);
+						//cout << "placing unit" << endl;
+						if (Game::getInstance()->unitWithID(data[i][0]))
+						{
+							Game::getInstance()->updateUnitLocation(data[i][0], data[i][2], data[i][3]);
+						}
+						else
+						{
+							Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2], data[i][3]);
+						}
+					}
+					cout << "units placed" << endl;
+					for (int i = 0; i < deletedUnits.size(); i++)
+					{
+						if (Game::getInstance()->unitWithID(deletedUnits[i]) != nullptr)
+						{
+							cout << "deleting unit " << deletedUnits[i] << endl;
+							Game::getInstance()->deleteUnit(deletedUnits[i]);
+							//cout << "unit deleted " << deletedUnits[i] << endl;
+						}
+						else
+						{
+							cout << "there is no unit with id " << deletedUnits[i] << endl;
+						}
 					}
 
 					//LOG("%s", receivedMsg.c_str());
@@ -449,11 +529,21 @@ void DoTcpClient(std::string port)
 			vector<vector<int>> data = Game::getInstance()->getUnitData();
 			for (int i = 1; i < data.size(); i++)
 			{
-				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " \n";
+				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " " + to_string(data[i][3]) + " \n";
+			}
+
+			msg += "END";
+			vector<int> data2 = Game::getInstance()->getUnitDeletion();
+			for (int i = 1; i < data2.size(); i++)
+			{
+				msg += to_string(data2[i]) + " \n";
 			}
 
 			unackPacks.emplace(id, std::make_pair(msg, false));
-			clientSocket->Send(msg.c_str(), msg.length());
+			if (rand() % 10 != 2)
+			{
+				clientSocket->Send(msg.c_str(), msg.length());
+			}
 			cout << "MINE\n" << id << endl;
 		}
 		/*
