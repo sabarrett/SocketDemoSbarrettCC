@@ -34,6 +34,9 @@ void DoTcpServer()
 		SocketUtil::ReportError("Creating listening socket");
 		ExitProcess(1);
 	}
+	unordered_map<int, pair<string, bool>> unackPacks;
+	vector<int> recievedPacks;
+
 
 	//listenSocket->SetNonBlockingMode(true);
 
@@ -84,7 +87,7 @@ void DoTcpServer()
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
 	bool quit = false;
-	std::thread receiveThread([&connSocket, &quit, &incomingAddress]() { // don't use [&] :)
+	std::thread receiveThread([&connSocket, &quit, &incomingAddress, &unackPacks, &recievedPacks]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
 			//TODO: Recieve Acknowledgement
@@ -123,6 +126,31 @@ void DoTcpServer()
 			string del1 = "\n";
 			string del2 = " ";
 
+			//Get Package ID
+			size_t idPos = 0;
+			idPos = receivedMsg.find(del1);
+			int id = stoi(receivedMsg.substr(0, idPos));
+			receivedMsg.erase(0, idPos);
+
+			if (unackPacks.find(id) != unackPacks.end())
+			{
+				//Check if acknowledged
+				unackPacks.find(id)->second.second = true;
+			}
+			else
+			{
+				if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) //acknowledgment was lost, do not repeat instructions
+				{
+					receivedMsg = " ";
+				}
+				else
+				{
+					recievedPacks.push_back(id);
+				}
+				//Send Acknowledgement
+				connSocket->Send(to_string(id).c_str(), to_string(id).length());
+			}
+
 			size_t pos = 0;
 			size_t pos2 = 0;
 			std::string token;
@@ -152,17 +180,40 @@ void DoTcpServer()
 	while (!quit) // Need to add a quit here to have it really exit!
 	{
 		runGame();
+
+		for (auto& it : unackPacks) {
+			// Do stuff
+			if (!it.second.second)
+			{
+				connSocket->Send(it.second.first.c_str(), it.second.first.length());
+			}
+			else if (it.second.second)
+			{
+				unackPacks.erase(it.first);
+			}
+		}
+
+		int id = (rand() % 2000) + 2001;
+
+		while (unackPacks.find(id) != unackPacks.end())
+		{
+			int id = rand() % 2000;
+		}
+
+		string msg = to_string(id) + " ";
+
 		if (Game::getInstance()->getWorldStateChanged())
 		{
 			Game::getInstance()->setWorldStateChanged(false);
 			vector<vector<int>> data = Game::getInstance()->getUnitData();
-			string msg = " ";
 			for (int i = 1; i < data.size(); i++)
 			{
 				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " \n";
 			}
-			connSocket->Send(msg.c_str(), msg.length());
 		}
+
+		unackPacks.emplace(id, std::make_pair(msg, false));
+		connSocket->Send(msg.c_str(), msg.length());
 		//std::this_thread::sleep_for(std::chrono::seconds(1)); //SECONDWAIT
 	}
 	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
@@ -172,6 +223,8 @@ void DoTcpServer()
 void DoTcpClient(std::string port)
 {
 	// Create socket
+	unordered_map<int, pair<string,bool>> unackPacks;
+	vector<int> recievedPacks;
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	if (clientSocket == nullptr)
 	{
@@ -217,7 +270,7 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Connected to server!");
 	bool quit = false;
-	std::thread receiveThread([&clientSocket, &quit]() {
+	std::thread receiveThread([&clientSocket, &quit, &unackPacks, &recievedPacks]() {
 		while (!quit)
 		{
 			//TODO: Recieve Acknowledgement
@@ -253,10 +306,36 @@ void DoTcpClient(std::string port)
 
 
 			std::string receivedMsg(buffer, bytesReceived);
+
 			vector<vector<int>> data;
 
 			string del1 = "\n";
 			string del2 = " ";
+
+			//Get Package ID
+			size_t idPos = 0;
+			idPos = receivedMsg.find(del1);
+			int id = stoi(receivedMsg.substr(0, idPos));
+			receivedMsg.erase(0, idPos);
+
+			if (unackPacks.find(id) != unackPacks.end())
+			{
+				//Check if acknowledged
+				unackPacks.find(id)->second.second = true;
+			}
+			else
+			{
+				if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) //acknowledgment was lost, do not repeat instructions
+				{
+					receivedMsg = " ";
+				}
+				else
+				{
+					recievedPacks.push_back(id);
+				}
+				//Send Acknowledgement
+				clientSocket->Send(to_string(id).c_str(), to_string(id).length());
+			}
 
 			size_t pos = 0;
 			size_t pos2 = 0;
@@ -287,17 +366,38 @@ void DoTcpClient(std::string port)
 	while (!quit)
 	{
 		runGame();
+
+		for (auto& it : unackPacks) {
+			// Do stuff
+			if (!it.second.second)
+			{
+				clientSocket->Send(it.second.first.c_str(), it.second.first.length());
+			}
+			else if (it.second.second)
+			{
+				unackPacks.erase(it.first);
+			}
+		}
+
+		int id = rand() % 2000;
+
+		while (unackPacks.find(id) != unackPacks.end())
+		{
+			int id = rand() % 2000;
+		}
+
+		string msg = to_string(id) + " ";
 		if (Game::getInstance()->getWorldStateChanged())
 		{
 			Game::getInstance()->setWorldStateChanged(false);
 			vector<vector<int>> data = Game::getInstance()->getUnitData();
-			string msg = " ";
 			for (int i = 1; i < data.size(); i++)
 			{
 				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " \n";
 			}
-			clientSocket->Send(msg.c_str(), msg.length());
 		}
+		unackPacks.emplace(id, std::make_pair(msg, false));
+		clientSocket->Send(msg.c_str(), msg.length());
 		/*
 		std::cout << ">";
 		std::string msg = "Test";
