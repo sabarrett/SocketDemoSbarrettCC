@@ -34,7 +34,7 @@ TCPSocketPtr TCPSocket::Accept( SocketAddress& inFromAddress )
 	}
 	else
 	{
-		SocketUtil::ReportError( "TCPSocket::Accept" );
+		//SocketUtil::ReportError( "TCPSocket::Accept" );
 		return nullptr;
 	}
 }
@@ -44,8 +44,13 @@ int32_t	TCPSocket::Send( const void* inData, size_t inLen )
 	int bytesSentCount = send( mSocket, static_cast< const char* >( inData ), inLen, 0 );
 	if( bytesSentCount < 0 )
 	{
-		SocketUtil::ReportError( "TCPSocket::Send" );
-		return -SocketUtil::GetLastError();
+		int error = -SocketUtil::GetLastError();
+		if (error != -10035)
+		{
+			SocketUtil::ReportError("TCPSocket::Send");
+		}
+		return error;
+		
 	}
 	return bytesSentCount;
 }
@@ -55,8 +60,12 @@ int32_t	TCPSocket::Receive( void* inData, size_t inLen )
 	int bytesReceivedCount = recv( mSocket, static_cast< char* >( inData ), inLen, 0 );
 	if( bytesReceivedCount < 0 )
 	{
-		SocketUtil::ReportError( "TCPSocket::Receive" );
-		return -SocketUtil::GetLastError();
+		int error = -SocketUtil::GetLastError();
+		if (error != -10035)
+		{
+			SocketUtil::ReportError("TCPSocket::Receive");
+		}
+		return error;
 	}
 	return bytesReceivedCount;
 }
@@ -101,5 +110,14 @@ TCPSocket::~TCPSocket()
 	closesocket( mSocket );
 #else
 	close( mSocket );
+#endif
+}
+
+void TCPSocket::Close()
+{
+#if _WIN32
+	closesocket(mSocket);
+#else
+	close(mSocket);
 #endif
 }
