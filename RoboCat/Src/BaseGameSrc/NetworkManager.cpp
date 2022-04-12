@@ -10,7 +10,7 @@ namespace
 NetworkManager::NetworkManager() :
 	mBytesSentThisFrame(0),
 	mDropPacketChance(0.1f),
-	mSimulatedLatency(0.f),
+	mSimulatedLatency(0.5f),
 	mBytesReceivedPerSecond(WeightedTimedMovingAverage(1.f)),
 	mBytesSentPerSecond(WeightedTimedMovingAverage(1.f)),
 	mPlayerId(0),
@@ -622,9 +622,12 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 				//we made it
 				//shove the packet into the queue and we'll handle it as soon as we should...
 				//we'll pretend it wasn't received until simulated latency from now
-				//this doesn't sim jitter, for that we would need to.....
-
 				float simulatedReceivedTime = Timing::sInstance.GetTimef() + mSimulatedLatency;
+
+				//Simulating Jitter
+				float simulatedJitter = RoboMath::GetRandomFloat(-0.5f,0.5f);
+				simulatedReceivedTime += simulatedJitter;
+
 				mPacketQueue.emplace(simulatedReceivedTime, inputStream, fromAddress);
 			}
 			else

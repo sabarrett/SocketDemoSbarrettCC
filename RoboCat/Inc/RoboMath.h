@@ -174,6 +174,7 @@ namespace RoboMath
 {
 	const float PI = 3.1415926535f;
 	float GetRandomFloatNonGame();
+	float GetRandomFloat(float, float);
 
 	inline bool	Is2DVectorEqual(const Vector3& inA, const Vector3& inB)
 	{
