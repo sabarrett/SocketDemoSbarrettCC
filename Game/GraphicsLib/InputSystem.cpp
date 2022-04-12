@@ -19,6 +19,8 @@ void InputSystem::init()
 		std::cout << "keyboard install failed";
 	if (!al_install_mouse())
 		std::cout << "mouse install failed";
+
+	cout << "inited";
 }
 
 void InputSystem::cleanup()
@@ -87,6 +89,7 @@ void InputSystem::update()
 		coolDown = 0;
 						}
 	}
+	
 	else if (al_key_down(&mKeyState, ALLEGRO_KEY_W))
 	{
 		if (coolDown > eee)
@@ -127,4 +130,5 @@ void InputSystem::update()
 			coolDown = 0;
 		}
 	}
+	
 }

@@ -706,12 +706,15 @@ int main(int argc, const char** argv)
 
 	//Init Game
 	EventSystem::initInstance();
+	cout << "1" << endl;
 
 	const double SLEEP_TIME = 5.0;
 
 	pPerformanceTracker = new PerformanceTracker;
 
+	cout << "2" << endl;
 	Game::initInstance();
+	cout << "3" << endl;
 
 	//EventSystem* mpESystem = EventSystem::getInstance();
 	//mpESystem->addListener(MOUSE_EVENT_B, this);
@@ -719,8 +722,10 @@ int main(int argc, const char** argv)
 
 	gameListener = new GameListener();
 	gameListener->init();
+	cout << "4" << endl;
 
 	Game::getInstance()->setFrameRate(60.0);
+	cout << "5" << endl;
 	//Game Initted
 	if (isServer)
 	{
@@ -731,7 +736,7 @@ int main(int argc, const char** argv)
 	{
 		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
-
+	cout << "6" << endl;
 	shutGame();
 	SocketUtil::CleanUp();
 
