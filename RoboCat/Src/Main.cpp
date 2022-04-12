@@ -118,80 +118,86 @@ void DoTcpServer()
 				return;
 			}
 
-
-			std::string receivedMsg(buffer, bytesReceived);
-			vector<vector<int>> data;
-
-			string del1 = "\n";
-			string del2 = " ";
-
-			//Get Package ID
-			size_t idPos = 0;
-			idPos = receivedMsg.find(del1);
-			int id = stoi(receivedMsg.substr(0, idPos));
-			receivedMsg.erase(0, idPos + del1.length());
-
-			bool cont = true;
-
-			if (unackPacks.find(id) != unackPacks.end())
+			if (rand() % 10 == 1)
 			{
-				//Check if acknowledged
-				unackPacks.find(id)->second.second = true;
-				cout << "packet acknowledged " << id << "\n";
-				cont = false;
+				cout << "gonna ignore this packet :( \n";
 			}
 			else
 			{
-				cout << "acknowledging packet " << id << "\n";
-				if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) //acknowledgment was lost, do not repeat instructions
+				std::string receivedMsg(buffer, bytesReceived);
+				vector<vector<int>> data;
+
+				string del1 = "\n";
+				string del2 = " ";
+
+				//Get Package ID
+				size_t idPos = 0;
+				idPos = receivedMsg.find(del1);
+				int id = stoi(receivedMsg.substr(0, idPos));
+				receivedMsg.erase(0, idPos + del1.length());
+
+				bool cont = true;
+
+				if (unackPacks.find(id) != unackPacks.end())
 				{
-					cout << "acknowledgment was lost, do not repeat instructions" << endl;
-					receivedMsg = " ";
+					//Check if acknowledged
+					unackPacks.find(id)->second.second = true;
+					cout << "packet acknowledged " << id << "\n";
+					cont = false;
 				}
 				else
 				{
-					cout << "adding to recieved packets" << endl;
-					recievedPacks.push_back(id);
-				}
-				//Send Acknowledgement
-
-				cout << "sending acknowledgement" << endl;
-				connSocket->Send(to_string(id).c_str(), to_string(id).length());
-			}
-
-			if (cont)
-			{
-				Game::getInstance()->deleteAllUnits();
-				size_t pos = 0;
-				size_t pos2 = 0;
-				std::string token;
-				cout << endl;
-				while ((pos = receivedMsg.find(del1)) != std::string::npos) {
-					token = receivedMsg.substr(0, pos);
-					cout << "getting a new unit " << token << endl;
-					vector<int> unitData;
-					while ((pos2 = token.find(del2)) != std::string::npos) {
-						cout << "getting new data from unit" << endl;
-						string token2 = token.substr(0, pos);
-						unitData.push_back(stoi(token2));
-						//cout << stoi(token2) << " ";
-						token.erase(0, pos2 + del2.length());
+					cout << "acknowledging packet " << id << "\n";
+					if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) //acknowledgment was lost, do not repeat instructions
+					{
+						cout << "acknowledgment was lost, do not repeat instructions" << endl;
+						cont = false;
 					}
-					//cout <<"\n";
-					data.push_back(unitData);
-					receivedMsg.erase(0, pos + del1.length());
+					else
+					{
+						cout << "adding to recieved packets" << endl;
+						recievedPacks.push_back(id);
+					}
+					//Send Acknowledgement
+
+					cout << "sending acknowledgement" << endl;
+					connSocket->Send(to_string(id).c_str(), to_string(id).length());
 				}
 
-				cout << "got all the data " << data.size() << endl;
-
-				for (int i = 0; i < data.size(); i++)
+				if (cont)
 				{
-					cout << "placing unit" << endl << endl;
-					Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2]);
-				}
+					Game::getInstance()->deleteAllUnits();
+					size_t pos = 0;
+					size_t pos2 = 0;
+					std::string token;
+					cout << endl;
+					while ((pos = receivedMsg.find(del1)) != std::string::npos) {
+						token = receivedMsg.substr(0, pos);
+						//cout << "getting a new unit " << token << endl;
+						vector<int> unitData;
+						while ((pos2 = token.find(del2)) != std::string::npos) {
+							//cout << "getting new data from unit" << endl;
+							string token2 = token.substr(0, pos);
+							unitData.push_back(stoi(token2));
+							//cout << stoi(token2) << " ";
+							token.erase(0, pos2 + del2.length());
+						}
+						//cout <<"\n";
+						data.push_back(unitData);
+						receivedMsg.erase(0, pos + del1.length());
+					}
 
-				LOG("%s", receivedMsg.c_str());
-				std::cout << ">";
+					//cout << "got all the data " << data.size() << endl;
+
+					for (int i = 0; i < data.size(); i++)
+					{
+						//cout << "placing unit" << endl << endl;
+						Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2]);
+					}
+
+					//LOG("%s", receivedMsg.c_str());
+					std::cout << ">";
+				}
 			}
 		}
 		});
@@ -240,7 +246,7 @@ void DoTcpServer()
 
 			unackPacks.emplace(id, std::make_pair(msg, false));
 			connSocket->Send(msg.c_str(), msg.length());
-			cout << "MINE\n" << msg << endl << endl << endl;
+			cout << "MINE\n" << id << endl;
 		}
 		//std::this_thread::sleep_for(std::chrono::seconds(1)); //SECONDWAIT
 	}
@@ -329,70 +335,78 @@ void DoTcpClient(std::string port)
 				SocketUtil::ReportError("Receiving");
 				return;
 			}
-			std::string receivedMsg(buffer, bytesReceived);
 
-			vector<vector<int>> data;
-
-			string del1 = "\n";
-			string del2 = " ";
-
-			//Get Package ID
-			size_t idPos = 0;
-			idPos = receivedMsg.find(del1);
-			int id = stoi(receivedMsg.substr(0, idPos));
-			receivedMsg.erase(0, idPos + del1.length());
-
-			bool cont = true;
-
-			if (unackPacks.find(id) != unackPacks.end())
+			if (rand() % 10 == 0)
 			{
-				cout << "setting packet as acknowledged " << id << endl;
-				//Check if acknowledged
-				unackPacks.find(id)->second.second = true;
-				cont = false;
+				cout << "ignoring this packet :(\n";
 			}
 			else
 			{
-				cout << "sending packet acknowledgment " << id << endl;
-				if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) //acknowledgment was lost, do not repeat instructions
+				std::string receivedMsg(buffer, bytesReceived);
+
+				vector<vector<int>> data;
+
+				string del1 = "\n";
+				string del2 = " ";
+
+				//Get Package ID
+				size_t idPos = 0;
+				idPos = receivedMsg.find(del1);
+				int id = stoi(receivedMsg.substr(0, idPos));
+				receivedMsg.erase(0, idPos + del1.length());
+
+				bool cont = true;
+
+				if (unackPacks.find(id) != unackPacks.end())
 				{
-					receivedMsg = " ";
+					cout << "setting packet as acknowledged " << id << endl;
+					//Check if acknowledged
+					unackPacks.find(id)->second.second = true;
+					cont = false;
 				}
 				else
 				{
-					recievedPacks.push_back(id);
-				}
-				//Send Acknowledgement
-				clientSocket->Send(to_string(id).c_str(), to_string(id).length());
-			}
-
-			if (cont)
-			{
-				Game::getInstance()->deleteAllUnits();
-				size_t pos = 0;
-				size_t pos2 = 0;
-				std::string token;
-				while ((pos = receivedMsg.find(del1)) != std::string::npos) {
-					token = receivedMsg.substr(0, pos);
-					vector<int> unitData;
-					while ((pos2 = token.find(del2)) != std::string::npos) {
-						string token2 = token.substr(0, pos);
-						unitData.push_back(stoi(token2));
-						//cout << stoi(token2) << " ";
-						token.erase(0, pos2 + del2.length());
+					cout << "sending packet acknowledgment " << id << endl;
+					if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) //acknowledgment was lost, do not repeat instructions
+					{
+						cont = false;
 					}
-					//cout << "\n";
-					data.push_back(unitData);
-					receivedMsg.erase(0, pos + del1.length());
+					else
+					{
+						recievedPacks.push_back(id);
+					}
+					//Send Acknowledgement
+					clientSocket->Send(to_string(id).c_str(), to_string(id).length());
 				}
 
-				for (int i = 0; i < data.size(); i++)
+				if (cont)
 				{
-					Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2]);
-				}
+					Game::getInstance()->deleteAllUnits();
+					size_t pos = 0;
+					size_t pos2 = 0;
+					std::string token;
+					while ((pos = receivedMsg.find(del1)) != std::string::npos) {
+						token = receivedMsg.substr(0, pos);
+						vector<int> unitData;
+						while ((pos2 = token.find(del2)) != std::string::npos) {
+							string token2 = token.substr(0, pos);
+							unitData.push_back(stoi(token2));
+							//cout << stoi(token2) << " ";
+							token.erase(0, pos2 + del2.length());
+						}
+						//cout << "\n";
+						data.push_back(unitData);
+						receivedMsg.erase(0, pos + del1.length());
+					}
 
-				LOG("%s", receivedMsg.c_str());
-				std::cout << ">";
+					for (int i = 0; i < data.size(); i++)
+					{
+						Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2]);
+					}
+
+					//LOG("%s", receivedMsg.c_str());
+					std::cout << ">";
+				}
 			}
 		}
 		});
@@ -440,7 +454,7 @@ void DoTcpClient(std::string port)
 
 			unackPacks.emplace(id, std::make_pair(msg, false));
 			clientSocket->Send(msg.c_str(), msg.length());
-			cout << "MINE\n" << msg << endl << endl << endl;
+			cout << "MINE\n" << id << endl;
 		}
 		/*
 		std::cout << ">";
