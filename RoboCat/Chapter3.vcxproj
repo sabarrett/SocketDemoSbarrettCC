@@ -92,6 +92,17 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <OutDir>Bin\$(Configuration)\</OutDir>
+    <Allegro_AddonImage>true</Allegro_AddonImage>
+    <Allegro_AddonTTF>true</Allegro_AddonTTF>
+    <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
+    <Allegro_AddonAudio>true</Allegro_AddonAudio>
+    <Allegro_AddonAcodec>true</Allegro_AddonAcodec>
+    <Allegro_AddonPhysfs>true</Allegro_AddonPhysfs>
+    <Allegro_AddonDialog>true</Allegro_AddonDialog>
+    <Allegro_AddonMemfile>true</Allegro_AddonMemfile>
+    <Allegro_AddonFont>true</Allegro_AddonFont>
+    <Allegro_AddonColor>true</Allegro_AddonColor>
+    <Allegro_AddonVideo>true</Allegro_AddonVideo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">
     <LinkIncremental>true</LinkIncremental>
@@ -127,12 +138,12 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <AdditionalIncludeDirectories>..\SDL\include;Inc;..\</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <AdditionalIncludeDirectories>..\Game\;..\Game\DeanLib\include;..\Game\GraphicsLib\;Inc\</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib;allegro.lib;allegro_font.lib;allegro_ttf.lib;allegro_audio.lib;allegro_acodec.lib;allegro_image.lib;allegro_primitives.lib;GraphicsLib.lib;DeanLibDebug.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LargeAddressAware>true</LargeAddressAware>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -141,6 +152,7 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>..\Game\GraphicsLib\debug;..\packages\Allegro.5.2.7.1\build\native\v142\win32\lib;..\Game\DeanLib\lib;..\Game\Debug</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>true</EnableDPIAwareness>
@@ -370,7 +382,25 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Game\WASDEvent.h" />
+    <ClInclude Include="Inc\AckRange.h" />
+    <ClInclude Include="..\Game\DeleteUnitsEvent.h" />
+    <ClInclude Include="..\Game\EscEvent.h" />
+    <ClInclude Include="..\Game\Game.h" />
+    <ClInclude Include="..\Game\GameEvent.h" />
+    <ClInclude Include="..\Game\GameEventSystem.h" />
+    <ClInclude Include="..\Game\GameListener.h" />
+    <ClInclude Include="..\Game\InputTranslator.h" />
+    <ClInclude Include="..\Game\PauseEvent.h" />
+    <ClInclude Include="..\Game\PlaceUnitEvent.h" />
+    <ClInclude Include="..\Game\SwitchAnimEvent.h" />
+    <ClInclude Include="Inc\ByteSwap.h" />
+    <ClInclude Include="Inc\DeliveryNotificationManager.h" />
+    <ClInclude Include="Inc\InFlightPacket.h" />
+    <ClInclude Include="Inc\LinkingContext.h" />
+    <ClInclude Include="Inc\MemoryBitStream.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
+    <ClInclude Include="Inc\RoboMath.h" />
     <ClInclude Include="Inc\SocketAddress.h" />
     <ClInclude Include="Inc\SocketAddressFactory.h" />
     <ClInclude Include="Inc\SocketUtil.h" />
@@ -378,22 +408,61 @@
     <ClInclude Include="Inc\TCPSocket.h" />
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
+    <ClInclude Include="Inc\Timing.h" />
+    <ClInclude Include="Inc\TransmissionData.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
+    <ClCompile Include="..\Game\WASDEvent.cpp" />
+    <ClCompile Include="Src\AckRange.cpp" />
+    <ClCompile Include="Src\DeliveryNotificationManager.cpp" />
+    <ClCompile Include="Src\InFlightPacket.cpp" />
+    <ClCompile Include="..\Game\DeleteUnitsEvent.cpp" />
+    <ClCompile Include="..\Game\EscEvent.cpp" />
+    <ClCompile Include="..\Game\Game.cpp" />
+    <ClCompile Include="..\Game\GameEvent.cpp" />
+    <ClCompile Include="..\Game\GameEventSystem.cpp" />
+    <ClCompile Include="..\Game\GameListener.cpp" />
+    <ClCompile Include="..\Game\InputTranslator.cpp" />
+    <ClCompile Include="..\Game\PauseEvent.cpp" />
+    <ClCompile Include="..\Game\PlaceUnitEvent.cpp" />
+    <ClCompile Include="..\Game\SwitchAnimEvent.cpp" />
+    <ClCompile Include="sendDataEvent.cpp" />
     <ClCompile Include="Src\Main.cpp" />
+    <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
     <ClCompile Include="Src\SocketAddress.cpp" />
     <ClCompile Include="Src\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="sendDataEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Src\Timing.cpp" />
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Game\.sln" />
+    <None Include="..\Game\assignment2.vcxproj" />
+    <None Include="..\Game\assignment2.vcxproj.filters" />
+    <None Include="..\Game\assignment2.vcxproj.user" />
+    <None Include="..\Game\GameLib.sln" />
+    <None Include="..\Game\packages.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets" Condition="Exists('..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" />
+    <Import Project="..\packages\Allegro.5.2.7.1\build\native\Allegro.targets" Condition="Exists('..\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets'))" />
+    <Error Condition="!Exists('..\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Allegro.5.2.7.1\build\native\Allegro.targets'))" />
+  </Target>
 </Project>
