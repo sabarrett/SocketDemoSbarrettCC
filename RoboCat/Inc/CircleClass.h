@@ -8,13 +8,14 @@
 class CircleClass
 {
 public:
-	CircleClass(int windowWidth, int windowHeight, int xStart, int yStart, float newRadius);
+	CircleClass(string name, int windowWidth, int windowHeight, int xStart, int yStart, float newRadius);
 	CircleClass();
 	void Read(InputMemoryBitStream& iStream);
 	void Write(OutputMemoryBitStream& oStream) const;
 	void Draw();
 	void UpdatePos(int xChange, int yChange);
 
+	string mName;
 	int mWindowWidth;
 	int mWindowHeight;
 	std::vector<int> position;
@@ -23,6 +24,7 @@ public:
 
 void CircleClass::Read(InputMemoryBitStream& iStream)
 {
+	iStream.Read(mName);
 	iStream.Read(position[0]);
 	iStream.Read(position[1]);
 	iStream.Read(radius);
@@ -30,6 +32,7 @@ void CircleClass::Read(InputMemoryBitStream& iStream)
 
 void CircleClass::Write(OutputMemoryBitStream& oStream) const
 {
+	oStream.Write(mName);
 	oStream.Write(position[0]);
 	oStream.Write(position[1]);
 	oStream.Write(radius);
@@ -40,8 +43,9 @@ void CircleClass::Draw()
 	al_draw_filled_circle(position[0], position[1], radius, al_map_rgb(0, 255, 0));
 }
 
-CircleClass::CircleClass(int windowWidth, int windowHeight, int xStart, int yStart, float newRadius)
+CircleClass::CircleClass(string name,  int windowWidth, int windowHeight, int xStart, int yStart, float newRadius)
 {
+	mName = name;
 	mWindowWidth = windowWidth;
 	mWindowHeight = windowHeight;
 	position.push_back(xStart);
@@ -51,6 +55,9 @@ CircleClass::CircleClass(int windowWidth, int windowHeight, int xStart, int ySta
 
 CircleClass::CircleClass()
 {
+	mName = "";
+	mWindowWidth = 100;
+	mWindowHeight = 100;
 	int xTemp = 0;
 	int yTemp = 0;
 	position.push_back(xTemp);

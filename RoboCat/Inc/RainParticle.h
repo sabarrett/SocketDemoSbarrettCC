@@ -42,6 +42,8 @@ RainParticle::RainParticle()
 {
 	float tempR, tempG, tempB, tempA, tempX, tempY;
 
+	mWindowWidth = 100;
+	mWindowHeight = 100;
 	color.push_back(tempR);
 	color.push_back(tempG);
 	color.push_back(tempB);

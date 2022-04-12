@@ -20,12 +20,6 @@ int FRAMERATE = 16;
 
 #if _WIN32
 
-
-
-
-
-
-
 void ThrowSocketError(std::string errorMsg)
 {
 	SocketUtil::ReportError(errorMsg.c_str());
@@ -118,7 +112,7 @@ void BradsTotallyOriginalServer()
 	CircleClass greenCircle[numObjects];
 	for (int j = 0; j < numObjects; j++)
 	{
-		greenCircle[j] = CircleClass(windowWidth, windowHeight, 100, 100, 20);
+		greenCircle[j] = CircleClass("serverPlayer", windowWidth, windowHeight, 100, 100, 20);
 	}
 
 	const int numDroplets = 10;
@@ -129,8 +123,8 @@ void BradsTotallyOriginalServer()
 	}
 
 	RectangleObject inObjects[numObjects];
-	list < RectangleObject > clientProjectiles;
-	list < RectangleObject > serverProjectiles;
+	list < RectangleObject* > clientProjectiles;
+	list < CircleClass* > serverProjectiles;
 
 
 	ALLEGRO_DISPLAY* display;
@@ -145,6 +139,8 @@ void BradsTotallyOriginalServer()
 
 	bool xMove = true;
 	bool yMove = true;
+
+	int projShot = 0;
 
 	while (!exit) //GameLoop
 	{
@@ -165,6 +161,13 @@ void BradsTotallyOriginalServer()
 		{
 			rain[j].Write(oStream);
 		}
+
+		int projectileCount = serverProjectiles.size();
+		oStream.Write(projectileCount);
+		for each (CircleClass * projectile in serverProjectiles)
+		{
+			projectile->Write(oStream);
+		}
 		incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
 		//recieve Data
@@ -178,6 +181,15 @@ void BradsTotallyOriginalServer()
 			for (int i = 0; i < numObjects; i++)
 			{
 				inObjects[i].Read(iStream);
+			}
+			int clientProjectilesCount;
+			iStream.Read(clientProjectilesCount);
+			clientProjectiles.clear();
+			for (int i = 0; i < clientProjectilesCount; i++)
+			{
+				RectangleObject* temp = new RectangleObject();
+				temp->Read(iStream);
+				clientProjectiles.emplace_back(temp);
 			}
 		}
 
@@ -212,20 +224,26 @@ void BradsTotallyOriginalServer()
 				yMove = true;
 				yAxis = -1;
 			}
-			else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
+			if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
 			{
 				yMove = true;
 				yAxis = 1;
 			}
-			else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
+			if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
 			{
 				xAxis = 1;
 				xMove = true;
 			}
-			else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
+			if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 			{
 				xAxis = -1;
 				xMove = true;
+			}
+			if (al_key_down(&keyState, ALLEGRO_KEY_SPACE))
+			{
+				++projShot;
+				CircleClass* proj = new CircleClass(to_string(projShot), windowWidth, windowHeight, greenCircle[0].position[0], greenCircle[0].position[1], 10);
+				serverProjectiles.emplace_back(proj);
 			}
 		}
 
@@ -238,9 +256,18 @@ void BradsTotallyOriginalServer()
 			inObjects[i].Draw();
 			greenCircle[i].Draw();
 		}
+		for each (CircleClass * projectile in serverProjectiles)
+		{
+			projectile->UpdatePos(0, -1);
+			projectile->Draw();
+		}
+		for each (RectangleObject * projectile in clientProjectiles)
+		{
+			projectile->Draw();
+		}
 		for (int j = 0; j < numDroplets; j++)
 		{
-			rain[j].UpdatePos(0.1, 0.3);
+			rain[j].UpdatePos(1, 3);
 			rain[j].Draw();
 		}
 		al_flip_display();
@@ -252,7 +279,7 @@ void BradsTotallyOriginalServer()
 		{
 			currentPeriod = al_get_timer_count(timer) - currentTime;
 		}
-		if (currentTime < 5000)
+		if (currentTime < 600000)
 			al_set_timer_count(timer, 0);
 	}
 	al_destroy_display(display);	
@@ -261,6 +288,7 @@ void BradsTotallyOriginalServer()
 
 void BradsLessOriginalClient()
 {
+
 	TCPSocketPtr clientSocket = StartClientConnection();
 	clientSocket->SetNonBlockingMode(true);
 
@@ -275,7 +303,6 @@ void BradsLessOriginalClient()
 
 	//create Game Objects
 	RectangleObject outRectangles[numObjects];
-	list < RectangleObject > projectiles;
 
 	for (int j = 0; j < numObjects; j++)
 	{
@@ -285,8 +312,8 @@ void BradsLessOriginalClient()
 	// Read In Objects
 	CircleClass inObjects[numObjects];
 
-	list < RectangleObject > clientProjectiles;
-	list < RectangleObject > serverProjectiles;
+	list < RectangleObject* > clientProjectiles;
+	list < CircleClass* > serverProjectiles;
 
 	const int numDroplets = 10;
 	RainParticle rain[numDroplets];
@@ -305,6 +332,8 @@ void BradsLessOriginalClient()
 	bool xMove = true;
 	bool yMove = true;
 
+	int projShot = 0;
+
 	while (!exit) //GameLoop
 	{
 		//Timer
@@ -318,6 +347,12 @@ void BradsLessOriginalClient()
 		for (int i = 0; i < numObjects; i++)
 		{
 			outRectangles[i].Write(oStream);
+		}
+		int projectileCount = clientProjectiles.size();
+		oStream.Write(projectileCount);
+		for each (RectangleObject* projectile in clientProjectiles)
+		{
+			projectile->Write(oStream);
 		}
 		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
@@ -337,6 +372,15 @@ void BradsLessOriginalClient()
 			{
 				rain[j].Read(iStream);
 			}		
+			int serverProjectilesCount;
+			iStream.Read(serverProjectilesCount);
+			serverProjectiles.clear();
+			for (int i = 0; i < serverProjectilesCount; i++)
+			{
+				CircleClass* temp = new CircleClass();
+				temp->Read(iStream);
+				serverProjectiles.emplace_back(temp);
+			}
 		}		
 
 		ALLEGRO_EVENT events;
@@ -363,7 +407,6 @@ void BradsLessOriginalClient()
 				xMove = false;
 			}
 		}
-
 		if (events.type == ALLEGRO_EVENT_KEY_DOWN)
 		{
 			al_get_keyboard_state(&keyState);
@@ -372,20 +415,26 @@ void BradsLessOriginalClient()
 				yMove = true;
 				yAxis = -1;
 			}
-			else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
+			if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
 			{
 				yMove = true;
 				yAxis = 1;
 			}
-			else if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
+			if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
 			{
 				xAxis = 1;
 				xMove = true;
 			}
-			else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
+			if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 			{
 				xAxis = -1;
 				xMove = true;
+			}
+			if (al_key_down(&keyState, ALLEGRO_KEY_SPACE))
+			{
+				++projShot;
+				RectangleObject* proj = new RectangleObject(to_string(projShot), windowWidth, windowHeight, 10, 10, outRectangles[0].xPos, outRectangles[0].yPos);
+				clientProjectiles.emplace_back(proj);
 			}
 		}
 
@@ -397,6 +446,15 @@ void BradsLessOriginalClient()
 			}
 			outRectangles[i].Draw();
 			inObjects[i].Draw();
+		}
+		for each (CircleClass * projectile in serverProjectiles)
+		{
+			projectile->Draw();
+		}
+		for each (RectangleObject* projectile in clientProjectiles)
+		{
+			projectile->UpdatePos(0, 1);
+			projectile->Draw();
 		}
 
 		for (int j = 0; j < numDroplets; j++)
@@ -412,7 +470,7 @@ void BradsLessOriginalClient()
 		{
 			currentPeriod = al_get_timer_count(timer) - currentTime;
 		}
-		if (currentTime < 5000)
+		if (currentTime < 600000)
 			al_set_timer_count(timer, 0);
 	}
 	al_destroy_display(display);
