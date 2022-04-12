@@ -17,6 +17,7 @@ void GameListener::init()
 	pEventSytem->addListener(PAUSE_EVENT, this);
 	pEventSytem->addListener(ESC_EVENT, this);
 	pEventSytem->addListener(SWITCH_ANIM_EVENT, this);
+	pEventSytem->addListener(WASD_EVENT, this);
 
 	mpGame = Game::getInstance();
 }
@@ -68,6 +69,12 @@ void GameListener::handleEvent(const Event& theEvent)
 		//erase all units in a vicinity
 		mpGame->deleteUnits();
 		mpGame->setWorldStateChanged(true);
+	}
+	else if (theEvent.getType() == 20)
+	{
+		const WASDEvent& deleteUnitsEvent = static_cast<const WASDEvent&>(theEvent);
+
+		//GAVIN do your stuff here to move units :)
 	}
 
 	

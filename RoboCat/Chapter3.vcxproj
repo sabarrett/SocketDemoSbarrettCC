@@ -382,6 +382,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="WASDEvent.cpp" />
     <ClInclude Include="Inc\AckRange.h" />
     <ClInclude Include="..\Game\DeleteUnitsEvent.h" />
     <ClInclude Include="..\Game\EscEvent.h" />
@@ -433,6 +434,7 @@
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
     <ClInclude Include="sendDataEvent.h" />
+    <ClInclude Include="WASDEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">

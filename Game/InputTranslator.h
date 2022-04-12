@@ -11,6 +11,7 @@
 #include "SwitchAnimEvent.h"
 #include "KeyEvent.h"
 #include "MouseEvent.h"
+#include "WASDEvent.h"
 
 using namespace std;
 

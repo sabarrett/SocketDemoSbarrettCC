@@ -9,6 +9,7 @@
 #include "EscEvent.h"
 #include "PauseEvent.h"
 #include "SwitchAnimEvent.h"
+#include "WASDEvent.h"
 
 using namespace std;
 

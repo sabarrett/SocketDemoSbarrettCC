@@ -82,8 +82,21 @@ void InputTranslator::handleEvent(const Event& theEvent)
 			//fire exit game event
 			mpESystem->fireEvent(PlaceUnitEvent(3));
 		}
-		/*
-		* else if keyevent WASD
-		*/
+		else if (keyEvent.getState() == "W")
+		{
+			mpESystem->fireEvent(WASDEvent(new Vector2D(0, 1)));
+		}
+		else if (keyEvent.getState() == "A")
+		{
+			mpESystem->fireEvent(WASDEvent(new Vector2D(-1, 0)));
+		}
+		else if (keyEvent.getState() == "D")
+		{
+			mpESystem->fireEvent(WASDEvent(new Vector2D(0, -1)));
+		}
+		else if (keyEvent.getState() == "D")
+		{
+			mpESystem->fireEvent(WASDEvent(new Vector2D(1, 0)));
+		}
 	}
 }

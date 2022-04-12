@@ -87,4 +87,44 @@ void InputSystem::update()
 		coolDown = 0;
 						}
 	}
+	else if (al_key_down(&mKeyState, ALLEGRO_KEY_W))
+	{
+		if (coolDown > eee)
+		{
+			//fire key event with space click
+			mpEventSystem->fireEvent(KeyEvent("W"));
+			//std::cout << "key event 3" << endl;
+			coolDown = 0;
+		}
+	}
+	else if (al_key_down(&mKeyState, ALLEGRO_KEY_A))
+	{
+		if (coolDown > eee)
+		{
+			//fire key event with space click
+			mpEventSystem->fireEvent(KeyEvent("A"));
+			//std::cout << "key event 3" << endl;
+			coolDown = 0;
+		}
+	}
+	else if (al_key_down(&mKeyState, ALLEGRO_KEY_S))
+	{
+		if (coolDown > eee)
+		{
+			//fire key event with space click
+			mpEventSystem->fireEvent(KeyEvent("S"));
+			//std::cout << "key event 3" << endl;
+			coolDown = 0;
+		}
+	}
+	else if (al_key_down(&mKeyState, ALLEGRO_KEY_D))
+	{
+		if (coolDown > eee)
+		{
+			//fire key event with space click
+			mpEventSystem->fireEvent(KeyEvent("D"));
+			//std::cout << "key event 3" << endl;
+			coolDown = 0;
+		}
+	}
 }
