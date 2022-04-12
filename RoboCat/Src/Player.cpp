@@ -36,7 +36,7 @@ void Player::Write(OutputMemoryBitStream& inStream) const
 
 	inStream.Write(mPosX);
 	inStream.Write(mPosY);
-
+	//std::cout << mIsFiring << std::endl;
 	inStream.Write(mIsFiring);
 	inStream.Write(mIsHit);
 }
@@ -108,4 +108,9 @@ void Player::Move(float deltaX)
 {
 	//std::cout << "delta = " << deltaX << std::endl;
 	mPosX += deltaX;
+}
+
+void Player::MoveTo(float newX)
+{
+	mPosX = newX;
 }

@@ -31,8 +31,8 @@ const float BULLET_SPEED = 0.01;
 const float PLAYER_SPEED = 0.02;
 
 // Networking data
-const string HOST_PORT_NUMBER = "8081";
-const string CLIENT_PORT_NUMBER = "8084";
+const string HOST_PORT_NUMBER = "8082";
+const string CLIENT_PORT_NUMBER = "8085";
 
 // Effect duration
 const float MAX_EFFECT_TIME = 700;

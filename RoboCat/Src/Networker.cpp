@@ -56,6 +56,7 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 
 				Bullet* bullet = new Bullet(id, -1 * x + RESOLUTION_X, -1 * y + RESOLUTION_Y, BULLET_SPEED, !isGoingUpwards);
 				gameData->bulletsVector.push_back(bullet);
+				std::cout << "Bullet spawn 6" << std::endl;
 				currentMaxID = id + 1;
 				break;
 			}
@@ -88,7 +89,7 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 				stream.Read(isFiring);
 				stream.Read(isHit);
 
-				gameData->player2->mPosX = (-1 * x + RESOLUTION_X);
+				gameData->player2->MoveTo(-1 * x + RESOLUTION_X);
 				gameData->player2->SetIsFiring(isFiring);
 				gameData->player2->SetIsHit(isHit);
 
@@ -110,6 +111,7 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 					{
 						if (bullet->getGameID() == id)
 						{
+							std::cout << "Bullet spawn 7" << std::endl;
 							bullet->mPosX = (-1 * x + RESOLUTION_X);
 							bullet->mPosY = (-1 * y + RESOLUTION_Y);
 							bullet->gotDestroyed = gotDestroyed;

@@ -28,4 +28,5 @@ public:
 	float GetSpeed();
 
 	void Move(float deltaX);
+	void MoveTo(float newX);
 };
