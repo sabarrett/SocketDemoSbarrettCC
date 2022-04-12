@@ -117,16 +117,19 @@ void start()
 		networkID++;
 
 		//Send it out
-		pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+		//pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+		pNetworkManager->sendGameObjectStateUDP(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 
 		//Get client player
-		pNetworkManager->receiveGameObjectState();
+		//pNetworkManager->receiveGameObjectState();
+		pNetworkManager->receiveGameObjectStateUDP();
 	}
 	//If client
 	else if (networkID == 1)
 	{
 		//Get server player
-		pNetworkManager->receiveGameObjectState();
+		//pNetworkManager->receiveGameObjectState();
+		pNetworkManager->receiveGameObjectStateUDP();
 
 		//Spawn player
 		pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
@@ -134,7 +137,8 @@ void start()
 		networkID++;
 
 		//Send it out
-		pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+		//pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
+		pNetworkManager->sendGameObjectStateUDP(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 	}
 
 	al_start_timer(timer);
@@ -163,7 +167,8 @@ void update()
 					pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 					gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
 					pNetworkManager->addGameObject(gameObjectToSpawn, networkID);
-					pNetworkManager->sendGameObjectState(networkID, PacketType::PACKET_CREATE);
+					//pNetworkManager->sendGameObjectState(networkID, PacketType::PACKET_CREATE);
+					pNetworkManager->sendGameObjectStateUDP(networkID, PacketType::PACKET_CREATE);
 					networkID++;
 
 					break;
@@ -173,7 +178,8 @@ void update()
 					pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
 					gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, wallColour, wallBorderThickness));
 					pNetworkManager->addGameObject(gameObjectToSpawn, networkID);
-					pNetworkManager->sendGameObjectState(networkID, PacketType::PACKET_CREATE);
+					//pNetworkManager->sendGameObjectState(networkID, PacketType::PACKET_CREATE);
+					pNetworkManager->sendGameObjectStateUDP(networkID, PacketType::PACKET_CREATE);
 					networkID++;
 
 					break;
@@ -261,7 +267,8 @@ void update()
 			//Players have IDs 0 and 1, DO NOT TOUCH THEM
 			if (networkID > 1)
 			{
-				pNetworkManager->sendGameObjectState(networkID - 1, PacketType::PACKET_DELETE);
+				//pNetworkManager->sendGameObjectState(networkID - 1, PacketType::PACKET_DELETE);
+				pNetworkManager->sendGameObjectStateUDP(networkID - 1, PacketType::PACKET_DELETE);
 				networkID--;
 			}
 
@@ -416,10 +423,12 @@ int main(int argc, const char** argv)
 					update();
 
 					//Network updates - send player data
-					pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
+					//pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
+					pNetworkManager->sendGameObjectStateUDP(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
 
 					//Network update - receive packets
-					packetTypeReceived = pNetworkManager->receiveGameObjectState();
+					//packetTypeReceived = pNetworkManager->receiveGameObjectState();
+					packetTypeReceived = pNetworkManager->receiveGameObjectStateUDP();
 
 					//Network check for and deal with timed out packets
 					pNetworkManager->checkTimedOutPackets();
