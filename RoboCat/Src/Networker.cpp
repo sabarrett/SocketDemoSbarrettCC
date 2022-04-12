@@ -23,14 +23,14 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 	float x = 0;
 	float y = 0;
 
-	char buffer[128];
-	int32_t bytesReceived = inSocket->Receive(buffer, 128);
+	char buffer[4096];
+	int32_t bytesReceived = inSocket->Receive(buffer, 4096);
 
-	//if (bytesReceived == 0)
-	//{
-	//	LOG("%s", " Connection gracefully closed. Press enter to exit!");
-	//	isGameRunning = false;
-	//}
+	if (bytesReceived == 0)
+	{
+		LOG("%s", " Connection gracefully closed. Press enter to exit!");
+		isGameRunning = false;
+	}
 	//if (bytesReceived < 0)
 	//{
 	//	LOG("%s", " Connection forcefully closed. Press enter to exit!");
@@ -38,7 +38,7 @@ GameObjectType Networker::ReceivePacket(int& currentMaxID, bool& isGameRunning)
 	//}
 	if (bytesReceived > 0)
 	{
-		InputMemoryBitStream stream(buffer, 128);
+		InputMemoryBitStream stream(buffer, 4096);
 		stream.Read(type);
 		stream.Read(id);
 
