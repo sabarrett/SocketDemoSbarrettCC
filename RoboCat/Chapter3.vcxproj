@@ -373,11 +373,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\AckRange.h" />
     <ClInclude Include="..\allegro_wrapper_functions-main\Colour.h" />
     <ClInclude Include="..\allegro_wrapper_functions-main\GraphicsLibrary.h" />
     <ClInclude Include="..\allegro_wrapper_functions-main\InputSystem.h" />
     <ClInclude Include="Inc\Bullet.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
+    <ClInclude Include="Inc\DeliveryNotificationManager.h" />
+    <ClInclude Include="Inc\InFlightPacket.h" />
     <ClInclude Include="Inc\Effect.h" />
     <ClInclude Include="Inc\GameData.h" />
     <ClInclude Include="Inc\GameObject.h" />
@@ -394,7 +397,12 @@
     <ClInclude Include="Inc\TCPSocket.h" />
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
+    <ClInclude Include="Inc\Timing.h" />
+    <ClInclude Include="Inc\TransmissionData.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
+    <ClCompile Include="Src\AckRange.cpp" />
+    <ClCompile Include="Src\DeliveryNotificationManager.cpp" />
+    <ClCompile Include="Src\InFlightPacket.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\Colour.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\GraphicsLibrary.cpp" />
     <ClCompile Include="..\allegro_wrapper_functions-main\InputSystem.cpp" />
@@ -417,6 +425,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Src\Timing.cpp" />
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
