@@ -22,8 +22,8 @@ public:
 		return ( it != mTransmissionDataMap.end() ) ? it->second : nullptr;
 	}
 	
-	void			HandleDeliveryFailure( DeliveryNotificationManager* inDeliveryNotificationManager ) const;
-	void			HandleDeliverySuccess( DeliveryNotificationManager* inDeliveryNotificationManager ) const;
+	void			HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const;
+	void			HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const;
 	
 private:
 	PacketSequenceNumber	mSequenceNumber;

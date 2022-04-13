@@ -32,8 +32,8 @@ public:
 	PlayerController(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float moveSpeed, const std::string spriteIdentifier);
 
 	//Overloaded functions
-	void HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const;
-	void HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const;
+	void HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const;
+	void HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const;
 
 	//Destructor
 	~PlayerController();

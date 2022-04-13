@@ -140,14 +140,15 @@ void DeliveryNotificationManager::ProcessAcks( InputMemoryBitStream& inInputStre
 			PacketSequenceNumber nextInFlightPacketSequenceNumber = nextInFlightPacket.GetSequenceNumber();
 			if( nextInFlightPacketSequenceNumber < nextAckdSequenceNumber )
 			{
+				HandlePacketDeliveryFailure(nextInFlightPacket, nextInFlightPacketSequenceNumber);
+
 				//copy this so we can remove it before handling the failure- we don't want to find it when checking for state
 				auto copyOfInFlightPacket = nextInFlightPacket;
 				mInFlightPackets.pop_front();
-				HandlePacketDeliveryFailure( copyOfInFlightPacket );
 			}
 			else if( nextInFlightPacketSequenceNumber == nextAckdSequenceNumber )
 			{
-				HandlePacketDeliverySuccess( nextInFlightPacket );
+				HandlePacketDeliverySuccess(nextInFlightPacket, nextInFlightPacketSequenceNumber);
 				//received!
 				mInFlightPackets.pop_front();
 				//decrement count, advance nextAckdSequenceNumber
@@ -163,9 +164,22 @@ void DeliveryNotificationManager::ProcessAcks( InputMemoryBitStream& inInputStre
 	}
 }
 
-void DeliveryNotificationManager::ResendPacket(const int ID, PacketType packetHeader)
+void DeliveryNotificationManager::ResendPacket(const int ID, const PacketSequenceNumber packetSequenceNum)
 {
-	mpNetworker->sendGameObjectStateUDP(ID, packetHeader);
+	//Find packet header type
+	PacketType packetHeader;
+	for (auto& it = mInFlightPackets.begin(); it != mInFlightPackets.end(); ++it)
+	{
+		if (it->GetSequenceNumber() == packetSequenceNum)
+		{
+			packetHeader = it->GetTransmissionData();
+			mpNetworker->sendGameObjectStateUDP(ID, packetHeader);
+			return;
+		}
+	}
+
+	//Error cout if it fails
+	std::cout << "ERROR: COULD NOT RESEND PACKET (DeliveryNotificationManager::ResendPacket(...)\n";
 }
 
 void DeliveryNotificationManager::ProcessTimedOutPackets()
@@ -180,7 +194,7 @@ void DeliveryNotificationManager::ProcessTimedOutPackets()
 		if( nextInFlightPacket.GetTimeDispatched() < timeoutTime )
 		{
 			//it failed! let us know about that
-			HandlePacketDeliveryFailure( nextInFlightPacket );
+			HandlePacketDeliveryFailure(nextInFlightPacket, nextInFlightPacket.GetSequenceNumber());
 			mInFlightPackets.pop_front();
 		}
 		else
@@ -202,16 +216,16 @@ void DeliveryNotificationManager::AddPendingAck( PacketSequenceNumber inSequence
 }
 
 
-void DeliveryNotificationManager::HandlePacketDeliveryFailure( const InFlightPacket& inFlightPacket )
+void DeliveryNotificationManager::HandlePacketDeliveryFailure(const InFlightPacket& inFlightPacket, const PacketSequenceNumber packetSequenceNum)
 {
 	++mDroppedPacketCount;
-	inFlightPacket.HandleDeliveryFailure( this );
+	inFlightPacket.HandleDeliveryFailure(this, packetSequenceNum);
 
 }
 
 
-void DeliveryNotificationManager::HandlePacketDeliverySuccess( const InFlightPacket& inFlightPacket )
+void DeliveryNotificationManager::HandlePacketDeliverySuccess(const InFlightPacket& inFlightPacket, const PacketSequenceNumber packetSequenceNum)
 {
 	++mDeliveredPacketCount;
-	inFlightPacket.HandleDeliverySuccess( this );
+	inFlightPacket.HandleDeliverySuccess(this, packetSequenceNum);
 }

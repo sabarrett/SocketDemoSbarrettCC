@@ -25,8 +25,8 @@ public:
 	Wall(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, float> position, float sizeX, float sizeY, Colour colour, float thickness);
 
 	//Overloaded functions
-	void HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const;
-	void HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const;
+	void HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager,  const PacketSequenceNumber packetSequenceNum) const;
+	void HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager,  const PacketSequenceNumber packetSequenceNum) const;
 
 	//Destructor
 	~Wall();

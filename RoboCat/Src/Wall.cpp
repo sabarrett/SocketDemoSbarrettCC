@@ -21,13 +21,13 @@ Wall::Wall(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, fl
 	mThickness = thickness;
 }
 
-void Wall::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
+void Wall::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const
 {
-	//Re-send create packet (only packet type we send for this GameObject)
-	inDeliveryNotificationManager->ResendPacket(mNetworkID, PacketType::PACKET_CREATE);
+	//Re-send packet
+	inDeliveryNotificationManager->ResendPacket(mNetworkID, packetSequenceNum);
 }
 
-void Wall::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
+void Wall::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const
 {
 	//Cool, already taken care of
 }

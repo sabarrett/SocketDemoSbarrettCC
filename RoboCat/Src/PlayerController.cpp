@@ -29,12 +29,12 @@ PlayerController::PlayerController(const int networkID, GraphicsLibrary* graphic
 	mMoveSpeed = moveSpeed;
 }
 
-void PlayerController::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
+void PlayerController::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const
 {
 	//Do nothing, the data will be stale if re-sent, since it is sending update packets every frame (only latest data matters)
 }
 
-void PlayerController::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
+void PlayerController::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const
 {
 	//Cool, already taken care of
 }

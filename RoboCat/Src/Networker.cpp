@@ -25,7 +25,7 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	mpUDPSocket = new UDPSocketPtr;
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
 	//mPacketQueue = std::queue<std::pair<int, float>>();
-	pDeliveryNotificationManager = new DeliveryNotificationManager(true, true);
+	pDeliveryNotificationManager = new DeliveryNotificationManager(true, true, this);
 	mOutputBitStreamQueue = std::priority_queue<std::pair<float, OutputMemoryBitStream>, std::vector<std::pair<float, OutputMemoryBitStream>>, std::greater<std::pair<float, OutputMemoryBitStream>>>();
 
 	//Data for GameObject replication
