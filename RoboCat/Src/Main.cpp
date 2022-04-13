@@ -114,7 +114,7 @@ int main(int argc, const char** argv)
 		"Hello, welcome to this game demonstration, here are the controls\n" <<
 		"The creator(c) of the game and the joiner(j) have different moves available\n" <<
 		"Left Click (c) - Creates a lock that moves from the left to the right.\n" <<
-		"Left Clock (j) - Creates a key that moves from the right to the left.\n\n" <<
+		"Left Click (j) - Creates a key that moves from the right to the left.\n\n" <<
 		"If a lock and key touch then they spawn a coin.\n\n" <<
 		
 		"Another thing to note is that any errors in connection will be displayed in the command line.\n\n";
