@@ -16,6 +16,8 @@ class WorldState
 	const string FILE_PATH = "\\..\\..\\images\\";
 	const string CREATOR_BACKGROUND = "background.jpg";
 
+	static unsigned int currentInputNum;
+
 	public:
 		WorldState(GraphicsLibrary* gl);
 		~WorldState();

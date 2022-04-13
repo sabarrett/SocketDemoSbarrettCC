@@ -3,9 +3,11 @@
 #include "GameObject.h"
 #include "GameFiles/WorldState.h"
 
+
 class JoinerInput 
 {
 	public:
+		
 
 	enum InputActionIDs
 	{
@@ -17,6 +19,9 @@ class JoinerInput
 	InputActionIDs inputIDType;
 	Location location;
 
+	int inputID;
+	static unsigned int inputIdIterator;
+
 	JoinerInput(InputActionIDs initalType, Location loc);
 
 	static void Write(OutputMemoryBitStream& stream, vector<JoinerInput>& joinerInputs);
@@ -24,10 +29,11 @@ class JoinerInput
 	static void Read(InputMemoryBitStream& stream, vector<JoinerInput>& joinerInputs);
 
 	private:
+	
+		
 	void Write(OutputMemoryBitStream& stream);
 	JoinerInput()
 	{
 		;
 	}
-
 };

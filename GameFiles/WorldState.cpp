@@ -5,6 +5,8 @@
 #include "Coin.h"
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 
+unsigned int WorldState::currentInputNum = 0;
+
 WorldState::WorldState(GraphicsLibrary* gl)
 {
 	mpGraphicsLibrary = gl;
@@ -24,8 +26,24 @@ void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs, int d
 	{
 		for (int i = 0; i < joinerInputs.size(); i++)
 		{
-			if(joinerInputs[i].inputIDType == JoinerInput::JOINER_KEY_SPAWN)
-				CreateKey(joinerInputs[i].location.x, joinerInputs[i].location.y);
+			if (joinerInputs[i].inputIDType == JoinerInput::JOINER_KEY_SPAWN)
+			{
+				if (joinerInputs[i].inputID > WorldState::currentInputNum)
+				{
+					int count = joinerInputs[i].inputID - WorldState::currentInputNum;
+					std::cout << "for count = " << count << ".\n";
+					for (int i = 0; i < (count); i++)
+					{
+						std::cout << "2\n";
+						CreateKey(joinerInputs[i].location.x, joinerInputs[i].location.y);
+						std::cout << "3\n";
+					}
+					std::cout << "4\n";
+					WorldState::currentInputNum = joinerInputs[i].inputID;
+
+				}
+
+			}
 		}
 		joinerInputs.clear();
 	}
