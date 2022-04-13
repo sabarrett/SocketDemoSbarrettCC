@@ -31,12 +31,12 @@ PlayerController::PlayerController(const int networkID, GraphicsLibrary* graphic
 
 void PlayerController::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
-	inDeliveryNotificationManager->
+	//Do nothing, the data will be stale if re-sent, since it is sending update packets every frame (only latest data matters)
 }
 
 void PlayerController::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
-	inDeliveryNotificationManager->
+	//Cool, already taken care of
 }
 
 PlayerController::~PlayerController()

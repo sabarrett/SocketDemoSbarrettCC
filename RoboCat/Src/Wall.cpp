@@ -23,12 +23,13 @@ Wall::Wall(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, fl
 
 void Wall::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
+	//Re-send
 	inDeliveryNotificationManager->
 }
 
 void Wall::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
-	inDeliveryNotificationManager->
+	//Cool, already taken care of
 }
 
 Wall::~Wall()
