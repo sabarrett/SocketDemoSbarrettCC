@@ -1,14 +1,17 @@
+#include "Networker.h"
+
 class DeliveryNotificationManager
 {
 public:
 	
 	
-	DeliveryNotificationManager( bool inShouldSendAcks, bool inShouldProcessAcks );
+	DeliveryNotificationManager(bool inShouldSendAcks, bool inShouldProcessAcks, Networker* pNetworker);
 	~DeliveryNotificationManager();
 	
 	inline	InFlightPacket*		WriteState( OutputMemoryBitStream& inOutputStream );
 	inline	bool				ReadAndProcessState( InputMemoryBitStream& inInputStream );
 	
+	void ResendPacket(const int ID, PacketType packetHeader);
 	void				ProcessTimedOutPackets();
 	
 	uint32_t			GetDroppedPacketCount()		const	{ return mDroppedPacketCount; }
@@ -46,6 +49,8 @@ private:
 	uint32_t		mDroppedPacketCount;
 	uint32_t		mDispatchedPacketCount;
 	
+	//Networker
+	Networker* mpNetworker;
 };
 
 

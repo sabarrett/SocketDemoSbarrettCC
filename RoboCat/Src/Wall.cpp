@@ -23,8 +23,8 @@ Wall::Wall(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, fl
 
 void Wall::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
-	//Re-send
-	inDeliveryNotificationManager->
+	//Re-send create packet (only packet type we send for this GameObject)
+	inDeliveryNotificationManager->ResendPacket(mNetworkID, PacketType::PACKET_CREATE);
 }
 
 void Wall::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const

@@ -5,7 +5,7 @@ namespace
 	const float kDelayBeforeAckTimeout = 0.5f;
 }
 
-DeliveryNotificationManager::DeliveryNotificationManager( bool inShouldSendAcks, bool inShouldProcessAcks ) :
+DeliveryNotificationManager::DeliveryNotificationManager(bool inShouldSendAcks, bool inShouldProcessAcks, Networker* pNetworker) :
 mNextOutgoingSequenceNumber( 0 ),
 mNextExpectedSequenceNumber( 0 ),
 //everybody starts at 0...
@@ -13,7 +13,8 @@ mShouldSendAcks( inShouldSendAcks ),
 mShouldProcessAcks( inShouldProcessAcks ),
 mDeliveredPacketCount( 0 ),
 mDroppedPacketCount( 0 ),
-mDispatchedPacketCount( 0 )
+mDispatchedPacketCount( 0 ),
+mpNetworker(pNetworker)
 {
 }
 
@@ -21,6 +22,8 @@ mDispatchedPacketCount( 0 )
 //we're going away- log how well we did...
 DeliveryNotificationManager::~DeliveryNotificationManager()
 {
+	//Cleanup networker pointer (DO NOT DELETE, HAPPENS ELSEWHERE)
+	mpNetworker = nullptr;
 	LOG( "DNM destructor. Delivery rate %d%%, Drop rate %d%%",
 		( 100 * mDeliveredPacketCount ) / mDispatchedPacketCount,
 		( 100 * mDroppedPacketCount ) / mDispatchedPacketCount );
@@ -158,6 +161,11 @@ void DeliveryNotificationManager::ProcessAcks( InputMemoryBitStream& inInputStre
 			}
 		}
 	}
+}
+
+void DeliveryNotificationManager::ResendPacket(const int ID, PacketType packetHeader)
+{
+	mpNetworker->sendGameObjectStateUDP(ID, packetHeader);
 }
 
 void DeliveryNotificationManager::ProcessTimedOutPackets()

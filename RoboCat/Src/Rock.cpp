@@ -15,8 +15,8 @@ Rock::Rock(const int networkID, GraphicsLibrary* graphicsLibrary, pair<float, fl
 
 void Rock::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
-	//Re-send
-	inDeliveryNotificationManager->
+	//Re-send create packet (only packet type we send for this GameObject)
+	inDeliveryNotificationManager->ResendPacket(mNetworkID, PacketType::PACKET_CREATE);
 }
 
 void Rock::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
