@@ -11,6 +11,7 @@ class NetworkManagerServer
 	private:
 		float mLastPacket;
 		std::string mName;
+		int clientWelcomeNumber;
 
 		SocketAddress mServerAddress;
 		TCPSocketPtr mSocket;
@@ -23,4 +24,7 @@ class NetworkManagerServer
 
 		void sendWelcomePacket();
 		void sendUpdatePacket(GameObject objects[]);
+
+		void receiveHelloPackets(InputMemoryBitStream& inputStream); //InputMemoryBitStream& inputStream
+		void ReceiveUpdatePackets(InputMemoryBitStream& inputStream); //InputMemoryBitStream& inputStream
 };

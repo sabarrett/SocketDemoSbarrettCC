@@ -27,15 +27,17 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-	InputSystem* mpInputSystem = new InputSystem(); //do i need this to be a pointer and create it?
 	GameObject mGameObjects[MAX_OBJECT_COUNT]; //possibly make this an array with MAX_OBJECT_COUNT
 	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
+	InputSystem* mpInputSystem = new InputSystem();
 	NetworkManager mNetworkManager;
 
 	bool activeConnection = true;
 	bool isServer;
 	int unitCount = 0; //use this to track changes for deleting/making units
 	int pastUnitCount = 0;
+
+	mpInputSystem->init(mpGraphicsLibrary);
 
 	isServer = StringUtils::GetCommandLineArg(1) == "server";
 

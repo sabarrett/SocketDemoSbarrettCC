@@ -24,6 +24,8 @@ void NetworkManager::init(SocketAddress address, std::string name)
 	mLastInputPacket = 0.0f;
 	mCurrentState = NetworkStates::New;
 	mName = name;
+
+	mSocket->Bind(address);
 }
 
 void NetworkManager::update(GameObject objects[])
