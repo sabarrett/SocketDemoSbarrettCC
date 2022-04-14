@@ -1,3 +1,5 @@
+typedef uint16_t PacketSequenceNumber;
+
 class DeliveryNotificationManager;
 
 class TransmissionData

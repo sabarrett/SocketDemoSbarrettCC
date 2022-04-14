@@ -11,16 +11,20 @@ mTimeDispatched( Timing::sInstance.GetTimef() )
 
 void InFlightPacket::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const
 {
-	for( const auto& pair : mTransmissionDataMap )
+	//for( const auto& pair : mTransmissionDataMap )
+	for (auto pair = mTransmissionDataMap.begin(); pair != mTransmissionDataMap.end(); pair++)
 	{
-		pair.second->HandleDeliveryFailure(inDeliveryNotificationManager, packetSequenceNum);
+		//pair.second->HandleDeliveryFailure(inDeliveryNotificationManager, packetSequenceNum);
+		pair->second->HandleDeliveryFailure(inDeliveryNotificationManager, packetSequenceNum);
 	}
 }
 
 void InFlightPacket::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const
 {
-	for( const auto& pair : mTransmissionDataMap )
+	//for( const auto& pair : mTransmissionDataMap )
+	for (auto pair = mTransmissionDataMap.begin(); pair != mTransmissionDataMap.end(); pair++)
 	{
-		pair.second->HandleDeliverySuccess(inDeliveryNotificationManager, packetSequenceNum);
+		//pair.second->HandleDeliverySuccess(inDeliveryNotificationManager, packetSequenceNum);
+		pair->second->HandleDeliverySuccess(inDeliveryNotificationManager, packetSequenceNum);
 	}
 }
