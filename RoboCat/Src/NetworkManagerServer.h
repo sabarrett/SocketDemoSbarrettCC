@@ -13,6 +13,11 @@ class NetworkManagerServer
 		std::string mName;
 		int clientWelcomeNumber;
 
+		int objectCount;
+		char objectTypes[100];
+		int xPositions[100];
+		int yPositions[100];
+
 		SocketAddress mServerAddress;
 		TCPSocketPtr mSocket;
 	public:

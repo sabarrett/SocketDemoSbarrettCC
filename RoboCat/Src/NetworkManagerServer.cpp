@@ -52,7 +52,18 @@ void NetworkManagerServer::sendWelcomePacket()
 
 void NetworkManagerServer::sendUpdatePacket(GameObject objects[])
 {
+	OutputMemoryBitStream output;
+
+	output.Write(objectCount);
 	
+	for (int i = 0; i < objectCount; i++)
+	{
+		output.Write(objectTypes[i]);
+		output.Write(xPositions[i]);
+		output.Write(yPositions[i]);
+	}
+
+	mSocket->Send(&output, sizeof(output));
 }
 
 void NetworkManagerServer::receiveHelloPackets(InputMemoryBitStream& inputStream)
@@ -73,12 +84,16 @@ void NetworkManagerServer::ReceiveUpdatePackets(InputMemoryBitStream& inputStrea
 
 	inputStream.Read(gameObjectCount);
 
+	objectCount = gameObjectCount;
+
 	for (int i = 0; i < gameObjectCount; i++)
 	{
 		inputStream.Read(objectType);
 		inputStream.Read(posX);
 		inputStream.Read(posY);
+
+		objectTypes[i] = objectType;
+		xPositions[i] = posX;
+		yPositions[i] = posY;
 	}
-
-
 }
