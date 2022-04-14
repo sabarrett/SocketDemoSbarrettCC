@@ -39,6 +39,7 @@ bool GraphicsSystems::init(int width, int height)
 void GraphicsSystems::cleanup()
 {
 	al_destroy_display(mpDisplay);
+	mpDisplay = nullptr;
 }
 
 

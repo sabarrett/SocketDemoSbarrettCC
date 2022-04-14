@@ -20,6 +20,7 @@ void InputSystem::cleanup()
 	mpKeyboardState = nullptr;
 
 	al_unregister_event_source(mpKeyboardEvents, al_get_keyboard_event_source());
+	delete mpKeyboardEvents;
 	mpKeyboardEvents = nullptr;
 
 	al_uninstall_keyboard();

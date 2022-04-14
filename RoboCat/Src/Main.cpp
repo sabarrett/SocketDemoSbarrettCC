@@ -8,18 +8,19 @@
 //#pragma comment(lib, "SDL.lib")
 #if _WIN32
 
+
 const std::string ASSET_PATH = "Images\\";
 
-//Network* ClientNetwork;
-//Network* ServerNetwork;
-Network* Networks;
+Network* ClientNetwork;
+Network* ServerNetwork;
+
+int mNetworkID = 0;
 
 GraphicsSystems* Graphics;
 InputSystem* Inputs;
 
 
 std::vector<ClassId> typesOfGameobjects;
-std::vector<GameObject*> spawnedGameObjects;
 
 int ScreenSizeX = 800;
 int ScreenSizeY = 600;
@@ -77,9 +78,10 @@ void DoTcpServer(std::string port)
 
 	connSocket->SetNonBlockingMode(true);
 
-	Network* ServerNetwork = new Network();
+	//Network* ServerNetwork = new Network();
+	ServerNetwork = new Network();
 	ServerNetwork->init(Graphics, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
-	Networks = ServerNetwork;
+	//Networks = ServerNetwork;
 }
 
 void DoTcpClient(std::string port)
@@ -132,13 +134,16 @@ void DoTcpClient(std::string port)
 
 	clientSocket->SetNonBlockingMode(true);
 
-	Network* ClientNetwork = new Network();
+	//Network* ClientNetwork = new Network();
+	ClientNetwork = new Network();
 	ClientNetwork->init(Graphics, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
-	Networks = ClientNetwork;
+	//Networks = ClientNetwork;
 }
 
 bool initGame()
 {
+	srand(time(0));
+
 	bool didInIt = false;
 
 	Graphics = new GraphicsSystems;
@@ -169,17 +174,23 @@ bool initGame()
 
 void initCleanup()
 {
-	/*ClientNetwork->cleanUp();
-	delete ClientNetwork;
-	ClientNetwork = nullptr;
+	if (ClientNetwork)
+	{
+		ClientNetwork->cleanUp();
+		delete ClientNetwork;
+		ClientNetwork = nullptr;
+	}
 
-	ServerNetwork->cleanUp();
-	delete ServerNetwork;
-	ServerNetwork = nullptr;*/
+	if (ServerNetwork)
+	{
+		ServerNetwork->cleanUp();
+		delete ServerNetwork;
+		ServerNetwork = nullptr;
+	}
 
-	Networks->cleanUp();
+	/*Networks->cleanUp();
 	delete Networks;
-	Networks = nullptr;
+	Networks = nullptr;*/
 
 	Inputs->cleanup();
 	delete Inputs;
@@ -190,7 +201,7 @@ void initCleanup()
 	Graphics = nullptr;
 }
 
-bool DrawRandomly(int pNetworkID, bool isServer)
+bool DrawRandomly(bool isServer)
 {
 	int spriteToSpawn = rand() % typesOfGameobjects.size() + 0;
 	for (int i = 0; i < typesOfGameobjects.size(); i++)
@@ -204,45 +215,37 @@ bool DrawRandomly(int pNetworkID, bool isServer)
 				int screenPosX = rand() % Graphics->getmScreenWidth() + 1;
 				int screenPosY = rand() % Graphics->getmScreenHeight() + 1;
 
-				DeanSprite* Dean = new DeanSprite(pNetworkID, std::pair<float, float>(screenPosX, screenPosY), ASSET_PATH + "dean_spritesCropped.png", Graphics);
+				mNetworkID++;
+				DeanSprite* Dean = new DeanSprite(mNetworkID, std::pair<float, float>(screenPosX, screenPosY), ASSET_PATH + "dean_spritesCropped.png", Graphics);
 				Dean->Draw();
-				spawnedGameObjects.push_back(Dean);
 
-				/*if (isServer)
+				if (isServer)
 				{
-					ClientNetwork->send(PacketType::CREATE_PACKET, Dean);
-					ServerNetwork->receive();
+					ServerNetwork->send(PacketType::CREATE_PACKET, Dean);
 				}
 				else
 				{
-					ServerNetwork->send(PacketType::CREATE_PACKET, Dean);
-					ClientNetwork->receive();
-				}*/
-
-				Networks->send(PacketType::CREATE_PACKET, Dean);
-
+					ClientNetwork->send(PacketType::CREATE_PACKET, Dean);
+				}
 				break;
 			}
 			case AMONGUS:
 			{
 				int screenPosX = rand() % Graphics->getmScreenWidth() + 1;
 				int screenPosY = rand() % Graphics->getmScreenHeight() + 1;
-				AmongUs* Among = new AmongUs(pNetworkID, std::pair<float, float>(screenPosX, screenPosY), ASSET_PATH + "amongUs.png", Graphics);
-				Among->Draw();
-				spawnedGameObjects.push_back(Among);
 
-				/*if (isServer)
+				mNetworkID++;
+				AmongUs* Among = new AmongUs(mNetworkID, std::pair<float, float>(screenPosX, screenPosY), ASSET_PATH + "amongUs.png", Graphics);
+				Among->Draw();
+
+				if (isServer)
 				{
-					ClientNetwork->send(PacketType::CREATE_PACKET, Among);
-					ServerNetwork->receive();
+					ServerNetwork->send(PacketType::CREATE_PACKET, Among);
 				}
 				else
 				{
-					ServerNetwork->send(PacketType::CREATE_PACKET, Among);
-					ClientNetwork->receive();
-				}*/
-
-				Networks->send(PacketType::CREATE_PACKET, Among);
+					ClientNetwork->send(PacketType::CREATE_PACKET, Among);
+				}
 
 				break;
 			}
@@ -250,23 +253,19 @@ bool DrawRandomly(int pNetworkID, bool isServer)
 			{
 				int screenPosX = rand() % Graphics->getmScreenWidth() + 1;
 				int screenPosY = rand() % Graphics->getmScreenHeight() + 1;
-				ScottSprite* Scott = new ScottSprite(pNetworkID, std::pair<float, float>(screenPosX, screenPosY), ASSET_PATH + "SCOTT.png", Graphics);
-				Scott->Draw();
-				spawnedGameObjects.push_back(Scott);
 
-				/*if (isServer)
+				mNetworkID++;
+				ScottSprite* Scott = new ScottSprite(mNetworkID, std::pair<float, float>(screenPosX, screenPosY), ASSET_PATH + "SCOTT.png", Graphics);
+				Scott->Draw();
+
+				if (isServer)
 				{
-					ClientNetwork->send(PacketType::CREATE_PACKET, Scott);
-					ServerNetwork->receive();
+					ServerNetwork->send(PacketType::CREATE_PACKET, Scott);
 				}
 				else
 				{
-					ServerNetwork->send(PacketType::CREATE_PACKET, Scott);
-					ClientNetwork->receive();
-				}*/
-
-				Networks->send(PacketType::CREATE_PACKET, Scott);
-
+					ClientNetwork->send(PacketType::CREATE_PACKET, Scott);
+				}
 				break;
 			}
 			}
@@ -279,40 +278,18 @@ void DeleteRandomly(bool isServer)
 {
 	al_clear_to_color(al_map_rgba(0, 0, 0, 1));
 
-	// Variables
-	int imageToRemove;
-
 	// Delete Object
-	if (spawnedGameObjects.size() > 0)
+	if (isServer)
 	{
-		imageToRemove = rand() % (spawnedGameObjects.size() + 0);
-		//spawnedGameObjects.erase(spawnedGameObjects.begin() + imageToRemove);
-		/*if (isServer)
-		{
-			ClientNetwork->send(PacketType::DELETE_PACKET, spawnedGameObjects[imageToRemove]);
-			ServerNetwork->receive();
-		}
-		else
-		{
-			ServerNetwork->send(PacketType::DELETE_PACKET, spawnedGameObjects[imageToRemove]);
-			ClientNetwork->receive();
-		}*/
-
-		Networks->send(PacketType::DELETE_PACKET, spawnedGameObjects[imageToRemove]);
-	}
-
-	// Redraw Scene
-	if (spawnedGameObjects.size() == 0)
-	{
-		al_clear_to_color(al_map_rgba(0, 0, 0, 1));
-		al_flip_display();
+		//int imageToRemove = rand() % (ServerNetwork->getmGameObjects().size() + 0);
+		ServerNetwork->send(PacketType::DELETE_PACKET, ServerNetwork->getmGameObjects().back().second);
+		mNetworkID--;
 	}
 	else
 	{
-		for (int i = 0; i < spawnedGameObjects.size(); i++)
-		{
-			spawnedGameObjects[i]->Draw();
-		}
+		//int imageToRemove = rand() % (ClientNetwork->getmGameObjects().size() + 0);
+		ClientNetwork->send(PacketType::DELETE_PACKET, ClientNetwork->getmGameObjects().back().second);
+		mNetworkID--;
 	}
 }
 
@@ -333,8 +310,8 @@ int main(int argc, const char** argv)
 
 
 	SocketUtil::StaticInit();
-
-	// Server or Client
+		// Server or Client
+	//bool isServer = true;
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
 	// Init Game
@@ -353,7 +330,7 @@ int main(int argc, const char** argv)
 	}
 
 	// Game Loop
-	int networkID = 0;
+	
 	bool canSpawn = true;
 	bool canDelete = true;
 	bool run = true;
@@ -362,8 +339,7 @@ int main(int argc, const char** argv)
 	{
 		if (Inputs->getKeyState(KEYCODES::S) && canSpawn)
 		{
-			canSpawn = DrawRandomly(networkID,isServer);
-			networkID++;
+			canSpawn = DrawRandomly(isServer);
 		}
 		else if (!Inputs->getKeyState(KEYCODES::S))
 		{
@@ -373,7 +349,6 @@ int main(int argc, const char** argv)
 		if (Inputs->getKeyState(KEYCODES::D) && canDelete)
 		{
 			DeleteRandomly(isServer);
-			networkID--;
 			canDelete = false;
 		}
 		else if (!Inputs->getKeyState(KEYCODES::D))
@@ -386,7 +361,26 @@ int main(int argc, const char** argv)
 			run = false;
 		}
 
-		Networks->receive();
+		if (isServer)
+		{
+			//ServerNetwork->receive();
+			PacketType recivedPacket = ServerNetwork->receive();
+
+			if (recivedPacket == PacketType::DELETE_PACKET)
+			{
+				mNetworkID--;
+			}
+		}
+		else
+		{
+			//ClientNetwork->receive();
+			PacketType recivedPacket = ClientNetwork->receive();
+
+			if (recivedPacket == PacketType::DELETE_PACKET)
+			{
+				mNetworkID--;
+			}
+		}
 	}
 
 	initCleanup();

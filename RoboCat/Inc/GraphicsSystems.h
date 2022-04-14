@@ -40,9 +40,5 @@ private:
 
 	int mScreenHeight;
 
-	
-
 	ALLEGRO_DISPLAY* mpDisplay;
-
-	
 };

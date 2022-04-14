@@ -11,6 +11,7 @@ GameObject::GameObject(int networkId, std::pair<float, float> position, Graphics
 
 GameObject::~GameObject()
 {
+	mGraphics->cleanup();
 	delete mGraphics;
 	mGraphics = nullptr;
 	

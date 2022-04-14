@@ -27,16 +27,17 @@ public :
 	bool init(GraphicsSystems* graphicsSystem, std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket);
 	void cleanUp();
 
-	//void send(int networkID, PacketType packetTypeHead, GameObject* object);
 	void send(PacketType packetTypeHead, GameObject* object);
-	void receive();
+	PacketType receive();
 	void draw();
+
+	std::vector<std::pair<int, GameObject*>> getmGameObjects() { return mGameObjects; };
 
 private: 
 	TCPSocketPtr mTCPSocket;
 	std::vector<std::pair<int, GameObject*>> mGameObjects;
-	//std::vector<GameObject*> mGameObjects;
 	GraphicsSystems* mGraphicsSystem;
+
 	std::string mDeanSprite;
 	std::string mAmongSprite;
 	std::string mScottSprite;
