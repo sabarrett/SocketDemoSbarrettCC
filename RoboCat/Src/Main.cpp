@@ -21,6 +21,35 @@ int FRAMERATE = 16;
 
 #if _WIN32
 
+
+class Packet
+{
+public:
+	Packet();
+	Packet(double stamp, InputMemoryBitStream bitstream);
+	~Packet();
+	double timeStamp;
+	InputMemoryBitStream* bitStream;
+private:
+
+};
+Packet::Packet(double stamp, InputMemoryBitStream bitstream) {
+	timeStamp = stamp;
+	bitStream = &bitstream;
+};
+Packet::Packet()
+{
+	timeStamp = 0;
+	char buffer[4096];
+	bitStream = new InputMemoryBitStream(buffer, 4096);
+}
+
+Packet::~Packet()
+{
+	delete(bitStream);
+}
+
+
 void ThrowSocketError(std::string errorMsg)
 {
 	SocketUtil::ReportError(errorMsg.c_str());
@@ -169,6 +198,7 @@ void BradsTotallyOriginalServer()
 		{
 			projectile->Write(oStream);
 		}
+		//write ack
 		incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
 		//recieve Data
@@ -308,7 +338,7 @@ void BradsLessOriginalClient()
 
 	//timer	
 	ALLEGRO_TIMER* timer = GiveMeATimer(0.001);
-	double currentTime = al_get_timer_count(timer);
+	double cTime = al_get_timer_count(timer);
 	float lastTime = 0;
 	float deltaTime = 0;
 
@@ -348,12 +378,14 @@ void BradsLessOriginalClient()
 
 	int projShot = 0;
 
+	list<Packet> packets;
+
 	while (!exit) //GameLoop
 	{
 		//Timer
-		currentTime = al_get_timer_count(timer);
-		deltaTime = currentTime - lastTime;
-		lastTime = currentTime;
+		cTime = al_get_timer_count(timer);
+		deltaTime = cTime - lastTime;
+		lastTime = cTime;
 
 		//send Data
 		OutputMemoryBitStream oStream = OutputMemoryBitStream();
@@ -368,9 +400,11 @@ void BradsLessOriginalClient()
 		{
 			projectile->Write(oStream);
 		}
+		//Write ack onto packet
 		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
-		list<InputMemoryBitStream> packets;
+
+
 		// Recieve data
 		char buffer[4096];
 		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
@@ -380,24 +414,55 @@ void BradsLessOriginalClient()
 
 		if (bytesReceived != -10035)
 		{
+			double currentTime = al_get_timer_count(timer);
+			int randomSin = rand() % 2;
+			if (randomSin == 0)
+			{
+				currentTime += rand() % 100 + 1; // jitter
+			}
+			else
+			{
+				currentTime -= rand() % 100 + 1; // jitter
+			}
+			currentTime += 100; //latency
+			Packet pack(currentTime, iStream);
+			packets.push_back(pack);
+			packets.sort([](const Packet& a, const Packet& b) { return a.timeStamp < b.timeStamp; });	
+		}	
+		bool processOrNot;
+		processOrNot = packets.begin()->timeStamp < al_get_timer_count(timer);
+		//char buffer[4096];
+		//packStream = packets.begin()->bitStream;
+		if (processOrNot) // maybe while
+		{
+			Packet operateOn = *packets.begin();
+			InputMemoryBitStream packStream = *operateOn.bitStream;
+
 			for (int i = 0; i < numObjects; i++)
 			{
-				inObjects[i].Read(iStream);
+				inObjects[i].Read(packStream);
 			}
 			for (int j = 0; j < numDroplets; j++)
 			{
-				rain[j].Read(iStream);
-			}		
+				rain[j].Read(packStream);
+			}
 			int serverProjectilesCount;
-			iStream.Read(serverProjectilesCount);
+			packStream.Read(serverProjectilesCount);
 			serverProjectiles.clear();
 			for (int i = 0; i < serverProjectilesCount; i++)
 			{
 				CircleClass* temp = new CircleClass();
-				temp->Read(iStream);
+				temp->Read(packStream);
 				serverProjectiles.emplace_back(temp);
 			}
-		}		
+
+			list<Packet>::iterator it1 = packets.begin();
+			packets.erase(it1);
+			packets.front();
+
+			//readack
+		}
+		
 
 		ALLEGRO_EVENT events;
 
@@ -481,12 +546,12 @@ void BradsLessOriginalClient()
 		al_clear_to_color(al_map_rgb(0, 0, 0));
 
 		//wait for the frame to end
-		int currentPeriod = al_get_timer_count(timer) - currentTime;
+		int currentPeriod = al_get_timer_count(timer) - cTime;
 		while (currentPeriod < FRAMERATE)
 		{
-			currentPeriod = al_get_timer_count(timer) - currentTime;
+			currentPeriod = al_get_timer_count(timer) - cTime;
 		}
-		if (currentTime < 600000)
+		if (cTime < 600000)
 			al_set_timer_count(timer, 0);
 	}
 	al_destroy_display(display);
@@ -511,6 +576,8 @@ int main(int argc, const char** argv)
 	al_init_primitives_addon();
 
 	al_install_keyboard();
+
+	srand(time(NULL));
 
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server"; // check if the command on the executable is 'server'
 	if (isServer) 
