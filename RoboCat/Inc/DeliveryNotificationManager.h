@@ -1,6 +1,7 @@
 #include <utility>
 
-#include "Networker.h"
+//#include "Networker.h"
+class Networker;
 
 class DeliveryNotificationManager
 {
