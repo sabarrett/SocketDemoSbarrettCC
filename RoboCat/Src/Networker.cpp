@@ -4,6 +4,7 @@
 //Constructor
 Networker::Networker()
 {
+	mbIsInitted = false;
 }
 
 Networker::~Networker()
