@@ -444,6 +444,10 @@ int main(int argc, const char** argv)
 					if (packetTypeReceived == PacketType::PACKET_CREATE)
 						networkID++;
 
+					//If you receive a delete packet, decrement the network ID to keep spawning in sync!
+					if (packetTypeReceived == PacketType::PACKET_DELETE)
+						networkID--;
+
 					//Draw call
 					draw();
 				}
