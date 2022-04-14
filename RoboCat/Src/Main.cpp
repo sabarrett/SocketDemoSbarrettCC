@@ -27,16 +27,20 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
+	al_init();
+
 	GameObject mGameObjects[MAX_OBJECT_COUNT]; //possibly make this an array with MAX_OBJECT_COUNT
 	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
 	InputSystem* mpInputSystem = new InputSystem();
 	NetworkManager mNetworkManager;
+	NetworkManagerServer mNetworkManagerServer;
 
 	bool activeConnection = true;
 	bool isServer;
 	int unitCount = 0; //use this to track changes for deleting/making units
 	int pastUnitCount = 0;
 
+	mpGraphicsLibrary->init(BACKGROUND_PATH);
 	mpInputSystem->init(mpGraphicsLibrary);
 
 	isServer = StringUtils::GetCommandLineArg(1) == "server";
@@ -45,7 +49,7 @@ int main(int argc, const char** argv)
 	{
 		SocketAddress servAddress(INADDR_LOOPBACK, 8081); //8081?
 
-		//mNetworkManagerServer.init(servAddress, "server");
+		mNetworkManagerServer.init(servAddress, "server");
 	}
 	else
 	{
@@ -96,7 +100,7 @@ int main(int argc, const char** argv)
 
 		if (mpInputSystem->getKeyboardInput() == KeyCode::Esc)
 		{
-			//basically exit the game shut everything down
+			//basically exit the game and shut everything down
 			activeConnection = false;
 		}
 
@@ -109,7 +113,7 @@ int main(int argc, const char** argv)
 		//now i need to move and send this info
 		if (isServer)
 		{
-			//mNetworkManagerServer.update(mGameObjects);
+			mNetworkManagerServer.update(mGameObjects);
 		}
 		else
 		{

@@ -6,6 +6,7 @@ NetworkManagerServer::NetworkManagerServer()
 	mLastPacket = 0.0f;
 	clientWelcomeNumber = 0;
 	mSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	//mAddress = 
 }
 
 NetworkManagerServer::~NetworkManagerServer()
