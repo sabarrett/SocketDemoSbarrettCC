@@ -1,3 +1,5 @@
+#pragma once
+
 //typedef PacketSequenceNumber uint16_t;
 
 class AckRange

@@ -7,6 +7,7 @@
 
 #include "GameObject.h"
 #include "Colour.h"
+#include "TransmissionData.h"
 
 class Wall : public GameObject, public TransmissionData
 {

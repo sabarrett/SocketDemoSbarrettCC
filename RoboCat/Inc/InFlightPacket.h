@@ -1,3 +1,9 @@
+#pragma once
+
+#include <unordered_map>
+
+using std::unordered_map;
+
 class DeliveryNotificationManager;
 
 //in case we decide to change the type of the sequence number to use fewer or more bits

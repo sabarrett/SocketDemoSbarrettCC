@@ -7,6 +7,7 @@
 
 #include "GameObject.h"
 #include "InputSystem.h"
+#include "TransmissionData.h"
 
 class PlayerController : public GameObject, public TransmissionData
 {

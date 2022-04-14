@@ -17,6 +17,7 @@ mDroppedPacketCount( 0 ),
 mDispatchedPacketCount( 0 ),
 mpNetworker(pNetworker)
 {
+	mInFlightPacketsPair = deque<std::pair<InFlightPacket, OutputMemoryBitStream>>();
 }
 
 

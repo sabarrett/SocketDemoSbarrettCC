@@ -26,7 +26,7 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
 	//mPacketQueue = std::queue<std::pair<int, float>>();
 	pDeliveryNotificationManager = new DeliveryNotificationManager(true, true, this);
-	mOutputBitStreamQueue = std::priority_queue<std::pair<float, OutputMemoryBitStream>, std::vector<std::pair<float, OutputMemoryBitStream>>, std::greater<std::pair<float, OutputMemoryBitStream>>>();
+	mOutputBitStreamQueue = std::priority_queue<std::pair<float, OutputMemoryBitStream>, std::vector<std::pair<float, OutputMemoryBitStream>>, myComp>();
 
 	//Data for GameObject replication
 	mpGraphicsLibrary = graphicsLibrary;
@@ -861,7 +861,8 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 	if (mOutputBitStreamQueue.size() >= 10)
 	{
 		//Iterate though the queue
-		for (int i = 0; i < mOutputBitStreamQueue.size(); i++)
+		//for (size_t i = 0; i < mOutputBitStreamQueue.size(); i++)
+		for (size_t i = mOutputBitStreamQueue.size() - 1; i >=0 ; i--)
 		{
 			//Drop some packets
 			if (i % 3 != 0)

@@ -1,3 +1,8 @@
+#pragma once
+
+#include <memory>
+using std::shared_ptr;
+
 typedef uint16_t PacketSequenceNumber;
 
 class DeliveryNotificationManager;
