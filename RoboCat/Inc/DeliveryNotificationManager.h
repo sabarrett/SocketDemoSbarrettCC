@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "Networker.h"
 
 class DeliveryNotificationManager
@@ -17,7 +19,8 @@ public:
 	uint32_t GetDeliveredPacketCount() const { return mDeliveredPacketCount; }
 	uint32_t GetDispatchedPacketCount() const { return mDispatchedPacketCount; }
 	
-	const deque<InFlightPacket>& GetInFlightPackets() const { return mInFlightPackets; }
+	//const deque<InFlightPacket>& GetInFlightPackets() const { return mInFlightPackets; }
+	const deque<std::pair<InFlightPacket, OutputMemoryBitStream&>> GetInFlightPackets() const { return mInFlightPacketsPair; }
 	
 private:
 		
@@ -35,7 +38,8 @@ private:
 	PacketSequenceNumber mNextOutgoingSequenceNumber;
 	PacketSequenceNumber mNextExpectedSequenceNumber;
 	
-	deque<InFlightPacket> mInFlightPackets;
+	//deque<InFlightPacket> mInFlightPackets;
+	deque<std::pair<InFlightPacket, OutputMemoryBitStream&>> mInFlightPacketsPair;
 	deque<AckRange> mPendingAcks;
 	
 	bool mShouldSendAcks;
