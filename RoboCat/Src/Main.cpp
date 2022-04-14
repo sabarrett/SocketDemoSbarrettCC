@@ -8,7 +8,7 @@
 #include "NetworkManagerServer.h"
 
 const int MAX_OBJECT_COUNT = 100; //i think this might be needed i am unsure
-std::string BACKGROUND_PATH = "..//..//Assets//Woods.png"; //I think
+std::string BACKGROUND_PATH = "..//..//Assets/Woods.png"; //I think
 
 #if _WIN32
 
@@ -30,7 +30,7 @@ int main(int argc, const char** argv)
 	al_init();
 
 	GameObject mGameObjects[MAX_OBJECT_COUNT]; //possibly make this an array with MAX_OBJECT_COUNT
-	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(800, 800);
+	GraphicsLibrary* mpGraphicsLibrary = new GraphicsLibrary(1600, 1200);
 	InputSystem* mpInputSystem = new InputSystem();
 	NetworkManager mNetworkManager;
 	NetworkManagerServer mNetworkManagerServer;
@@ -42,6 +42,8 @@ int main(int argc, const char** argv)
 
 	mpGraphicsLibrary->init(BACKGROUND_PATH);
 	mpInputSystem->init(mpGraphicsLibrary);
+
+	mpGraphicsLibrary->loadImage(BACKGROUND_PATH, "Woods.png");
 
 	isServer = StringUtils::GetCommandLineArg(1) == "server";
 
@@ -120,6 +122,7 @@ int main(int argc, const char** argv)
 			mNetworkManager.update(mGameObjects);
 		}
 
+		//mpGraphicsLibrary->drawImage("Woods.png", 0, 0);
 		mpGraphicsLibrary->render(); //render at the very end
 	}
 	
