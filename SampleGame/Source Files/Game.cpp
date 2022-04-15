@@ -128,12 +128,12 @@ void Game::init(int screenWidth, int screenHeight, int fps, bool isServer, bool 
 
 	if (isServer)
 	{
-		TCPNetworkManager::getInstance()->init("127.0.0.1", 8011);
+		TCPNetworkManager::getInstance()->init("127.0.0.1", 8011, 70);
 		TCPNetworkManager::getInstance()->listenAndAccept();
 	}
 	else
 	{
-		TCPNetworkManager::getInstance()->init("127.0.0.1", 8012);
+		TCPNetworkManager::getInstance()->init("127.0.0.1", 8012, 70);
 		TCPNetworkManager::getInstance()->connectTo("127.0.0.1", 8011);
 	}
 		

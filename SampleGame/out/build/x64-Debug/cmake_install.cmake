@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame
+# Install script for directory: C:/Users/spyid/Documents/NetworkingAssignment/SampleGame
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/install/x64-Debug")
+  set(CMAKE_INSTALL_PREFIX "C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/install/x64-Debug")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,10 +34,10 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/x64-Debug/_deps/raylib-build/cmake_install.cmake")
-  include("C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/x64-Debug/_deps/raylib-cpp-build/cmake_install.cmake")
-  include("C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/RedEngine-build/cmake_install.cmake")
-  include("C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/RedNet-build/cmake_install.cmake")
+  include("C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/x64-Debug/_deps/raylib-build/cmake_install.cmake")
+  include("C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/x64-Debug/_deps/raylib-cpp-build/cmake_install.cmake")
+  include("C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/RedEngine-build/cmake_install.cmake")
+  include("C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/RedNet-build/cmake_install.cmake")
 
 endif()
 
@@ -49,5 +49,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/x64-Debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/x64-Debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

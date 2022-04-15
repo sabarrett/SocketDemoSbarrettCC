@@ -30,12 +30,16 @@ void TCPNetworkManager::cleanupInstance()
 	}
 }
 
-void TCPNetworkManager::init(string address, int port)
+void TCPNetworkManager::init(string address, int port, int reliabilityPercentage)
 {
 
 	SocketUtil::StaticInit();
 
 	establishTCPSocket(address, port);
+
+	srand(time(NULL));
+
+	mReliabilityPercentage = reliabilityPercentage;
 	
 }
 
@@ -103,12 +107,22 @@ void TCPNetworkManager::listenAndAccept()
 
 void TCPNetworkManager::sendMessage(string message)
 {
-	mConnection->Send(message.c_str(), message.length());
+	int r = rand() % 100;
+
+	if (r < mReliabilityPercentage)
+		mConnection->Send(message.c_str(), message.length());
+	else
+		std::cout << "Packet Dropped! Hehe" << std::endl;
 }
 
 void TCPNetworkManager::sendMessage(char* message, int length)
 {
-	mConnection->Send(message, length);
+	int r = rand() % 100;
+
+	if (r < mReliabilityPercentage)
+		mConnection->Send(message, length);
+	else
+		std::cout << "Packet Dropped! Hehe" << std::endl;
 }
 
 void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length)
@@ -125,7 +139,12 @@ void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length)
 
 	memcpy(buffer + sizeof(int) + sizeof(Packet_Header), data, length);
 
-	sendMessage(buffer, sizeof(int) + sizeof(Packet_Header) + length);
+	int r = rand() % 100;
+
+	if (r < mReliabilityPercentage)
+		sendMessage(buffer, sizeof(int) + sizeof(Packet_Header) + length);
+	else
+		std::cout << "Packet Dropped! Hehe" << std::endl;
 
 }
 
@@ -166,7 +185,7 @@ void TCPNetworkManager::receivePackets(void(*handleFunction)(Packet_Header heade
 		bytesProcessed += length;
 		handleFunction(header, data, length);
 
-		std::cout << "Length: " << length << ", Packet Header: " << header << ", Data Length: " << length << std::endl;
+		//std::cout << "Length: " << length << ", Packet Header: " << header << ", Data Length: " << length << std::endl;
 	}
 
 	

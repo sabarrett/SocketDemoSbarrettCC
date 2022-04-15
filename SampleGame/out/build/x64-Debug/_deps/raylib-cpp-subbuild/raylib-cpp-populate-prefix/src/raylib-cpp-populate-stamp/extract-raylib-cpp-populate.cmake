@@ -1,7 +1,7 @@
 # Make file names absolute:
 #
-get_filename_component(filename "C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/master.tar.gz" ABSOLUTE)
-get_filename_component(directory "C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/build/x64-Debug/_deps/raylib-cpp-src" ABSOLUTE)
+get_filename_component(filename "C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/x64-Debug/_deps/raylib-cpp-subbuild/raylib-cpp-populate-prefix/src/master.tar.gz" ABSOLUTE)
+get_filename_component(directory "C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/build/x64-Debug/_deps/raylib-cpp-src" ABSOLUTE)
 
 message(STATUS "extracting...
      src='${filename}'

@@ -21,7 +21,7 @@ public:
 	TCPNetworkManager();
 	~TCPNetworkManager();
 
-	void init(string address, int port);
+	void init(string address, int port, int reliabilityPercentage);
 	void cleanup();
 
 	static TCPNetworkManager* getInstance();
@@ -46,5 +46,7 @@ private:
 
 	TCPSocketPtr mSocket;
 	TCPSocketPtr mConnection;
+
+	int mReliabilityPercentage;
 
 };

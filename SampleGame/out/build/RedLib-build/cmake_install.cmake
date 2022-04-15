@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/RedLib
+# Install script for directory: C:/Users/spyid/Documents/NetworkingAssignment/RedLib
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Users/brandon.labbe/Desktop/NetworkingAssignment1/SampleGame/out/install/x64-Debug")
+  set(CMAKE_INSTALL_PREFIX "C:/Users/spyid/Documents/NetworkingAssignment/SampleGame/out/install/x64-Debug")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
