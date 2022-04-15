@@ -177,6 +177,43 @@ void Networker::cleanup()
 //	return false;
 //}
 
+bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
+{
+	SocketUtil::StaticInit();
+
+	//Create Socket
+	UDPSocketPtr sock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
+	sock->SetNonBlockingMode(true);
+
+	if (sock == nullptr)
+	{
+		SocketUtil::ReportError("Creating Client Socket");
+		ExitProcess(1);
+		return false;
+	}
+
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + port).c_str());
+	if (sockAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating Server Address");
+		ExitProcess(1);
+	}
+
+	if (sock->Bind(*sockAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Binding Server Socket");
+		ExitProcess(1);
+	}
+	LOG("%s", "Server Socket Succesfully Binded!");
+
+	*mpUDPSocket = sock;
+	*mpSocketAddressPtr = sockAddress;
+
+	if (*mpUDPSocket != nullptr)
+		return true;
+	return false;
+}
+
 bool Networker::connectUDP(std::string otherUserIpAddress, std::string port)
 {
 	SocketUtil::StaticInit();
@@ -192,28 +229,19 @@ bool Networker::connectUDP(std::string otherUserIpAddress, std::string port)
 		return false;
 	}
 
-	string address = "0.0.0.0:0";
-	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
-	if (clientAddress == nullptr)
-	{
-		SocketUtil::ReportError("Creating Client Address");
-		ExitProcess(1);
-		return false;
-	}
-
-	if (sock->Bind(*clientAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Binding Client Socket");
-		ExitProcess(1);
-	}
-	LOG("%s", "Client Socket Succesfully Binded!");
-
 	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((otherUserIpAddress + ":" + port).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
 		ExitProcess(1);
 	}
+
+	//if (sock->Bind(*sockAddress) != NO_ERROR)
+	//{
+	//	SocketUtil::ReportError("Binding Client Socket");
+	//	ExitProcess(1);
+	//}
+	//LOG("%s", "Client Socket Succesfully Binded!");
 
 	*mpUDPSocket = sock;
 	*mpSocketAddressPtr = sockAddress;
