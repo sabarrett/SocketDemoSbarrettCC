@@ -26,27 +26,33 @@ class Packet
 {
 public:
 	Packet();
-	Packet(double stamp, InputMemoryBitStream bitstream);
+	Packet(double stamp, char* buffer, int byteCount);
 	~Packet();
 	double timeStamp;
-	InputMemoryBitStream* bitStream;
+	char* mBufferPtr;
+	int mByteCount;
 private:
 
 };
-Packet::Packet(double stamp, InputMemoryBitStream bitstream) {
+Packet::Packet(double stamp, char* buffer, int byteCount) {
 	timeStamp = stamp;
-	bitStream = &bitstream;
+	mBufferPtr = buffer;
+	mByteCount = byteCount;
 };
+//Packet::Packet(double stamp, InputMemoryBitStream bitstream) {
+//	timeStamp = stamp;
+//	bitStream = &bitstream;
+//};
 Packet::Packet()
 {
 	timeStamp = 0;
-	char buffer[4096];
-	bitStream = new InputMemoryBitStream(buffer, 4096);
+	mBufferPtr = new char[4096];
+	mByteCount = 4096;
+	//bitStream = new InputMemoryBitStream(buffer, 4096);
 }
 
 Packet::~Packet()
 {
-	delete(bitStream);
 }
 
 
@@ -323,7 +329,7 @@ void BradsTotallyOriginalServer()
 		{
 			currentPeriod = al_get_timer_count(timer) - currentTime;
 		}
-		if (currentTime < 600000)
+		if (currentTime > 600000)
 			al_set_timer_count(timer, 0);
 	}
 	al_destroy_display(display);	
@@ -378,7 +384,7 @@ void BradsLessOriginalClient()
 
 	int projShot = 0;
 
-	list<Packet> packets;
+	list<Packet*> packets;
 
 	while (!exit) //GameLoop
 	{
@@ -403,67 +409,71 @@ void BradsLessOriginalClient()
 		//Write ack onto packet
 		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
-
-
 		// Recieve data
 		char buffer[4096];
-		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
+		//PLEASGOD//InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
 		int32_t bytesReceived = int32_t();
-		//LOG("%s", "Client game loop");
 		bytesReceived = clientSocket->Receive(buffer, 4096);
 
 		if (bytesReceived != -10035)
 		{
+			//LOG("%s", "Bytes were recieved"); // this worked
+
 			double currentTime = al_get_timer_count(timer);
 			int randomSin = rand() % 2;
 			if (randomSin == 0)
 			{
-				currentTime += rand() % 100 + 1; // jitter
+				//LOG("%s", "positive jitter")
+				currentTime += rand() % 400 + 1; // jitter
 			}
 			else
 			{
-				currentTime -= rand() % 100 + 1; // jitter
+				//LOG("%s", "negative jitter")
+
+				currentTime -= rand() % 400 + 1; // jitter
 			}
-			currentTime += 100; //latency
-			Packet pack(currentTime, iStream);
+			currentTime += 5000; //latency
+			Packet* pack = new Packet(currentTime, buffer, 4096);
 			packets.push_back(pack);
-			packets.sort([](const Packet& a, const Packet& b) { return a.timeStamp < b.timeStamp; });	
+			packets.sort([](const Packet* a, const Packet* b) { return a->timeStamp < b->timeStamp; });	
 		}	
-		bool processOrNot;
-		processOrNot = packets.begin()->timeStamp < al_get_timer_count(timer);
-		//char buffer[4096];
-		//packStream = packets.begin()->bitStream;
-		if (processOrNot) // maybe while
+
+		if ((int)packets.size() > 0)
 		{
-			Packet operateOn = *packets.begin();
-			InputMemoryBitStream packStream = *operateOn.bitStream;
 
-			for (int i = 0; i < numObjects; i++)
+			bool processOrNot = false;
+
+			processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
+			cout << "timestamp " << packets.front()->timeStamp << endl;
+			cout << "current time " << al_get_timer_count(timer) << endl;
+			//cout << "process: " << processOrNot << endl;
+			if (processOrNot) // maybe while
 			{
-				inObjects[i].Read(packStream);
-			}
-			for (int j = 0; j < numDroplets; j++)
-			{
-				rain[j].Read(packStream);
-			}
-			int serverProjectilesCount;
-			packStream.Read(serverProjectilesCount);
-			serverProjectiles.clear();
-			for (int i = 0; i < serverProjectilesCount; i++)
-			{
-				CircleClass* temp = new CircleClass();
-				temp->Read(packStream);
-				serverProjectiles.emplace_back(temp);
+				LOG("%s", "process a packet");
+
+				InputMemoryBitStream packStream(packets.front()->mBufferPtr, 4096);
+				for (int i = 0; i < numObjects; i++)
+				{
+					inObjects[i].Read(packStream);
+				}
+				for (int j = 0; j < numDroplets; j++)
+				{
+					rain[j].Read(packStream);
+				}
+				int serverProjectilesCount;
+				packStream.Read(serverProjectilesCount);
+				serverProjectiles.clear();
+				for (int i = 0; i < serverProjectilesCount; i++)
+				{
+					CircleClass* temp = new CircleClass();
+					temp->Read(packStream);
+					serverProjectiles.emplace_back(temp);
+				}
+				packets.pop_front();
+				//readack
 			}
 
-			list<Packet>::iterator it1 = packets.begin();
-			packets.erase(it1);
-			packets.front();
-
-			//readack
 		}
-		
-
 		ALLEGRO_EVENT events;
 
 		al_get_next_event(eventQueue, &events);
@@ -551,7 +561,7 @@ void BradsLessOriginalClient()
 		{
 			currentPeriod = al_get_timer_count(timer) - cTime;
 		}
-		if (cTime < 600000)
+		if (cTime > 600000)
 			al_set_timer_count(timer, 0);
 	}
 	al_destroy_display(display);
