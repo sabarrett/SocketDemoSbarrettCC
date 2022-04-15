@@ -178,6 +178,9 @@ void BradsTotallyOriginalServer()
 
 	int projShot = 0;
 
+	list<Packet*> packets;
+	DeliveryNotificationManager deliveryManager(true, true);
+
 	while (!exit) //GameLoop
 	{
 		//Timer
@@ -205,30 +208,67 @@ void BradsTotallyOriginalServer()
 			projectile->Write(oStream);
 		}
 		//write ack
+		deliveryManager.WriteState(oStream);
 		incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
 		//recieve Data
-		char buffer[4096];
+		char* buffer = new char[4096];
 		int32_t bytesReceived = int32_t(); // get username
-		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
 
 		bytesReceived = incomingSocket->Receive(buffer, 4096);
 		if (bytesReceived != -10035)
 		{
-			for (int i = 0; i < numObjects; i++)
+			double stampTime = al_get_timer_count(timer);
+			int randomSin = rand() % 2;
+			if (randomSin == 0)
 			{
-				inObjects[i].Read(iStream);
+			stampTime += rand() % 200 + 1; // jitter
 			}
-			int clientProjectilesCount;
-			iStream.Read(clientProjectilesCount);
-			clientProjectiles.clear();
-			for (int i = 0; i < clientProjectilesCount; i++)
+			else
 			{
-				RectangleObject* temp = new RectangleObject();
-				temp->Read(iStream);
-				clientProjectiles.emplace_back(temp);
+				stampTime -= rand() % 200 + 1; // jitter
+			}
+			stampTime += 1000; //latency
+			Packet* pack = new Packet(stampTime, buffer, 4096);
+			if (!(rand() % 100 + 0 < 5)) //5% packet loss
+				packets.push_back(pack);
+			if (packets.size() > 1)
+				packets.sort([](const Packet* a, const Packet* b) { return a->timeStamp < b->timeStamp; });
+		
+		}
+		if (packets.size() > 0)
+		{
+			bool processOrNot = false;
+
+			processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
+
+			while (processOrNot) // maybe while
+			{
+				InputMemoryBitStream packStream(packets.front()->mBufferPtr, 4096);
+
+				for (int i = 0; i < numObjects; i++)
+				{
+					inObjects[i].Read(packStream);
+				}
+				int clientProjectilesCount;
+				packStream.Read(clientProjectilesCount);
+				clientProjectiles.clear();
+				for (int i = 0; i < clientProjectilesCount; i++)
+				{
+					RectangleObject* temp = new RectangleObject();
+					temp->Read(packStream);
+					clientProjectiles.emplace_back(temp);
+				}
+
+				packets.pop_front();
+				//readack
+				deliveryManager.ReadAndProcessState(packStream);
+				//process timed out acks
+				deliveryManager.ProcessTimedOutPackets();
+				processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
 			}
 		}
+		
 
 		ALLEGRO_EVENT events;
 
@@ -385,7 +425,7 @@ void BradsLessOriginalClient()
 	int projShot = 0;
 
 	list<Packet*> packets;
-
+	DeliveryNotificationManager deliveryManager(true, true);
 	while (!exit) //GameLoop
 	{
 		//Timer
@@ -407,18 +447,16 @@ void BradsLessOriginalClient()
 			projectile->Write(oStream);
 		}
 		//Write ack onto packet
+		deliveryManager.WriteState(oStream);
 		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
 		// Recieve data
 		char* buffer = new char[4096];
-		//PLEASGOD//InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
 		int32_t bytesReceived = int32_t();
 		bytesReceived = clientSocket->Receive(buffer, 4096);
 
 		if (bytesReceived != -10035)
 		{
-			//LOG("%s", "Bytes were recieved"); // this worked
-
 			double stampTime = al_get_timer_count(timer);
 			cout << "time start: " << stampTime;
 			int randomSin = rand() % 2;
@@ -443,12 +481,9 @@ void BradsLessOriginalClient()
 			bool processOrNot = false;
 
 			processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
-			//cout << "timestamp " << packets.front()->timeStamp << endl;
-			//cout << "current time " << al_get_timer_count(timer) << endl;
-			//cout << "process: " << processOrNot << endl;
-			if(processOrNot) // maybe while
+
+			while(processOrNot) // maybe while
 			{
-				//LOG("%s", "process a packet");
 
 				InputMemoryBitStream packStream(packets.front()->mBufferPtr, 4096);
 				for (int i = 0; i < numObjects; i++)
@@ -470,6 +505,8 @@ void BradsLessOriginalClient()
 				}
 				packets.pop_front();
 				//readack
+				deliveryManager.ReadAndProcessState(packStream);
+				deliveryManager.ProcessTimedOutPackets();
 				processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
 			}
 
