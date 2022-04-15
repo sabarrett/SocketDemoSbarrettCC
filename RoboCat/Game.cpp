@@ -11,14 +11,52 @@
 #include <thread>
 #include <cstdlib>
 #include "Score.h"
+#include "DeliveryNotificationManager.h"
+
+/*
+
+PT_ACK
+ - Type
+ - HasAck
+ - Ack Data (SN)
+
+PT_PADDLE
+ - Type
+ - SN
+ - yPos
+
+PT_BALL
+ - Type
+ - SN
+ - Ball ID
+ - x pos
+ - y pos
+
+PT_SCORE
+ - Type
+ - SN
+ - player 1 score
+ - player 2 score
+
+PT_WIN
+ - Type
+ - SN
+ - player ID (0 or 1)
+
+
+PT_MAX
+ - DOES NOT GET SENT
+
+*/
 
 enum class PacketType
 {
+	PT_ACK,
 	PT_PADDLE,
 	PT_BALL,
 	PT_SCORE,
 	PT_WIN,
-	PT_TEST
+	PT_MAX
 };
 
 Game::Game()

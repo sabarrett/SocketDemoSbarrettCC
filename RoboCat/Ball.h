@@ -1,4 +1,5 @@
 #pragma once
+
 #include <allegro5/color.h>
 
 struct position {
