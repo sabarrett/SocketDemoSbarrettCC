@@ -192,7 +192,7 @@ bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
 		return false;
 	}
 
-	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + port).c_str());
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((/*serverIpAddress + */"0.0.0.0:" + port).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
