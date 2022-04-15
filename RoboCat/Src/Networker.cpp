@@ -206,8 +206,15 @@ bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
 	}
 	LOG("%s", "Server Socket Succesfully Binded!");
 
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:0");
+	if (clientAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating Client Address");
+		ExitProcess(1);
+	}
+
 	*mpUDPSocket = sock;
-	*mpSocketAddressPtr = sockAddress;
+	*mpSocketAddressPtr = clientAddress;
 
 	if (*mpUDPSocket != nullptr)
 		return true;
@@ -235,13 +242,6 @@ bool Networker::connectUDP(std::string otherUserIpAddress, std::string port)
 		SocketUtil::ReportError("Creating Server Address");
 		ExitProcess(1);
 	}
-
-	//if (sock->Bind(*sockAddress) != NO_ERROR)
-	//{
-	//	SocketUtil::ReportError("Binding Client Socket");
-	//	ExitProcess(1);
-	//}
-	//LOG("%s", "Client Socket Succesfully Binded!");
 
 	*mpUDPSocket = sock;
 	*mpSocketAddressPtr = sockAddress;
