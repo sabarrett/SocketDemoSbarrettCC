@@ -651,12 +651,22 @@ PacketType Networker::receiveGameObjectStateUDP()
 			//IMBStream.Read(dispatchTime);
 			int networkID;
 			IMBStream.Read(networkID);
+
+			//If ID received is < 0, we are doing connection stuff
+			if (networkID < 0)
+			{
+				return packetHeader;
+			}
+
 			GameObjectType receiveType;
 			IMBStream.Read(receiveType);
 
 			//Logic depends on packer header type
 			switch (packetHeader)
 			{
+			case PacketType::PACKET_HELLO:
+				break;
+
 			case PacketType::PACKET_CREATE:
 			{
 				float posX;
@@ -804,6 +814,17 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 
 	//float timeDispatched = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
 	//OMBStream.Write(timeDispatched);
+
+	//If ID received is < 0, we are doing connection stuff
+	if (ID < 0)
+	{
+		//Write ID
+		OMBStream->Write(ID);
+
+		//Send packet and return from the function
+		(*mpUDPSocket)->SendTo(OMBStream, OMBStream->GetBitLength(), (**mpSocketAddressPtr));
+		return;
+	}
 
 	OMBStream->Write(mGameObjectsVec[ID].second->getNetworkID());
 	OMBStream->Write(mGameObjectsVec[ID].second->getGameObjectType());

@@ -415,6 +415,10 @@ int main(int argc, const char** argv)
 			//Check for peer connected
 			while (packetTypeReceived != PacketType::PACKET_HELLO)
 			{
+				//Send hello packets
+				pNetworkManager->sendGameObjectStateUDP(-5, PacketType::PACKET_HELLO);
+
+				//Keep receiving packsts
 				packetTypeReceived = pNetworkManager->receiveGameObjectStateUDP();
 			}
 
