@@ -177,7 +177,7 @@ void Networker::cleanup()
 //	return false;
 //}
 
-bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
+bool Networker::initServerUDP(/*std::string serverIpAddress, */std::string port)
 {
 	SocketUtil::StaticInit();
 
