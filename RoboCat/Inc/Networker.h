@@ -33,13 +33,6 @@ enum PacketType
 	PACKET_INVALID
 };
 
-//struct GamePacket
-//{
-//	char* buffer;
-//	int32_t byteRecieve;
-//	float dispatchTime;
-//};
-
 //Networker is singleton (we only want one networker at a time)
 class Networker
 {
@@ -63,8 +56,8 @@ public:
 	~Networker();
 
 	//Starting and connect to server
-	bool initServerUDP(std::string serverIpAddress, std::string port);
-	bool connectUDP(std::string serverIpAddress, std::string port);
+	bool initServerUDP(std::string servPort, std::string clientPort);
+	bool connectUDP(std::string serverIpAddress, std::string servPort, std::string clientPort);
 
 	//Update game state
 	//PacketType receiveGameObjectState();

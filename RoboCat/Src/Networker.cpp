@@ -66,7 +66,7 @@ void Networker::cleanup()
 	mbIsInitted = false;
 }
 
-bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
+bool Networker::initServerUDP(std::string servPort, std::string clientPort)
 {
 	SocketUtil::StaticInit();
 
@@ -81,7 +81,7 @@ bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
 		return false;
 	}
 
-	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((/*serverIpAddress + */"0.0.0.0:" + port).c_str());
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + servPort).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
@@ -95,15 +95,15 @@ bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
 	}
 	LOG("%s", "Server Socket Succesfully Binded!");
 
-	*mpUDPSocket = sock;
 	*mpSocketAddressPtr = sockAddress;
+	*mpUDPSocket = sock;
 
 	if (*mpUDPSocket != nullptr)
 		return true;
 	return false;
 }
 
-bool Networker::connectUDP(std::string serverIpAddress, std::string port)
+bool Networker::connectUDP(std::string serverIpAddress, std::string servPort, std::string clientPort)
 {
 	SocketUtil::StaticInit();
 
@@ -118,8 +118,8 @@ bool Networker::connectUDP(std::string serverIpAddress, std::string port)
 		return false;
 	}
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + port).c_str());
-	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((/*serverIpAddress + */"0.0.0.0:" + port).c_str());
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + servPort).c_str());
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + clientPort).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
@@ -140,410 +140,6 @@ bool Networker::connectUDP(std::string serverIpAddress, std::string port)
 		return true;
 	return false;
 }
-
-/*
-//Goes through the Queue and processes the packets in order
-PacketType Networker::processPacket(GamePacket gamePacket)
-{
-	if (gamePacket.byteRecieve > 0)
-	{
-		InputMemoryBitStream IMBStream = InputMemoryBitStream(gamePacket.buffer, 1024);
-
-		//Start reading
-		PacketType packetHeader;
-		IMBStream.Read(packetHeader);
-		float dispatchTime;
-		IMBStream.Read(dispatchTime);
-		int networkID;
-		IMBStream.Read(networkID);
-		GameObjectType receiveType;
-		IMBStream.Read(receiveType);
-
-		//Logic depends on packer header type
-		switch (packetHeader)
-		{
-		case PacketType::PACKET_CREATE:
-		{
-			float posX;
-			float posY;
-
-			IMBStream.Read(posX);
-			IMBStream.Read(posY);
-
-			switch (receiveType)
-			{
-			case GameObjectType::ROCK:
-			{
-				Rock* newRock = new Rock(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mRockSpriteIdentifier);
-				mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newRock));
-				newRock = nullptr;
-
-				break;
-			}
-
-			case GameObjectType::PLAYER:
-			{
-				PlayerController* newPlayerController = new PlayerController(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mPlayerMoveSpeed, mPlayerSpriteIdentifier);
-				mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newPlayerController));
-				newPlayerController = nullptr;
-
-				break;
-
-			}
-
-			case GameObjectType::WALL:
-			{
-				float sizeX;
-				float sizeY;
-				float thickness;
-
-				IMBStream.Read(sizeX);
-				IMBStream.Read(sizeY);
-				IMBStream.Read(thickness);
-
-				Wall* newWall = new Wall(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), sizeX, sizeY, mWallColour, thickness);
-				mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newWall));
-				newWall = nullptr;
-
-				break;
-			}
-			}
-
-			break;
-		}
-
-		case PacketType::PACKET_UPDATE:
-
-			if (mGameObjectsVec[networkID].second != nullptr)
-			{
-				float x;
-				float y;
-
-				switch (receiveType)
-				{
-				case GameObjectType::ROCK:
-				case GameObjectType::PLAYER:
-
-					IMBStream.Read(x);
-					IMBStream.Read(y);
-					mGameObjectsVec[networkID].second->setPos(std::make_pair(x, y));
-					break;
-
-				case GameObjectType::WALL:
-				{
-					float sizeX;
-					float sizeY;
-					float thiccness;
-
-					Wall* wall = (Wall*)mGameObjectsVec[networkID].second;
-					IMBStream.Read(x);
-					IMBStream.Read(y);
-
-					wall->setPos(std::make_pair(x, y));
-
-					IMBStream.Read(sizeX);
-					IMBStream.Read(sizeY);
-					IMBStream.Read(thiccness);
-
-					wall->setWallSizeX(sizeX);
-					wall->setWallSizeY(sizeY);
-					wall->setWallThickness(thiccness);
-
-					break;
-				}
-				}
-			}
-			else
-			{
-				//Report error
-				std::cout << "ERROR: CANNOT UPDATE GAMEOBJECT ID " << networkID << " BECAUSE IT IS NOT IN THE NETWORK MANAGER MAP.\n";
-			}
-
-			break;
-
-		case PacketType::PACKET_DELETE:
-		{
-			//Delete element in map
-			if (mGameObjectsVec.size() > 0)
-			{
-				std::vector<std::pair<int, GameObject*>>::iterator it;
-				for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
-				{
-					//DO NOT DELETE A PLAYER
-					if (it->first == networkID && it->second->getGameObjectType() != GameObjectType::PLAYER)
-					{
-						mGameObjectsVec.erase(it);
-
-						break;
-					}
-				}
-			}
-
-			break;
-		}
-
-		default:
-			return PacketType::PACKET_INVALID;
-		}
-
-		return packetHeader;
-	}
-}
-*/
-
-/*
-PacketType Networker::receiveGameObjectState()
-{
-	char buffer[1024];
-	int32_t byteRecieve = (*mpTCPSocket)->Receive(buffer, 1024);
-	
-	//GamePacket packet;
-	//packet.buffer = buffer;
-	//packet.byteRecieve = byteRecieve;
-	//packet.dispatchTime = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
-	
-	if (byteRecieve > 0)
-	{
-		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
-
-		//Read sequence number
-		if (pDeliveryNotificationManager->ReadAndProcessState(IMBStream))
-		{
-			//Start reading
-			PacketType packetHeader;
-			IMBStream.Read(packetHeader);
-			//float dispatchTime;
-			//IMBStream.Read(dispatchTime);
-			int networkID;
-			IMBStream.Read(networkID);
-			GameObjectType receiveType;
-			IMBStream.Read(receiveType);
-
-			//Logic depends on packer header type
-			switch (packetHeader)
-			{
-			case PacketType::PACKET_CREATE:
-			{
-				float posX;
-				float posY;
-
-				IMBStream.Read(posX);
-				IMBStream.Read(posY);
-
-				switch (receiveType)
-				{
-				case GameObjectType::ROCK:
-				{
-					Rock* newRock = new Rock(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mRockSpriteIdentifier);
-					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newRock));
-					newRock = nullptr;
-
-					break;
-				}
-
-				case GameObjectType::PLAYER:
-				{
-					PlayerController* newPlayerController = new PlayerController(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mPlayerMoveSpeed, mPlayerSpriteIdentifier);
-					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newPlayerController));
-					newPlayerController = nullptr;
-
-					break;
-
-				}
-
-				case GameObjectType::WALL:
-				{
-					float sizeX;
-					float sizeY;
-					float thickness;
-
-					IMBStream.Read(sizeX);
-					IMBStream.Read(sizeY);
-					IMBStream.Read(thickness);
-
-					Wall* newWall = new Wall(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), sizeX, sizeY, mWallColour, thickness);
-					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newWall));
-					newWall = nullptr;
-
-					break;
-				}
-				}
-
-				break;
-			}
-
-			case PacketType::PACKET_UPDATE:
-
-				if (mGameObjectsVec[networkID].second != nullptr)
-				{
-					float x;
-					float y;
-
-					switch (receiveType)
-					{
-					case GameObjectType::ROCK:
-					case GameObjectType::PLAYER:
-
-						IMBStream.Read(x);
-						IMBStream.Read(y);
-						mGameObjectsVec[networkID].second->setPos(std::make_pair(x, y));
-						break;
-
-					case GameObjectType::WALL:
-					{
-						float sizeX;
-						float sizeY;
-						float thiccness;
-
-						Wall* wall = (Wall*)mGameObjectsVec[networkID].second;
-						IMBStream.Read(x);
-						IMBStream.Read(y);
-
-						wall->setPos(std::make_pair(x, y));
-
-						IMBStream.Read(sizeX);
-						IMBStream.Read(sizeY);
-						IMBStream.Read(thiccness);
-
-						wall->setWallSizeX(sizeX);
-						wall->setWallSizeY(sizeY);
-						wall->setWallThickness(thiccness);
-
-						break;
-					}
-					}
-				}
-				else
-				{
-					//Report error
-					std::cout << "ERROR: CANNOT UPDATE GAMEOBJECT ID " << networkID << " BECAUSE IT IS NOT IN THE NETWORK MANAGER MAP.\n";
-				}
-
-				break;
-
-			case PacketType::PACKET_DELETE:
-			{
-				//Delete element in map
-				if (mGameObjectsVec.size() > 0)
-				{
-					std::vector<std::pair<int, GameObject*>>::iterator it;
-					for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
-					{
-						//DO NOT DELETE A PLAYER
-						if (it->first == networkID && it->second->getGameObjectType() != GameObjectType::PLAYER)
-						{
-							mGameObjectsVec.erase(it);
-
-							break;
-						}
-					}
-				}
-
-				break;
-			}
-
-			default:
-				return PacketType::PACKET_INVALID;
-			}
-
-			return packetHeader;
-		}
-	}
-	else if (byteRecieve == -10053 || byteRecieve == -10054)
-	{
-		LOG("%s", "Disconnected From Server");
-		exit(0);
-	}
-	return PacketType::PACKET_INVALID;
-}
-
-void Networker::sendGameObjectState(int ID, PacketType packetHeader)
-{
-	OutputMemoryBitStream OMBStream;
-
-	//Write state sent (packet sequence number and acks)
-	pDeliveryNotificationManager->WriteState(OMBStream);
-
-	//Write packet header
-	OMBStream.Write(packetHeader);
-
-	//float timeDispatched = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
-	//OMBStream.Write(timeDispatched);
-	
-	OMBStream.Write(mGameObjectsVec[ID].second->getNetworkID());
-	OMBStream.Write(mGameObjectsVec[ID].second->getGameObjectType());
-
-	//Logic depends on packer header type
-	switch (packetHeader)
-	{
-	case PacketType::PACKET_CREATE:
-	case PacketType::PACKET_UPDATE:
-
-		switch (mGameObjectsVec[ID].second->getGameObjectType())
-		{
-		case GameObjectType::ROCK:
-		case GameObjectType::PLAYER:
-			OMBStream.Write(mGameObjectsVec[ID].second->getPosition().first);
-			OMBStream.Write(mGameObjectsVec[ID].second->getPosition().second);
-			break;
-
-		case GameObjectType::WALL:
-			Wall* wall = (Wall*)mGameObjectsVec[ID].second;
-			OMBStream.Write(wall->getPosition().first);
-			OMBStream.Write(wall->getPosition().second);
-			OMBStream.Write(wall->getWallSizeX());
-			OMBStream.Write(wall->getWallSizeY());
-			OMBStream.Write(wall->getWallThickness());
-			break;
-		}
-
-		break;
-
-	case PacketType::PACKET_DELETE:
-	{
-		//Delete it on the sender's end
-		if (mGameObjectsVec.size() > 0)
-		{
-			std::vector<std::pair<int, GameObject*>>::iterator it;
-			for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
-			{
-				//DO NOT DELETE A PLAYER
-				if (it->first == ID && it->second->getGameObjectType() != GameObjectType::PLAYER)
-				{
-					mGameObjectsVec.erase(it);
-
-					break;
-				}
-			}
-		}
-	}
-
-	break;
-
-	default:
-		return;
-	}
-
-	//Add packet data to queue in randomised order --> done through timeDispatched +- random and the priority_queue's sorting
-	float timeDispatched = Timing::sInstance.GetTimef() + (-100 + rand() & (100 - -100 + 1));
-	mOutputBitStreamQueue.push(std::make_pair(timeDispatched, OMBStream));
-
-	//If the queue has more than 10 elements is it
-	if (mOutputBitStreamQueue.size() >= 10)
-	{
-		//Iterate though the queue
-		for (int i = 0; i < mOutputBitStreamQueue.size(); i++)
-		{
-			//Drop some packets
-			if (i % 3 != 0)
-			{
-				//Send packet
-				(*mpTCPSocket)->Send(OMBStream.GetBufferPtr(), OMBStream.GetBitLength());
-			}
-		}
-	}
-}
-*/
 
 PacketType Networker::receiveGameObjectStateUDP()
 {
@@ -712,7 +308,7 @@ PacketType Networker::receiveGameObjectStateUDP()
 			return packetHeader;
 		}
 	}
-	else if (byteRecieve == -10053/* || byteRecieve == -10054*/)
+	else if (byteRecieve == -10053 /*|| byteRecieve == -10054*/)
 	{
 		LOG("%s", "Disconnected From Server");
 		exit(0);

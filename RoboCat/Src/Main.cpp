@@ -356,28 +356,22 @@ int main(int argc, const char** argv)
 		bool bIsServer = false;
 		bool bSocketInitted = false;
 
-		if (input == "y")
+		if (input == "y" || input == "Y")
 		{
 			bIsServer = true;
 		}
 
 		//Setup server and client
+		
+		//HARDCODING SOCKETS
+		std::string servSocket = "1234";
+		std::string clientSocket = "2345";
 		if (bIsServer)
 		{
 			//-------------------------Server code-------------------------
 
-			//Prompt for client IP address
-			std::string myIP;
-			std::cout << "Enter your IP address: \n";
-			std::cin >> myIP;
-
-			//Prompt for port number
-			std::string portNumber;
-			std::cout << "Enter port number: \n";
-			std::cin >> portNumber;
-
 			//bHasConnectd = pNetworkManager->initServer(portNumber);
-			bSocketInitted = pNetworkManager->initServerUDP(myIP, portNumber);
+			bSocketInitted = pNetworkManager->initServerUDP(servSocket, clientSocket);
 			if (bSocketInitted)
 				std::cout << "main.cpp --> server initted.\n";
 
@@ -394,13 +388,8 @@ int main(int argc, const char** argv)
 			std::cout << "Enter server IP address: \n";
 			std::cin >> serverIP;
 
-			//Prompt for port number
-			std::string portNumber;
-			std::cout << "Enter port number: \n";
-			std::cin >> portNumber;
-
 			//bHasConnectd = pNetworkManager->connect(serverIP, portNumber);
-			bSocketInitted = pNetworkManager->connectUDP(serverIP, portNumber);
+			bSocketInitted = pNetworkManager->connectUDP(serverIP, servSocket, clientSocket);
 			if (bSocketInitted)
 				std::cout << "main.cpp --> client connected.\n";
 
