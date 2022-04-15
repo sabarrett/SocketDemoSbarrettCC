@@ -18,6 +18,7 @@ int mNetworkID = 0;
 
 GraphicsSystems* Graphics;
 InputSystem* Inputs;
+DeliveryNotificationManager* DeliveryManager;
 
 
 std::vector<ClassId> typesOfGameobjects;
@@ -80,7 +81,7 @@ void DoTcpServer(std::string port)
 
 	//Network* ServerNetwork = new Network();
 	ServerNetwork = new Network();
-	ServerNetwork->init(Graphics, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
+	ServerNetwork->init(Graphics, DeliveryManager,ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
 	//Networks = ServerNetwork;
 }
 
@@ -136,7 +137,7 @@ void DoTcpClient(std::string port)
 
 	//Network* ClientNetwork = new Network();
 	ClientNetwork = new Network();
-	ClientNetwork->init(Graphics, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
+	ClientNetwork->init(Graphics, DeliveryManager,ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
 	//Networks = ClientNetwork;
 }
 
@@ -156,6 +157,14 @@ bool initGame()
 
 	Inputs = new InputSystem;
 	didInIt = Inputs->initInputSystem(Graphics);
+
+	if (!didInIt)
+	{
+		return false;
+	}
+
+	DeliveryManager = new DeliveryNotificationManager(true, true);
+	didInIt = DeliveryManager;
 
 	if (!didInIt)
 	{
@@ -381,6 +390,8 @@ int main(int argc, const char** argv)
 				mNetworkID--;
 			}
 		}
+
+		DeliveryManager->ProcessTimedOutPackets();
 	}
 
 	initCleanup();

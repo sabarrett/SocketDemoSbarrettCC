@@ -376,9 +376,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\AckRange.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
+    <ClInclude Include="Inc\DeliveryNotificationManager.h" />
     <ClInclude Include="Inc\GameObjects.h" />
     <ClInclude Include="Inc\GraphicsSystems.h" />
+    <ClInclude Include="Inc\InFlightPacket.h" />
     <ClInclude Include="Inc\InputSystem.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
@@ -392,10 +395,15 @@
     <ClInclude Include="Inc\TCPSocket.h" />
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
+    <ClInclude Include="Inc\Timing.h" />
+    <ClInclude Include="Inc\TransmissionData.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
     <ClCompile Include="Network.cpp" />
+    <ClCompile Include="Src\AckRange.cpp" />
+    <ClCompile Include="Src\DeliveryNotificationManager.cpp" />
     <ClCompile Include="Src\GameObjects.cpp" />
     <ClCompile Include="Src\GraphicsSystems.cpp" />
+    <ClCompile Include="Src\InFlightPacket.cpp" />
     <ClCompile Include="Src\InputSystem.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
@@ -411,6 +419,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Src\Timing.cpp" />
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
