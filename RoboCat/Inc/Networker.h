@@ -20,7 +20,7 @@ struct myComp {
 		std::pair<float, OutputMemoryBitStream*> const& b)
 		const noexcept
 	{
-		return a.first < b.first;
+		return a.first < b.first;	//Sort by LEAST, since we send the queue.top and pop that first
 	}
 };
 
