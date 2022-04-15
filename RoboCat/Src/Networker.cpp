@@ -81,7 +81,7 @@ bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
 		return false;
 	}
 
-	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + port).c_str());
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((/*serverIpAddress + */"0.0.0.0:" + port).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
@@ -118,15 +118,23 @@ bool Networker::connectUDP(std::string serverIpAddress, std::string port)
 		return false;
 	}
 
-	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + port).c_str());
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + port).c_str());
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((/*serverIpAddress + */"0.0.0.0:" + port).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
 		ExitProcess(1);
 	}
 
+	if (sock->Bind(*sockAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Binding Client Socket");
+		ExitProcess(1);
+	}
+	LOG("%s", "Server Socket Succesfully Binded!");
+
 	*mpUDPSocket = sock;
-	*mpSocketAddressPtr = sockAddress;
+	*mpSocketAddressPtr = servAddress;
 
 	if (*mpUDPSocket != nullptr)
 		return true;
