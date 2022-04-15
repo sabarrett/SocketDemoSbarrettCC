@@ -18,7 +18,7 @@ int mNetworkID = 0;
 
 GraphicsSystems* Graphics;
 InputSystem* Inputs;
-DeliveryNotificationManager* DeliveryManager;
+//DeliveryNotificationManager* DeliveryManager;
 
 
 std::vector<ClassId> typesOfGameobjects;
@@ -81,7 +81,7 @@ void DoTcpServer(std::string port)
 
 	//Network* ServerNetwork = new Network();
 	ServerNetwork = new Network();
-	ServerNetwork->init(Graphics, DeliveryManager,ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
+	ServerNetwork->init(Graphics, /*DeliveryManager,*/ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
 	//Networks = ServerNetwork;
 }
 
@@ -137,7 +137,7 @@ void DoTcpClient(std::string port)
 
 	//Network* ClientNetwork = new Network();
 	ClientNetwork = new Network();
-	ClientNetwork->init(Graphics, DeliveryManager,ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
+	ClientNetwork->init(Graphics,/* DeliveryManager,*/ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
 	//Networks = ClientNetwork;
 }
 
@@ -163,13 +163,13 @@ bool initGame()
 		return false;
 	}
 
-	DeliveryManager = new DeliveryNotificationManager(true, true);
+	/*DeliveryManager = new DeliveryNotificationManager(true, true);
 	didInIt = DeliveryManager;
 
 	if (!didInIt)
 	{
 		return false;
-	}
+	}*/
 
 	typesOfGameobjects.push_back(ClassId::DEANSPRITE);
 	typesOfGameobjects.push_back(ClassId::AMONGUS);
@@ -379,6 +379,16 @@ int main(int argc, const char** argv)
 			{
 				mNetworkID--;
 			}
+
+			// Redraw Scene
+			if (ServerNetwork->getmGameObjects().size() == 0)
+			{
+				break;
+			}
+			for (int i = 0; i < ServerNetwork->getmGameObjects().size(); i++)
+			{
+				ServerNetwork->getmGameObjects()[i].second->Draw();
+			}
 		}
 		else
 		{
@@ -389,9 +399,21 @@ int main(int argc, const char** argv)
 			{
 				mNetworkID--;
 			}
+
+			// Redraw Scene
+			if (ClientNetwork->getmGameObjects().size() == 0)
+			{
+				break;
+			}
+			for (int i = 0; i < ClientNetwork->getmGameObjects().size(); i++)
+			{
+				ClientNetwork->getmGameObjects()[i].second->Draw();
+			}
+
 		}
 
-		DeliveryManager->ProcessTimedOutPackets();
+		//DeliveryManager->ProcessTimedOutPackets();
+		al_flip_display();
 	}
 
 	initCleanup();
