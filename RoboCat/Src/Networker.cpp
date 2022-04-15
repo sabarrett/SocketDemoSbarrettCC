@@ -794,7 +794,7 @@ PacketType Networker::receiveGameObjectStateUDP()
 			return packetHeader;
 		}
 	}
-	else if (byteRecieve == -10053 || byteRecieve == -10054)
+	else if (byteRecieve == -10053/* || byteRecieve == -10054*/)
 	{
 		LOG("%s", "Disconnected From Server");
 		exit(0);
@@ -804,7 +804,7 @@ PacketType Networker::receiveGameObjectStateUDP()
 
 void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 {
-	OutputMemoryBitStream* OMBStream = new OutputMemoryBitStream();
+	OutputMemoryBitStream* OMBStream = new OutputMemoryBitStream;
 
 	//Write state sent (packet sequence number and acks)
 	pDeliveryNotificationManager->WriteState(*OMBStream);
