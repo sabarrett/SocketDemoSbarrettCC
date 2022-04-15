@@ -183,7 +183,7 @@ bool Networker::connectUDP(std::string otherUserIpAddress, std::string port)
 
 	//Create Socket
 	UDPSocketPtr sock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-	sock->SetNonBlockingMode(false);
+	sock->SetNonBlockingMode(true);
 
 	if (sock == nullptr)
 	{
