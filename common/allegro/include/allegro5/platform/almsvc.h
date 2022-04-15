@@ -21,7 +21,7 @@
 #include <direct.h>
 #include <malloc.h>
 
-#include "../../allegro5/platform/alplatf.h"
+#include "allegro5/platform/alplatf.h"
 
 #pragma warning (disable: 4200 4244 4305 4800)
 

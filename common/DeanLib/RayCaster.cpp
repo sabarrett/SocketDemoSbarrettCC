@@ -1,4 +1,4 @@
-#include "common/DeanLib/include/RayCaster.h"
+#include "RayCaster.h"
 
 std::vector<Vector2D> RayCaster::getPoints(const Vector2D& start, const Vector2D& end, float interval)
 {

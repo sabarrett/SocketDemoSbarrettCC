@@ -1,4 +1,4 @@
-#include "common/DeanLib/include/Timer.h"
+#include "Timer.h"
 
 Timer::Timer()
 :mElapsedTime(0.0)

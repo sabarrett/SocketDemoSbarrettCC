@@ -1,8 +1,8 @@
 #ifndef __al_included_allegro5_allegro_ttf_h
 #define __al_included_allegro5_allegro_ttf_h
 
-#include "../allegro5/allegro.h"
-#include "../allegro5/allegro_font.h"
+#include "allegro5/allegro.h"
+#include "allegro5/allegro_font.h"
 
 #ifdef __cplusplus
    extern "C" {

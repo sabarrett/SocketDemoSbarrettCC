@@ -1,8 +1,8 @@
 #ifndef __al_included_allegro5_bitmap_io_h
 #define __al_included_allegro5_bitmap_io_h
 
-#include "../allegro5/bitmap.h"
-#include "../allegro5/file.h"
+#include "allegro5/bitmap.h"
+#include "allegro5/file.h"
 
 #ifdef __cplusplus
    extern "C" {

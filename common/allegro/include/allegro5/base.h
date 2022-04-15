@@ -47,7 +47,7 @@
    #include <dmalloc.h>
 #endif
 
-#include "../allegro5/internal/alconfig.h"
+#include "allegro5/internal/alconfig.h"
 
 #ifdef __cplusplus
    extern "C" {

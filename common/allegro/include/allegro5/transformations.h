@@ -1,7 +1,7 @@
 #ifndef __al_included_allegro5_transformations_h
 #define __al_included_allegro5_transformations_h
 
-#include "../allegro5/display.h"
+#include "allegro5/display.h"
 
 #ifdef __cplusplus
    extern "C" {

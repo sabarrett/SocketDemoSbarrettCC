@@ -1,8 +1,8 @@
 #ifndef __al_included_allegro5_blender_h
 #define __al_included_allegro5_blender_h
 
-#include "../allegro5/base.h"
-#include "../allegro5/color.h"
+#include "allegro5/base.h"
+#include "allegro5/color.h"
 
 #ifdef __cplusplus
    extern "C" {

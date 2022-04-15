@@ -1,155 +1,94 @@
+#include"InputSystem.h"
+#include"Event.h"
+#include"EventSystem.h"
+
 /*
-Allegro Wrapper Functions
-Written by Adel Talhouk in FA21
-InputSystem.cpp
+Author: Nicholas Preis
+	Class : Game Architecture <250-71>
+	Assignment : Assignment 5
+	Certification of Authenticity :
+I certify that this assignment is entirely my own work.
 */
 
-#include "InputSystem.h"
-
-#include <iostream>
-
-//Constructor
 InputSystem::InputSystem()
 {
-	//Create an event queue
-	mpEventQueue = al_create_event_queue();
+	mpEventQueue = nullptr;
+
+	mPosX = 0;
+	mPosY = 0;
+
+	mDeleted = false;
 }
 
-//Destructor
 InputSystem::~InputSystem()
 {
-	//Cleanup event queue
-	al_destroy_event_queue(mpEventQueue);
-	mpEventQueue = nullptr;
+	cleanup();
 }
 
-float InputSystem::getMouseX()
+void InputSystem::init()
 {
-	//Update mouse state
-	ALLEGRO_MOUSE_STATE mouseState;
-	al_get_mouse_state(&mouseState);
-
-	return mouseState.x;
-}
-
-float InputSystem::getMouseY()
-{
-	//Update mouse state
-	ALLEGRO_MOUSE_STATE mouseState;
-	al_get_mouse_state(&mouseState);
-
-	return mouseState.y;
-}
-
-std::pair<float, float> InputSystem::getMousePosition()
-{
-	//Update mouse state
-	ALLEGRO_MOUSE_STATE mouseState;
-	al_get_mouse_state(&mouseState);
-
-	return std::make_pair(mouseState.x, mouseState.y);
-}
-
-//Init
-bool InputSystem::init(GraphicsLib* pGraphicsLib)
-{
-	//Init keyboard
-	if (!al_install_keyboard())
-	{
-		std::cout << "error installing Allegro keyboard plugin\n";
-		system("pause");
-		return false;
-	}
-
-	//Init mouse
-	if (!al_install_mouse())
-	{
-		std::cout << "error installing Allegro mouse plugin\n";
-		system("pause");
-		return false;
-	}
-
-	//Register screen event source
-	al_register_event_source(mpEventQueue, al_get_display_event_source(pGraphicsLib->mpDisplay));
-
-	//Register keyboard event source
+	mpEventQueue = al_create_event_queue();
 	al_register_event_source(mpEventQueue, al_get_keyboard_event_source());
-
-	//Register mouse event source
 	al_register_event_source(mpEventQueue, al_get_mouse_event_source());
-
-	return true;
 }
 
-MouseButton InputSystem::getMouseInput()
+void InputSystem::cleanup()
 {
-	//If there is an event
-	al_wait_for_event(mpEventQueue, &mEvent);
-
-	if (mEvent.type == InputMode::MouseDown)
+	if (!mDeleted)
 	{
-		//Update mouse state
-		ALLEGRO_MOUSE_STATE mouseState;
-		al_get_mouse_state(&mouseState);
+		al_uninstall_keyboard();
+		al_uninstall_mouse();
 
-		//Check the button pressed
-		if (mouseState.buttons & 1)		//Left mouse held
-		{
-			return MouseButton::LeftMouse;
-		}
-		else if (mouseState.buttons & 2)	//Right mouse held
-		{
-			return MouseButton::RightMouse;
-		}
-		else if (mouseState.buttons & 4)	//Middle mouse held
-		{
-			return MouseButton::MiddleMouse;
-		}
+		al_unregister_event_source(mpEventQueue, al_get_keyboard_event_source());
+		al_unregister_event_source(mpEventQueue, al_get_mouse_event_source());
+		al_destroy_event_queue(mpEventQueue);
+
+		mDeleted = true;
 	}
 }
 
-KeyCode InputSystem::getKeyboardInput()
+void InputSystem::update()
 {
-	//If there is an event
-	al_wait_for_event(mpEventQueue, &mEvent);
+	ALLEGRO_EVENT event;
 
-	if (mEvent.type == InputMode::KeyPressed)
+	while (al_get_next_event(mpEventQueue, &event))
 	{
-		//Check the type
-		switch (mEvent.keyboard.keycode)
+		switch (event.type)
 		{
-		case KeyCode::Esc:
-			return KeyCode::Esc;
-			break;
+		case ALLEGRO_EVENT_KEY_UP:
+		{
+			KeyEvent myEvent(KEY_UP_EVENT, event.keyboard.keycode);
+			myEvent.setPressed(false);
+		}
+		break;
 
-		case KeyCode::R:
-			return KeyCode::R;
-			break;
+		case ALLEGRO_EVENT_KEY_DOWN:
+		{
+			KeyEvent myEvent(KEY_DOWN_EVENT, event.keyboard.keycode);
+			EventSystem::getInstance()->fireEvent(myEvent);
+		}
+		break;
 
-		case KeyCode::W:
-			return KeyCode::W;
-			break;
+		case ALLEGRO_EVENT_MOUSE_AXES:
+		{
+			MouseEvent mouseEvent(MOUSE_MOVE_EVENT, event.mouse.x, event.mouse.y);
+			EventSystem::getInstance()->fireEvent(mouseEvent);
+		}
+		break;
 
-		case KeyCode::A:
-			return KeyCode::A;
-			break;
+		case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
+		{
+			ClickEvent myEvent(MOUSE_UP_EVENT, event.mouse.button);
+			EventSystem::getInstance()->fireEvent(myEvent);
+		}
+		break;
+		case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+		{
+			ClickEvent myEvent(MOUSE_DOWN_EVENT, event.mouse.button);
+			EventSystem::getInstance()->fireEvent(myEvent);
+		}
+		break;
 
-		case KeyCode::S:
-			return KeyCode::S;
-			break;
-
-		case KeyCode::D:
-			return KeyCode::D;
-			break;
-
-		case KeyCode::E:
-			return KeyCode::E;
-			break;
-
-		default:
-			/*return KeyCode::NONE*/;
 		}
 	}
-
-	//return KeyCode::NONE;
 }

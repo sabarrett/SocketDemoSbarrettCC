@@ -1,4 +1,4 @@
-#include "common/DeanLib/include/MemoryPool.h"
+#include "MemoryPool.h"
 #include <cstdlib>
 #include <assert.h>
 #include <iostream>

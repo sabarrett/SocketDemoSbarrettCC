@@ -1,32 +1,96 @@
 #pragma once
-#include "InputSystem.h"
+#include "Trackable.h"
+#include <Timer.h>
+#include <assert.h>
+#include <PerformanceTracker.h>
+#include "Sprite.h"
+#include "EventListener.h"
 
-const int SCREEN_SIZE_X = 1920;
-const int SCREEN_SIZE_Y = 1080;
+/*
+Author: Wesley Elmer
+	Class : Game Architecture <250-71>
+	Assignment : Assignment 3
+	Certification of Authenticity :
+I certify that this assignment is entirely my own work.
+*/
 
-const std::string FILE_PATH = "..\\common\\assets\\";
-const std::string BACKGROUND_FILE = "steps.png";
-const std::string HOMER_FILE = "HomerSimpson.png";
-const std::string QUIMBY_FILE = "Mayor_Quimby.png";
-const std::string DONUT_FILE = "Donut.png";
+using namespace std;
 
-class Game
+class Animation;
+class Event;
+class EventListener;
+class EventSystem;
+class GraphicsBuffer;
+class GraphicsBufferManager;
+class InputSystem;
+class InputTranslator;
+class Sprite;
+class System;
+class Unit;
+class UnitManager;
+
+
+const string ASSET_FILEPATH = "..\\..\\common\\assets\\";
+const string SMURF_FILEPATH = "smurf_sprites.png";
+const string DEAN_FILEPATH = "dean_sprites.png";
+const string WOODS_FILEPATH = "Woods.png";
+const float ANIM_INCREMENT_AMOUNT = 5;
+const float WOODS_SCALE = 0.5f;
+
+// The class which holds all systems and has the game loop
+class Game : public EventListener
 {
 public:
-	Game();
-	~Game();
+	static void initInstance();
+	static Game* getInstance(); // reference to the main game object. To use: Game* ptr = Game::getInstance(); where ptr is now the game object
+	static void deleteInstance();
 
 	void init();
 	void cleanup();
-	void gameLoop();
+	void doLoop();
 
-	void input();
+	void handleEvent(const Event& event);
+
 	void update();
 	void render();
-private:
-	GraphicsLib* mpGraphicsLib;
-	GraphicsLib* mpGraphicsLib2;
-	InputSystem* mpInputSystem;
 
-	bool isPlaying;
+	System* getSystem() { return mpSystem; }
+private:
+	Game();
+	~Game();
+	
+	System* mpSystem;
+
+	InputTranslator* mpInputTranslator;
+	EventListener* mpEventListener;
+
+	GraphicsBuffer* mpWoodsBuffer = nullptr;
+	GraphicsBuffer* mpSmurfBuffer = nullptr;
+	GraphicsBuffer* mpDeanBuffer = nullptr;
+	GraphicsBuffer* mpCurrentBuffer = nullptr;
+	GraphicsBufferManager* mpGraphicsBufferManager;
+
+	Animation* mpTempAnim;
+	Unit* mpTempUnit;
+
+	Sprite* mpWoodsSprite;
+
+	Unit* mpUnit;
+	UnitManager* mpUnitManager;
+
+	Sprite mSmurfSpriteArr[16];
+	Sprite mDeanSpriteArr[16];
+
+	float mFrameRate = 60;
+	float mAnimSpeed;
+
+	bool mShouldExit;
+	bool mIsSmurf;
+	bool mIsPaused;
+
+	Timer* mpTimer;
+	PerformanceTracker* mpPerformanceTracker;
+
+	static Game* gpGame;
 };
+

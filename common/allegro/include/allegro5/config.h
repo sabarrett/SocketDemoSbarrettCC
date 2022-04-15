@@ -1,7 +1,7 @@
 #ifndef __al_included_allegro5_config_h
 #define __al_included_allegro5_config_h
 
-#include "../allegro5/file.h"
+#include "allegro5/file.h"
 
 #ifdef __cplusplus
 extern "C" {

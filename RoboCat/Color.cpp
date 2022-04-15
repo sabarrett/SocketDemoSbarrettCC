@@ -1,31 +1,19 @@
-/*
-Allegro Wrapper Functions
-Written by Adel Talhouk in FA21
-Colour.cpp
-*/
-
 #include "Color.h"
 
-//Constructor - without alpha
-Color::Color(unsigned __int8 r, unsigned __int8 g, unsigned __int8 b)
+/*
+Author: Ryan Littleton, with help from the rest of the class
+Class : GPR-250-71
+Assignment : Assignment 2
+*/
+
+Color::Color(int r, int g, int b, int alpha) 
 {
 	mR = r;
 	mG = g;
 	mB = b;
-	mA = 255;
+	mAlpha = alpha;
 }
 
-//Constructor - with alpha
-Color::Color(unsigned __int8 r, unsigned __int8 g, unsigned __int8 b, unsigned __int8 a)
-{
-	mR = r;
-	mG = g;
-	mB = b;
-	mA = a;
-}
-
-//Destructor
-Color::~Color()
-{
-
+ALLEGRO_COLOR Color::getColor() {
+	return al_map_rgba(mR, mG, mB, mAlpha);
 }

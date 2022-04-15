@@ -16,7 +16,7 @@
 #ifndef __al_included_allegro5_threads_h
 #define __al_included_allegro5_threads_h
 
-#include "../allegro5/altime.h"
+#include "allegro5/altime.h"
 
 #ifdef __cplusplus
    extern "C" {

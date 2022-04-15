@@ -1,42 +1,27 @@
 #pragma once
+#include <iostream>
+#include <string>
+#include <allegro5/allegro.h>
+#include "Trackable.h"
 
 /*
-Allegro Wrapper Functions
-Written by Adel Talhouk in FA21
-Colour.h
-	File information:
-	This file contains data used for colours.
+Author: Ryan Littleton, with help from the rest of the class
+Class : GPR-250-71
+Assignment : Assignment 2
 */
 
-class Color
+class Color : public Trackable
 {
-	//-------------------------Private data-------------------------
-
-	//Red channel
-	unsigned __int8 mR;
-
-	//Green channel
-	unsigned __int8 mG;
-
-	//Blue channel
-	unsigned __int8 mB;
-
-	//Alpha channel
-	unsigned __int8 mA;
-
-	//-------------------------Public data-------------------------
 public:
+	// Constructor. Will create a fully opaque white color if no values are input.
+	Color(int r = 0, int g = 0, int b = 0, int alpha = 255);
 
-	//Constructor(s)
-	Color(unsigned __int8 r, unsigned __int8 g, unsigned __int8 b);
-	Color(unsigned __int8 r, unsigned __int8 g, unsigned __int8 b, unsigned __int8 a);
+	// Returns the stored RGB values as an ALLEGRO_COLOR
+	ALLEGRO_COLOR getColor();
 
-	//Destructor
-	~Color();
-
-	//Accessor(s)
-	unsigned __int8 getR() { return mR; };
-	unsigned __int8 getG() { return mG; };
-	unsigned __int8 getB() { return mB; };
-	unsigned __int8 getA() { return mA; };
+private: // Data here stores the RGBA values from constructor as ints. I opted to use these instead of an ALLEGRO_COLOR so that if someone wants to change it in the future all they need to do is change the getColor function.
+	int mR;
+	int mG;
+	int mB;
+	int mAlpha;
 };

@@ -1,5 +1,5 @@
-#include "common/DeanLib/include/Trackable.h"
-#include "common/DeanLib/include/MemoryTracker.h"
+#include "Trackable.h"
+#include "MemoryTracker.h"
 
 void* Trackable::operator new( std::size_t size )
 {

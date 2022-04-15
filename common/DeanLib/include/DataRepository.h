@@ -1,5 +1,5 @@
 #pragma once
-#include "common/DeanLib/include/Trackable.h"
+#include <Trackable.h>
 
 #include <string>
 #include <windows.h>

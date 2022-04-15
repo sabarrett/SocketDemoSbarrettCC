@@ -1,7 +1,7 @@
 #ifndef __al_included_allegro5_bitmap_h
 #define __al_included_allegro5_bitmap_h
 
-#include "../allegro5/color.h"
+#include "allegro5/color.h"
 
 #ifdef __cplusplus
    extern "C" {

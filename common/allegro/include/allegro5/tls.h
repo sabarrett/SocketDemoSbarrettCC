@@ -16,7 +16,7 @@
 #ifndef __al_included_allegro5_tls_h
 #define __al_included_allegro5_tls_h
 
-#include "../allegro5/base.h"
+#include "allegro5/base.h"
 
 #ifdef __cplusplus
    extern "C" {
