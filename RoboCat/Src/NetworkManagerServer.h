@@ -11,12 +11,13 @@ class NetworkManagerServer
 	private:
 		float mLastPacket;
 		std::string mName;
-		int clientWelcomeNumber;
+		int clientWelcomeNumber; //client network id
 
-		int objectCount;
-		char objectTypes[100];
-		int xPositions[100];
-		int yPositions[100];
+		int mObjectCount;
+		char mObjectTypes[100];
+		int mXPositions[100];
+		int mYPositions[100];
+		//std::string mClientNames[100]; //in case i need to track client names i am not sure
 
 		SocketAddress mServerAddress;
 		TCPSocketPtr mSocket;

@@ -22,9 +22,10 @@ class NetworkManager
 		float mLastInputPacket;
 		std::string mName;
 
-		//int mGameObjectCount;
-		//vector<int> mGameObjectPosX; //maybe just have array parameter instead of this
-		//vector<int> mGameObjectPosY;
+		int mGameObjectCount;
+		char mObjectTypes[100];
+		int mXPositions[100]; //maybe just have array parameter instead of this
+		int mYPositions[100];
 
 		SocketAddress mAddress;
 		TCPSocketPtr mSocket;

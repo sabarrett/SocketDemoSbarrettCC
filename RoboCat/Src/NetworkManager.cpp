@@ -62,21 +62,28 @@ void NetworkManager::SendPackets(GameObject objects[])
 		SendHello();
 	}
 
-	if (mCurrentState == Packet) //&& mLastPacket > TIME_BETWEEN_PACKETS
+	if (mCurrentState == Packet)
 	{
 		OutputMemoryBitStream output;
 		
 		//i assume this is basically gathering all info for a state packet
-		//output.Write(# of game objects);
-		//output.Write(game object type); //for each object
-		//output.Write(game object position); //for each game object
+		output.Write(mGameObjectCount);
 
-		//mSocket->Send(&output, sizeof(output));
+		for (int i = 0; i < mGameObjectCount; i++)
+		{
+			output.Write(mObjectTypes[i]);
+			output.Write(mXPositions[i]);
+			output.Write(mYPositions[i]);
+		}
+
+		mSocket->Send(&output, sizeof(output));
 	}
 }
 
 void NetworkManager::ReceivePackets(InputMemoryBitStream& inputStream)
 {
+	mSocket->Receive(&inputStream, sizeof(inputStream));
+
 	if (mCurrentState == NetworkStates::Hello)
 	{
 		int tmpID;
