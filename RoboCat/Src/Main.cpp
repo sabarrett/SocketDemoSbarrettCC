@@ -13,6 +13,7 @@
 #include <string>
 #include <sstream>
 #include <list>
+#include <iterator>
 
 using namespace std;
 int windowWidth = 800;
@@ -39,16 +40,12 @@ Packet::Packet(double stamp, char* buffer, int byteCount) {
 	mBufferPtr = buffer;
 	mByteCount = byteCount;
 };
-//Packet::Packet(double stamp, InputMemoryBitStream bitstream) {
-//	timeStamp = stamp;
-//	bitStream = &bitstream;
-//};
+
 Packet::Packet()
 {
 	timeStamp = 0;
 	mBufferPtr = new char[4096];
 	mByteCount = 4096;
-	//bitStream = new InputMemoryBitStream(buffer, 4096);
 }
 
 Packet::~Packet()
@@ -178,8 +175,10 @@ void BradsTotallyOriginalServer()
 
 	int projShot = 0;
 
-	list<Packet*> packets;
+	list<Packet*> packets = {};
 	DeliveryNotificationManager deliveryManager(true, true);
+	list<RectangleObject*> deadRects = {};
+	list<CircleClass*> deadCircles = {};
 
 	while (!exit) //GameLoop
 	{
@@ -191,6 +190,7 @@ void BradsTotallyOriginalServer()
 		//send Data
 		OutputMemoryBitStream oStream = OutputMemoryBitStream();
 
+		deliveryManager.WriteState(oStream);
 		for (int i = 0; i < numObjects; i++)
 		{
 			greenCircle[i].Write(oStream);
@@ -207,8 +207,7 @@ void BradsTotallyOriginalServer()
 		{
 			projectile->Write(oStream);
 		}
-		//write ack
-		deliveryManager.WriteState(oStream);
+		
 		incomingSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
 		//recieve Data
@@ -222,7 +221,7 @@ void BradsTotallyOriginalServer()
 			int randomSin = rand() % 2;
 			if (randomSin == 0)
 			{
-			stampTime += rand() % 200 + 1; // jitter
+				stampTime += rand() % 200 + 1; // jitter
 			}
 			else
 			{
@@ -230,13 +229,13 @@ void BradsTotallyOriginalServer()
 			}
 			stampTime += 1000; //latency
 			Packet* pack = new Packet(stampTime, buffer, 4096);
-			if (!(rand() % 100 + 0 < 5)) //5% packet loss
+			if (!((rand() % 100 + 0) < 5)) //5% packet loss
 				packets.push_back(pack);
 			if (packets.size() > 1)
 				packets.sort([](const Packet* a, const Packet* b) { return a->timeStamp < b->timeStamp; });
 		
 		}
-		if (packets.size() > 0)
+		if (!packets.empty())
 		{
 			bool processOrNot = false;
 
@@ -245,6 +244,9 @@ void BradsTotallyOriginalServer()
 			while (processOrNot) // maybe while
 			{
 				InputMemoryBitStream packStream(packets.front()->mBufferPtr, 4096);
+
+				deliveryManager.ReadAndProcessState(packStream);
+				deliveryManager.ProcessTimedOutPackets();
 
 				for (int i = 0; i < numObjects; i++)
 				{
@@ -257,18 +259,20 @@ void BradsTotallyOriginalServer()
 				{
 					RectangleObject* temp = new RectangleObject();
 					temp->Read(packStream);
-					clientProjectiles.emplace_back(temp);
+					clientProjectiles.push_back(temp);
 				}
+				if(!packets.empty())
+					packets.pop_front();
 
-				packets.pop_front();
-				//readack
-				deliveryManager.ReadAndProcessState(packStream);
 				//process timed out acks
-				deliveryManager.ProcessTimedOutPackets();
-				processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
+				if (!packets.empty())
+					processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
+				else				
+					processOrNot = false;		
+
 			}
 		}
-		
+
 
 		ALLEGRO_EVENT events;
 
@@ -320,7 +324,7 @@ void BradsTotallyOriginalServer()
 			{
 				++projShot;
 				CircleClass* proj = new CircleClass(to_string(projShot), windowWidth, windowHeight, greenCircle[0].position[0], greenCircle[0].position[1], 10);
-				serverProjectiles.emplace_back(proj);
+				serverProjectiles.push_back(proj);
 			}
 		}
 
@@ -333,27 +337,71 @@ void BradsTotallyOriginalServer()
 			inObjects[i].Draw();
 			greenCircle[i].Draw();
 		}
+
+		/*if (!deadRects.empty())
+		{
+			for (RectangleObject* deadRect : deadRects)
+			{
+				if(!clientProjectiles.empty())
+					for (RectangleObject* liveRect : clientProjectiles)
+					{
+						if (deadRect == liveRect)
+						{
+							cout << "remove" << endl;
+							RectangleObject* temp = deadRect;
+							clientProjectiles.remove(temp);
+							deadRects.remove(temp);
+
+							if (!clientProjectiles.empty())
+								clientProjectiles.front();
+
+							if (!deadRects.empty())
+								deadRects.front();
+
+							cout << "remove worked at least 1 time" << endl;
+							delete[] temp;
+							break;
+						}
+					}
+			}
+		}*/
+
 		for each (RectangleObject * projectile in clientProjectiles)
 		{
 			projectile->Draw();
 		}
-		for each (CircleClass * projectile in serverProjectiles)
+		/*while (deadCircles.size() > 0)
+		{
+			for each (CircleClass * deadCircle in deadCircles)
+			{
+				for each (CircleClass * liveRect in serverProjectiles)
+				{
+					if (deadCircle == liveRect)
+					{
+						serverProjectiles.remove(deadCircle);
+						deadCircles.remove(deadCircle);
+					}
+				}
+			}
+		}*/
+		for (CircleClass * projectile: serverProjectiles)
 		{
 			projectile->UpdatePos(0, -1);
 			projectile->Draw();
-			for each (RectangleObject* rects in clientProjectiles)
+			/*for (RectangleObject* rects: clientProjectiles)
 			{
 				int xDist = rects->xPos - projectile->position[0];
 				int yDist = rects->yPos - projectile->position[1];
-				float dist = sqrt(exp2(xDist) + exp2(yDist));
-				if (dist < 10)
+				float dist = sqrt((xDist*xDist) + (yDist * yDist));
+				if (dist < 1000)
 				{
-					/*clientProjectiles.remove(rects);
-					delete(rects);
-					serverProjectiles.remove(projectile);
-					delete(projectile);*/
+					cout << "kill eachother" << endl;
+					deadRects.push_back(rects);
+					deadCircles.push_back(projectile);
+					cout << "kill eachother worked" << endl;
+					break;
 				}
-			}
+			}*/
 		}	
 		for (int j = 0; j < numDroplets; j++)
 		{
@@ -375,10 +423,8 @@ void BradsTotallyOriginalServer()
 	al_destroy_display(display);	
 }
 
-
 void BradsLessOriginalClient()
 {
-
 	TCPSocketPtr clientSocket = StartClientConnection();
 	clientSocket->SetNonBlockingMode(true);
 
@@ -402,8 +448,8 @@ void BradsLessOriginalClient()
 	// Read In Objects
 	CircleClass inObjects[numObjects];
 
-	list < RectangleObject* > clientProjectiles;
-	list < CircleClass* > serverProjectiles;
+	list < RectangleObject* > clientProjectiles = {};
+	list < CircleClass* > serverProjectiles = {};
 
 	const int numDroplets = 10;
 	RainParticle rain[numDroplets];
@@ -424,7 +470,7 @@ void BradsLessOriginalClient()
 
 	int projShot = 0;
 
-	list<Packet*> packets;
+	list<Packet*> packets = {};
 	DeliveryNotificationManager deliveryManager(true, true);
 	while (!exit) //GameLoop
 	{
@@ -436,18 +482,19 @@ void BradsLessOriginalClient()
 		//send Data
 		OutputMemoryBitStream oStream = OutputMemoryBitStream();
 
+		deliveryManager.WriteState(oStream);
+
 		for (int i = 0; i < numObjects; i++)
 		{
 			outRectangles[i].Write(oStream);
 		}
+
 		int projectileCount = clientProjectiles.size();
 		oStream.Write(projectileCount);
 		for each (RectangleObject* projectile in clientProjectiles)
 		{
 			projectile->Write(oStream);
 		}
-		//Write ack onto packet
-		deliveryManager.WriteState(oStream);
 		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
 		// Recieve data
@@ -458,7 +505,6 @@ void BradsLessOriginalClient()
 		if (bytesReceived != -10035)
 		{
 			double stampTime = al_get_timer_count(timer);
-			cout << "time start: " << stampTime;
 			int randomSin = rand() % 2;
 			if (randomSin == 0)
 			{
@@ -468,15 +514,15 @@ void BradsLessOriginalClient()
 			{
 				stampTime -= rand() % 200 + 1; // jitter
 			}
-			stampTime += 1000; //latency
+			stampTime +=  1000; //latency
 			Packet* pack = new Packet(stampTime, buffer, 4096);
 			if(!(rand()%100+0 < 5)) //5% packet loss
 				packets.push_back(pack);
-			if(packets.size() > 1)
+			if (packets.size() > 1)
 				packets.sort([](const Packet* a, const Packet* b) { return a->timeStamp < b->timeStamp; });	
 		}	
 
-		if ((int)packets.size() > 0)
+		if (!packets.empty())
 		{
 			bool processOrNot = false;
 
@@ -486,6 +532,11 @@ void BradsLessOriginalClient()
 			{
 
 				InputMemoryBitStream packStream(packets.front()->mBufferPtr, 4096);
+
+				deliveryManager.ReadAndProcessState(packStream);
+				deliveryManager.ProcessTimedOutPackets();
+
+
 				for (int i = 0; i < numObjects; i++)
 				{
 					inObjects[i].Read(packStream);
@@ -505,12 +556,16 @@ void BradsLessOriginalClient()
 				}
 				packets.pop_front();
 				//readack
-				deliveryManager.ReadAndProcessState(packStream);
-				deliveryManager.ProcessTimedOutPackets();
-				processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
+				if(!packets.empty())
+					processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
+				else
+					processOrNot = false;
+
+
 			}
 
 		}
+
 		ALLEGRO_EVENT events;
 
 		al_get_next_event(eventQueue, &events);
@@ -562,7 +617,7 @@ void BradsLessOriginalClient()
 			{
 				++projShot;
 				RectangleObject* proj = new RectangleObject(to_string(projShot), windowWidth, windowHeight, 10, 10, outRectangles[0].xPos, outRectangles[0].yPos);
-				clientProjectiles.emplace_back(proj);
+				clientProjectiles.push_back(proj);
 			}
 		}
 

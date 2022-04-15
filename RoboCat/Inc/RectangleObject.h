@@ -20,9 +20,13 @@ public:
 	RectangleObject();
 	void UpdatePos(int xChange, int yChange);
 	void Draw();
+	//bool operator==(const RectangleObject& other);
 
 };
-
+//bool RectangleObject::operator==(const RectangleObject& other)
+//{
+//	return mName == other.mName;
+//}
 void RectangleObject::Read(InputMemoryBitStream& stream)
 {
 	stream.Read(mName);
