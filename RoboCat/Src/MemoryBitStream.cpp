@@ -81,6 +81,7 @@ void OutputMemoryBitStream::ReallocBuffer( uint32_t inNewBitLength )
 	{
 		//just need to memset on first allocation
 		mBuffer = static_cast<char*>( std::malloc( inNewBitLength >> 3 ) );
+
 		memset( mBuffer, 0, inNewBitLength >> 3 );
 	}
 	else

@@ -8,6 +8,8 @@
 
 using std::deque;
 
+typedef uint16_t PacketSequenceNumber;
+
 ////https://www.geeksforgeeks.org/priority-queue-of-pairs-in-c-with-ordering-by-first-and-second-element/
 //struct myComp {
 //	constexpr bool operator()(
@@ -39,7 +41,7 @@ public:
 	uint32_t GetDispatchedPacketCount() const { return mDispatchedPacketCount; }
 	
 	//const deque<InFlightPacket>& GetInFlightPackets() const { return mInFlightPackets; }
-	const deque<std::pair<InFlightPacket, OutputMemoryBitStream>> GetInFlightPackets() const { return mInFlightPacketsPair; }
+	const deque<std::pair<InFlightPacket, OutputMemoryBitStream*>> GetInFlightPackets() const { return mInFlightPacketsPair; }
 	
 private:
 		
@@ -58,7 +60,7 @@ private:
 	PacketSequenceNumber mNextExpectedSequenceNumber;
 	
 	//deque<InFlightPacket> mInFlightPackets;
-	deque<std::pair<InFlightPacket, OutputMemoryBitStream>> mInFlightPacketsPair;
+	deque<std::pair<InFlightPacket, OutputMemoryBitStream*>> mInFlightPacketsPair;
 	deque<AckRange> mPendingAcks;
 	
 	bool mShouldSendAcks;

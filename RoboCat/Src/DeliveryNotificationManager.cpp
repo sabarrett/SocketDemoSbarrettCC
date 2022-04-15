@@ -17,7 +17,7 @@ mDroppedPacketCount( 0 ),
 mDispatchedPacketCount( 0 ),
 mpNetworker(pNetworker)
 {
-	mInFlightPacketsPair = deque<std::pair<InFlightPacket, OutputMemoryBitStream>>();
+	mInFlightPacketsPair = deque<std::pair<InFlightPacket, OutputMemoryBitStream*>>();
 }
 
 
@@ -44,7 +44,7 @@ InFlightPacket* DeliveryNotificationManager::WriteSequenceNumber( OutputMemoryBi
 	if( mShouldProcessAcks )
 	{
 		//mInFlightPackets.emplace_back( sequenceNumber );
-		mInFlightPacketsPair.emplace_back( std::make_pair(sequenceNumber, inOutputStream) );
+		mInFlightPacketsPair.emplace_back( std::make_pair(sequenceNumber, &inOutputStream) );
 
 		//return &mInFlightPackets.back();
 		return &mInFlightPacketsPair.back().first;
@@ -183,7 +183,7 @@ void DeliveryNotificationManager::ResendPacket(const int ID, const PacketSequenc
 		if (it->first.GetSequenceNumber() == packetSequenceNum)
 		{
 			//Start reading packet until you find the PacketType
-			InputMemoryBitStream IMBStream = InputMemoryBitStream((char*)it->second.GetBufferPtr(), it->second.GetByteLength());
+			InputMemoryBitStream IMBStream = InputMemoryBitStream((char*)it->second->GetBufferPtr(), it->second->GetByteLength());
 
 			//Read junk data: 1) sequenceNumber, if shouldProcessAcks, 2) hasAcks, if hasAcks, 3) readAckRange
 			PacketSequenceNumber sequenceNumber;
