@@ -366,10 +366,10 @@ int main(int argc, const char** argv)
 		{
 			//-------------------------Server code-------------------------
 
-			////Prompt for client IP address
-			//std::string myIP;
-			//std::cout << "Enter your IP address: \n";
-			//std::cin >> myIP;
+			//Prompt for client IP address
+			std::string myIP;
+			std::cout << "Enter your IP address: \n";
+			std::cin >> myIP;
 
 			//Prompt for port number
 			std::string portNumber;
@@ -377,7 +377,7 @@ int main(int argc, const char** argv)
 			std::cin >> portNumber;
 
 			//bHasConnectd = pNetworkManager->initServer(portNumber);
-			bSocketInitted = pNetworkManager->initServerUDP(/*myIP, */portNumber);
+			bSocketInitted = pNetworkManager->initServerUDP(myIP, portNumber);
 			if (bSocketInitted)
 				std::cout << "main.cpp --> server initted.\n";
 
@@ -389,10 +389,10 @@ int main(int argc, const char** argv)
 		{
 			//-------------------------Client code-------------------------
 
-			////Prompt for server IP address
-			//std::string serverIP;
-			//std::cout << "Enter server IP address: \n";
-			//std::cin >> serverIP;
+			//Prompt for server IP address
+			std::string serverIP;
+			std::cout << "Enter server IP address: \n";
+			std::cin >> serverIP;
 
 			//Prompt for port number
 			std::string portNumber;
@@ -400,7 +400,7 @@ int main(int argc, const char** argv)
 			std::cin >> portNumber;
 
 			//bHasConnectd = pNetworkManager->connect(serverIP, portNumber);
-			bSocketInitted = pNetworkManager->connectUDP(/*serverIP, */portNumber);
+			bSocketInitted = pNetworkManager->connectUDP(serverIP, portNumber);
 			if (bSocketInitted)
 				std::cout << "main.cpp --> client connected.\n";
 

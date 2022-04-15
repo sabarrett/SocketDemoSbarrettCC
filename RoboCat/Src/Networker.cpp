@@ -177,7 +177,7 @@ void Networker::cleanup()
 //	return false;
 //}
 
-bool Networker::initServerUDP(/*std::string serverIpAddress, */std::string port)
+bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -192,7 +192,7 @@ bool Networker::initServerUDP(/*std::string serverIpAddress, */std::string port)
 		return false;
 	}
 
-	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((/*serverIpAddress + */"0.0.0.0:" + port).c_str());
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + port).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
@@ -221,7 +221,7 @@ bool Networker::initServerUDP(/*std::string serverIpAddress, */std::string port)
 	return false;
 }
 
-bool Networker::connectUDP(std::string port)
+bool Networker::connectUDP(std::string serverIpAddress, std::string port)
 {
 	SocketUtil::StaticInit();
 
@@ -236,7 +236,7 @@ bool Networker::connectUDP(std::string port)
 		return false;
 	}
 
-	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + port).c_str());
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((serverIpAddress + ":" + port).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
@@ -850,7 +850,7 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 		OMBStream->Write(ID);
 
 		//Send packet and return from the function
-		(*mpUDPSocket)->SendTo(OMBStream, OMBStream->GetBitLength(), (**mpSocketAddressPtr));
+		(*mpUDPSocket)->SendTo(OMBStream->GetBufferPtr(), OMBStream->GetBitLength(), (**mpSocketAddressPtr));
 		return;
 	}
 
