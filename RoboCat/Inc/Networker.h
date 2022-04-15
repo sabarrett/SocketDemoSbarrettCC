@@ -63,9 +63,6 @@ public:
 	~Networker();
 
 	//Starting and connect to server
-	//bool initServer(std::string port);
-	//bool connect(std::string serverIpAddress, std::string port);
-
 	bool initServerUDP(std::string serverIpAddress, std::string port);
 	bool connectUDP(std::string serverIpAddress, std::string port);
 
@@ -97,7 +94,6 @@ private:
 	static Networker* mInstance;
 
 	//Data
-	//TCPSocketPtr* mpTCPSocket;
 	UDPSocketPtr* mpUDPSocket;
 	SocketAddressPtr* mpSocketAddressPtr;
 	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;

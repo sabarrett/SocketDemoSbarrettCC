@@ -22,7 +22,6 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	std::srand(time(NULL));
 	//mArrivalTime = arrivalTime;
 
-	//mpTCPSocket = new TCPSocketPtr;
 	mpUDPSocket = new UDPSocketPtr();
 	mpSocketAddressPtr = new SocketAddressPtr();
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
@@ -55,10 +54,6 @@ void Networker::cleanup()
 	delete pDeliveryNotificationManager;
 	pDeliveryNotificationManager = nullptr;
 
-	//(*mpTCPSocket)->CleanupSocket();
-	//delete mpTCPSocket;
-	//mpTCPSocket = nullptr;
-
 	(*mpUDPSocket)->CleanupSocket();
 	delete mpUDPSocket;
 	mpUDPSocket = nullptr;
@@ -70,112 +65,6 @@ void Networker::cleanup()
 
 	mbIsInitted = false;
 }
-
-//bool Networker::initServer(std::string port)
-//{
-//	SocketUtil::StaticInit();
-//
-//	//Create Socket
-//	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-//	if (sock == nullptr)
-//	{
-//		SocketUtil::ReportError("Creating Listenting Socket");
-//		ExitProcess(1);
-//	}
-//	std::cout << "Listening Socket Succesfully Created!\n";
-//
-//	//Create and Bind Address
-//	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + port);
-//	if (listenAddress == nullptr)
-//	{
-//		SocketUtil::ReportError("Creating Listening Address");
-//		ExitProcess(1);
-//	}
-//
-//	if (sock->Bind(*listenAddress) != NO_ERROR)
-//	{
-//		SocketUtil::ReportError("Binding listening socket");
-//		ExitProcess(1);
-//	}
-//	std::cout << "Listening Socket Succesfully Binded!\n";
-//
-//	if (sock->Listen() != NO_ERROR)
-//	{
-//		SocketUtil::ReportError("Listening on socket");
-//		ExitProcess(1);
-//	}
-//	std::cout << "Listening Socket Listening\n";
-//
-//	//Accept Connection
-//	std::cout << "Waiting for connection...\n";
-//
-//	sock->SetNonBlockingMode(false);
-//	SocketAddress incomingAddress;
-//	TCPSocketPtr connSocket = sock->Accept(incomingAddress);
-//
-//	while (connSocket == nullptr)
-//		connSocket = sock->Accept(incomingAddress);
-//
-//
-//	*mpTCPSocket = connSocket;
-//
-//	std::cout << "Accepted connection from address: " << incomingAddress.ToString() << std::endl;
-//
-//	if (mpTCPSocket != nullptr)
-//		return true;
-//	return false;
-//}
-
-//bool Networker::connect(std::string serverIpAddress, std::string port)
-//{
-//	SocketUtil::StaticInit();
-//
-//	//Create Socket
-//	TCPSocketPtr sock = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-//
-//	if (sock == nullptr)
-//	{
-//		SocketUtil::ReportError("Creating Client Socket");
-//		ExitProcess(1);
-//		return false;
-//	}
-//
-//	string address = "0.0.0.0:0";
-//	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
-//	if (clientAddress == nullptr)
-//	{
-//		SocketUtil::ReportError("Creating Client Address");
-//		ExitProcess(1);
-//		return false;
-//	}
-//
-//	if (sock->Bind(*clientAddress) != NO_ERROR)
-//	{
-//		SocketUtil::ReportError("Binding Client Socket");
-//		ExitProcess(1);
-//	}
-//	LOG("%s", "Client Socket Succesfully Binded!");
-//
-//	SocketAddressPtr srvAddress = SocketAddressFactory::CreateIPv4FromString(serverIpAddress + ":" + port);
-//	if (srvAddress == nullptr)
-//	{
-//		SocketUtil::ReportError("Creating Server Address");
-//		ExitProcess(1);
-//	}
-//
-//	if (sock->Connect(*srvAddress) != NO_ERROR)
-//	{
-//		SocketUtil::ReportError("Connecting To Server");
-//		ExitProcess(1);
-//	}
-//	LOG("%s", "Succesfully Connect to the Server!");
-//
-//	*mpTCPSocket = sock;
-//
-//	if (mpTCPSocket != nullptr)
-//		return true;
-//	return false;
-//}
 
 bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
 {
@@ -205,13 +94,6 @@ bool Networker::initServerUDP(std::string serverIpAddress, std::string port)
 		ExitProcess(1);
 	}
 	LOG("%s", "Server Socket Succesfully Binded!");
-
-	//SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:0");
-	//if (clientAddress == nullptr)
-	//{
-	//	SocketUtil::ReportError("Creating Client Address");
-	//	ExitProcess(1);
-	//}
 
 	*mpUDPSocket = sock;
 	*mpSocketAddressPtr = sockAddress;

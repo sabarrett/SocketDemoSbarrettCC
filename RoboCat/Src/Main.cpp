@@ -412,6 +412,8 @@ int main(int argc, const char** argv)
 		//If the socket in initted
 		if (bSocketInitted)
 		{
+			packetTypeReceived = PacketType::PACKET_INVALID;
+
 			//Check for peer connected
 			while (packetTypeReceived != PacketType::PACKET_HELLO)
 			{
