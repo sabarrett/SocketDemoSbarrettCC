@@ -16,11 +16,11 @@
 //https://www.geeksforgeeks.org/priority-queue-of-pairs-in-c-with-ordering-by-first-and-second-element/
 struct myComp {
 	constexpr bool operator()(
-		std::pair<float, OutputMemoryBitStream> const& a,
-		std::pair<float, OutputMemoryBitStream> const& b)
+		std::pair<float, OutputMemoryBitStream*> const& a,
+		std::pair<float, OutputMemoryBitStream*> const& b)
 		const noexcept
 	{
-		return a.first > b.first;
+		return a.first < b.first;
 	}
 };
 
@@ -101,7 +101,7 @@ private:
 	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
 	//std::queue<InFlightPacket*> mInFlightPacketsQueue;
 	DeliveryNotificationManager* pDeliveryNotificationManager;
-	std::priority_queue<std::pair<float, OutputMemoryBitStream>, std::vector<std::pair<float, OutputMemoryBitStream>>, myComp> mOutputBitStreamQueue;
+	std::priority_queue<std::pair<float, OutputMemoryBitStream*>, std::vector<std::pair<float, OutputMemoryBitStream*>>, myComp> mOutputBitStreamQueue;
 	//int mArrivalTime;
 	bool mbIsInitted;
 

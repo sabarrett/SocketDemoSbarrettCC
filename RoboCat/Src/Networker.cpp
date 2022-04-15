@@ -28,7 +28,7 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
 	//mPacketQueue = std::queue<std::pair<int, float>>();
 	pDeliveryNotificationManager = new DeliveryNotificationManager(true, true, this);
-	mOutputBitStreamQueue = std::priority_queue<std::pair<float, OutputMemoryBitStream>, std::vector<std::pair<float, OutputMemoryBitStream>>, myComp>();
+	mOutputBitStreamQueue = std::priority_queue<std::pair<float, OutputMemoryBitStream*>, std::vector<std::pair<float, OutputMemoryBitStream*>>, myComp>();
 
 	//Data for GameObject replication
 	mpGraphicsLibrary = graphicsLibrary;
@@ -794,19 +794,19 @@ PacketType Networker::receiveGameObjectStateUDP()
 
 void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 {
-	OutputMemoryBitStream OMBStream;
+	OutputMemoryBitStream* OMBStream = new OutputMemoryBitStream();
 
 	//Write state sent (packet sequence number and acks)
-	pDeliveryNotificationManager->WriteState(OMBStream);
+	pDeliveryNotificationManager->WriteState(*OMBStream);
 
 	//Write packet header
-	OMBStream.Write(packetHeader);
+	OMBStream->Write(packetHeader);
 
 	//float timeDispatched = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
 	//OMBStream.Write(timeDispatched);
 
-	OMBStream.Write(mGameObjectsVec[ID].second->getNetworkID());
-	OMBStream.Write(mGameObjectsVec[ID].second->getGameObjectType());
+	OMBStream->Write(mGameObjectsVec[ID].second->getNetworkID());
+	OMBStream->Write(mGameObjectsVec[ID].second->getGameObjectType());
 
 	//Logic depends on packer header type
 	switch (packetHeader)
@@ -818,17 +818,17 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 		{
 		case GameObjectType::ROCK:
 		case GameObjectType::PLAYER:
-			OMBStream.Write(mGameObjectsVec[ID].second->getPosition().first);
-			OMBStream.Write(mGameObjectsVec[ID].second->getPosition().second);
+			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().first);
+			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().second);
 			break;
 
 		case GameObjectType::WALL:
 			Wall* wall = (Wall*)mGameObjectsVec[ID].second;
-			OMBStream.Write(wall->getPosition().first);
-			OMBStream.Write(wall->getPosition().second);
-			OMBStream.Write(wall->getWallSizeX());
-			OMBStream.Write(wall->getWallSizeY());
-			OMBStream.Write(wall->getWallThickness());
+			OMBStream->Write(wall->getPosition().first);
+			OMBStream->Write(wall->getPosition().second);
+			OMBStream->Write(wall->getWallSizeX());
+			OMBStream->Write(wall->getWallSizeY());
+			OMBStream->Write(wall->getWallThickness());
 			break;
 		}
 
@@ -862,19 +862,22 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 	//Add packet data to queue in randomised order --> done through timeDispatched +- random and the priority_queue's sorting
 	float timeDispatched = Timing::sInstance.GetTimef() + (-100 + rand() & (100 - -100 + 1));
 	mOutputBitStreamQueue.push(std::make_pair(timeDispatched, OMBStream));
+	OMBStream = nullptr;
 
 	//If the queue has more than 10 elements is it
 	if (mOutputBitStreamQueue.size() >= 10)
 	{
 		//Iterate though the queue
-		//for (size_t i = 0; i < mOutputBitStreamQueue.size(); i++)
-		for (size_t i = mOutputBitStreamQueue.size() - 1; i >=0 ; i--)
+		//for (size_t i = mOutputBitStreamQueue.size() - 1; i >= 0 ; i--)
+		for (size_t i = 0; i < mOutputBitStreamQueue.size(); i++)
 		{
 			//Drop some packets
 			if (i % 3 != 0)
 			{
 				//Send packet
-				(*mpUDPSocket)->SendTo(OMBStream.GetBufferPtr(), OMBStream.GetBitLength(), (**mpSocketAddressPtr));
+				(*mpUDPSocket)->SendTo(mOutputBitStreamQueue.top().second->GetBufferPtr(), mOutputBitStreamQueue.top().second->GetBitLength(), (**mpSocketAddressPtr));
+				delete mOutputBitStreamQueue.top().second;
+				mOutputBitStreamQueue.pop();
 			}
 		}
 	}
