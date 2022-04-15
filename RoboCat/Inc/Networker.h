@@ -67,7 +67,7 @@ public:
 	//bool connect(std::string serverIpAddress, std::string port);
 
 	bool initServerUDP(std::string serverIpAddress, std::string port);
-	bool connectUDP(std::string otherUserIpAddress, std::string port);
+	bool connectUDP(std::string port);
 
 	//Update game state
 	//PacketType receiveGameObjectState();
