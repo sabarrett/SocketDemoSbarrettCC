@@ -410,7 +410,7 @@ void BradsLessOriginalClient()
 		clientSocket->Send(oStream.GetBufferPtr(), oStream.GetByteLength());
 
 		// Recieve data
-		char buffer[4096];
+		char* buffer = new char[4096];
 		//PLEASGOD//InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 4096);
 		int32_t bytesReceived = int32_t();
 		bytesReceived = clientSocket->Receive(buffer, 4096);
@@ -419,37 +419,36 @@ void BradsLessOriginalClient()
 		{
 			//LOG("%s", "Bytes were recieved"); // this worked
 
-			double currentTime = al_get_timer_count(timer);
+			double stampTime = al_get_timer_count(timer);
+			cout << "time start: " << stampTime;
 			int randomSin = rand() % 2;
 			if (randomSin == 0)
 			{
-				//LOG("%s", "positive jitter")
-				currentTime += rand() % 400 + 1; // jitter
+				stampTime += rand() % 200 + 1; // jitter
 			}
 			else
 			{
-				//LOG("%s", "negative jitter")
-
-				currentTime -= rand() % 400 + 1; // jitter
+				stampTime -= rand() % 200 + 1; // jitter
 			}
-			currentTime += 5000; //latency
-			Packet* pack = new Packet(currentTime, buffer, 4096);
-			packets.push_back(pack);
-			packets.sort([](const Packet* a, const Packet* b) { return a->timeStamp < b->timeStamp; });	
+			stampTime += 1000; //latency
+			Packet* pack = new Packet(stampTime, buffer, 4096);
+			if(!(rand()%100+0 < 5)) //5% packet loss
+				packets.push_back(pack);
+			if(packets.size() > 1)
+				packets.sort([](const Packet* a, const Packet* b) { return a->timeStamp < b->timeStamp; });	
 		}	
 
 		if ((int)packets.size() > 0)
 		{
-
 			bool processOrNot = false;
 
 			processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
-			cout << "timestamp " << packets.front()->timeStamp << endl;
-			cout << "current time " << al_get_timer_count(timer) << endl;
+			//cout << "timestamp " << packets.front()->timeStamp << endl;
+			//cout << "current time " << al_get_timer_count(timer) << endl;
 			//cout << "process: " << processOrNot << endl;
-			if (processOrNot) // maybe while
+			if(processOrNot) // maybe while
 			{
-				LOG("%s", "process a packet");
+				//LOG("%s", "process a packet");
 
 				InputMemoryBitStream packStream(packets.front()->mBufferPtr, 4096);
 				for (int i = 0; i < numObjects; i++)
@@ -471,6 +470,7 @@ void BradsLessOriginalClient()
 				}
 				packets.pop_front();
 				//readack
+				processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
 			}
 
 		}
