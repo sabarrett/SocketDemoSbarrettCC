@@ -136,6 +136,14 @@
     <Allegro_AddonImage>true</Allegro_AddonImage>
     <Allegro_AddonTTF>true</Allegro_AddonTTF>
     <Allegro_AddonFont>true</Allegro_AddonFont>
+    <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
+    <Allegro_AddonAudio>true</Allegro_AddonAudio>
+    <Allegro_AddonAcodec>true</Allegro_AddonAcodec>
+    <Allegro_AddonPhysfs>true</Allegro_AddonPhysfs>
+    <Allegro_AddonDialog>true</Allegro_AddonDialog>
+    <Allegro_AddonMemfile>true</Allegro_AddonMemfile>
+    <Allegro_AddonColor>true</Allegro_AddonColor>
+    <Allegro_AddonVideo>true</Allegro_AddonVideo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <LinkIncremental>true</LinkIncremental>
@@ -577,6 +585,7 @@
     <ClCompile Include="..\common\DeanLib\Timer.cpp" />
     <ClCompile Include="..\common\DeanLib\Trackable.cpp" />
     <ClCompile Include="..\common\DeanLib\Vector2D.cpp" />
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Event.cpp" />
     <ClCompile Include="EventListener.cpp" />
@@ -609,6 +618,7 @@
     <ClInclude Include="..\common\DeanLib\include\Timer.h" />
     <ClInclude Include="..\common\DeanLib\include\Trackable.h" />
     <ClInclude Include="..\common\DeanLib\include\Vector2D.h" />
+    <ClInclude Include="Animation.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="EventListener.h" />
