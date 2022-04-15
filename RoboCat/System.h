@@ -1,10 +1,10 @@
 #pragma once
 #include "GraphicsSystem.h"
 #include "InputSystem.h"
-#include "Trackable.h"
-#include "DeanLibDefines.h"
-#include "DeanLibUtilities.h"
-#include "DeanMath.h"
+#include "../common/DeanLib/include/Trackable.h"
+#include "../common/DeanLib/include/DeanLibDefines.h"
+#include "../common/DeanLib/include/DeanLibUtilities.h"
+#include "../common/DeanLib/include/DeanMath.h"
 
 /*
 Author: Wesley Elmer

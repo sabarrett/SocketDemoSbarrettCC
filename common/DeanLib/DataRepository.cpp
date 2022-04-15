@@ -1,4 +1,4 @@
-#include "DataRepository.h"
+#include "../DeanLib/include/DataRepository.h"
 #include <cstring>
 
 DataEntry::DataEntry( int val )

@@ -567,14 +567,58 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\DeanLib\DataRepository.cpp" />
+    <ClCompile Include="..\common\DeanLib\DeanLibUtilities.cpp" />
+    <ClCompile Include="..\common\DeanLib\DeanMath.cpp" />
+    <ClCompile Include="..\common\DeanLib\MemoryPool.cpp" />
+    <ClCompile Include="..\common\DeanLib\MemoryTracker.cpp" />
+    <ClCompile Include="..\common\DeanLib\PerformanceTracker.cpp" />
+    <ClCompile Include="..\common\DeanLib\RayCaster.cpp" />
+    <ClCompile Include="..\common\DeanLib\Timer.cpp" />
+    <ClCompile Include="..\common\DeanLib\Trackable.cpp" />
+    <ClCompile Include="..\common\DeanLib\Vector2D.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Event.cpp" />
+    <ClCompile Include="EventListener.cpp" />
+    <ClCompile Include="EventSystem.cpp" />
+    <ClCompile Include="Font.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GraphicsLib.cpp" />
+    <ClCompile Include="GameEvent.cpp" />
+    <ClCompile Include="GraphicsBuffer.cpp" />
+    <ClCompile Include="GraphicsBufferManager.cpp" />
+    <ClCompile Include="GraphicsSystem.cpp" />
     <ClCompile Include="InputSystem.cpp" />
+    <ClCompile Include="InputTranslator.cpp" />
+    <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="System.cpp" />
     <ClCompile Include="TCPSocket.cpp" />
+    <ClCompile Include="Unit.cpp" />
+    <ClCompile Include="UnitManager.cpp" />
+    <ClInclude Include="..\common\DeanLib\include\CircularQueue.h" />
+    <ClInclude Include="..\common\DeanLib\include\ConditionalCallback.h" />
+    <ClInclude Include="..\common\DeanLib\include\DataRepository.h" />
+    <ClInclude Include="..\common\DeanLib\include\DeanLibDefines.h" />
+    <ClInclude Include="..\common\DeanLib\include\DeanLibUtilities.h" />
+    <ClInclude Include="..\common\DeanLib\include\DeanMath.h" />
+    <ClInclude Include="..\common\DeanLib\include\MemoryPool.h" />
+    <ClInclude Include="..\common\DeanLib\include\MemoryTracker.h" />
+    <ClInclude Include="..\common\DeanLib\include\MultiDimensionalArray.h" />
+    <ClInclude Include="..\common\DeanLib\include\PerformanceTracker.h" />
+    <ClInclude Include="..\common\DeanLib\include\RayCaster.h" />
+    <ClInclude Include="..\common\DeanLib\include\TimedCallback.h" />
+    <ClInclude Include="..\common\DeanLib\include\Timer.h" />
+    <ClInclude Include="..\common\DeanLib\include\Trackable.h" />
+    <ClInclude Include="..\common\DeanLib\include\Vector2D.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="EventListener.h" />
+    <ClInclude Include="EventSystem.h" />
+    <ClInclude Include="Font.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="GraphicsLib.h" />
+    <ClInclude Include="GameEvent.h" />
+    <ClInclude Include="GraphicsBuffer.h" />
+    <ClInclude Include="GraphicsBufferManager.h" />
+    <ClInclude Include="GraphicsSystem.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
@@ -596,6 +640,11 @@
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClInclude Include="InputSystem.h" />
+    <ClInclude Include="InputTranslator.h" />
+    <ClInclude Include="Sprite.h" />
+    <ClInclude Include="System.h" />
+    <ClInclude Include="Unit.h" />
+    <ClInclude Include="UnitManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">

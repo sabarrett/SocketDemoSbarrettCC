@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <allegro5/allegro.h>
-#include "Trackable.h"
+#include "../common/DeanLib/include/Trackable.h"
 
 /*
 Author: Ryan Littleton, with help from the rest of the class

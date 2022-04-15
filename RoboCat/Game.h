@@ -1,8 +1,8 @@
 #pragma once
-#include "Trackable.h"
-#include <Timer.h>
+#include "../common/DeanLib/include/Trackable.h"
+#include <../../common/DeanLib/include/Timer.h>
 #include <assert.h>
-#include <PerformanceTracker.h>
+#include <../../common/DeanLib/include/PerformanceTracker.h>
 #include "Sprite.h"
 #include "EventListener.h"
 
@@ -30,7 +30,7 @@ class Unit;
 class UnitManager;
 
 
-const string ASSET_FILEPATH = "..\\..\\common\\assets\\";
+const string ASSET_FILEPATH = "..\\common\\assets\\";
 const string SMURF_FILEPATH = "smurf_sprites.png";
 const string DEAN_FILEPATH = "dean_sprites.png";
 const string WOODS_FILEPATH = "Woods.png";

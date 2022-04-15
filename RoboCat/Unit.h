@@ -2,7 +2,7 @@
 #include<iostream>
 #include<vector>
 #include<allegro5/allegro.h>
-#include"Trackable.h"
+#include"../common/DeanLib/include/Trackable.h"
 #include"Animation.h"
 
 /*

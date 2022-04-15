@@ -3,7 +3,7 @@
 #include<allegro5/allegro.h>
 #include<allegro5/keyboard.h>
 #include<allegro5/mouse.h>
-#include"Trackable.h"
+#include"../common/DeanLib/include/Trackable.h"
 
 /*
 Author: Nicholas Preis

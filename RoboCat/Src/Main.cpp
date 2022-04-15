@@ -47,7 +47,7 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	Game* mpGame = new Game();
+	//Game* mpGame = new Game();
 
 	SocketUtil::StaticInit();
 
@@ -89,7 +89,7 @@ int main(int argc, const char** argv)
 
 	srvThread.join();
 
-	mpGame->gameLoop();
+	//mpGame->gameLoop();
 
 	SocketUtil::CleanUp();
 

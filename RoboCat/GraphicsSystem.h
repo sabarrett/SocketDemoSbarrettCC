@@ -7,7 +7,7 @@
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
-#include "Trackable.h"
+#include "../common/DeanLib/include/Trackable.h"
 #include "Sprite.h"
 #include "GraphicsBuffer.h"
 #include "Font.h"

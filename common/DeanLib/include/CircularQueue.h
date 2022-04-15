@@ -1,6 +1,6 @@
 #pragma once
-#include <Trackable.h>
-#include <DeanLibDefines.h>
+#include <../../common/DeanLib/include/Trackable.h>
+#include <../../common/DeanLib/include/DeanLibDefines.h>
 
 template < class T >
 class CircularQueue : public Trackable
