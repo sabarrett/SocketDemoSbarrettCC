@@ -23,7 +23,8 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	//mArrivalTime = arrivalTime;
 
 	//mpTCPSocket = new TCPSocketPtr;
-	mpUDPSocket = new UDPSocketPtr;
+	mpUDPSocket = new UDPSocketPtr();
+	mpSocketAddressPtr = new SocketAddressPtr();
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
 	//mPacketQueue = std::queue<std::pair<int, float>>();
 	pDeliveryNotificationManager = new DeliveryNotificationManager(true, true, this);
@@ -61,6 +62,9 @@ void Networker::cleanup()
 	(*mpUDPSocket)->CleanupSocket();
 	delete mpUDPSocket;
 	mpUDPSocket = nullptr;
+
+	delete mpSocketAddressPtr;
+	mpSocketAddressPtr = nullptr;
 
 	SocketUtil::CleanUp();
 
@@ -179,6 +183,7 @@ bool Networker::connectUDP(std::string otherUserIpAddress, std::string port)
 
 	//Create Socket
 	UDPSocketPtr sock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
+	sock->SetNonBlockingMode(false);
 
 	if (sock == nullptr)
 	{
@@ -187,32 +192,26 @@ bool Networker::connectUDP(std::string otherUserIpAddress, std::string port)
 		return false;
 	}
 
-	//string address = "0.0.0.0:0";
-	//SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
-	//if (clientAddress == nullptr)
-	//{
-	//	SocketUtil::ReportError("Creating Client Address");
-	//	ExitProcess(1);
-	//	return false;
-	//}
+	string address = "0.0.0.0:0";
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
+	if (clientAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating Client Address");
+		ExitProcess(1);
+		return false;
+	}
 
-	//if (sock->Bind(*clientAddress) != NO_ERROR)
-	//{
-	//	SocketUtil::ReportError("Binding Client Socket");
-	//	ExitProcess(1);
-	//}
+	if (sock->Bind(*clientAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Binding Client Socket");
+		ExitProcess(1);
+	}
 	LOG("%s", "Client Socket Succesfully Binded!");
 
-	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString(otherUserIpAddress + ":" + port);
+	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString((otherUserIpAddress + ":" + port).c_str());
 	if (sockAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating Server Address");
-		ExitProcess(1);
-	}
-
-	if (sock->Bind(*sockAddress) != NO_ERROR)
-	{
-		SocketUtil::ReportError("Binding Client Socket");
 		ExitProcess(1);
 	}
 
