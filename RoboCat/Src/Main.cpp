@@ -65,7 +65,7 @@ float playerMoveSpeed = 0.5;
 //-------------------------Network Data-------------------------
 Networker* Networker::mInstance = 0;
 Networker* pNetworkManager;
-PacketType packetTypeReceived;
+PacketType packetTypeReceived = PacketType::PACKET_INVALID;
 int networkID = 0;
 
 bool init()
@@ -354,7 +354,7 @@ int main(int argc, const char** argv)
 		std::cout << "Are you the server? Type 'y' for yes, anything else for no.\n";
 		std::cin >> input;
 		bool bIsServer = false;
-		bool bHasConnectd = false;
+		bool bSocketInitted = false;
 
 		if (input == "y")
 		{
@@ -377,8 +377,8 @@ int main(int argc, const char** argv)
 			std::cin >> portNumber;
 
 			//bHasConnectd = pNetworkManager->initServer(portNumber);
-			bHasConnectd = pNetworkManager->connectUDP(clientIP, portNumber);
-			if (bHasConnectd)
+			bSocketInitted = pNetworkManager->connectUDP(clientIP, portNumber);
+			if (bSocketInitted)
 				std::cout << "main.cpp --> server initted.\n";
 
 			//Server PlayerController is networkID 0
@@ -400,8 +400,8 @@ int main(int argc, const char** argv)
 			std::cin >> portNumber;
 
 			//bHasConnectd = pNetworkManager->connect(serverIP, portNumber);
-			bHasConnectd = pNetworkManager->connectUDP(serverIP, portNumber);
-			if (bHasConnectd)
+			bSocketInitted = pNetworkManager->connectUDP(serverIP, portNumber);
+			if (bSocketInitted)
 				std::cout << "main.cpp --> client connected.\n";
 
 			//Client PlayerController is networkID 1
@@ -409,9 +409,15 @@ int main(int argc, const char** argv)
 			startingPlayerPos = STARTING_PLAYER_POSITION_CLIENT;
 		}
 
-		//If the peer has connected
-		if (bHasConnectd)
+		//If the socket in initted
+		if (bSocketInitted)
 		{
+			//Check for peer connected
+			while (packetTypeReceived != PacketType::PACKET_HELLO)
+			{
+				packetTypeReceived = pNetworkManager->receiveGameObjectStateUDP();
+			}
+
 			//Setup
 			start();
 

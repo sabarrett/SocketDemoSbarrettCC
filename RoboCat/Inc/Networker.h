@@ -26,6 +26,7 @@ struct myComp {
 
 enum PacketType
 {
+	PACKET_HELLO,
 	PACKET_CREATE,
 	PACKET_UPDATE,
 	PACKET_DELETE,
