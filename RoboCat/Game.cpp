@@ -304,18 +304,19 @@ void Game::SendUpdatedStates()
 
 int Game::Send(const void* inData, size_t inLen, bool reliable)
 {
-	if (reliable) 
-	{
-		TCPSocket->Send(inData, inLen);
-	}
-	else 
-	{
 		int num = rand() % 100 + 1;
 		if (num >= 25)
-			UDPSocket->SendTo(inData, inLen, address);
-	}
+			TCPSocket->Send(inData, inLen);
+
+	//packetnotification add packet for ack
+
 	return 0;
 }
+
+
+
+//Check pre-existing notifications(resend or drop). New function
+//Process pre-existing packets function
 
 void Game::Receive()
 {
@@ -323,7 +324,10 @@ void Game::Receive()
 	{
 		char buffer[1024];
 		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
-		int32_t bytesReceivedUDP = UDPSocket->ReceiveFrom(buffer, 1024, address);
+
+		//Send ack packet to sender on recieve
+
+		//process packet notification
 		if (bytesReceived > 0)
 		{
 				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);

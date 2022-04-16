@@ -2,6 +2,14 @@
 #include <allegro5/allegro.h>
 #include "RoboCatPCH.h"
 
+/*
+Notification Manager
+increment sequence number on send
+accumulate ack
+process sent packets and add to ack list
+periodically send ack list back and process current ack
+*/
+
 
 class Paddle;
 class ball;
@@ -19,7 +27,6 @@ class Game
 
 	ALLEGRO_KEYBOARD_STATE* keyboardState;
 	TCPSocketPtr TCPSocket;
-	UDPSocketPtr UDPSocket;
 	SocketAddress address;
 
 
