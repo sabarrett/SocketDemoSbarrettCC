@@ -213,24 +213,27 @@ void Game::UpdateBall(ball* ball)
 	ball->pos->y = ball->GetPosY() + ball->GetDirY();
 
 	OutputMemoryBitStream oStream;
+	manager.WriteState(oStream);
 	oStream.Write(PacketType::PT_BALL);
 	oStream.Write(ball->id);
 	oStream.Write(ball->pos->x);
 	oStream.Write(ball->pos->y);
 
-	Send(oStream.GetBufferPtr(), oStream.GetBitLength(), false);
+	Send(oStream);
 }
 
 void Game::UpdateScore()
 {
 	OutputMemoryBitStream oStream;
+	manager.WriteState(oStream);
 	oStream.Write(PacketType::PT_SCORE);
 	oStream.Write(mScoreOne->points);
 	oStream.Write(mScoreTwo->points);
 
-	Send(oStream.GetBufferPtr(), oStream.GetBitLength(), true);
+	Send(oStream);
 
 	OutputMemoryBitStream o2Stream;
+	manager.WriteState(o2Stream);
 	
 	if (mScoreOne->points >= 20) 
 	{
@@ -242,7 +245,7 @@ void Game::UpdateScore()
 
 		o2Stream.Write(PacketType::PT_WIN);
 		o2Stream.Write(0);
-		Send(o2Stream.GetBufferPtr(), o2Stream.GetBitLength(), true);
+		Send(oStream);
 	}
 	else if (mScoreTwo->points >= 20)
 	{
@@ -253,7 +256,7 @@ void Game::UpdateScore()
 
 		o2Stream.Write(PacketType::PT_WIN);
 		o2Stream.Write(1);
-		Send(o2Stream.GetBufferPtr(), o2Stream.GetBitLength(), true);
+		Send(oStream);
 	}
 }
 
@@ -296,17 +299,18 @@ void Game::SendUpdatedStates()
 	int yPos = localPaddle->GetPosY();
 
 	OutputMemoryBitStream oStream;
+	manager.WriteState(oStream);
 	oStream.Write(PacketType::PT_PADDLE);
 	oStream.Write(yPos);
 
-	Send(oStream.GetBufferPtr(), oStream.GetBitLength(), false);
+	Send(oStream);
 }
 
-int Game::Send(const void* inData, size_t inLen, bool reliable)
+int Game::Send(OutputMemoryBitStream oStream)
 {
-		int num = rand() % 100 + 1;
-		if (num >= 25)
-			TCPSocket->Send(inData, inLen);
+	int num = rand() % 100 + 1;
+	if (num >= 25)
+		TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
 
 	//packetnotification add packet for ack
 
@@ -324,65 +328,72 @@ void Game::Receive()
 	{
 		char buffer[1024];
 		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
+		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
+		manager.ReadAndProcessState(iStream);
 
-		//Send ack packet to sender on recieve
+
+		OutputMemoryBitStream oStream;
+		manager.WriteState(oStream);
+		oStream.Write(PacketType::PT_ACK);
+		Send(oStream);
 
 		//process packet notification
 		if (bytesReceived > 0)
 		{
-				InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
-				PacketType type;
-				iStream.Read(type);
+			
+				
+			PacketType type;
+			iStream.Read(type);
 
 
-				if (type == PacketType::PT_PADDLE)
+			if (type == PacketType::PT_PADDLE)
+			{
+				int yPos;
+				iStream.Read(yPos);
+				std::cout << "Y pos: " << yPos << std::endl;
+				UpdateNetworkedPaddle(yPos);
+			}
+			if (type == PacketType::PT_BALL)
+			{
+				int tempID;
+				iStream.Read(tempID);
+				iStream.Read(mBalls[tempID]->pos->x);
+				iStream.Read(mBalls[tempID]->pos->y);
+			}
+			if (type == PacketType::PT_SCORE)
+			{
+				iStream.Read(mScoreOne->points);
+				iStream.Read(mScoreTwo->points);
+			}
+			if (type == PacketType::PT_WIN)
+			{
+
+				iStream.Read(mWinningPlayer);
+
+				if (!mWinningPlayer)
 				{
-					int yPos;
-					iStream.Read(yPos);
-					std::cout << "Y pos: " << yPos << std::endl;
-					UpdateNetworkedPaddle(yPos);
+					std::cout << " Player 1  Won" << std::endl;
+					mRunning = false;
 				}
-				if (type == PacketType::PT_BALL)
+				else
 				{
-					int tempID;
-					iStream.Read(tempID);
-					iStream.Read(mBalls[tempID]->pos->x);
-					iStream.Read(mBalls[tempID]->pos->y);
+					std::cout << " Player 2  Won" << std::endl;
+					mRunning = false;
 				}
-				if (type == PacketType::PT_SCORE)
-				{
-					iStream.Read(mScoreOne->points);
-					iStream.Read(mScoreTwo->points);
-				}
-				if (type == PacketType::PT_WIN)
+
+			}
+			else  if (bytesReceived < 0)
+			{
+				if (bytesReceived == -10035)
 				{
 
-					iStream.Read(mWinningPlayer);
-
-					if (!mWinningPlayer)
-					{
-						std::cout << " Player 1  Won" << std::endl;
-						mRunning = false;
-					}
-					else
-					{
-						std::cout << " Player 2  Won" << std::endl;
-						mRunning = false;
-					}
-
 				}
-				else  if (bytesReceived < 0)
+				else if (bytesReceived == -10054)
 				{
-					if (bytesReceived == -10035)
-					{
-
-					}
-					else if (bytesReceived == -10054)
-					{
-						mRunning = false;
-						LOG("User disconnected: %s", "<Insert ID here>");
-					}
+					mRunning = false;
+					LOG("User disconnected: %s", "<Insert ID here>");
 				}
+			}
 
 		}
 	}
