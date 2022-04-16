@@ -29,6 +29,7 @@ class Game
 	ALLEGRO_KEYBOARD_STATE* keyboardState;
 	TCPSocketPtr TCPSocket;
 	SocketAddress address;
+	DeliveryNotificationManager manager;
 	
 
 	bool mRunning = false;
