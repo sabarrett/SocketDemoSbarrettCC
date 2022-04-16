@@ -14,6 +14,7 @@ periodically send ack list back and process current ack
 class Paddle;
 class ball;
 class Score;
+class DeliveryNotificationManager;
 
 class Game
 {
@@ -28,7 +29,7 @@ class Game
 	ALLEGRO_KEYBOARD_STATE* keyboardState;
 	TCPSocketPtr TCPSocket;
 	SocketAddress address;
-
+	
 
 	bool mRunning = false;
 	bool mIsServer = false;
@@ -47,6 +48,7 @@ class Game
 	void CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2);
 	void SendUpdatedStates();
 	int Send(const void* inData, size_t inLen, bool reliable);
+	void ackPacketHandler();
 	void Receive(); 
 
 	
