@@ -5,7 +5,6 @@
 #include "GameObjects.h"
 #include "Network.h"
 
-//#pragma comment(lib, "SDL.lib")
 #if _WIN32
 
 
