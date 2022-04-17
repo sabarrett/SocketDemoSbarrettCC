@@ -90,8 +90,7 @@ Game::Game()
 		keyboardState = new ALLEGRO_KEYBOARD_STATE();
 		mRunning = true;
 	}
-
-
+	manager = new DeliveryNotificationManager(true, true);
 	mIsServer = true;
 	mLocalLeft = mIsServer;
 	StartServer();
@@ -127,6 +126,8 @@ Game::Game(std::string IP)
 
 		mRunning = true;
 	}
+
+	manager = new DeliveryNotificationManager(true, true);
 	mIsServer = false;
 	mLocalLeft = mIsServer;
 	ConnectToServer(IP);
@@ -213,7 +214,7 @@ void Game::UpdateBall(ball* ball)
 	ball->pos->y = ball->GetPosY() + ball->GetDirY();
 
 	OutputMemoryBitStream oStream;
-	manager.WriteState(oStream);
+	manager->WriteState(oStream);
 	oStream.Write(PacketType::PT_BALL);
 	oStream.Write(ball->id);
 	oStream.Write(ball->pos->x);
@@ -225,7 +226,7 @@ void Game::UpdateBall(ball* ball)
 void Game::UpdateScore()
 {
 	OutputMemoryBitStream oStream;
-	manager.WriteState(oStream);
+	manager->WriteState(oStream);
 	oStream.Write(PacketType::PT_SCORE);
 	oStream.Write(mScoreOne->points);
 	oStream.Write(mScoreTwo->points);
@@ -233,7 +234,7 @@ void Game::UpdateScore()
 	Send(oStream);
 
 	OutputMemoryBitStream o2Stream;
-	manager.WriteState(o2Stream);
+	manager->WriteState(o2Stream);
 	
 	if (mScoreOne->points >= 20) 
 	{
@@ -299,7 +300,7 @@ void Game::SendUpdatedStates()
 	int yPos = localPaddle->GetPosY();
 
 	OutputMemoryBitStream oStream;
-	manager.WriteState(oStream);
+	manager->WriteState(oStream);
 	oStream.Write(PacketType::PT_PADDLE);
 	oStream.Write(yPos);
 
@@ -329,11 +330,11 @@ void Game::Receive()
 		char buffer[1024];
 		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
 		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
-		manager.ReadAndProcessState(iStream);
+		manager->ReadAndProcessState(iStream);
 
 
 		OutputMemoryBitStream oStream;
-		manager.WriteState(oStream);
+		manager->WriteState(oStream);
 		oStream.Write(PacketType::PT_ACK);
 		Send(oStream);
 

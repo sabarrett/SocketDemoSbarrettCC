@@ -29,7 +29,7 @@ class Game
 	ALLEGRO_KEYBOARD_STATE* keyboardState;
 	TCPSocketPtr TCPSocket;
 	SocketAddress address;
-	DeliveryNotificationManager manager;
+	DeliveryNotificationManager* manager;
 	
 
 	bool mRunning = false;
@@ -49,7 +49,6 @@ class Game
 	void CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2);
 	void SendUpdatedStates();
 	int Send(OutputMemoryBitStream oStream);
-	void ackPacketHandler();
 	void Receive(); 
 
 	
