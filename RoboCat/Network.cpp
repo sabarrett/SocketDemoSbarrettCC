@@ -4,14 +4,14 @@
 
 const std::string ASSET_PATH = "Images\\";
 
-bool Network::init(GraphicsSystems* graphicsSystem, /*DeliveryNotificationManager* deliveryManager,*/ std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket)
+bool Network::init(GraphicsSystems* graphicsSystem, DeliveryNotificationManager* deliveryManager, std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket)
 {
 	mTCPSocket = liveSocket;
 	mGameObjects = std::vector<std::pair<int, GameObject*>>();
 
 	// Replication Data
 	mGraphicsSystem = graphicsSystem;
-	//mDeliverymanager = deliveryManager;
+	mDeliverymanager = deliveryManager;
 	mDeanSprite = deanSprite;
 	mAmongSprite = amongSprite;
 	mScottSprite = scottSprite;
@@ -30,8 +30,8 @@ void Network::cleanUp()
 	delete mGraphicsSystem;
 	mGraphicsSystem = nullptr;
 
-	/*delete mDeliverymanager;
-	mDeliverymanager = nullptr;*/
+	delete mDeliverymanager;
+	mDeliverymanager = nullptr;
 }
 
 void Network::send(PacketType packetTypeHead, GameObject* object)
@@ -60,8 +60,8 @@ void Network::send(PacketType packetTypeHead, GameObject* object)
 		mGameObjects.push_back(std::pair<int, GameObject*>(object->getNetworkId(), object));
 	}
 
-	//mDeliverymanager->WriteState(outBitStream);
 	// Write
+	mDeliverymanager->WriteState(outBitStream);
 	outBitStream.Write(packetTypeHead);
 	outBitStream.Write(object->getNetworkId());
 	outBitStream.Write(object->getClassId());
@@ -111,7 +111,7 @@ PacketType Network::receive()
 		ClassId objectID;
 
 		// Read (READ IN SAME ORDER SENDING)
-		//mDeliverymanager->ReadAndProcessState(inputBitStream);
+		mDeliverymanager->ReadAndProcessState(inputBitStream);
 		inputBitStream.Read(packetTypeHead);
 		inputBitStream.Read(networkID);
 		inputBitStream.Read(objectID);

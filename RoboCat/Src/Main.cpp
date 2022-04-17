@@ -7,7 +7,6 @@
 
 #if _WIN32
 
-
 const std::string ASSET_PATH = "Images\\";
 
 Network* ClientNetwork;
@@ -17,8 +16,7 @@ int mNetworkID = 0;
 
 GraphicsSystems* Graphics;
 InputSystem* Inputs;
-//DeliveryNotificationManager* DeliveryManager;
-
+DeliveryNotificationManager* DeliveryManager;
 
 std::vector<ClassId> typesOfGameobjects;
 
@@ -80,7 +78,7 @@ void DoTcpServer(std::string port)
 
 	//Network* ServerNetwork = new Network();
 	ServerNetwork = new Network();
-	ServerNetwork->init(Graphics, /*DeliveryManager,*/ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
+	ServerNetwork->init(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
 	//Networks = ServerNetwork;
 }
 
@@ -136,7 +134,7 @@ void DoTcpClient(std::string port)
 
 	//Network* ClientNetwork = new Network();
 	ClientNetwork = new Network();
-	ClientNetwork->init(Graphics,/* DeliveryManager,*/ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
+	ClientNetwork->init(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
 	//Networks = ClientNetwork;
 }
 
@@ -162,13 +160,13 @@ bool initGame()
 		return false;
 	}
 
-	/*DeliveryManager = new DeliveryNotificationManager(true, true);
+	DeliveryManager = new DeliveryNotificationManager(true, true);
 	didInIt = DeliveryManager;
 
 	if (!didInIt)
 	{
 		return false;
-	}*/
+	}
 
 	typesOfGameobjects.push_back(ClassId::DEANSPRITE);
 	typesOfGameobjects.push_back(ClassId::AMONGUS);
@@ -289,13 +287,11 @@ void DeleteRandomly(bool isServer)
 	// Delete Object
 	if (isServer)
 	{
-		//int imageToRemove = rand() % (ServerNetwork->getmGameObjects().size() + 0);
 		ServerNetwork->send(PacketType::DELETE_PACKET, ServerNetwork->getmGameObjects().back().second);
 		mNetworkID--;
 	}
 	else
 	{
-		//int imageToRemove = rand() % (ClientNetwork->getmGameObjects().size() + 0);
 		ClientNetwork->send(PacketType::DELETE_PACKET, ClientNetwork->getmGameObjects().back().second);
 		mNetworkID--;
 	}
@@ -411,7 +407,7 @@ int main(int argc, const char** argv)
 
 		}
 
-		//DeliveryManager->ProcessTimedOutPackets();
+		DeliveryManager->ProcessTimedOutPackets();
 		al_flip_display();
 	}
 
