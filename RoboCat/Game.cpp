@@ -306,7 +306,7 @@ void Game::SendUpdatedStates()
 	Send(oStream);
 }
 
-int Game::Send(OutputMemoryBitStream oStream)
+int Game::Send(OutputMemoryBitStream& oStream)
 {
 	int num = rand() % 100 + 1;
 	if (num >= 25)
@@ -432,6 +432,7 @@ void Game::Update()
 {
 	std::thread receiveThread(&Game::Receive,this);
 
+	std::cout << "UPDATE THREAD" << std::endl;
 	while (mRunning)
 	{
 
