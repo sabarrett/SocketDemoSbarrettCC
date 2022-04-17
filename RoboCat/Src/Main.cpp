@@ -363,15 +363,19 @@ int main(int argc, const char** argv)
 
 		//Setup server and client
 		
-		//HARDCODING SOCKETS
-		std::string servSocket = "1234";
-		std::string clientSocket = "2345";
+		//HARDCODING PORT NUMBERS
+		std::string servPort = "1234";
+		std::string clientPort = "2345";
 		if (bIsServer)
 		{
 			//-------------------------Server code-------------------------
 
-			//bHasConnectd = pNetworkManager->initServer(portNumber);
-			bSocketInitted = pNetworkManager->initServerUDP(servSocket, clientSocket);
+			//Prompt for client IP address
+			std::string clientIP;
+			std::cout << "Enter client IP address: \n";
+			std::cin >> clientIP;
+
+			bSocketInitted = pNetworkManager->initServerUDP(clientIP, servPort, clientPort);
 			if (bSocketInitted)
 				std::cout << "main.cpp --> server initted.\n";
 
@@ -389,7 +393,7 @@ int main(int argc, const char** argv)
 			std::cin >> serverIP;
 
 			//bHasConnectd = pNetworkManager->connect(serverIP, portNumber);
-			bSocketInitted = pNetworkManager->connectUDP(serverIP, servSocket, clientSocket);
+			bSocketInitted = pNetworkManager->connectUDP(serverIP, servPort, clientPort);
 			if (bSocketInitted)
 				std::cout << "main.cpp --> client connected.\n";
 

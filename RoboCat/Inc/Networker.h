@@ -56,7 +56,7 @@ public:
 	~Networker();
 
 	//Starting and connect to server
-	bool initServerUDP(std::string servPort, std::string clientPort);
+	bool initServerUDP(std::string clientIpAddress, std::string servPort, std::string clientPort);
 	bool connectUDP(std::string serverIpAddress, std::string servPort, std::string clientPort);
 
 	//Update game state
@@ -67,18 +67,12 @@ public:
 	PacketType receiveGameObjectStateUDP();
 	void sendGameObjectStateUDP(int networkID, PacketType packetHeader);
 	void checkTimedOutPackets();
-	//PacketType processPacket(GamePacket gamePacket);
 
 	//Map
 	void addGameObject(GameObject* objectToAdd, int networkID);
 	GameObject* getGameObject(int networkID) { return mGameObjectsVec[networkID].second; };
 	void updateGameObjects();
 	void renderGameObjects();
-
-	////Queue
-	//void sortPacketQueue();
-	//int findMinIndex(int sortedIndex);
-	//void insertMinIndexToEnd(int minIndex);
 
 private:
 

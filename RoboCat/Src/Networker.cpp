@@ -66,7 +66,7 @@ void Networker::cleanup()
 	mbIsInitted = false;
 }
 
-bool Networker::initServerUDP(std::string servPort, std::string clientPort)
+bool Networker::initServerUDP(std::string clientIpAddress, std::string servPort, std::string clientPort)
 {
 	SocketUtil::StaticInit();
 
@@ -81,6 +81,7 @@ bool Networker::initServerUDP(std::string servPort, std::string clientPort)
 		return false;
 	}
 
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString((clientIpAddress + ":" + clientPort).c_str());
 	SocketAddressPtr sockAddress = SocketAddressFactory::CreateIPv4FromString(("0.0.0.0:" + servPort).c_str());
 	if (sockAddress == nullptr)
 	{
@@ -95,7 +96,7 @@ bool Networker::initServerUDP(std::string servPort, std::string clientPort)
 	}
 	LOG("%s", "Server Socket Succesfully Binded!");
 
-	*mpSocketAddressPtr = sockAddress;
+	*mpSocketAddressPtr = clientAddress;
 	*mpUDPSocket = sock;
 
 	if (*mpUDPSocket != nullptr)
@@ -146,11 +147,6 @@ PacketType Networker::receiveGameObjectStateUDP()
 	char buffer[1024];
 	int32_t byteRecieve = (*mpUDPSocket)->ReceiveFrom(buffer, 1024, (**mpSocketAddressPtr));
 
-	//GamePacket packet;
-	//packet.buffer = buffer;
-	//packet.byteRecieve = byteRecieve;
-	//packet.dispatchTime = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
-
 	if (byteRecieve > 0)
 	{
 		InputMemoryBitStream IMBStream = InputMemoryBitStream(buffer, 1024);
@@ -161,8 +157,6 @@ PacketType Networker::receiveGameObjectStateUDP()
 			//Start reading
 			PacketType packetHeader;
 			IMBStream.Read(packetHeader);
-			//float dispatchTime;
-			//IMBStream.Read(dispatchTime);
 			int networkID;
 			IMBStream.Read(networkID);
 
@@ -318,7 +312,7 @@ PacketType Networker::receiveGameObjectStateUDP()
 
 void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 {
-	OutputMemoryBitStream* OMBStream = new OutputMemoryBitStream;
+	OutputMemoryBitStream* OMBStream = new OutputMemoryBitStream();
 
 	//Write state sent (packet sequence number and acks)
 	pDeliveryNotificationManager->WriteState(*OMBStream);
@@ -337,6 +331,9 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 
 		//Send packet and return from the function
 		(*mpUDPSocket)->SendTo(OMBStream->GetBufferPtr(), OMBStream->GetBitLength(), (**mpSocketAddressPtr));
+		
+		delete OMBStream;
+		OMBStream = nullptr;
 		return;
 	}
 
@@ -445,58 +442,3 @@ void Networker::renderGameObjects()
 		it->second->draw();
 	}
 }
-
-
-//void Networker::sortPacketQueue()
-//{
-//	for (int i = 1; i <= mPacketQueue.size(); ++i)
-//	{
-//		int min = findMinIndex(mPacketQueue.size() - i);
-//		insertMinIndexToEnd(min);
-//	}
-//}
-//
-//
-//int Networker::findMinIndex(int sortedIndex)
-//{
-//	int minIndex = -1;
-//	int minVal = INT_MAX;
-//	for (int i = 0; i < mPacketQueue.size(); i++)
-//	{
-//		std::pair<int, float> currentPacketTime = mPacketQueue.front();
-//		mPacketQueue.pop();
-//
-//		if (currentPacketTime.first <= minVal && i <= sortedIndex)
-//		{
-//			minIndex = i;
-//			minVal = currentPacketTime.first;
-//		}
-//		mPacketQueue.push(currentPacketTime);
-//	}
-//
-//	return minIndex; 
-//}
-//
-//void Networker::insertMinIndexToEnd(int minIndex)
-//{
-//	if (minIndex == -1)
-//	{
-//		return;
-//	}
-//
-//	std::pair<int, float> minVal;
-//	for (int i = 0; i < mPacketQueue.size(); i++)
-//	{
-//		pair<int, float> currentPacket = mPacketQueue.front();
-//		mPacketQueue.pop();
-//		if (i != minIndex)
-//		{
-//			mPacketQueue.push(currentPacket);
-//		}
-//		else
-//		{
-//			minVal = currentPacket;
-//		}
-//	}
-//	mPacketQueue.push(minVal);
-//}
