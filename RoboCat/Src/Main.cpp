@@ -117,19 +117,22 @@ void start()
 		networkID++;
 
 		//Send it out
-		//pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 		pNetworkManager->sendGameObjectStateUDP(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 
 		//Get client player
-		//pNetworkManager->receiveGameObjectState();
-		pNetworkManager->receiveGameObjectStateUDP();
+		while (packetTypeReceived != PACKET_CREATE)
+		{
+			packetTypeReceived = pNetworkManager->receiveGameObjectStateUDP();
+		}
 	}
 	//If client
 	else if (networkID == 1)
 	{
 		//Get server player
-		//pNetworkManager->receiveGameObjectState();
-		pNetworkManager->receiveGameObjectStateUDP();
+		while (packetTypeReceived != PACKET_CREATE)
+		{
+			packetTypeReceived = pNetworkManager->receiveGameObjectStateUDP();
+		}
 
 		//Spawn player
 		pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
@@ -137,7 +140,6 @@ void start()
 		networkID++;
 
 		//Send it out
-		//pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 		pNetworkManager->sendGameObjectStateUDP(pPlayerController->getNetworkID(), PacketType::PACKET_CREATE);
 	}
 
