@@ -14,7 +14,6 @@ periodically send ack list back and process current ack
 class Paddle;
 class ball;
 class Score;
-class DeliveryNotificationManager;
 
 class Game
 {
