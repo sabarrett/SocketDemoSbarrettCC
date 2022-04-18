@@ -1,7 +1,6 @@
 #pragma once
 #include "RoboCatPCH.h"
 
-class TransmissionData;
 class DeliveryNotificationManager;
 class Game;
 

@@ -1,5 +1,4 @@
 #include "MyTData.h"
-#include "TransmissionData.h"
 
 MyTdata::MyTdata(OutputMemoryBitStream& dataIn, TCPSocketPtr sendSocket) : data(dataIn)
 {
