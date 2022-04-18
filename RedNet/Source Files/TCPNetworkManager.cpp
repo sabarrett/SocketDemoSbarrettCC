@@ -40,6 +40,8 @@ void TCPNetworkManager::init(string address, int port, int reliabilityPercentage
 	srand(time(NULL));
 
 	mReliabilityPercentage = reliabilityPercentage;
+
+	storedPackets = queue<Packet_Info>();
 	
 }
 
@@ -111,8 +113,6 @@ void TCPNetworkManager::sendMessage(string message)
 
 	if (r < mReliabilityPercentage)
 		mConnection->Send(message.c_str(), message.length());
-	else
-		std::cout << "Packet Dropped! Hehe" << std::endl;
 }
 
 void TCPNetworkManager::sendMessage(char* message, int length)
@@ -121,15 +121,20 @@ void TCPNetworkManager::sendMessage(char* message, int length)
 
 	if (r < mReliabilityPercentage)
 		mConnection->Send(message, length);
-	else
-		std::cout << "Packet Dropped! Hehe" << std::endl;
 }
 
-void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length)
+void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length, bool sendTime)
 {
 	mConnection->SetNonBlockingMode(false);
 
-	int packetSize = sizeof(Packet_Header) + length;
+	
+	int timeLen = 0;
+	time_t t = time(NULL);
+
+	if(sendTime)
+		timeLen = sizeof(time_t);
+
+	int packetSize = timeLen + sizeof(Packet_Header) + length;
 
 	char buffer[4096];
 
@@ -137,14 +142,35 @@ void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length)
 
 	memcpy(buffer + sizeof(int), (char*)&header, sizeof(Packet_Header));
 
-	memcpy(buffer + sizeof(int) + sizeof(Packet_Header), data, length);
+	memcpy(buffer + sizeof(int) + sizeof(Packet_Header), &t, timeLen);
+
+	memcpy(buffer + timeLen + sizeof(int) + sizeof(Packet_Header), data, length);
 
 	int r = rand() % 100;
 
 	if (r < mReliabilityPercentage)
-		sendMessage(buffer, sizeof(int) + sizeof(Packet_Header) + length);
+		sendMessage(buffer, timeLen + sizeof(int) + sizeof(Packet_Header) + length);
 	else
-		std::cout << "Packet Dropped! Hehe" << std::endl;
+	{
+		r = rand() % 2;
+		if(r)
+		{
+			Packet_Info temp;
+			if (storedPackets.size() >= 3)
+			{
+				temp = storedPackets.front();
+				storedPackets.pop();
+				sendPacket(temp.header, temp.data, temp.length);
+			}
+
+			temp.header = header;
+			memcpy(temp.data, data, length);
+			temp.length = length;
+			storedPackets.emplace(temp);
+
+			//std::cout << "Packet Stored! Hehe" << std::endl;
+		}
+	}
 
 }
 

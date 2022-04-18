@@ -25,7 +25,7 @@ void GameListener::handleEvent(const Event& event)
 
         Game::getInstance()->DPlayerMove(moveEvent.getMoveLoc());
 
-        TCPNetworkManager::getInstance()->sendPacket(Packet_Header::PLAYER_MOVE, (char*)&(moveEvent.getMoveLoc()), sizeof(moveEvent.getMoveLoc()));
+        TCPNetworkManager::getInstance()->sendPacket(Packet_Header::PLAYER_MOVE, (char*)&(moveEvent.getMoveLoc()), sizeof(moveEvent.getMoveLoc()), true);
     }
     else if(event.getType() == KEYBOARD_EVENT)
     {

@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 #include "Trackable.h"
 #include "Vector2D.h"
@@ -13,7 +14,14 @@ public:
 
 	void draw(GraphicsSystem* gs);
 
-	void setLocation(Vector2D loc) { mLoc = loc; }
+	void setLocation(Vector2D loc) 
+	{ 
+		mLoc = loc; 
+		if (loc.getX() < 0.0f)
+		{
+			loc = Vector2D();
+		}
+	}
 
 	void update(float deltaTime);
 

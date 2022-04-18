@@ -137,6 +137,7 @@ void Game::init(int screenWidth, int screenHeight, int fps, bool isServer, bool 
 		TCPNetworkManager::getInstance()->connectTo("127.0.0.1", 8011);
 	}
 		
+	playerPacketTime = 0;
 
 	srand(time(NULL));
 }
@@ -282,11 +283,25 @@ void Game::handleNetworkPacket(Packet_Header header, char* data, int length)
 	int id;
 	Vector2D pos;
 	Unit* u;
+	time_t t;
+
 	switch (header)
 	{
 	case PLAYER_MOVE:
 		//cout << "WE MOVING!!" << endl;
-		gameInstance->mpOpponent->setLocation(*(Vector2D*)data);
+		memcpy((char*)&t, data, sizeof(t));
+		memcpy((char*)&pos, data + sizeof(t), sizeof(pos));
+
+		if (t > gameInstance->playerPacketTime)
+		{
+			gameInstance->mpOpponent->setLocation(pos);
+			gameInstance->playerPacketTime = t;
+		} 
+		else //Otherwise, drop the stale packet
+		{
+			cout << "Dropped a stale packet!!";
+		}
+	
 		break;
 
 	case FIRE_PROJECTILE:

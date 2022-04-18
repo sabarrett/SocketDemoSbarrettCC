@@ -1,6 +1,7 @@
 #pragma once
 #include "..\..\RoboCat\Inc\RoboCatShared.h"
 #include <string>
+#include <queue>
 
 
 enum Packet_Header
@@ -12,6 +13,13 @@ enum Packet_Header
 	OBJECT_DELETE,
 	CAMERA_MOVE,
 	MAX_PACKET_TYPES
+};
+
+struct Packet_Info
+{
+	Packet_Header header;
+	char data[4096];
+	int length;
 };
 
 class TCPNetworkManager
@@ -31,7 +39,7 @@ public:
 	void listenAndAccept();
 
 	
-	void sendPacket(Packet_Header, char* data, int length);
+	void sendPacket(Packet_Header, char* data, int length, bool sendTime = false);
 	
 	void receivePackets(void (*handleFunction)(Packet_Header header, char* data, int length));
 
@@ -48,5 +56,7 @@ private:
 	TCPSocketPtr mConnection;
 
 	int mReliabilityPercentage;
+
+	queue<Packet_Info> storedPackets;
 
 };

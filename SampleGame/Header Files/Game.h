@@ -80,5 +80,7 @@ private:
 	bool mDebugMode, mIsPlaying, mIsServer;
 
 	float mTimePerFrame;
+
+	unsigned int playerPacketTime;
 	
 };
