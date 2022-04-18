@@ -11,19 +11,9 @@ Assignment Requirements:
 - Game state is sent through a reliability layer. Important data is sent through guaranteed mechanisms, while data that does not require guaranteed delivery is sent through simpler mechanisms. Important data is resilient to jitter, out-of-order delivery, and high latency.
 
 ---------------------------------------------------------------
-Questions:
-
-. For the assignment, are we combining TCP with a custom UDP solution?
-	--> UDP + our custom reliability code
-
----------------------------------------------------------------
 Notes and Ideas:
 
 --> Chapter 7 slide 14 gives a good explanation of how this can be done
-
-. Sync PacketSequenceNumbers on server and client!
-	--> Not needed I don't think
-. Handle success or failure in TransmissionData (make GameObject derived classes also derive from and override functions)
 
 -----------------------------------------------------------------
 
