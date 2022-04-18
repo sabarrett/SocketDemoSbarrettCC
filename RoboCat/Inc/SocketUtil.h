@@ -1,3 +1,4 @@
+#pragma once
 #include "UDPSocket.h"
 
 enum class SocketAddressFamily

@@ -43,4 +43,7 @@ private:
 	std::string mDeanSprite;
 	std::string mAmongSprite;
 	std::string mScottSprite;
+
+	int mDropPacketChance = 25;
+
 };

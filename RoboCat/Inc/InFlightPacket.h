@@ -1,3 +1,4 @@
+#pragma once
 class DeliveryNotificationManager;
 
 //in case we decide to change the type of the sequence number to use fewer or more bits

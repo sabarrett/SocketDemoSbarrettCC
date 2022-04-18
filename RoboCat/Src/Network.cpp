@@ -1,40 +1,48 @@
 #include "Network.h"
 #include <iostream>
+#include "RoboCatPCH.h"
 
 const std::string ASSET_PATH = "Images\\";
 
-void Network::init(GraphicsSystems* graphicsSystem, std::string deanSprite, std::string amongSprite, std::string scottSprite)
+bool Network::init(GraphicsSystems* graphicsSystem, DeliveryNotificationManager* deliveryManager, std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket)
 {
-	mTCPSocket = new TCPSocketPtr;
+	mTCPSocket = liveSocket;
 	mGameObjects = std::vector<std::pair<int, GameObject*>>();
 
 	// Replication Data
 	mGraphicsSystem = graphicsSystem;
+	mDeliverymanager = deliveryManager;
 	mDeanSprite = deanSprite;
 	mAmongSprite = amongSprite;
 	mScottSprite = scottSprite;
+
+	return true;
 }
 
 void Network::cleanUp()
 {
-	std::vector<std::pair<int, GameObject*>>::iterator it;
+	(mTCPSocket)->~TCPSocket();
+	SocketUtil::CleanUp();
 
-	for (it = mGameObjects.begin(); it != mGameObjects.end(); it++)
-	{
-		delete it->second;
-		it->second = nullptr;
-	}
 	mGameObjects.clear();
 
-	(*mTCPSocket)->~TCPSocket();
-	SocketUtil::CleanUp();
+	mGraphicsSystem->cleanup();
+	delete mGraphicsSystem;
+	mGraphicsSystem = nullptr;
+
+	delete mDeliverymanager;
+	mDeliverymanager = nullptr;
 }
 
-void Network::send(int networkID, PacketType packetTypeHead, GameObject* object)
-{
-	//Variables
+void Network::send(PacketType packetTypeHead, GameObject* object)
+{//Variables
 	OutputMemoryBitStream outBitStream;
 	bool objectExists = true;
+
+	if (mGameObjects.size() <= 0)
+	{
+		mGameObjects.push_back(std::pair<int, GameObject*>(object->getNetworkId(), object));
+	}
 
 	// Check if object already exists
 	for (int i = 0; i < mGameObjects.size(); i++)
@@ -52,55 +60,61 @@ void Network::send(int networkID, PacketType packetTypeHead, GameObject* object)
 	}
 
 	// Write
+	mDeliverymanager->WriteState(outBitStream);
 	outBitStream.Write(packetTypeHead);
-	outBitStream.Write(mGameObjects[networkID].second->getNetworkId());
-	outBitStream.Write(mGameObjects[networkID].second->getClassId());
+	outBitStream.Write(object->getNetworkId());
+	outBitStream.Write(object->getClassId());
 
 	// Packet Header
 	switch (packetTypeHead)
 	{
 	case PacketType::CREATE_PACKET:
-		outBitStream.Write(mGameObjects[networkID].second->getPosition().first);
-		outBitStream.Write(mGameObjects[networkID].second->getPosition().second);
+
+		outBitStream.Write(object->getPosition().first);
+		outBitStream.Write(object->getPosition().second);
+
 		break;
 	case PacketType::DELETE_PACKET:
+
 		if (mGameObjects.size() > 0)
 		{
 			std::vector<std::pair<int, GameObject*>>::iterator it;
 
 			for (it = mGameObjects.begin(); it != mGameObjects.end(); it++)
 			{
-				if (it->first == networkID && it->second->getClassId() != ClassId::DEFAULT)
+				if (it->first == object->getNetworkId())
 				{
 					mGameObjects.erase(it);
-
 					break;
 				}
 			}
 		}
 		break;
 	}
-
-	// Send
-	(*mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetBitLength());
+	int randomPacket = rand() % 0 + 100;
+	if (randomPacket >= mDropPacketChance)
+	{
+		// Send
+		(mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetByteLength());
+	}
 }
 
-void Network::receive()
+PacketType Network::receive()
 {
 	// Variables
 	char buffer[1024];
-	int32_t byteReceive = (*mTCPSocket)->Receive(buffer, 1024);
+	int32_t byteReceive = (mTCPSocket)->Receive(buffer, 1024);
 
-	// Make sure there's something to read
 	if (byteReceive > 0)
 	{
 		// Variables
-		InputMemoryBitStream inputBitStream = InputMemoryBitStream(buffer, 1024);
+		InputMemoryBitStream inputBitStream = InputMemoryBitStream(buffer, byteReceive * 8);
 		PacketType packetTypeHead;
 		int networkID;
 		ClassId objectID;
 
 		// Read (READ IN SAME ORDER SENDING)
+		mDeliverymanager->ReadAndProcessState(inputBitStream);
 		inputBitStream.Read(packetTypeHead);
 		inputBitStream.Read(networkID);
 		inputBitStream.Read(objectID);
@@ -108,7 +122,7 @@ void Network::receive()
 		switch (packetTypeHead)
 		{
 		case PacketType::CREATE_PACKET:
-			// Variables
+		{// Variables
 			float posX, posY;
 
 			// Read
@@ -118,26 +132,35 @@ void Network::receive()
 			switch (objectID)
 			{
 			case ClassId::DEANSPRITE:
+			{
 				DeanSprite* newDean = new DeanSprite(networkID, std::pair<float, float>(posX, posY), ASSET_PATH + "dean_spritesCropped.png", mGraphicsSystem);
 				mGameObjects.push_back(std::pair<int, GameObject*>(networkID, newDean));
 				newDean = nullptr;
 
 				break;
+			}
 			case ClassId::AMONGUS:
+			{
 				AmongUs* newAmongUs = new AmongUs(networkID, std::pair<float, float>(posX, posY), ASSET_PATH + "amongUs.png", mGraphicsSystem);
 				mGameObjects.push_back(std::pair<int, GameObject*>(networkID, newAmongUs));
-				newDean = nullptr;
-
-				break;
-			case ClassId::SCOTTSPRITE:
-				ScottSprite* newScott = new ScottSprite(networkID, std::pair<float, float>(posX, posY), ASSET_PATH + "SCOTT.png", mGraphicsSystem);
-				mGameObjects.push_back(std::pair<int, GameObject*>(networkID, newScott));
-				newDean = nullptr;
+				newAmongUs = nullptr;
 
 				break;
 			}
+			case ClassId::SCOTTSPRITE:
+			{
+				ScottSprite* newScott = new ScottSprite(networkID, std::pair<float, float>(posX, posY), ASSET_PATH + "SCOTT.png", mGraphicsSystem);
+				mGameObjects.push_back(std::pair<int, GameObject*>(networkID, newScott));
+				newScott = nullptr;
 
-			break;
+				break;
+			}
+			}
+			draw();
+			return PacketType::CREATE_PACKET;
+		}
+
+		break;
 		case PacketType::DELETE_PACKET:
 			if (mGameObjects.size() > 0)
 			{
@@ -145,13 +168,16 @@ void Network::receive()
 
 				for (it = mGameObjects.begin(); it != mGameObjects.end(); it++)
 				{
-					if (it->first == networkID && it->second->getClassId() != ClassId::DEFAULT)
+					if (it->first == networkID)
 					{
 						mGameObjects.erase(it);
 
 						break;
 					}
 				}
+				
+				return PacketType::DELETE_PACKET;
+
 			}
 			break;
 		}

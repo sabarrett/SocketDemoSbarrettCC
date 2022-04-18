@@ -1,3 +1,4 @@
+#pragma once
 class DeliveryNotificationManager;
 
 class TransmissionData
@@ -8,11 +9,11 @@ public:
 };
 typedef shared_ptr< TransmissionData > TransmissionDataPtr;
 
-class ReliableTransmissionData:TransmissionData
-{
-public:
-
-private:
-	TransmissionDataPtr packetMapTransmissionDataPtr;
-	int packetMapInt;
-};
+//class ReliableTransmissionData:TransmissionData
+//{
+//public:
+//
+//private:
+//	TransmissionDataPtr packetMapTransmissionDataPtr;
+//	int packetMapInt;
+//};

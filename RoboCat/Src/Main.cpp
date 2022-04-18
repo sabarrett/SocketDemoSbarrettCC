@@ -404,7 +404,6 @@ int main(int argc, const char** argv)
 			{
 				ClientNetwork->getmGameObjects()[i].second->Draw();
 			}
-
 		}
 
 		DeliveryManager->ProcessTimedOutPackets();
