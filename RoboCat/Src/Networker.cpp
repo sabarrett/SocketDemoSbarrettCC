@@ -391,27 +391,39 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 		return;
 	}
 
-	//Add packet data to queue in randomised order --> done through timeDispatched +- random and the priority_queue's sorting
-	float timeDispatched = Timing::sInstance.GetTimef() + (-100 + rand() & (100 - -100 + 1));
-	mOutputBitStreamQueue.push(std::make_pair(timeDispatched, OMBStream));
-	OMBStream = nullptr;
-
-	//If the queue has more than 10 elements is it
-	if (mOutputBitStreamQueue.size() >= 10)
+	//Make sure to send the first two gameobjects so both players can connect and be displayed on screen
+	if (ID > 1)
 	{
-		//Iterate though the queue
-		//for (size_t i = mOutputBitStreamQueue.size() - 1; i >= 0 ; i--)
-		for (size_t i = 0; i < mOutputBitStreamQueue.size(); i++)
+		//Add packet data to queue in randomised order --> done through timeDispatched +- random and the priority_queue's sorting
+		float timeDispatched = Timing::sInstance.GetTimef() + (-100 + rand() & (100 - -100 + 1));
+		mOutputBitStreamQueue.push(std::make_pair(timeDispatched, OMBStream));
+		OMBStream = nullptr;
+
+		//If the queue has more than 10 elements is it
+		if (mOutputBitStreamQueue.size() >= 10)
 		{
-			//Drop some packets
-			if (i % 3 != 0)
+			//Iterate though the queue
+			//for (size_t i = mOutputBitStreamQueue.size() - 1; i >= 0 ; i--)
+			for (size_t i = 0; i < mOutputBitStreamQueue.size(); i++)
 			{
-				//Send packet
-				(*mpUDPSocket)->SendTo(mOutputBitStreamQueue.top().second->GetBufferPtr(), mOutputBitStreamQueue.top().second->GetBitLength(), (**mpSocketAddressPtr));
-				delete mOutputBitStreamQueue.top().second;
-				mOutputBitStreamQueue.pop();
+				//Drop some packets
+				if (i % 3 != 0)
+				{
+					//Send packet
+					(*mpUDPSocket)->SendTo(mOutputBitStreamQueue.top().second->GetBufferPtr(), mOutputBitStreamQueue.top().second->GetBitLength(), (**mpSocketAddressPtr));
+					delete mOutputBitStreamQueue.top().second;
+					mOutputBitStreamQueue.pop();
+				}
 			}
 		}
+	}
+	else
+	{
+		//Send packet
+		(*mpUDPSocket)->SendTo(OMBStream->GetBufferPtr(), OMBStream->GetBitLength(), (**mpSocketAddressPtr));
+
+		delete OMBStream;
+		OMBStream = nullptr;
 	}
 }
 
