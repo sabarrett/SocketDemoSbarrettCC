@@ -4,14 +4,14 @@
 
 const std::string ASSET_PATH = "Images\\";
 
-bool Network::init(GraphicsSystems* graphicsSystem, /*DeliveryNotificationManager* deliveryManager,*/ std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket)
+bool Network::init(GraphicsSystems* graphicsSystem, DeliveryNotificationManager* deliveryManager, std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket)
 {
 	mTCPSocket = liveSocket;
 	mGameObjects = std::vector<std::pair<int, GameObject*>>();
 
 	// Replication Data
 	mGraphicsSystem = graphicsSystem;
-	//mDeliverymanager = deliveryManager; ASSIGNMENT 3
+	mDeliverymanager = deliveryManager;
 	mDeanSprite = deanSprite;
 	mAmongSprite = amongSprite;
 	mScottSprite = scottSprite;
@@ -31,14 +31,15 @@ void Network::cleanUp()
 	mGraphicsSystem = nullptr;
 
 	// ASSIGNMENT 3
-	//delete mDeliverymanager;
-	//mDeliverymanager = nullptr;
+	delete mDeliverymanager;
+	mDeliverymanager = nullptr;
 }
 
 void Network::send(PacketType packetTypeHead, GameObject* object)
 {
 	//Variables
-	OutputMemoryBitStream outBitStream;
+
+	std::shared_ptr<OutputMemoryBitStream> outBitStream = std::make_shared<OutputMemoryBitStream>();
 	bool objectExists = false;
 
 	// Check if object already exists
@@ -59,18 +60,18 @@ void Network::send(PacketType packetTypeHead, GameObject* object)
 	}
 
 	// Write
-	//mDeliverymanager->WriteState(outBitStream); ASSIGNMENT 3
-	outBitStream.Write(packetTypeHead);
-	outBitStream.Write(object->getNetworkId());
-	outBitStream.Write(object->getClassId());
+	InFlightPacket* sentPacket = mDeliverymanager->WriteState(*outBitStream);
+	outBitStream->Write(packetTypeHead);
+	outBitStream->Write(object->getNetworkId());
+	outBitStream->Write(object->getClassId());
 
 	// Packet Header
 	switch (packetTypeHead)
 	{
 	case PacketType::CREATE_PACKET:
 
-		outBitStream.Write(object->getPosition().first);
-		outBitStream.Write(object->getPosition().second);
+		outBitStream->Write(object->getPosition().first);
+		outBitStream->Write(object->getPosition().second);
 
 		break;
 	case PacketType::DELETE_PACKET:
@@ -99,16 +100,15 @@ void Network::send(PacketType packetTypeHead, GameObject* object)
 		break;
 	}
 
+	std::shared_ptr<ReliableTransmissionData> relableData = std::make_shared<ReliableTransmissionData>(outBitStream, mTCPSocket);
+	sentPacket->SetTransmissionData(object->getNetworkId(), relableData);
 
-	//int randomPacket = rand() % 100 + 1;
-	//if (randomPacket >= mDropPacketChance)
-	//{
-	//	// Send
-	//	(mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetByteLength());
-	//}
-
-	// Send
-	(mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetByteLength());
+	int randomPacket = rand() % 100 + 1;
+	if (randomPacket >= mDropPacketChance)
+	{
+		// Send
+		(mTCPSocket)->Send(outBitStream->GetBufferPtr(), outBitStream->GetByteLength());
+	}
 }
 
 void Network::receive()
@@ -126,7 +126,7 @@ void Network::receive()
 		ClassId objectID;
 
 		// Read (READ IN SAME ORDER SENDING)
-		//mDeliverymanager->ReadAndProcessState(inputBitStream); ASSIGNMENT 3
+		mDeliverymanager->ReadAndProcessState(inputBitStream);
 		inputBitStream.Read(packetTypeHead);
 		inputBitStream.Read(networkID);
 		inputBitStream.Read(objectID);

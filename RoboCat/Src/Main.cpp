@@ -16,7 +16,7 @@ int mNetworkID = 0;
 
 GraphicsSystems* Graphics;
 InputSystem* Inputs;
-//DeliveryNotificationManager* DeliveryManager; ASSIGNMENT 3
+DeliveryNotificationManager* DeliveryManager;
 
 std::vector<ClassId> typesOfGameobjects;
 
@@ -77,7 +77,7 @@ void DoTcpServer(std::string port)
 	connSocket->SetNonBlockingMode(true);
 
 	ServerNetwork = new Network();
-	ServerNetwork->init(Graphics, /*DeliveryManager,*/ ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
+	ServerNetwork->init(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
 }
 
 void DoTcpClient(std::string port)
@@ -131,7 +131,7 @@ void DoTcpClient(std::string port)
 	clientSocket->SetNonBlockingMode(true);
 
 	ClientNetwork = new Network();
-	ClientNetwork->init(Graphics, /*DeliveryManager,*/ ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
+	ClientNetwork->init(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
 }
 
 bool initGame()
@@ -157,13 +157,13 @@ bool initGame()
 	}
 
 	// ASSIGNMENT 3
-	//DeliveryManager = new DeliveryNotificationManager(true, true);
-	//didInIt = DeliveryManager;
+	DeliveryManager = new DeliveryNotificationManager(true, true);
+	didInIt = DeliveryManager;
 
-	//if (!didInIt)
-	//{
-	//	return false;
-	//}
+	if (!didInIt)
+	{
+		return false;
+	}
 
 	typesOfGameobjects.push_back(ClassId::DEANSPRITE);
 	typesOfGameobjects.push_back(ClassId::AMONGUS);
@@ -385,7 +385,7 @@ int main(int argc, const char** argv)
 			}
 		}
 
-		//DeliveryManager->ProcessTimedOutPackets(); ASSIGNMENT 3
+		DeliveryManager->ProcessTimedOutPackets();
 		al_flip_display();
 	}
 
