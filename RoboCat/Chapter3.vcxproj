@@ -377,6 +377,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="LagSimulator.cpp" />
+    <ClCompile Include="Src\Network.cpp" />
     <ClCompile Include="TransmissionData.cpp" />
     <ClInclude Include="Inc\AckRange.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
@@ -400,7 +401,6 @@
     <ClInclude Include="Inc\Timing.h" />
     <ClInclude Include="Inc\TransmissionData.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
-    <ClCompile Include="Network.cpp" />
     <ClCompile Include="Src\AckRange.cpp" />
     <ClCompile Include="Src\DeliveryNotificationManager.cpp" />
     <ClCompile Include="Src\GameObjects.cpp" />

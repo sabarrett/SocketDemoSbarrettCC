@@ -16,7 +16,7 @@ int mNetworkID = 0;
 
 GraphicsSystems* Graphics;
 InputSystem* Inputs;
-DeliveryNotificationManager* DeliveryManager;
+//DeliveryNotificationManager* DeliveryManager; ASSIGNMENT 3
 
 std::vector<ClassId> typesOfGameobjects;
 
@@ -76,10 +76,8 @@ void DoTcpServer(std::string port)
 
 	connSocket->SetNonBlockingMode(true);
 
-	//Network* ServerNetwork = new Network();
 	ServerNetwork = new Network();
-	ServerNetwork->init(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
-	//Networks = ServerNetwork;
+	ServerNetwork->init(Graphics, /*DeliveryManager,*/ ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
 }
 
 void DoTcpClient(std::string port)
@@ -132,10 +130,8 @@ void DoTcpClient(std::string port)
 
 	clientSocket->SetNonBlockingMode(true);
 
-	//Network* ClientNetwork = new Network();
 	ClientNetwork = new Network();
-	ClientNetwork->init(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
-	//Networks = ClientNetwork;
+	ClientNetwork->init(Graphics, /*DeliveryManager,*/ ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
 }
 
 bool initGame()
@@ -160,20 +156,18 @@ bool initGame()
 		return false;
 	}
 
-	DeliveryManager = new DeliveryNotificationManager(true, true);
-	didInIt = DeliveryManager;
+	// ASSIGNMENT 3
+	//DeliveryManager = new DeliveryNotificationManager(true, true);
+	//didInIt = DeliveryManager;
 
-	if (!didInIt)
-	{
-		return false;
-	}
+	//if (!didInIt)
+	//{
+	//	return false;
+	//}
 
 	typesOfGameobjects.push_back(ClassId::DEANSPRITE);
 	typesOfGameobjects.push_back(ClassId::AMONGUS);
 	typesOfGameobjects.push_back(ClassId::SCOTTSPRITE);
-
-	
-	//Networks->init(Graphics, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", );
 
 	return didInIt;
 }
@@ -193,10 +187,6 @@ void initCleanup()
 		delete ServerNetwork;
 		ServerNetwork = nullptr;
 	}
-
-	/*Networks->cleanUp();
-	delete Networks;
-	Networks = nullptr;*/
 
 	Inputs->cleanup();
 	delete Inputs;
@@ -282,18 +272,19 @@ bool DrawRandomly(bool isServer)
 
 void DeleteRandomly(bool isServer)
 {
-	al_clear_to_color(al_map_rgba(0, 0, 0, 1));
-
-	// Delete Object
-	if (isServer)
+	// Delete object
+	if (mNetworkID > 0)
 	{
-		ServerNetwork->send(PacketType::DELETE_PACKET, ServerNetwork->getmGameObjects().back().second);
-		mNetworkID--;
-	}
-	else
-	{
-		ClientNetwork->send(PacketType::DELETE_PACKET, ClientNetwork->getmGameObjects().back().second);
-		mNetworkID--;
+		if (isServer)
+		{
+			ServerNetwork->send(PacketType::DELETE_PACKET, ServerNetwork->getmGameObjects().back().second);
+			mNetworkID--;
+		}
+		else
+		{
+			ClientNetwork->send(PacketType::DELETE_PACKET, ClientNetwork->getmGameObjects().back().second);
+			mNetworkID--;
+		}
 	}
 }
 
@@ -314,7 +305,7 @@ int main(int argc, const char** argv)
 
 
 	SocketUtil::StaticInit();
-		// Server or Client
+	// Server or Client
 	//bool isServer = true;
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
@@ -367,46 +358,34 @@ int main(int argc, const char** argv)
 
 		if (isServer)
 		{
-			//ServerNetwork->receive();
-			PacketType recivedPacket = ServerNetwork->receive();
-
-			if (recivedPacket == PacketType::DELETE_PACKET)
-			{
-				mNetworkID--;
-			}
+			ServerNetwork->receive();
 
 			// Redraw Scene
-			if (ServerNetwork->getmGameObjects().size() == 0)
+			al_clear_to_color(al_map_rgba(0, 0, 0, 1));
+			if (ServerNetwork->getmGameObjects().size() > 0)
 			{
-				break;
-			}
-			for (int i = 0; i < ServerNetwork->getmGameObjects().size(); i++)
-			{
-				ServerNetwork->getmGameObjects()[i].second->Draw();
+				for (int i = 0; i < ServerNetwork->getmGameObjects().size(); i++)
+				{
+					ServerNetwork->getmGameObjects()[i].second->Draw();
+				}
 			}
 		}
 		else
 		{
-			//ClientNetwork->receive();
-			PacketType recivedPacket = ClientNetwork->receive();
-
-			if (recivedPacket == PacketType::DELETE_PACKET)
-			{
-				mNetworkID--;
-			}
+			ClientNetwork->receive();
 
 			// Redraw Scene
-			if (ClientNetwork->getmGameObjects().size() == 0)
+			al_clear_to_color(al_map_rgba(0, 0, 0, 1));
+			if (ClientNetwork->getmGameObjects().size() > 0)
 			{
-				break;
-			}
-			for (int i = 0; i < ClientNetwork->getmGameObjects().size(); i++)
-			{
-				ClientNetwork->getmGameObjects()[i].second->Draw();
+				for (int i = 0; i < ClientNetwork->getmGameObjects().size(); i++)
+				{
+					ClientNetwork->getmGameObjects()[i].second->Draw();
+				}
 			}
 		}
 
-		DeliveryManager->ProcessTimedOutPackets();
+		//DeliveryManager->ProcessTimedOutPackets(); ASSIGNMENT 3
 		al_flip_display();
 	}
 

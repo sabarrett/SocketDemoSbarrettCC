@@ -4,14 +4,14 @@
 
 const std::string ASSET_PATH = "Images\\";
 
-bool Network::init(GraphicsSystems* graphicsSystem, DeliveryNotificationManager* deliveryManager, std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket)
+bool Network::init(GraphicsSystems* graphicsSystem, /*DeliveryNotificationManager* deliveryManager,*/ std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket)
 {
 	mTCPSocket = liveSocket;
 	mGameObjects = std::vector<std::pair<int, GameObject*>>();
 
 	// Replication Data
 	mGraphicsSystem = graphicsSystem;
-	mDeliverymanager = deliveryManager;
+	//mDeliverymanager = deliveryManager; ASSIGNMENT 3
 	mDeanSprite = deanSprite;
 	mAmongSprite = amongSprite;
 	mScottSprite = scottSprite;
@@ -30,26 +30,24 @@ void Network::cleanUp()
 	delete mGraphicsSystem;
 	mGraphicsSystem = nullptr;
 
-	delete mDeliverymanager;
-	mDeliverymanager = nullptr;
+	// ASSIGNMENT 3
+	//delete mDeliverymanager;
+	//mDeliverymanager = nullptr;
 }
 
 void Network::send(PacketType packetTypeHead, GameObject* object)
-{//Variables
+{
+	//Variables
 	OutputMemoryBitStream outBitStream;
-	bool objectExists = true;
-
-	if (mGameObjects.size() <= 0)
-	{
-		mGameObjects.push_back(std::pair<int, GameObject*>(object->getNetworkId(), object));
-	}
+	bool objectExists = false;
 
 	// Check if object already exists
 	for (int i = 0; i < mGameObjects.size(); i++)
 	{
-		if (mGameObjects[i].first != object->getNetworkId())
+		if (mGameObjects[i].first == object->getNetworkId())
 		{
-			objectExists = false;
+			objectExists = true;
+			break;
 		}
 	}
 
@@ -57,10 +55,11 @@ void Network::send(PacketType packetTypeHead, GameObject* object)
 	if (!objectExists)
 	{
 		mGameObjects.push_back(std::pair<int, GameObject*>(object->getNetworkId(), object));
+		objectExists = true;
 	}
 
 	// Write
-	mDeliverymanager->WriteState(outBitStream);
+	//mDeliverymanager->WriteState(outBitStream); ASSIGNMENT 3
 	outBitStream.Write(packetTypeHead);
 	outBitStream.Write(object->getNetworkId());
 	outBitStream.Write(object->getClassId());
@@ -75,7 +74,6 @@ void Network::send(PacketType packetTypeHead, GameObject* object)
 
 		break;
 	case PacketType::DELETE_PACKET:
-
 		if (mGameObjects.size() > 0)
 		{
 			std::vector<std::pair<int, GameObject*>>::iterator it;
@@ -88,18 +86,32 @@ void Network::send(PacketType packetTypeHead, GameObject* object)
 					break;
 				}
 			}
+
+			//for (int i = 0; i < mGameObjects.size(); i++)
+			//{
+			//	if (mGameObjects[i].first == object->getNetworkId())
+			//	{
+			//		mGameObjects[i].erase();
+			//		break;
+			//	}
+			//}
 		}
 		break;
 	}
-	int randomPacket = rand() % 0 + 100;
-	if (randomPacket >= mDropPacketChance)
-	{
-		// Send
-		(mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetByteLength());
-	}
+
+
+	//int randomPacket = rand() % 100 + 1;
+	//if (randomPacket >= mDropPacketChance)
+	//{
+	//	// Send
+	//	(mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetByteLength());
+	//}
+
+	// Send
+	(mTCPSocket)->Send(outBitStream.GetBufferPtr(), outBitStream.GetByteLength());
 }
 
-PacketType Network::receive()
+void Network::receive()
 {
 	// Variables
 	char buffer[1024];
@@ -114,7 +126,7 @@ PacketType Network::receive()
 		ClassId objectID;
 
 		// Read (READ IN SAME ORDER SENDING)
-		mDeliverymanager->ReadAndProcessState(inputBitStream);
+		//mDeliverymanager->ReadAndProcessState(inputBitStream); ASSIGNMENT 3
 		inputBitStream.Read(packetTypeHead);
 		inputBitStream.Read(networkID);
 		inputBitStream.Read(objectID);
@@ -122,7 +134,8 @@ PacketType Network::receive()
 		switch (packetTypeHead)
 		{
 		case PacketType::CREATE_PACKET:
-		{// Variables
+		{
+			// Variables
 			float posX, posY;
 
 			// Read
@@ -157,11 +170,11 @@ PacketType Network::receive()
 			}
 			}
 			draw();
-			return PacketType::CREATE_PACKET;
 		}
 
 		break;
 		case PacketType::DELETE_PACKET:
+			//al_clear_to_color(al_map_rgba(0, 0, 0, 1));
 			if (mGameObjects.size() > 0)
 			{
 				std::vector<std::pair<int, GameObject*>>::iterator it;
@@ -175,9 +188,6 @@ PacketType Network::receive()
 						break;
 					}
 				}
-				
-				return PacketType::DELETE_PACKET;
-
 			}
 			break;
 		}

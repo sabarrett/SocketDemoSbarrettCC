@@ -25,11 +25,11 @@ class Network
 public :
 	Network() {};
 
-	bool init(GraphicsSystems* graphicsSystem, DeliveryNotificationManager* deliveryManager, std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket);
+	bool init(GraphicsSystems* graphicsSystem, /*DeliveryNotificationManager* deliveryManager,*/ std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket);
 	void cleanUp();
 
 	void send(PacketType packetTypeHead, GameObject* object);
-	PacketType receive();
+	void receive();
 	void draw();
 
 	std::vector<std::pair<int, GameObject*>> getmGameObjects() { return mGameObjects; };
@@ -38,7 +38,7 @@ private:
 	TCPSocketPtr mTCPSocket;
 	std::vector<std::pair<int, GameObject*>> mGameObjects;
 	GraphicsSystems* mGraphicsSystem;
-	DeliveryNotificationManager* mDeliverymanager;
+	//DeliveryNotificationManager* mDeliverymanager; ASSIGNMENT 3
 
 	std::string mDeanSprite;
 	std::string mAmongSprite;

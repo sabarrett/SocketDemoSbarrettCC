@@ -12,6 +12,7 @@ void InFlightPacket::HandleDeliveryFailure( DeliveryNotificationManager* inDeliv
 {
 	for( const auto& pair : mTransmissionDataMap )
 	{
+		//inDeliveryNotificationManager->WriteState(pair.second);
 		pair.second->HandleDeliveryFailure( inDeliveryNotificationManager );
 	}
 }
