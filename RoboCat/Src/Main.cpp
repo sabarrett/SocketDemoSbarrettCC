@@ -390,7 +390,6 @@ class GameState
 			packet[2] = pos_x;
 			packet[3] = pos_y;
 
-			if (rand() % 16 != 5)
 			{
 				int bytesSent = ptr->SendTo((char*)packet, packetSize, *addr);
 				if (bytesSent <= 0)
@@ -411,7 +410,6 @@ class GameState
 			}
 
 			char* bytePacket = (char*)packet;
-			if (rand() % 16 != 5)
 			{
 				int bytesSent = ptr->SendTo(bytePacket, 100, *addr);
 				if (bytesSent <= 0)
