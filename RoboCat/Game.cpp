@@ -11,6 +11,8 @@
 #include <thread>
 #include <cstdlib>
 #include "Score.h"
+#include "MyTData.h"
+
 
 /*
 
@@ -212,28 +214,38 @@ void Game::UpdateBall(ball* ball)
 	ball->pos->x = ball->GetPosX() + ball->GetDirX();
 	ball->pos->y = ball->GetPosY() + ball->GetDirY();
 
+	//make and fill output buffer and inflight packet
 	OutputMemoryBitStream oStream;
-	manager->WriteState(oStream);
+	InFlightPacket* ip = manager->WriteState(oStream);
 	oStream.Write(PacketType::PT_BALL);
 	oStream.Write(ball->id);
 	oStream.Write(ball->pos->x);
 	oStream.Write(ball->pos->y);
 
+	//make the data and add it to the IP
+	MyTdata data = MyTdata(oStream, TCPSocket);
+	ip->SetTransmissionData(1,data);
 	Send(oStream);
 }
 
 void Game::UpdateScore()
 {
+	//make and fill output buffer and inflight packet
 	OutputMemoryBitStream oStream;
-	manager->WriteState(oStream);
+	InFlightPacket* ip = manager->WriteState(oStream);
 	oStream.Write(PacketType::PT_SCORE);
 	oStream.Write(mScoreOne->points);
 	oStream.Write(mScoreTwo->points);
 
+
+	//make the data and add it to the IP
+	MyTdata data = MyTdata(oStream, TCPSocket);
+	ip->SetTransmissionData(1, data);
 	Send(oStream);
 
+	//make and fill output buffer and inflight packet
 	OutputMemoryBitStream o2Stream;
-	manager->WriteState(o2Stream);
+	InFlightPacket* ip2 = manager->WriteState(o2Stream);
 	
 	if (mScoreOne->points >= 20) 
 	{
@@ -245,6 +257,9 @@ void Game::UpdateScore()
 
 		o2Stream.Write(PacketType::PT_WIN);
 		o2Stream.Write(0);
+		//make the data and add it to the IP
+		MyTdata data2 = MyTdata(oStream, TCPSocket);
+		ip2->SetTransmissionData(1, data);
 		Send(oStream);
 	}
 	else if (mScoreTwo->points >= 20)
@@ -256,6 +271,9 @@ void Game::UpdateScore()
 
 		o2Stream.Write(PacketType::PT_WIN);
 		o2Stream.Write(1);
+		//make the data and add it to the IP
+		MyTdata data2 = MyTdata(oStream, TCPSocket);
+		ip2->SetTransmissionData(1, data);
 		Send(oStream);
 	}
 }
@@ -299,10 +317,12 @@ void Game::SendUpdatedStates()
 	int yPos = localPaddle->GetPosY();
 
 	OutputMemoryBitStream oStream;
-	manager->WriteState(oStream);
+	InFlightPacket* ip = manager->WriteState(oStream);
 	oStream.Write(PacketType::PT_PADDLE);
 	oStream.Write(yPos);
 
+	MyTdata data = MyTdata(oStream, TCPSocket);
+	ip->SetTransmissionData(1, data);
 	Send(oStream);
 }
 
@@ -333,14 +353,16 @@ void Game::Receive()
 
 
 		OutputMemoryBitStream oStream;
-		manager->WriteState(oStream);
+		InFlightPacket* ip = manager->WriteState(oStream);
 		oStream.Write(PacketType::PT_ACK);
+		
+		MyTdata data = MyTdata(oStream, TCPSocket);
+		ip->SetTransmissionData(1, data);
 		Send(oStream);
 
 		//process packet notification
 		if (bytesReceived > 0)
 		{
-			
 				
 			PacketType type;
 			iStream.Read(type);

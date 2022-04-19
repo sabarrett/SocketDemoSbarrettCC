@@ -1,10 +1,10 @@
 #pragma once
-#include "RoboCatPCH.h"
+//#include "RoboCatPCH.h"
 
 class DeliveryNotificationManager;
 class Game;
 
-class MyTdata : public TransmissionData
+class MyTdata : public TransmissionDataPtr
 {
 public:
 
