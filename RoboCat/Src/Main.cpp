@@ -2,6 +2,8 @@
 #include "RoboCatPCH.h"
 #include <thread>
 #include "RoboCat/Game.h"
+#include"./RoboCat/EventSystem.h"
+#include "./common/DeanLib/include/MemoryTracker.h"
 
 #if _WIN32
 
@@ -33,6 +35,8 @@ void TCPClient(UDPSocketPtr client)
 	update.join();
 }
 
+const int DISPLAY_WIDTH = 800;
+const int DISPLAY_HEIGHT = 600;
 
 int main(int argc, const char** argv)
 {
@@ -47,7 +51,21 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	//Game* mpGame = new Game();
+	Game::initInstance();
+	Game* instance = Game::getInstance();
+
+	instance->init();
+
+	instance->doLoop();
+
+	instance->cleanup();
+	Game::deleteInstance();
+	EventSystem::cleanupInstance();
+
+	cout << endl;
+
+	MemoryTracker::getInstance()->reportAllocations(cout);
+	system("pause");
 
 	SocketUtil::StaticInit();
 

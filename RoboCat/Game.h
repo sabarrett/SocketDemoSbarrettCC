@@ -76,7 +76,7 @@ private:
 	Sprite* mpWoodsSprite;
 
 	Unit* mpUnit;
-	UnitManager* mpUnitManager;
+	UnitManager* mpUnitManager = nullptr;
 
 	Sprite mSmurfSpriteArr[16];
 	Sprite mDeanSpriteArr[16];

@@ -41,7 +41,7 @@ public:
 	int getNumUnits();
 	void cleanup();
 private:
-	vector<Unit*>* mpUnits;
+	vector<Unit*>* mpUnits = nullptr;
 
 	int mPosX;
 	int mPosY;
