@@ -49,6 +49,9 @@ protected:
 	//-------------------------Public data-------------------------
 public:
 
+	//Copy constructor
+	GameObject(const GameObject& copy);
+
 	//Destructor
 	virtual ~GameObject();
 

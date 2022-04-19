@@ -349,7 +349,7 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 		case GameObjectType::PLAYER:
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().first);
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().second);
-			pInFlightPacket->SetTransmissionData(0, (*mGameObjectsVec[ID].second));
+			pInFlightPacket->SetTransmissionData(0, std::make_shared(*mGameObjectsVec[ID].second));
 			pInFlightPacket = nullptr;
 			break;
 
