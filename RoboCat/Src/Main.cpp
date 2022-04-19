@@ -137,7 +137,7 @@ class TomatoObject
 {
 	private:
 		int xPos, yPos;
-		double mTimeUntilNextFrame, msPerFrame = 1000/2;
+		double mTimeUntilNextFrame, msPerFrame = 1000/60;
 	public:
 		TomatoObject(int x, int y) { xPos = x; yPos = y; };
 		int getX() { return xPos; };
@@ -274,7 +274,7 @@ class GameState
 		PlayerGameObject* otherPlayer;
 		vector<CoinObject*> vCoins;
 		TomatoObject* tomato;
-		double mTimePerFrame = 1000/2;
+		double mTimePerFrame = 1000/60;
 		long int timeBeforeProcessing = 250;
 		priority_queue<Packet*> mReceivedPackets;
 	public:
@@ -312,6 +312,8 @@ class GameState
 		void Update()//make time a part of this so that it runs the same rate on all systems
 		{
 			Timer timer;
+			Timer timeToProcess;
+			timeToProcess.start();
 			mLibrary->loadImage("../2517597.jpg", "background");
 			mLibrary->loadImage("../coin.png", "coin");
 			mLibrary->loadImage("../tomato.png", "tomato");
@@ -335,31 +337,31 @@ class GameState
 			while (!escapePressed)
 			{
 				timer.start();
+				CheckForCollisions(mPlayer);
 				if (isServer)
 				{
-					tomato->Update(mTimePerFrame);
-					SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::TOMATO, tomato->getX(), tomato->getY());
 					SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
-					CheckForCollisions(mPlayer);
 					CheckForCollisions(otherPlayer);
 				}
-				else
-				{
-					mReceivedPackets.push(new Packet(ReceivePacket(sock, &otherAddr), static_cast<long int>(time(NULL)) + rand() % 6 - 3));
-				}
+				mReceivedPackets.push(new Packet(ReceivePacket(sock, &otherAddr), static_cast<long int>(time(NULL)) + rand() % 6 - 3));
+				tomato->Update(mTimePerFrame);
 				SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::PLAYER, mPlayer->getX(), mPlayer->getY());
 				int* temp = ReceivePacket(sock, &otherAddr);
 				mReceivedPackets.push(new Packet(temp, static_cast<long int>(time(NULL)) + rand() % 6 - 3));
 
 				while (!mReceivedPackets.empty() && static_cast <long int> (time(NULL)) - mReceivedPackets.top()->getTimeStamp() < timeBeforeProcessing)
 				{
-					Packet* tempPacket = mReceivedPackets.top();
-					mReceivedPackets.pop();
-					if (tempPacket != nullptr)
+					if (timeToProcess.getElapsedTime() > 500)
 					{
-						processPacket(tempPacket->getBuffer());
+						timeToProcess.start();
+						Packet* tempPacket = mReceivedPackets.top();
+						mReceivedPackets.pop();
+						if (tempPacket != nullptr)
+						{
+							processPacket(tempPacket->getBuffer());
+						}
+						delete tempPacket;
 					}
-					delete tempPacket;
 				}
 
 				for (auto& coin : vCoins)
@@ -483,6 +485,7 @@ class GameState
 				case PacketTypes::HELLO:
 				{
 					SendCoinPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::COIN, vCoins);
+					SendPacket(sock, &otherAddr, PacketTypes::UPDATE, ObjectTypes::TOMATO, tomato->getX(), tomato->getY());
 					break;
 				}
 				}
