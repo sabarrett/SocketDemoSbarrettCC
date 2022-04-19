@@ -67,6 +67,8 @@ Networker* Networker::mInstance = 0;
 Networker* pNetworkManager;
 PacketType packetTypeReceived = PacketType::PACKET_INVALID;
 int networkID = 0;
+std::string servPort = "1234";
+std::string clientPort = "2345";
 
 bool init()
 {
@@ -365,9 +367,6 @@ int main(int argc, const char** argv)
 
 		//Setup server and client
 		
-		//HARDCODING PORT NUMBERS
-		std::string servPort = "1234";
-		std::string clientPort = "2345";
 		if (bIsServer)
 		{
 			//-------------------------Server code-------------------------
@@ -437,11 +436,9 @@ int main(int argc, const char** argv)
 					update();
 
 					//Network updates - send player data
-					//pNetworkManager->sendGameObjectState(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
 					pNetworkManager->sendGameObjectStateUDP(pPlayerController->getNetworkID(), PacketType::PACKET_UPDATE);
 
 					//Network update - receive packets
-					//packetTypeReceived = pNetworkManager->receiveGameObjectState();
 					packetTypeReceived = pNetworkManager->receiveGameObjectStateUDP();
 
 					//Network check for and deal with timed out packets

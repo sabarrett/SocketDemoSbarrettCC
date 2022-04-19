@@ -20,12 +20,10 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 	}
 
 	std::srand(time(NULL));
-	//mArrivalTime = arrivalTime;
 
 	mpUDPSocket = new UDPSocketPtr();
 	mpSocketAddressPtr = new SocketAddressPtr();
 	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
-	//mPacketQueue = std::queue<std::pair<int, float>>();
 	pDeliveryNotificationManager = new DeliveryNotificationManager(true, true, this);
 	mOutputBitStreamQueue = std::priority_queue<std::pair<float, OutputMemoryBitStream*>, std::vector<std::pair<float, OutputMemoryBitStream*>>, myComp>();
 
@@ -239,6 +237,11 @@ PacketType Networker::receiveGameObjectStateUDP()
 
 						IMBStream.Read(x);
 						IMBStream.Read(y);
+
+						//Checking to absolutly make sure values are getting recieved
+						std::cout << "Recieved Position X: " << x << std::endl;
+						std::cout << "Recieved Position Y: " << y << std::endl;
+
 						mGameObjectsVec[networkID].second->setPos(std::make_pair(x, y));
 						break;
 
@@ -347,6 +350,11 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 		{
 		case GameObjectType::ROCK:
 		case GameObjectType::PLAYER:
+
+			//For testing to absolutly make sure values are getting written
+			std::cout << "Position X: " << mGameObjectsVec[ID].second->getPosition().first << std::endl;
+			std::cout << "Position Y: " << mGameObjectsVec[ID].second->getPosition().second << std::endl;
+
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().first);
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().second);
 			pInFlightPacket->SetTransmissionData(0, std::shared_ptr<GameObject>(mGameObjectsVec[ID].second));

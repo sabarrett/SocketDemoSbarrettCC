@@ -59,10 +59,6 @@ public:
 	bool initServerUDP(std::string clientIpAddress, std::string servPort, std::string clientPort);
 	bool connectUDP(std::string serverIpAddress, std::string servPort, std::string clientPort);
 
-	//Update game state
-	//PacketType receiveGameObjectState();
-	//void sendGameObjectState(int networkID, PacketType packetHeader);
-
 	//Update game state - UDP
 	PacketType receiveGameObjectStateUDP();
 	void sendGameObjectStateUDP(int networkID, PacketType packetHeader);
@@ -77,17 +73,14 @@ public:
 private:
 
 	Networker();
-
 	static Networker* mInstance;
 
 	//Data
 	UDPSocketPtr* mpUDPSocket;
 	SocketAddressPtr* mpSocketAddressPtr;
 	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
-	//std::queue<InFlightPacket*> mInFlightPacketsQueue;
 	DeliveryNotificationManager* pDeliveryNotificationManager;
 	std::priority_queue<std::pair<float, OutputMemoryBitStream*>, std::vector<std::pair<float, OutputMemoryBitStream*>>, myComp> mOutputBitStreamQueue;
-	//int mArrivalTime;
 	bool mbIsInitted;
 
 	//Data for GameObject replication
