@@ -137,7 +137,7 @@ class TomatoObject
 {
 	private:
 		int xPos, yPos;
-		double mTimeUntilNextFrame, msPerFrame = 1000/60;
+		double mTimeUntilNextFrame, msPerFrame = 1000/2;
 	public:
 		TomatoObject(int x, int y) { xPos = x; yPos = y; };
 		int getX() { return xPos; };
@@ -274,8 +274,8 @@ class GameState
 		PlayerGameObject* otherPlayer;
 		vector<CoinObject*> vCoins;
 		TomatoObject* tomato;
-		double mTimePerFrame = 1000/60;
-		long int timeBeforeProcessing = 5;
+		double mTimePerFrame = 1000/2;
+		long int timeBeforeProcessing = 250;
 		priority_queue<Packet*> mReceivedPackets;
 	public:
 		GameState(bool serverState, string ourAddr, string other)
