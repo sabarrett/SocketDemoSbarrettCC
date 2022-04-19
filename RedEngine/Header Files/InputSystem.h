@@ -60,7 +60,7 @@ public:
 	static InputSystem* getInstance();
 	static void cleanupInstance();
 
-	void inputUpdate();
+	void inputUpdate(float currentTime);
 
 	int getMouseX();
 	int getMouseY();

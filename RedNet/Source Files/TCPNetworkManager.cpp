@@ -41,7 +41,10 @@ void TCPNetworkManager::init(string address, int port, int reliabilityPercentage
 
 	mReliabilityPercentage = reliabilityPercentage;
 
-	storedPackets = queue<Packet_Info>();
+	delayedPackets = queue<Packet_Info>();
+	ensuredPacketsWaiting = vector<Packet_Info>();
+
+	resendTimer = 0.0f;
 	
 }
 
@@ -123,18 +126,17 @@ void TCPNetworkManager::sendMessage(char* message, int length)
 		mConnection->Send(message, length);
 }
 
-void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length, bool sendTime)
+void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length, float sendTime, bool ensured)
 {
 	mConnection->SetNonBlockingMode(false);
 
 	
 	int timeLen = 0;
-	time_t t = time(NULL);
 
 	if(sendTime)
-		timeLen = sizeof(time_t);
+		timeLen = sizeof(float);
 
-	int packetSize = timeLen + sizeof(Packet_Header) + length;
+	int packetSize = sizeof(ensured) + timeLen + sizeof(Packet_Header) + length;
 
 	char buffer[4096];
 
@@ -142,9 +144,22 @@ void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length,
 
 	memcpy(buffer + sizeof(int), (char*)&header, sizeof(Packet_Header));
 
-	memcpy(buffer + sizeof(int) + sizeof(Packet_Header), &t, timeLen);
+	memcpy(buffer + sizeof(int) + sizeof(Packet_Header), (char*)&ensured, sizeof(bool));
 
-	memcpy(buffer + timeLen + sizeof(int) + sizeof(Packet_Header), data, length);
+	memcpy(buffer + sizeof(int) + sizeof(Packet_Header) + sizeof(bool), &sendTime, timeLen);
+
+	memcpy(buffer + timeLen + sizeof(int) + sizeof(Packet_Header) + sizeof(bool), data, length);
+
+	if (ensured)
+	{
+		Packet_Info pck;
+		pck.header = header;
+		memcpy(pck.data, data, length);
+		pck.length = length;
+		pck.time = sendTime;
+
+		ensuredPacketsWaiting.push_back(pck);
+	}
 
 	int r = rand() % 100;
 
@@ -156,17 +171,18 @@ void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length,
 		if(r)
 		{
 			Packet_Info temp;
-			if (storedPackets.size() >= 3)
+			if (delayedPackets.size() >= 3)
 			{
-				temp = storedPackets.front();
-				storedPackets.pop();
-				sendPacket(temp.header, temp.data, temp.length);
+				temp = delayedPackets.front();
+				delayedPackets.pop();
+				sendPacket(temp.header, temp.data, temp.length, temp.time);
 			}
 
 			temp.header = header;
 			memcpy(temp.data, data, length);
 			temp.length = length;
-			storedPackets.emplace(temp);
+			temp.time = sendTime;
+			delayedPackets.emplace(temp);
 
 			//std::cout << "Packet Stored! Hehe" << std::endl;
 		}
@@ -197,23 +213,74 @@ void TCPNetworkManager::receivePackets(void(*handleFunction)(Packet_Header heade
 	while (bytesProcessed < bytesRead)
 	{
 		int packetSize;
+		bool ensured;
 
 		memcpy(&packetSize, buffer + bytesProcessed, sizeof(int));
 		bytesProcessed += sizeof(int);
 
 		Packet_Header header;
-		int32_t length = packetSize - sizeof(Packet_Header);
+		int32_t length = packetSize - sizeof(Packet_Header) - sizeof(bool);
 
 		memcpy(&header, buffer + bytesProcessed, sizeof(Packet_Header));
 		bytesProcessed += sizeof(Packet_Header);
 
+		memcpy(&ensured, buffer + bytesProcessed, sizeof(bool));
+		bytesProcessed += sizeof(bool);
+
 		memcpy(data, buffer + bytesProcessed, length);
 		bytesProcessed += length;
-		handleFunction(header, data, length);
+
+		if (ensured) //If this packet I received is ensured, send an acknoledgement.
+		{
+			sendPacket(ACKNOLEDGEMENT, data, length);
+		}
+
+		if (header == ACKNOLEDGEMENT) //If this packet is an acknoledgement, mark it as received.
+		{
+			float time;
+			memcpy(&time, data, sizeof(float));
+			for (auto i = ensuredPacketsWaiting.begin(); i != ensuredPacketsWaiting.end(); i++)
+			{
+				if (i->time == time)
+				{
+					ensuredPacketsWaiting.erase(i);
+					break;
+				}
+			}
+		}
+		else
+			handleFunction(header, data, length);
 
 		//std::cout << "Length: " << length << ", Packet Header: " << header << ", Data Length: " << length << std::endl;
 	}
 
-	
+}
+
+void TCPNetworkManager::update(float deltaTime)
+{
+
+	if (ensuredPacketsWaiting.size() > 0)
+	{
+		if (resendTimer == 0.0f)
+		{
+			resendTimer = 1.0f;
+			return;
+		}
+		else if (resendTimer > 0.0f)
+		{
+			resendTimer -= deltaTime;
+		}
+		else
+		{
+			for (auto i = ensuredPacketsWaiting.begin(); i != ensuredPacketsWaiting.end(); i++)
+			{
+				sendPacket(i->header, i->data, i->length, i->time);
+			}
+
+			resendTimer = 1.0f;
+		}
+	}
+	else
+		resendTimer = 0.0f;
 
 }

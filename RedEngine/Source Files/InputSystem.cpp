@@ -76,7 +76,7 @@ Vector2D InputSystem::getMousePosition()
 	return Vector2D(GetMouseX(), getMouseY());
 }
 
-void InputSystem::inputUpdate()
+void InputSystem::inputUpdate(float currentTime)
 {
 	for(int i = Key_A; i != Key_Max; i++)
 	{
@@ -98,15 +98,15 @@ void InputSystem::inputUpdate()
 	{
 		if(getMouseButtonDown(i))
 		{
-			EventSystem::getInstance()->fireEvent(MouseEvent(i, BUTTON_DOWN));
+			EventSystem::getInstance()->fireEvent(MouseEvent(i, BUTTON_DOWN, currentTime));
 		}
 		else if(getMouseButton(i))
 		{
-			EventSystem::getInstance()->fireEvent(MouseEvent(i, BUTTON_HELD));
+			EventSystem::getInstance()->fireEvent(MouseEvent(i, BUTTON_HELD, currentTime));
 		}
 		else if(getMouseButtonUp(i))
 		{
-			EventSystem::getInstance()->fireEvent(MouseEvent(i, BUTTON_UP));
+			EventSystem::getInstance()->fireEvent(MouseEvent(i, BUTTON_UP, currentTime));
 		}
 	}
 }

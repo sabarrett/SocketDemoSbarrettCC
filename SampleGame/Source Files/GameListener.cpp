@@ -25,7 +25,7 @@ void GameListener::handleEvent(const Event& event)
 
         Game::getInstance()->DPlayerMove(moveEvent.getMoveLoc());
 
-        TCPNetworkManager::getInstance()->sendPacket(Packet_Header::PLAYER_MOVE, (char*)&(moveEvent.getMoveLoc()), sizeof(moveEvent.getMoveLoc()), true);
+        TCPNetworkManager::getInstance()->sendPacket(Packet_Header::PLAYER_MOVE, (char*)&(moveEvent.getMoveLoc()), sizeof(moveEvent.getMoveLoc()), moveEvent.getTime());
     }
     else if(event.getType() == KEYBOARD_EVENT)
     {
@@ -73,7 +73,7 @@ void GameListener::handleEvent(const Event& event)
                 memcpy(data, (char*)&id, sizeof(id));
                 memcpy(data + sizeof(id), (char*)&mouse,  sizeof(mouse));
 
-                TCPNetworkManager::getInstance()->sendPacket(Packet_Header::FIRE_PROJECTILE, data, sizeof(id) + sizeof(mouse));
+                TCPNetworkManager::getInstance()->sendPacket(Packet_Header::FIRE_PROJECTILE, data, sizeof(id) + sizeof(mouse), mouseEvent.getTime(), true);
 
                 delete[] data;
 	        }

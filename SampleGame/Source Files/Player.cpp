@@ -20,13 +20,13 @@ Player::~Player()
     
 }
 
-void Player::update(double deltaTime)
+void Player::update(double deltaTime, float gameTime)
 {
 
     if(mMoveDir != Vector2D::Zero())
 	{
 		mLoc += mMoveDir * deltaTime * mSpeed;
-		EventSystem::getInstance()->fireEvent(PlayerMoveEvent(mLoc));
+		EventSystem::getInstance()->fireEvent(PlayerMoveEvent(mLoc, gameTime));
 	}
 }
 

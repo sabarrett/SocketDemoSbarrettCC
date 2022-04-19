@@ -74,6 +74,7 @@ private:
 	Player* mpPlayerUnit;
 	Unit* mpOpponent;
 
+	Timer* mpFrameTimer;
 	Timer* mpGameTimer;
 
 	double deltaTime;
@@ -81,6 +82,6 @@ private:
 
 	float mTimePerFrame;
 
-	unsigned int playerPacketTime;
+	float playerPacketTime;
 	
 };

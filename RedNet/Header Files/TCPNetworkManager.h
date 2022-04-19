@@ -12,6 +12,7 @@ enum Packet_Header
 	OBJECT_MOVE,
 	OBJECT_DELETE,
 	CAMERA_MOVE,
+	ACKNOLEDGEMENT,
 	MAX_PACKET_TYPES
 };
 
@@ -20,6 +21,7 @@ struct Packet_Info
 	Packet_Header header;
 	char data[4096];
 	int length;
+	float time;
 };
 
 class TCPNetworkManager
@@ -38,8 +40,9 @@ public:
 	void connectTo(std::string address, int port);
 	void listenAndAccept();
 
+	void update(float deltaTime);
 	
-	void sendPacket(Packet_Header, char* data, int length, bool sendTime = false);
+	void sendPacket(Packet_Header, char* data, int length, float sendTime = 0.0f, bool ensured = false);
 	
 	void receivePackets(void (*handleFunction)(Packet_Header header, char* data, int length));
 
@@ -57,6 +60,8 @@ private:
 
 	int mReliabilityPercentage;
 
-	queue<Packet_Info> storedPackets;
+	queue<Packet_Info> delayedPackets;
 
+	vector<Packet_Info> ensuredPacketsWaiting;
+	float resendTimer;
 };

@@ -8,7 +8,7 @@ public:
     Player(Animation* anim, float moveSpeed, Vector2D loc = Vector2D::Zero());
     ~Player();
 
-    void update(double deltaTime);
+    void update(double deltaTime, float gameTime);
     void setMoveDirection(Vector2D dir);
 
 };

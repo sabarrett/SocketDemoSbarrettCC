@@ -40,11 +40,12 @@ void Game::cleanupInstance()
 void Game::startGame()
 {
 	mIsPlaying = true;
+	mpFrameTimer->start();
 	mpGameTimer->start();
 	while (mIsPlaying)    // Detect window close button or ESC key
 	{
-		deltaTime = mpGameTimer->getElapsedTime();
-		mpGameTimer->start();
+		deltaTime = mpFrameTimer->getElapsedTime();
+		mpFrameTimer->start();
 
 		getInput();
 		update();
@@ -52,8 +53,8 @@ void Game::startGame()
 
 		debug();
 
-		while(mpGameTimer->getElapsedTime() < mTimePerFrame)
-			mpGameTimer->sleepUntilElapsed(mTimePerFrame);
+		while(mpFrameTimer->getElapsedTime() < mTimePerFrame)
+			mpFrameTimer->sleepUntilElapsed(mTimePerFrame);
 			
 	}
 }
@@ -62,6 +63,7 @@ Game::Game()
 {
 	mpGraphicsSystem = nullptr;
 	mpPlayerUnit = nullptr;
+	mpFrameTimer = nullptr;
 	mpGameTimer = nullptr;
 
 	mpUnitManager = nullptr;
@@ -120,6 +122,7 @@ void Game::init(int screenWidth, int screenHeight, int fps, bool isServer, bool 
 	EventSystem::getInstance()->addListener(KEYBOARD_EVENT, mpGameListener);
 	EventSystem::getInstance()->addListener(MOUSE_ACTION_EVENT, mpGameListener);
 
+	mpFrameTimer = new Timer();
 	mpGameTimer = new Timer();
 
 	mTimePerFrame = 1.0f / fps;
@@ -169,13 +172,16 @@ void Game::cleanup()
 	delete mpGraphicsSystem;
 	mpGraphicsSystem = nullptr;
 
+	delete mpFrameTimer;
+	mpFrameTimer = nullptr;
+
 	delete mpGameTimer;
 	mpGameTimer = nullptr;
 }
 
 void Game::getInput()
 {
-	InputSystem::getInstance()->inputUpdate();
+	InputSystem::getInstance()->inputUpdate(mpGameTimer->getElapsedTime());
 }
 
 void Game::update()
@@ -200,18 +206,18 @@ void Game::update()
 			memcpy(data, (char*)&id, sizeof(id));
 			memcpy(data + sizeof(id), (char*)&pos, sizeof(pos));
 
-			TCPNetworkManager::getInstance()->sendPacket(Packet_Header::OBJECT_MOVE, data, dataLength);
+			TCPNetworkManager::getInstance()->sendPacket(Packet_Header::OBJECT_MOVE, data, dataLength, mpGameTimer->getElapsedTime());
 
 			delete[] data;
 		}
 	}
-	
 
 	mpAnimationManager->update(deltaTime);
 
 	mpPlayerUnit->setMoveDirection(InputSystem::getInstance()->getMovementAxis().normalized());
-	mpPlayerUnit->update(deltaTime);
+	mpPlayerUnit->update(deltaTime, mpGameTimer->getElapsedTime());
 
+	TCPNetworkManager::getInstance()->update(deltaTime);
 	TCPNetworkManager::getInstance()->receivePackets(handleNetworkPacket);
 }
 
@@ -283,7 +289,7 @@ void Game::handleNetworkPacket(Packet_Header header, char* data, int length)
 	int id;
 	Vector2D pos;
 	Unit* u;
-	time_t t;
+	float t;
 
 	switch (header)
 	{
@@ -299,7 +305,7 @@ void Game::handleNetworkPacket(Packet_Header header, char* data, int length)
 		} 
 		else //Otherwise, drop the stale packet
 		{
-			cout << "Dropped a stale packet!!";
+			cout << "Dropped a stale PLAYER_MOVE packet:" << t << " < " << gameInstance->playerPacketTime << endl;
 		}
 	
 		break;
@@ -307,22 +313,42 @@ void Game::handleNetworkPacket(Packet_Header header, char* data, int length)
 	case FIRE_PROJECTILE:
 		//cout << "FIRE IN THE HOLE!" << endl;
 
+		memcpy((char*)&t, data, sizeof(t));
 		memcpy((char*)&id, data, sizeof(id));
 		memcpy((char*)&pos, data + sizeof(id), sizeof(pos));
 
-		gameInstance->fireOppProj(id, pos);
+		if (t > gameInstance->playerPacketTime)
+		{
+			gameInstance->fireOppProj(id, pos);
+			gameInstance->playerPacketTime = t;
+		}
+		else //Otherwise, drop the stale packet
+		{
+			cout << "Dropped a stale FIRE_PROJECTILE packet:" << t << " < " << gameInstance->playerPacketTime << endl;
+		}
+
 		break;
 
 	case OBJECT_MOVE:
 
-		memcpy((char*)&id, data, sizeof(id));
-		memcpy((char*)&pos, data + sizeof(id),  sizeof(pos));
+		memcpy((char*)&t, data, sizeof(t));
+		memcpy((char*)&id, data + sizeof(t), sizeof(id));
+		memcpy((char*)&pos, data + sizeof(t) + sizeof(id),  sizeof(pos));
 
-		u = gameInstance->mpUnitManager->getUnitAtID(id);
-		
-		if (u)
+		if (t > gameInstance->playerPacketTime)
 		{
-			u->setLocation(pos);
+			u = gameInstance->mpUnitManager->getUnitAtID(id);
+
+			if (u)
+			{
+				u->setLocation(pos);
+			}
+
+			gameInstance->playerPacketTime = t;
+		}
+		else //Otherwise, drop the stale packet
+		{
+			cout << "Dropped a stale OBJECT_MOVE packet:" << t << " < " << gameInstance->playerPacketTime << endl;
 		}
 
 		//cout << "MOVE OBJECT: " << id << endl;
