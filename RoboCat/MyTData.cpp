@@ -5,12 +5,12 @@ MyTdata::MyTdata(OutputMemoryBitStream& dataIn, TCPSocketPtr sendSocket) : data(
 	TCPSocket = sendSocket;
 }
 
-void MyTdata::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) 
-{
-
-}
-
-void MyTdata::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) 
+void MyTdata::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
 	TCPSocket->Send(data.GetBufferPtr(), data.GetBitLength());
+}
+
+void MyTdata::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
+{
+
 }
