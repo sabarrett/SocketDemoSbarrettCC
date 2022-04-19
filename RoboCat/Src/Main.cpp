@@ -7,7 +7,7 @@
 
 #if _WIN32
 
-void TCPServer(UDPSocketPtr server)
+void UDPServer(UDPSocketPtr server)
 {
 	std::thread sendInput([&] {
 
@@ -21,7 +21,7 @@ void TCPServer(UDPSocketPtr server)
 	update.join();
 }
 
-void TCPClient(UDPSocketPtr client)
+void UDPClient(UDPSocketPtr client)
 {
 	std::thread sendInput([&] {
 
@@ -50,22 +50,6 @@ int main(int argc, const char** argv)
 	__argc = argc;
 	__argv = argv;
 #endif
-
-	Game::initInstance();
-	Game* instance = Game::getInstance();
-
-	instance->init();
-
-	instance->doLoop();
-
-	instance->cleanup();
-	Game::deleteInstance();
-	EventSystem::cleanupInstance();
-
-	cout << endl;
-
-	MemoryTracker::getInstance()->reportAllocations(cout);
-	system("pause");
 
 	SocketUtil::StaticInit();
 
@@ -107,9 +91,23 @@ int main(int argc, const char** argv)
 
 	srvThread.join();
 
-	//mpGame->gameLoop();
-
 	SocketUtil::CleanUp();
+
+	Game::initInstance();
+	Game* instance = Game::getInstance();
+
+	instance->init();
+
+	instance->doLoop();
+
+	instance->cleanup();
+	Game::deleteInstance();
+	EventSystem::cleanupInstance();
+
+	cout << endl;
+
+	MemoryTracker::getInstance()->reportAllocations(cout);
+	system("pause");
 
 	return 0;
 }
