@@ -8,7 +8,7 @@
 #include "NetworkManagerServer.h"
 
 const int MAX_OBJECT_COUNT = 100; //i think this might be needed i am unsure
-std::string BACKGROUND_PATH = "Woods.png"; //I think
+std::string BACKGROUND_PATH = "..\\..\\Assets\\Woods.png"; //I think
 
 #if _WIN32
 
