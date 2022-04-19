@@ -315,13 +315,10 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 	OutputMemoryBitStream* OMBStream = new OutputMemoryBitStream();
 
 	//Write state sent (packet sequence number and acks)
-	pDeliveryNotificationManager->WriteState(*OMBStream);
+	InFlightPacket* pInFlightPacket = pDeliveryNotificationManager->WriteState(*OMBStream);
 
 	//Write packet header
 	OMBStream->Write(packetHeader);
-
-	//float timeDispatched = mArrivalTime + (-100 + rand() & (100 - -100 + 1));
-	//OMBStream.Write(timeDispatched);
 
 	//If ID received is < 0, we are doing connection stuff
 	if (ID < 0)
@@ -352,6 +349,8 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 		case GameObjectType::PLAYER:
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().first);
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().second);
+			pInFlightPacket->SetTransmissionData(0, (*mGameObjectsVec[ID].second));
+			pInFlightPacket = nullptr;
 			break;
 
 		case GameObjectType::WALL:
@@ -361,6 +360,8 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 			OMBStream->Write(wall->getWallSizeX());
 			OMBStream->Write(wall->getWallSizeY());
 			OMBStream->Write(wall->getWallThickness());
+			pInFlightPacket->SetTransmissionData(0, (*wall));
+			pInFlightPacket = nullptr;
 			break;
 		}
 
@@ -378,6 +379,8 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 				if (it->first == ID && it->second->getGameObjectType() != GameObjectType::PLAYER)
 				{
 					mGameObjectsVec.erase(it);
+					pInFlightPacket->SetTransmissionData(0, (*it->second));
+					pInFlightPacket = nullptr;
 
 					break;
 				}

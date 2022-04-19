@@ -15,6 +15,18 @@ Notes and Ideas:
 
 --> Chapter 7 slide 14 gives a good explanation of how this can be done
 
+CLASS NOTES 19/04/2022:
+For handling delviery failure and success, InFlightPacket implicit constructor call, need to give it transmission data. How?
+--> override void HandleDelivery... in inherited classes
+--> Pass an instance of the class to InFlightPacket
+--> Tip: use std::shared_ptr<ClassName> as type so you don't have to worry about memory leaks
+--> InFlightPacket::SetTransmissionData(any key (0 is best as it is the index and we only want 1 thing in container), instance of class);
+
+--> TransmissionDataPtr classInstance = std::make_shared<ClassName>(constructor args);	//
+--> InFlightPacket* packet = deliveryNotificationManager->WriteState(packetData);
+--> packet->SetTransmissionData(index, classInstance);
+--> //Write rest of packetData
+
 -----------------------------------------------------------------
 
 Simulating Latency/Jitter

@@ -6,9 +6,9 @@
 */
 
 #include "GameObject.h"
-#include "TransmissionData.h"
+//#include "TransmissionData.h"
 
-class Rock : public GameObject, public TransmissionData
+class Rock : public GameObject/*, public TransmissionData*/
 {
 	//-------------------------Private data-------------------------
 

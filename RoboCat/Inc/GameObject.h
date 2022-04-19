@@ -2,6 +2,7 @@
 
 #include <utility>
 #include "GraphicsLibrary.h"
+#include "TransmissionData.h"
 
 using std::pair;
 
@@ -19,7 +20,7 @@ enum GameObjectType
 	ENUM_SIZE
 };
 
-class GameObject
+class GameObject : public TransmissionData
 {
 	//-------------------------Private data-------------------------
 
