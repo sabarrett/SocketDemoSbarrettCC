@@ -1,4 +1,5 @@
 #include "TCPNetworkManager.h"
+#include <time.h>
 
 TCPNetworkManager* TCPNetworkManager::mspInstance = nullptr;
 
@@ -129,7 +130,6 @@ void TCPNetworkManager::sendMessage(char* message, int length)
 void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length, float sendTime, bool ensured)
 {
 	mConnection->SetNonBlockingMode(false);
-
 	
 	int timeLen = 0;
 
@@ -164,7 +164,7 @@ void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length,
 	int r = rand() % 100;
 
 	if (r < mReliabilityPercentage)
-		sendMessage(buffer, timeLen + sizeof(int) + sizeof(Packet_Header) + length);
+		sendMessage(buffer, timeLen + sizeof(int) + sizeof(Packet_Header) + length + sizeof(bool));
 	else
 	{
 		r = rand() % 2;
@@ -210,8 +210,9 @@ void TCPNetworkManager::receivePackets(void(*handleFunction)(Packet_Header heade
 
 	int bytesProcessed = 0;
 
-	while (bytesProcessed < bytesRead)
+	if (bytesProcessed < bytesRead)
 	{
+
 		int packetSize;
 		bool ensured;
 
