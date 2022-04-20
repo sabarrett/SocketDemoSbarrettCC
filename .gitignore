@@ -5,5 +5,8 @@
 *.user
 *.pdb
 
-Debug/
 packages/
+Game/DeanLib/Debug
+Game/Debug
+Game/GraphicsLib/Debug
+RoboCat/Debug
