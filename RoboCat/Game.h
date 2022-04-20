@@ -47,7 +47,7 @@ class Game
 	void CheckCollisions(ball* ball);
 	void CheckCollisionsPaddle(ball* ball, Paddle* paddle1, Paddle* paddle2);
 	void SendUpdatedStates();
-	int Send(OutputMemoryBitStream& oStream);
+	int Send(OutputMemoryBitStream& oStream, InFlightPacket* ip);
 	void Receive(); 
 
 	

@@ -214,37 +214,32 @@ void Game::UpdateBall(ball* ball)
 	ball->pos->y = ball->GetPosY() + ball->GetDirY();
 
 	//make and fill output buffer and inflight packet
-	OutputMemoryBitStream oStream;
-	InFlightPacket* ip = manager->WriteState(oStream);
-	oStream.Write(PacketType::PT_BALL);
-	oStream.Write(ball->id);
-	oStream.Write(ball->pos->x);
-	oStream.Write(ball->pos->y);
+	OutputMemoryBitStream* oStream = new OutputMemoryBitStream();
+	InFlightPacket* ip = manager->WriteState(*oStream);
+	oStream->Write(PacketType::PT_BALL);
+	oStream->Write(ball->id);
+	oStream->Write(ball->pos->y);
+	oStream->Write(ball->pos->x);
 
 	//make the data and add it to the IP
-	MyTdata data = MyTdata(oStream, TCPSocket);
-	ip->SetTransmissionData(1,data);
-	Send(oStream);
+
+	Send(*oStream, ip);
 }
 
 void Game::UpdateScore()
 {
 	//make and fill output buffer and inflight packet
-	OutputMemoryBitStream oStream;
-	InFlightPacket* ip = manager->WriteState(oStream);
-	oStream.Write(PacketType::PT_SCORE);
-	oStream.Write(mScoreOne->points);
-	oStream.Write(mScoreTwo->points);
-
-
-	//make the data and add it to the IP
-	MyTdata data = MyTdata(oStream, TCPSocket);
-	ip->SetTransmissionData(1, data);
-	Send(oStream);
+	OutputMemoryBitStream* oStream = new OutputMemoryBitStream();
+	InFlightPacket* ip = manager->WriteState(*oStream);
+	oStream->Write(PacketType::PT_SCORE);
+	oStream->Write(mScoreOne->points);
+	oStream->Write(mScoreTwo->points);
+	
+	Send(*oStream, ip);
 
 	//make and fill output buffer and inflight packet
-	OutputMemoryBitStream o2Stream;
-	InFlightPacket* ip2 = manager->WriteState(o2Stream);
+	OutputMemoryBitStream* o2Stream = new OutputMemoryBitStream();
+	InFlightPacket* ip2 = manager->WriteState(*o2Stream);
 	
 	if (mScoreOne->points >= 20) 
 	{
@@ -254,12 +249,11 @@ void Game::UpdateScore()
 		mWinningPlayer = 0;
 
 
-		o2Stream.Write(PacketType::PT_WIN);
-		o2Stream.Write(0);
+		o2Stream->Write(PacketType::PT_WIN);
+		o2Stream->Write(0);
 		//make the data and add it to the IP
-		MyTdata data2 = MyTdata(oStream, TCPSocket);
-		ip2->SetTransmissionData(1, data);
-		Send(oStream);
+	;
+		Send(*oStream, ip2);
 	}
 	else if (mScoreTwo->points >= 20)
 	{
@@ -268,12 +262,11 @@ void Game::UpdateScore()
 
 		mWinningPlayer = 1;
 
-		o2Stream.Write(PacketType::PT_WIN);
-		o2Stream.Write(1);
+		o2Stream->Write(PacketType::PT_WIN);
+		o2Stream->Write(1);
 		//make the data and add it to the IP
-		MyTdata data2 = MyTdata(oStream, TCPSocket);
-		ip2->SetTransmissionData(1, data);
-		Send(oStream);
+	
+		Send(*oStream, ip);
 	}
 }
 
@@ -315,18 +308,19 @@ void Game::SendUpdatedStates()
 
 	int yPos = localPaddle->GetPosY();
 
-	OutputMemoryBitStream oStream;
-	InFlightPacket* ip = manager->WriteState(oStream);
-	oStream.Write(PacketType::PT_PADDLE);
-	oStream.Write(yPos);
+	OutputMemoryBitStream* oStream = new OutputMemoryBitStream();
+	InFlightPacket* ip = manager->WriteState(*oStream);
+	oStream->Write(PacketType::PT_PADDLE);
+	oStream->Write(yPos);
 
-	MyTdata data = MyTdata(oStream, TCPSocket);
-	ip->SetTransmissionData(1, data);
-	Send(oStream);
+	Send(*oStream, ip);
 }
 
-int Game::Send(OutputMemoryBitStream& oStream)
+int Game::Send(OutputMemoryBitStream& oStream, InFlightPacket* ip)
 {
+	TransmissionDataPtr data = std::make_shared<MyTdata>(oStream, TCPSocket);
+	ip->SetTransmissionData(0, data);
+
 	int num = rand() % 100 + 1;
 	if (num >= 25)
 		TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
@@ -350,14 +344,11 @@ void Game::Receive()
 		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
 		manager->ReadAndProcessState(iStream);
 
-
-		OutputMemoryBitStream oStream;
-		InFlightPacket* ip = manager->WriteState(oStream);
-		oStream.Write(PacketType::PT_ACK);
+		OutputMemoryBitStream* oStream = new OutputMemoryBitStream();
+		InFlightPacket* ip = manager->WriteState(*oStream);
+		oStream->Write(PacketType::PT_ACK);
 		
-		MyTdata data = MyTdata(oStream, TCPSocket);
-		ip->SetTransmissionData(1, data);
-		Send(oStream);
+		Send(*oStream, ip);
 
 		//process packet notification
 		if (bytesReceived > 0)
@@ -457,6 +448,8 @@ void Game::Update()
 	while (mRunning)
 	{
 
+		
+
 		ProcessLocalInput();
 		Render();
 
@@ -469,10 +462,12 @@ void Game::Update()
 				CheckCollisionsPaddle(mBalls[i], mPaddleOne, mPaddleTwo);
 			}
 			SendUpdatedStates();
+			std::cout << "Running Server" << std::endl;
 		}
 		else
 		{
 			SendUpdatedStates();
+			std::cout << "Running client" << std::endl;
 		}
 		
 	}
