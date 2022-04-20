@@ -38,6 +38,7 @@ float FPS = 60.0;
 Colour blue(0, 0, 255); //P1
 Colour red(255, 0, 0); //P2
 int networkID = 0;
+int dropOdds = 2;
 
 int tempPlayerID;
 
@@ -131,7 +132,7 @@ void update()
 			float randPosY = 10.0;
 
 			GameObjects* newBubble;
-			newBubble = new Bubble(pGraphicsLib, networkID, BUBBLE_IMG_IDENTIFIER, randPosX, randPosY, tempPlayerID); //watch out for this
+			newBubble = new Bubble(pGraphicsLib, networkID, BUBBLE_IMG_IDENTIFIER, randPosX, randPosY, tempPlayerID);
 
 			pNetworkManager->spawnObj(newBubble, networkID);
 			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
@@ -147,7 +148,7 @@ void update()
 			float randNum = rand() % 10;
 
 			GameObjects* newBee;
-			newBee = new Bees(pGraphicsLib, networkID, BEE_IMG_IDENTIFIER, randPosX, randPosY, randNum); //watch out for this
+			newBee = new Bees(pGraphicsLib, networkID, BEE_IMG_IDENTIFIER, randPosX, randPosY, randNum);
 
 			pNetworkManager->spawnObj(newBee, networkID);
 			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
@@ -208,7 +209,7 @@ int main(int argc, const char** argv)
 	if (init())
 	{
 		pNetworkManager = pNetworkManager->GetInstance();
-		pNetworkManager->init(pGraphicsLib, blue, red);
+		pNetworkManager->init(pGraphicsLib, blue, red, dropOdds);
 
 		std::string role;
 		std::cout << "Are you the host? 'y' or 'n'\n";
@@ -217,7 +218,7 @@ int main(int argc, const char** argv)
 		if (role == "y")
 		{
 			std::string port;
-			port = "8080"; //can change later
+			port = "8080";
 
 			successConnect = pNetworkManager->initServer(port);
 			if (successConnect)
@@ -230,10 +231,10 @@ int main(int argc, const char** argv)
 		else if (role == "n")
 		{
 			std::string connectIP;
-			connectIP = "127.0.0.1"; //can change later
+			connectIP = "127.0.0.1";
 
 			std::string port;
-			port = "8080"; //can change later
+			port = "8080";
 
 
 			successConnect = pNetworkManager->connect(connectIP, port);
@@ -266,8 +267,6 @@ int main(int argc, const char** argv)
 			cleanup();
 		}
 	}
-
-	//SocketUtil::CleanUp();
 
 	system("pause");
 

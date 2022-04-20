@@ -1,10 +1,14 @@
+#pragma once
+class NetworkManager;
 
+typedef uint16_t PacketSequenceNum;
 class DeliveryNotificationManager
 {
 public:
 	
 	
 	DeliveryNotificationManager( bool inShouldSendAcks, bool inShouldProcessAcks );
+	DeliveryNotificationManager(bool inShouldSendAcks, bool inShouldProcessAcks, NetworkManager* netManager) {};
 	~DeliveryNotificationManager();
 	
 	inline	InFlightPacket*		WriteState( OutputMemoryBitStream& inOutputStream );
@@ -12,6 +16,8 @@ public:
 	
 	void				ProcessTimedOutPackets();
 	
+	void ResendPacket(const int ID, const PacketSequenceNumber packetSeqNum);
+
 	uint32_t			GetDroppedPacketCount()		const	{ return mDroppedPacketCount; }
 	uint32_t			GetDeliveredPacketCount()	const	{ return mDeliveredPacketCount; }
 	uint32_t			GetDispatchedPacketCount()	const	{ return mDispatchedPacketCount; }
@@ -46,6 +52,8 @@ private:
 	uint32_t		mDeliveredPacketCount;
 	uint32_t		mDroppedPacketCount;
 	uint32_t		mDispatchedPacketCount;
+
+	NetworkManager* mpNetworkManager;
 	
 };
 

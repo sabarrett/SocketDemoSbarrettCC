@@ -1,4 +1,3 @@
-//#include "RoboCatPCH.h"
 #pragma once
 
 #include <string>
@@ -6,6 +5,8 @@
 #include "GameController.h"
 #include "Colour.h"
 #include "PlayerController.h"
+#include <time.h>
+#include "DeliveryNotificationManager.h"
 
 enum TypePacket
 {
@@ -30,10 +31,10 @@ public:
 	};
 
 	NetworkManager();
-	~NetworkManager() {};
+	~NetworkManager();
 	
 	bool initServer(std::string port);
-	void init(GraphicsLibrary* gLib, Colour p1Color, Colour p2Color);
+	void init(GraphicsLibrary* gLib, Colour p1Color, Colour p2Color, int dropOdds);
 	bool connect(std::string serverIP, std::string port);
 
 	void spawnObj(GameObjects* newObj, int networkID);
@@ -46,6 +47,8 @@ public:
 	int getCurrentID() { return mCurrentID; }
 	void setCurrentID(int newID) { mCurrentID = newID; }
 
+	float getTimeStamp() { return mPacketTimeStamp; }
+
 	GameObjects* getObj() {};
 
 private:
@@ -53,6 +56,9 @@ private:
 	static NetworkManager* mpNetworkInstance;
 	GraphicsLibrary* mpGraphicsLib;
 	TCPSocketPtr* mpTCPSocket;
+	DeliveryNotificationManager* mpDeliveryNotifManager;
+
+	float mPacketTimeStamp;
 
 	std::vector<std::pair<GameObjects*, int>> mGameObjVector;
 
@@ -62,4 +68,7 @@ private:
 	std::string mBeeImgID;
 
 	int mCurrentID;
+	int mDropOdds;
+
+	bool mIsConnected;
 };
