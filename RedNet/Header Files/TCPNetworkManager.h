@@ -21,7 +21,8 @@ struct Packet_Info
 	Packet_Header header;
 	char data[4096];
 	int length;
-	float time;
+	int id;
+	bool ensured;
 };
 
 class TCPNetworkManager
@@ -40,9 +41,9 @@ public:
 	void connectTo(std::string address, int port);
 	void listenAndAccept();
 
-	void update(float deltaTime);
+	void update(float deltaTime, float currentTime);
 	
-	void sendPacket(Packet_Header, char* data, int length, float sendTime = 0.0f, bool ensured = false);
+	void sendPacket(Packet_Header, char* data, int length, bool ensured = false, int overridePacketNum = 0);
 	
 	void receivePackets(void (*handleFunction)(Packet_Header header, char* data, int length));
 
@@ -54,6 +55,9 @@ private:
 	string receiveMessage();
 
 	static TCPNetworkManager* mspInstance;
+
+	static int nextPacketID;
+	static int lastProcessedID;
 
 	TCPSocketPtr mSocket;
 	TCPSocketPtr mConnection;

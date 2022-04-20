@@ -583,7 +583,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //ADVANCED property for variable: GIT_EXECUTABLE
 GIT_EXECUTABLE-ADVANCED:INTERNAL=1
 //GLFW pkg-config Libs.private
-GLFW_PKG_LIBS:INTERNAL= -lgdi32 -lgdi32 -lgdi32 -lgdi32 -lgdi32 -lgdi32 -lgdi32
+GLFW_PKG_LIBS:INTERNAL= -lgdi32 -lgdi32 -lgdi32 -lgdi32 -lgdi32 -lgdi32 -lgdi32 -lgdi32
 //Use Wayland for window creation
 GLFW_USE_WAYLAND:INTERNAL=
 //Replace any OFF by default with ${OFF} to have it covered by

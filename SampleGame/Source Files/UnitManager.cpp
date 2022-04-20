@@ -3,12 +3,13 @@
 #include "Animation.h"
 #include "GraphicsSystem.h"
 #include "Sprite.h"
+#include <assert.h>
 
 using namespace std;
 
 UnitManager::UnitManager()
 {
-    nextID = 0;
+    srand(time(NULL));
 }
 
 UnitManager::~UnitManager()
@@ -26,30 +27,26 @@ Unit* UnitManager::createUnit(Animation* anim, Vector2D loc, Vector2D moveDir, f
 
 Unit* UnitManager::createAndManageUnit(Animation* anim, int ID, Vector2D loc, Vector2D moveDir, float speed)
 {
+    if (ID == 0)
+        ID = rand();
+
+    if (findID(ID))
+        return nullptr;
+
     Unit* unit = new Unit(anim, loc, moveDir, speed);
     mUnits.push_back(unit);
 
-    if (ID == 0)
-    {
-        mIDs.push_back(nextID);
-        nextID++;
-    }
-    else
-    {
-        mIDs.push_back(ID);
-        if (ID >= nextID)
-            nextID = ID + 1;
-    }
-    
+    mIDs.push_back(ID);
     
     return unit;
 }
 
 void UnitManager::addUnit(Unit* unit)
 {
+    int ID = rand();
+
     mUnits.push_back(unit);
-    mIDs.push_back(nextID);
-    nextID++;
+    mIDs.push_back(ID);
 }
 
 void UnitManager::removeUnit(Unit* unit)
@@ -190,4 +187,14 @@ void UnitManager::clear()
 
     mUnits.clear();
 
+}
+
+bool UnitManager::findID(int ID)
+{
+    for (vector<int>::iterator i = mIDs.begin(); i != mIDs.end(); i++)
+    {
+        if (*i == ID)
+            return true;
+    }
+    return false;
 }

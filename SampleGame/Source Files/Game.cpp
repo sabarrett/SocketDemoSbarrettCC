@@ -131,18 +131,16 @@ void Game::init(int screenWidth, int screenHeight, int fps, bool isServer, bool 
 
 	if (isServer)
 	{
-		//TCPNetworkManager::getInstance()->init("127.0.0.1", 8011, 70);
-		TCPNetworkManager::getInstance()->init("127.0.0.1", 8011, 100);
+		TCPNetworkManager::getInstance()->init("127.0.0.1", 8011, 70); //30% chance of packet drop
+		//TCPNetworkManager::getInstance()->init("127.0.0.1", 8011, 100); //No Dropepped Packets
 		TCPNetworkManager::getInstance()->listenAndAccept();
 	}
 	else
 	{
-		//rTCPNetworkManager::getInstance()->init("127.0.0.1", 8012, 70);
-		TCPNetworkManager::getInstance()->init("127.0.0.1", 8012, 100);
+		TCPNetworkManager::getInstance()->init("127.0.0.1", 8012, 70); //30% chance of packet drop
+		//TCPNetworkManager::getInstance()->init("127.0.0.1", 8012, 100); //No Dropepped Packets 
 		TCPNetworkManager::getInstance()->connectTo("127.0.0.1", 8011);
 	}
-		
-	playerPacketTime = 0;
 
 	srand(time(NULL));
 }
@@ -208,7 +206,7 @@ void Game::update()
 			memcpy(data, (char*)&id, sizeof(id));
 			memcpy(data + sizeof(id), (char*)&pos, sizeof(pos));
 
-			TCPNetworkManager::getInstance()->sendPacket(Packet_Header::OBJECT_MOVE, data, dataLength, mpGameTimer->getElapsedTime());
+			TCPNetworkManager::getInstance()->sendPacket(Packet_Header::OBJECT_MOVE, data, dataLength);
 
 			delete[] data;
 		}
@@ -219,7 +217,7 @@ void Game::update()
 	mpPlayerUnit->setMoveDirection(InputSystem::getInstance()->getMovementAxis().normalized());
 	mpPlayerUnit->update(deltaTime, mpGameTimer->getElapsedTime());
 
-	TCPNetworkManager::getInstance()->update(deltaTime);
+	TCPNetworkManager::getInstance()->update(deltaTime, mpGameTimer->getElapsedTime());
 	TCPNetworkManager::getInstance()->receivePackets(handleNetworkPacket);
 }
 
@@ -291,68 +289,37 @@ void Game::handleNetworkPacket(Packet_Header header, char* data, int length)
 	int id;
 	Vector2D pos;
 	Unit* u;
-	float t;
 
 	switch (header)
 	{
 	case PLAYER_MOVE:
 		//cout << "WE MOVING!!" << endl;
-		memcpy((char*)&t, data, sizeof(t));
-		memcpy((char*)&pos, data + sizeof(t), sizeof(pos));
+		memcpy((char*)&pos, data, sizeof(pos));
 
-		if (t > gameInstance->playerPacketTime)
-		{
-			gameInstance->mpOpponent->setLocation(pos);
-			gameInstance->playerPacketTime = t;
-		} 
-		else //Otherwise, drop the stale packet
-		{
-			cout << "Dropped a stale PLAYER_MOVE packet:" << t << " < " << gameInstance->playerPacketTime << endl;
-		}
+		gameInstance->mpOpponent->setLocation(pos);
+
 	
 		break;
 
 	case FIRE_PROJECTILE:
 		//cout << "FIRE IN THE HOLE!" << endl;
-
-		memcpy((char*)&t, data, sizeof(t));
 		memcpy((char*)&id, data, sizeof(id));
 		memcpy((char*)&pos, data + sizeof(id), sizeof(pos));
 
-		if (t > gameInstance->playerPacketTime)
-		{
-			gameInstance->fireOppProj(id, pos);
-			gameInstance->playerPacketTime = t;
-		}
-		else //Otherwise, drop the stale packet
-		{
-			cout << "Dropped a stale FIRE_PROJECTILE packet:" << t << " < " << gameInstance->playerPacketTime << endl;
-		}
+		gameInstance->fireOppProj(id, pos);
 
 		break;
 
 	case OBJECT_MOVE:
+		memcpy((char*)&id, data, sizeof(id));
+		memcpy((char*)&pos, data + sizeof(id),  sizeof(pos));
 
-		memcpy((char*)&t, data, sizeof(t));
-		memcpy((char*)&id, data + sizeof(t), sizeof(id));
-		memcpy((char*)&pos, data + sizeof(t) + sizeof(id),  sizeof(pos));
+		u = gameInstance->mpUnitManager->getUnitAtID(id);
 
-		if (t > gameInstance->playerPacketTime)
+		if (u)
 		{
-			u = gameInstance->mpUnitManager->getUnitAtID(id);
-
-			if (u)
-			{
-				u->setLocation(pos);
-			}
-
-			gameInstance->playerPacketTime = t;
+			u->setLocation(pos);
 		}
-		else //Otherwise, drop the stale packet
-		{
-			cout << "Dropped a stale OBJECT_MOVE packet:" << t << " < " << gameInstance->playerPacketTime << endl;
-		}
-
 		//cout << "MOVE OBJECT: " << id << endl;
 		break;
 

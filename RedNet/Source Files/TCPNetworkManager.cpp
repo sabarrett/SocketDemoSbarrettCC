@@ -2,6 +2,8 @@
 #include <time.h>
 
 TCPNetworkManager* TCPNetworkManager::mspInstance = nullptr;
+int TCPNetworkManager::nextPacketID = 1;
+int TCPNetworkManager::lastProcessedID = 0;
 
 TCPNetworkManager::TCPNetworkManager()
 {
@@ -127,16 +129,11 @@ void TCPNetworkManager::sendMessage(char* message, int length)
 		mConnection->Send(message, length);
 }
 
-void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length, float sendTime, bool ensured)
+void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length, bool ensured, int overridePacketNum)
 {
 	mConnection->SetNonBlockingMode(false);
-	
-	int timeLen = 0;
 
-	if(sendTime)
-		timeLen = sizeof(float);
-
-	int packetSize = sizeof(ensured) + timeLen + sizeof(Packet_Header) + length;
+	int packetSize = sizeof(ensured) + sizeof(int) + sizeof(Packet_Header) + length;
 
 	char buffer[4096];
 
@@ -146,9 +143,12 @@ void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length,
 
 	memcpy(buffer + sizeof(int) + sizeof(Packet_Header), (char*)&ensured, sizeof(bool));
 
-	memcpy(buffer + sizeof(int) + sizeof(Packet_Header) + sizeof(bool), &sendTime, timeLen);
+	if(overridePacketNum)
+		memcpy(buffer + sizeof(int) + sizeof(Packet_Header) + sizeof(bool), &overridePacketNum, sizeof(int));
+	else
+		memcpy(buffer + sizeof(int) + sizeof(Packet_Header) + sizeof(bool), &nextPacketID, sizeof(int));
 
-	memcpy(buffer + timeLen + sizeof(int) + sizeof(Packet_Header) + sizeof(bool), data, length);
+	memcpy(buffer + sizeof(int) + sizeof(int) + sizeof(Packet_Header) + sizeof(bool), data, length);
 
 	if (ensured)
 	{
@@ -156,18 +156,35 @@ void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length,
 		pck.header = header;
 		memcpy(pck.data, data, length);
 		pck.length = length;
-		pck.time = sendTime;
+		pck.ensured = ensured; //always true because of inside if(ensured)
 
-		ensuredPacketsWaiting.push_back(pck);
+		if(overridePacketNum)
+			pck.id = overridePacketNum;
+		else
+			pck.id = nextPacketID;
+
+		bool match = false;
+
+		for (auto i = ensuredPacketsWaiting.begin(); i != ensuredPacketsWaiting.end(); i++)
+		{
+			if (i->id == pck.id)
+			{
+				match = true;
+				break;
+			}
+		}
+
+		if(!match)
+			ensuredPacketsWaiting.push_back(pck);
 	}
 
 	int r = rand() % 100;
 
 	if (r < mReliabilityPercentage)
-		sendMessage(buffer, timeLen + sizeof(int) + sizeof(Packet_Header) + length + sizeof(bool));
+		sendMessage(buffer, sizeof(int) + sizeof(int) + sizeof(Packet_Header) + length + sizeof(bool));
 	else
 	{
-		r = rand() % 2;
+		r = false;// rand() % 2;
 		if(r)
 		{
 			Packet_Info temp;
@@ -175,19 +192,27 @@ void TCPNetworkManager::sendPacket(Packet_Header header, char* data, int length,
 			{
 				temp = delayedPackets.front();
 				delayedPackets.pop();
-				sendPacket(temp.header, temp.data, temp.length, temp.time);
+				sendPacket(temp.header, temp.data, temp.length, temp.ensured, temp.id);
 			}
 
 			temp.header = header;
 			memcpy(temp.data, data, length);
 			temp.length = length;
-			temp.time = sendTime;
+			temp.ensured = ensured;
+
+			if (overridePacketNum)
+				temp.id = overridePacketNum;
+			else
+				temp.id = nextPacketID;
+
 			delayedPackets.emplace(temp);
 
 			//std::cout << "Packet Stored! Hehe" << std::endl;
 		}
 	}
 
+	if(!overridePacketNum)
+		nextPacketID++;
 }
 
 string TCPNetworkManager::receiveMessage()
@@ -210,17 +235,18 @@ void TCPNetworkManager::receivePackets(void(*handleFunction)(Packet_Header heade
 
 	int bytesProcessed = 0;
 
-	if (bytesProcessed < bytesRead)
+	while (bytesProcessed < bytesRead)
 	{
 
 		int packetSize;
 		bool ensured;
+		int id;
 
 		memcpy(&packetSize, buffer + bytesProcessed, sizeof(int));
 		bytesProcessed += sizeof(int);
 
 		Packet_Header header;
-		int32_t length = packetSize - sizeof(Packet_Header) - sizeof(bool);
+		int32_t length = packetSize - sizeof(Packet_Header) - sizeof(bool) - sizeof(int);
 
 		memcpy(&header, buffer + bytesProcessed, sizeof(Packet_Header));
 		bytesProcessed += sizeof(Packet_Header);
@@ -228,21 +254,40 @@ void TCPNetworkManager::receivePackets(void(*handleFunction)(Packet_Header heade
 		memcpy(&ensured, buffer + bytesProcessed, sizeof(bool));
 		bytesProcessed += sizeof(bool);
 
+		memcpy(&id, buffer + bytesProcessed, sizeof(int));
+		bytesProcessed += sizeof(int);
+
+		std::cout << "Received ID: " << id << std::endl;
+
 		memcpy(data, buffer + bytesProcessed, length);
 		bytesProcessed += length;
 
 		if (ensured) //If this packet I received is ensured, send an acknoledgement.
 		{
-			sendPacket(ACKNOLEDGEMENT, data, length);
+			sendPacket(ACKNOLEDGEMENT, data, length, false, id);
+		}
+		else
+		{
+			if (header == ACKNOLEDGEMENT)
+			{
+				//Avoids the continue below to process the ACKNOLEDGEMENT
+			}
+			else if (id > lastProcessedID)
+			{
+				lastProcessedID = id;
+			}
+			else
+			{
+				std::cout << "Network Manager Dropped Packet!!" << std::endl;
+				continue;
+			}
 		}
 
 		if (header == ACKNOLEDGEMENT) //If this packet is an acknoledgement, mark it as received.
 		{
-			float time;
-			memcpy(&time, data, sizeof(float));
 			for (auto i = ensuredPacketsWaiting.begin(); i != ensuredPacketsWaiting.end(); i++)
 			{
-				if (i->time == time)
+				if (i->id == id)
 				{
 					ensuredPacketsWaiting.erase(i);
 					break;
@@ -257,7 +302,7 @@ void TCPNetworkManager::receivePackets(void(*handleFunction)(Packet_Header heade
 
 }
 
-void TCPNetworkManager::update(float deltaTime)
+void TCPNetworkManager::update(float deltaTime, float currentTime)
 {
 
 	if (ensuredPacketsWaiting.size() > 0)
@@ -273,9 +318,11 @@ void TCPNetworkManager::update(float deltaTime)
 		}
 		else
 		{
-			for (auto i = ensuredPacketsWaiting.begin(); i != ensuredPacketsWaiting.end(); i++)
+			int size = ensuredPacketsWaiting.size();
+			for (int j = 0; j < size; j++)
 			{
-				sendPacket(i->header, i->data, i->length, i->time);
+				Packet_Info i = ensuredPacketsWaiting.at(j);
+				sendPacket(i.header, i.data, i.length, true, i.id);
 			}
 
 			resendTimer = 1.0f;

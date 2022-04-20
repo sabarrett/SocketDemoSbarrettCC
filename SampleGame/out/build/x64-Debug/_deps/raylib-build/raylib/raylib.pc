@@ -8,6 +8,6 @@ Description: Simple and easy-to-use library to enjoy videogames programming
 URL: http://github.com/raysan5/raylib
 Version: 3.5.0
 Libs: -L"${libdir}" -lraylib 
-Libs.private: -lglfw  -lgdi32
+Libs.private: -lglfw  -lgdi32 -lgdi32
 Requires.private: 
 Cflags: -I"${includedir}"

@@ -24,6 +24,7 @@ public:
     void deleteUnit(Unit* unit);
 
     int find(Unit* unit);
+    bool findID(int ID);
     Unit* getUnitAt(int index);
     int getIDAt(int index);
     Unit* getUnitAtID(int ID);
@@ -39,7 +40,5 @@ public:
 private:
     std::vector<Unit*> mUnits;
     std::vector<int> mIDs;
-
-    int nextID;
 
 };
