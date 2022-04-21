@@ -91,7 +91,7 @@ Game::Game()
 		keyboardState = new ALLEGRO_KEYBOARD_STATE();
 		mRunning = true;
 	}
-	manager = new DeliveryNotificationManager(true, true);
+	manager = new DeliveryNotificationManager(false, true);
 	mIsServer = true;
 	mLocalLeft = mIsServer;
 	StartServer();
@@ -128,7 +128,7 @@ Game::Game(std::string IP)
 		mRunning = true;
 	}
 
-	manager = new DeliveryNotificationManager(true, true);
+	manager = new DeliveryNotificationManager(true, false);
 	mIsServer = false;
 	mLocalLeft = mIsServer;
 	ConnectToServer(IP);
@@ -215,32 +215,33 @@ void Game::UpdateBall(ball* ball)
 	ball->pos->y = ball->GetPosY() + ball->GetDirY();
 
 	//make and fill output buffer and inflight packet
-	OutputMemoryBitStream oStream;
-	manager->WriteState(oStream);
-	oStream.Write(PacketType::PT_BALL);
-	oStream.Write(ball->id);
-	oStream.Write(ball->pos->x);
-	oStream.Write(ball->pos->y);
+	OutputMemoryBitStream* oStream = new OutputMemoryBitStream();
+	InFlightPacket* ifp = manager->WriteState(*oStream);
+	MyTdata* temp = new MyTdata(*oStream, TCPSocket);
+	ifp->SetTransmissionData('RPLM', TransmissionDataPtr(temp));
+	oStream->Write(PacketType::PT_BALL);
+	oStream->Write(ball->id);
+	oStream->Write(ball->pos->x);
+	oStream->Write(ball->pos->y);
 
 	//make the data and add it to the IP
-
-	Send(oStream);
+	Send(*oStream);
 }
 
 void Game::UpdateScore()
 {
 	//make and fill output buffer and inflight packet
-	OutputMemoryBitStream oStream;
-	manager->WriteState(oStream);
-	oStream.Write(PacketType::PT_SCORE);
-	oStream.Write(mScoreOne->points);
-	oStream.Write(mScoreTwo->points);
-	
-	Send(oStream);
+	OutputMemoryBitStream* oStream = new OutputMemoryBitStream();
+	InFlightPacket* ifp = manager->WriteState(*oStream);
+	MyTdata* temp = new MyTdata(*oStream, TCPSocket);
+	ifp->SetTransmissionData('RPLM', TransmissionDataPtr(temp));
+	oStream->Write(PacketType::PT_SCORE);
+	oStream->Write(mScoreOne->points);
+	oStream->Write(mScoreTwo->points);
+	Send(*oStream);
 
 	//make and fill output buffer and inflight packet
-	OutputMemoryBitStream o2Stream ;
-	manager->WriteState(o2Stream);
+	OutputMemoryBitStream* o2Stream = new OutputMemoryBitStream();
 	
 	if (mScoreOne->points >= 20) 
 	{
@@ -249,12 +250,14 @@ void Game::UpdateScore()
 
 		mWinningPlayer = 0;
 
-
-		o2Stream.Write(PacketType::PT_WIN);
-		o2Stream.Write(0);
+		InFlightPacket* ifp = manager->WriteState(*o2Stream);
+		MyTdata* temp = new MyTdata(*o2Stream, TCPSocket);
+		ifp->SetTransmissionData('RPLM', TransmissionDataPtr(temp));
+		o2Stream->Write(PacketType::PT_WIN);
+		o2Stream->Write(0);
 		//make the data and add it to the IP
 	
-		Send(o2Stream);
+		Send(*o2Stream);
 	}
 	else if (mScoreTwo->points >= 20)
 	{
@@ -262,12 +265,14 @@ void Game::UpdateScore()
 		mRunning = false;
 
 		mWinningPlayer = 1;
-
-		o2Stream.Write(PacketType::PT_WIN);
-		o2Stream.Write(1);
+		InFlightPacket* ifp = manager->WriteState(*o2Stream);
+		MyTdata* temp = new MyTdata(*o2Stream, TCPSocket);
+		ifp->SetTransmissionData('RPLM', TransmissionDataPtr(temp));
+		o2Stream->Write(PacketType::PT_WIN);
+		o2Stream->Write(1);
 		//make the data and add it to the IP
 	
-		Send(o2Stream);
+		Send(*o2Stream);
 	}
 }
 
@@ -309,15 +314,19 @@ void Game::SendUpdatedStates()
 
 	int yPos = localPaddle->GetPosY();
 
-	OutputMemoryBitStream oStream;
-	manager->WriteState(oStream);
-	oStream.Write(PacketType::PT_PADDLE);
-	oStream.Write(yPos);
-	Send(oStream);
+	OutputMemoryBitStream* oStream = new OutputMemoryBitStream();
+	InFlightPacket* ifp = manager->WriteState(*oStream);
+	MyTdata* temp = new MyTdata(*oStream, TCPSocket);
+	if(mIsServer) ifp->SetTransmissionData('RPLM', TransmissionDataPtr(temp));
+
+	oStream->Write(PacketType::PT_PADDLE);
+	oStream->Write(yPos);
+	Send(*oStream);
 }
 
 int Game::Send(OutputMemoryBitStream& oStream)
 {
+
 	int num = rand() % 100 + 1;
 	if (num >= 25)
 		TCPSocket->Send(oStream.GetBufferPtr(), oStream.GetBitLength());
@@ -335,16 +344,19 @@ int Game::Send(OutputMemoryBitStream& oStream)
 void Game::Receive()
 {
 	while (mRunning)
-	{
+	{	
+		bool temp = true;
 		char buffer[1024];
 		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
 		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
-		if(manager->ReadAndProcessState(iStream));
-		
-		//process packet notification
-		if (bytesReceived > 0)
+		OutputMemoryBitStream* oStream = new OutputMemoryBitStream();;
+		if (manager->ReadAndProcessState(iStream)) 
 		{
-				
+		}
+
+		//process packet notification
+		if (bytesReceived > 0 && temp)
+		{
 			PacketType type;
 			iStream.Read(type);
 
@@ -398,7 +410,6 @@ void Game::Receive()
 				}
 			}
 		}
-		Sleep(0.1);
 	}
 }
 
@@ -460,7 +471,6 @@ void Game::Update()
 			SendUpdatedStates();
 			std::cout << "Running client" << std::endl;
 		}
-		Sleep(0.1);
 		
 	}
 

@@ -9,9 +9,10 @@ MyTdata::MyTdata(OutputMemoryBitStream& dataIn, TCPSocketPtr sendSocket)
 void MyTdata::HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
 	TCPSocket->Send(data->GetBufferPtr(), data->GetBitLength());
+	delete data;
 }
 
 void MyTdata::HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const
 {
-
+	delete data;
 }
