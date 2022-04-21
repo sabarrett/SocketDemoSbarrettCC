@@ -316,9 +316,10 @@ void Game::SendUpdatedStates()
 
 	OutputMemoryBitStream* oStream = new OutputMemoryBitStream();
 	InFlightPacket* ifp = manager->WriteState(*oStream);
-	MyTdata* temp = new MyTdata(*oStream, TCPSocket);
-	if(mIsServer) ifp->SetTransmissionData('RPLM', TransmissionDataPtr(temp));
-
+	if (mIsServer) {
+		MyTdata* temp = new MyTdata(*oStream, TCPSocket);
+		ifp->SetTransmissionData('RPLM', TransmissionDataPtr(temp));
+	}
 	oStream->Write(PacketType::PT_PADDLE);
 	oStream->Write(yPos);
 	Send(*oStream);
@@ -349,7 +350,6 @@ void Game::Receive()
 		char buffer[1024];
 		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
 		InputMemoryBitStream iStream = InputMemoryBitStream(buffer, 1024);
-		OutputMemoryBitStream* oStream = new OutputMemoryBitStream();;
 		if (manager->ReadAndProcessState(iStream)) 
 		{
 		}
