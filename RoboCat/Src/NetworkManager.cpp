@@ -8,6 +8,7 @@ NetworkManager::NetworkManager()
 	mpGraphicsLib = nullptr;
 	mpTCPSocket = nullptr;
 	mDropOdds = 0;
+	mLastSentID = 0;
 }
 
 //~~~~~~~~~~~Networking  Code Processes~~~~~~~~~~~~~~~//
@@ -128,6 +129,22 @@ bool NetworkManager::connect(std::string IPAddr, std::string port)
 
 }
 
+void NetworkManager::createConfirmPacket(int ID)
+{
+	OutputMemoryBitStream* OutMBStream = new OutputMemoryBitStream();
+	OutMBStream->Write(CONFIRM);
+	OutMBStream->Write(ID);
+	(*mpTCPSocket)->Send(OutMBStream->GetBufferPtr(), OutMBStream->GetBitLength());
+}
+
+void NetworkManager::waitForConfirmPacket(int ID)
+{
+	if (ID == mLastSentID)
+	{
+		mPendingResendPackets.pop();
+	}
+}
+
 void NetworkManager::recieve()
 {
 	char buffer[1024];
@@ -138,8 +155,7 @@ void NetworkManager::recieve()
 		randDrop = rand() % 101;
 	}
 
-	if (randDrop > mDropOdds)
-	{
+
 		if (bytesRecieved > 0)
 		{
 			InputMemoryBitStream InMBStream = InputMemoryBitStream(buffer, 1024);
@@ -154,9 +170,10 @@ void NetworkManager::recieve()
 				if (mCurrentID < networkID)
 					mCurrentID = networkID;
 
+	if (randDrop > mDropOdds)
+	{
 				GameObjType recieveObjType;
 				InMBStream.Read(recieveObjType);
-
 				switch (recievePacketType)
 				{
 				case TypePacket::PACKET_CREATE:
@@ -216,7 +233,6 @@ void NetworkManager::recieve()
 						newPlayer = nullptr;
 						break;
 					}
-
 				}
 
 				case TypePacket::PACKET_UPDATE:
@@ -278,10 +294,26 @@ void NetworkManager::recieve()
 					break;
 				}
 
+				case TypePacket::CONFIRM:
+				{
+					int ID;
+					InMBStream.Read(ID);
+					if (ID == mLastSentID)
+					{
+						mPendingResendPackets.pop();
+						break;
+					}
+					else
+					{
+
+					}
+				}
+
 				default:
 					return;
 
 				}
+				//(*mpTCPSocket)->Send(, OutMBStream->GetBitLength());
 			}
 		}
 		else if (bytesRecieved == -10053 || bytesRecieved == -10054)
@@ -303,6 +335,7 @@ void NetworkManager::recieve()
 void NetworkManager::send(int networkID, TypePacket type)
 {
 	bool destroyed = false;
+	bool recieveConfirmation = false;
 	OutputMemoryBitStream* OutMBStream = new OutputMemoryBitStream();
 	InFlightPacket* pInFlightPacket = mpDeliveryNotifManager->WriteState(*OutMBStream);
 
@@ -396,6 +429,11 @@ void NetworkManager::send(int networkID, TypePacket type)
 	}
 
 	(*mpTCPSocket)->Send(OutMBStream->GetBufferPtr(), OutMBStream->GetBitLength());
+	std::pair<const void*, size_t> temp;
+	temp.first = OutMBStream->GetBufferPtr();
+	temp.second = OutMBStream->GetBitLength();
+	mPendingResendPackets.push(temp); //ugh
+
 	if (destroyed)
 		mCurrentID--;
 }
@@ -411,6 +449,22 @@ void NetworkManager::updateObj()
 	for (iter = mGameObjVector.begin(); iter != mGameObjVector.end(); iter++)
 	{
 		iter->first->update();
+	}
+}
+
+void NetworkManager::update(float deltaTime, float time)
+{
+	if (mPendingResendPackets.size() > 0)
+	{
+		if (mTimeTillResend <= 0.0f)
+		{
+			(*mpTCPSocket)->Send(mPendingResendPackets.front().first, mPendingResendPackets.front().second); //ID?
+			mTimeTillResend = 1.0f;
+		}
+		else
+		{
+			mTimeTillResend -= deltaTime;
+		}
 	}
 }
 

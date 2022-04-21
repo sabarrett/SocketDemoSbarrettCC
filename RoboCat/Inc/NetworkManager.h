@@ -7,12 +7,14 @@
 #include "PlayerController.h"
 #include <time.h>
 #include "DeliveryNotificationManager.h"
+#include <queue>
 
 enum TypePacket
 {
 	PACKET_CREATE,
 	PACKET_UPDATE,
-	PACKET_DESTROY
+	PACKET_DESTROY,
+	CONFIRM
 };
 
 class NetworkManager
@@ -44,10 +46,15 @@ public:
 	void updateObj();
 	void renderObj();
 
+	void update(float deltaTime, float time);
+
 	int getCurrentID() { return mCurrentID; }
 	void setCurrentID(int newID) { mCurrentID = newID; }
 
 	float getTimeStamp() { return mPacketTimeStamp; }
+
+	void createConfirmPacket(int ID);
+	void waitForConfirmPacket(int ID);
 
 	GameObjects* getObj() {};
 
@@ -61,6 +68,7 @@ private:
 	float mPacketTimeStamp;
 
 	std::vector<std::pair<GameObjects*, int>> mGameObjVector;
+	std::queue<std::pair<const void*, size_t>> mPendingResendPackets;
 
 	Colour mP1Color, mP2Color;
 	std::string mBubbleImgID;
@@ -69,6 +77,8 @@ private:
 
 	int mCurrentID;
 	int mDropOdds;
+	int mLastSentID;
+	float mTimeTillResend;
 
 	bool mIsConnected;
 };

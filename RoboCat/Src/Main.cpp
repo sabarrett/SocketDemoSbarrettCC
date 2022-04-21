@@ -38,7 +38,7 @@ float FPS = 60.0;
 Colour blue(0, 0, 255); //P1
 Colour red(255, 0, 0); //P2
 int networkID = 0;
-int dropOdds = 2;
+int dropOdds = 80;
 
 int tempPlayerID;
 
