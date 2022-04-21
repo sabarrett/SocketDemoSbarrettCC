@@ -14,6 +14,6 @@ public:
 	void HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager) const override;
 
 private:
-	OutputMemoryBitStream data;
+	OutputMemoryBitStream* data;
 	TCPSocketPtr TCPSocket;
 };
