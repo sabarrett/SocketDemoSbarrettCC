@@ -23,7 +23,7 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 
 	mpUDPSocket = new UDPSocketPtr();
 	mpSocketAddressPtr = new SocketAddressPtr();
-	mGameObjectsVec = std::vector<std::pair<int, GameObject*>>();
+	mGameObjectsVec = std::vector<std::pair<int, /*GameObject**/ shared_ptr<GameObject>>>();
 	pDeliveryNotificationManager = new DeliveryNotificationManager(true, true, this);
 	mOutputBitStreamQueue = std::priority_queue<std::pair<float, OutputMemoryBitStream*>, std::vector<std::pair<float, OutputMemoryBitStream*>>, myComp>();
 
@@ -40,10 +40,10 @@ void Networker::init(GraphicsLibrary* graphicsLibrary, std::string rockSpriteIde
 void Networker::cleanup()
 {
 	//Cleanup map
-	std::vector<std::pair<int, GameObject*>>::iterator it;
+	std::vector<std::pair<int, /*GameObject**/ shared_ptr<GameObject> >>::iterator it;
 	for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 	{
-		delete it->second;
+		delete it->second.get();
 		it->second = nullptr;
 	}
 	mGameObjectsVec.clear();
@@ -185,18 +185,24 @@ PacketType Networker::receiveGameObjectStateUDP()
 				{
 				case GameObjectType::ROCK:
 				{
-					Rock* newRock = new Rock(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mRockSpriteIdentifier);
-					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newRock));
-					newRock = nullptr;
+					//Rock* newRock = new Rock(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mRockSpriteIdentifier);
+					shared_ptr<Rock> newRock = std::make_shared<Rock>(Rock(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mRockSpriteIdentifier));
+					mGameObjectsVec.push_back(pair<int, /*GameObject**/ shared_ptr<Rock>>(networkID, newRock));
+					
+					//delete newRock;
+					//newRock = nullptr;
 
 					break;
 				}
 
 				case GameObjectType::PLAYER:
 				{
-					PlayerController* newPlayerController = new PlayerController(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mPlayerMoveSpeed, mPlayerSpriteIdentifier);
-					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newPlayerController));
-					newPlayerController = nullptr;
+					//PlayerController* newPlayerController = new PlayerController(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mPlayerMoveSpeed, mPlayerSpriteIdentifier);
+					shared_ptr<PlayerController> newPlayerController = std::make_shared<PlayerController>(PlayerController(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), mPlayerMoveSpeed, mPlayerSpriteIdentifier));
+					mGameObjectsVec.push_back(pair<int, /*GameObject**/ shared_ptr<PlayerController>>(networkID, newPlayerController));
+					
+					//delete newPlayerController;
+					//newPlayerController = nullptr;
 
 					break;
 
@@ -212,9 +218,12 @@ PacketType Networker::receiveGameObjectStateUDP()
 					IMBStream.Read(sizeY);
 					IMBStream.Read(thickness);
 
-					Wall* newWall = new Wall(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), sizeX, sizeY, mWallColour, thickness);
-					mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, newWall));
-					newWall = nullptr;
+					//Wall* newWall = new Wall(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), sizeX, sizeY, mWallColour, thickness);
+					shared_ptr<Wall> newWall = std::make_shared<Wall>(Wall(networkID, mpGraphicsLibrary, pair<float, float>(posX, posY), sizeX, sizeY, mWallColour, thickness));
+					mGameObjectsVec.push_back(pair<int, /*GameObject**/ shared_ptr<Wall>>(networkID, newWall));
+					
+					//delete newWall;
+					//newWall = nullptr;
 
 					break;
 				}
@@ -251,7 +260,8 @@ PacketType Networker::receiveGameObjectStateUDP()
 						float sizeY;
 						float thiccness;
 
-						Wall* wall = (Wall*)mGameObjectsVec[networkID].second;
+						//Wall* wall = (Wall*)mGameObjectsVec[networkID].second;
+						Wall* wall = (Wall*)mGameObjectsVec[networkID].second.get();
 						IMBStream.Read(x);
 						IMBStream.Read(y);
 
@@ -264,6 +274,9 @@ PacketType Networker::receiveGameObjectStateUDP()
 						wall->setWallSizeX(sizeX);
 						wall->setWallSizeY(sizeY);
 						wall->setWallThickness(thiccness);
+
+						delete wall;
+						wall = nullptr;
 
 						break;
 					}
@@ -282,7 +295,8 @@ PacketType Networker::receiveGameObjectStateUDP()
 				//Delete element in map
 				if (mGameObjectsVec.size() > 0)
 				{
-					std::vector<std::pair<int, GameObject*>>::iterator it;
+					//std::vector<std::pair<int, GameObject*>>::iterator it;
+					std::vector<std::pair<int, shared_ptr<GameObject>>>::iterator it;
 					for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 					{
 						//DO NOT DELETE A PLAYER
@@ -357,12 +371,15 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().first);
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().second);
-			pInFlightPacket->SetTransmissionData(0, mGameObjectsVec[ID].second);
+			//pInFlightPacket->SetTransmissionData(0, mGameObjectsVec[ID].second);
+			pInFlightPacket->SetTransmissionData(0, mGameObjectsVec[ID].second.get());
 			//pInFlightPacket = nullptr;
 			break;
 
 		case GameObjectType::WALL:
-			Wall* wall = (Wall*)mGameObjectsVec[ID].second;
+
+			//Wall* wall = (Wall*)mGameObjectsVec[ID].second;
+			Wall* wall = (Wall*)mGameObjectsVec[ID].second.get();
 			OMBStream->Write(wall->getPosition().first);
 			OMBStream->Write(wall->getPosition().second);
 			OMBStream->Write(wall->getWallSizeX());
@@ -370,6 +387,10 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 			OMBStream->Write(wall->getWallThickness());
 			pInFlightPacket->SetTransmissionData(0, wall);
 			//pInFlightPacket = nullptr;
+
+			delete wall;
+			wall = nullptr;
+
 			break;
 		}
 
@@ -380,14 +401,15 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 		//Delete it on the sender's end
 		if (mGameObjectsVec.size() > 0)
 		{
-			std::vector<std::pair<int, GameObject*>>::iterator it;
+			//std::vector<std::pair<int, GameObject*>>::iterator it;
+			std::vector<std::pair<int, shared_ptr<GameObject>>>::iterator it;
 			for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 			{
 				//DO NOT DELETE A PLAYER
 				if (it->first == ID && it->second->getGameObjectType() != GameObjectType::PLAYER)
 				{
 					mGameObjectsVec.erase(it);
-					pInFlightPacket->SetTransmissionData(0, it->second);
+					pInFlightPacket->SetTransmissionData(0, it->second.get());
 					//pInFlightPacket = nullptr;
 
 					break;
@@ -443,14 +465,15 @@ void Networker::checkTimedOutPackets()
 	pDeliveryNotificationManager->ProcessTimedOutPackets();
 }
 
-void Networker::addGameObject(GameObject* objectToAdd, int networkID)
+void Networker::addGameObject(/*GameObject**/ shared_ptr<GameObject> objectToAdd, int networkID)
 {
-	mGameObjectsVec.push_back(pair<int, GameObject*>(networkID, objectToAdd));
+	mGameObjectsVec.push_back(pair<int, /*GameObject**/ shared_ptr<GameObject>>(networkID, objectToAdd));
 }
 
 void Networker::updateGameObjects()
 {
-	std::vector<std::pair<int, GameObject*>>::iterator it;
+	std::vector<std::pair<int, shared_ptr<GameObject>>>::iterator it;
+	//std::vector<std::pair<int, GameObject*>>::iterator it;
 	for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 	{
 		it->second->update();
@@ -459,7 +482,8 @@ void Networker::updateGameObjects()
 
 void Networker::renderGameObjects()
 {
-	std::vector<std::pair<int, GameObject*>>::iterator it;
+	std::vector<std::pair<int, shared_ptr<GameObject>>>::iterator it;
+	//std::vector<std::pair<int, GameObject*>>::iterator it;
 	for (it = mGameObjectsVec.begin(); it != mGameObjectsVec.end(); ++it)
 	{
 		it->second->draw();

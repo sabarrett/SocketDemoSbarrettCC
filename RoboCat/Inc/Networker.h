@@ -65,8 +65,8 @@ public:
 	void checkTimedOutPackets();
 
 	//Map
-	void addGameObject(GameObject* objectToAdd, int networkID);
-	GameObject* getGameObject(int networkID) { return mGameObjectsVec[networkID].second; };
+	void addGameObject(/*GameObject**/ shared_ptr<GameObject> objectToAdd, int networkID);
+	/*GameObject**/ shared_ptr<GameObject>  getGameObject(int networkID) { return mGameObjectsVec[networkID].second; };
 	void updateGameObjects();
 	void renderGameObjects();
 
@@ -78,7 +78,7 @@ private:
 	//Data
 	UDPSocketPtr* mpUDPSocket;
 	SocketAddressPtr* mpSocketAddressPtr;
-	std::vector<std::pair<int, GameObject*>> mGameObjectsVec;
+	std::vector<std::pair<int, /*GameObject**/ shared_ptr<GameObject>>> mGameObjectsVec;
 	DeliveryNotificationManager* pDeliveryNotificationManager;
 	std::priority_queue<std::pair<float, OutputMemoryBitStream*>, std::vector<std::pair<float, OutputMemoryBitStream*>>, myComp> mOutputBitStreamQueue;
 	bool mbIsInitted;

@@ -55,7 +55,8 @@ GameObjectType currentGameObjectType;
 std::string currentGameObjectTypeString;
 
 //-------------------------Player Data-------------------------
-PlayerController* pPlayerController;
+//PlayerController* pPlayerController;
+shared_ptr<PlayerController> pPlayerController;
 
 std::pair<float, float> startingPlayerPos;
 const std::pair<float, float> STARTING_PLAYER_POSITION_SERVER = std::make_pair<float, float>(300.0, 300.0);
@@ -114,7 +115,8 @@ void start()
 	if (networkID == 0)
 	{
 		//Spawn player
-		pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+		//pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+		pPlayerController = std::make_shared<PlayerController>(PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER));
 		pNetworkManager->addGameObject(pPlayerController, networkID);
 		networkID++;
 
@@ -137,7 +139,8 @@ void start()
 		}
 
 		//Spawn player
-		pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+		//pPlayerController = new PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER);
+		pPlayerController = std::make_shared<PlayerController>(PlayerController(networkID, pGraphics, startingPlayerPos, playerMoveSpeed, PLAYER_SPRITE_IDENTIFIER));
 		pNetworkManager->addGameObject(pPlayerController, networkID);
 		networkID++;
 
@@ -162,15 +165,17 @@ void update()
 			if (!bCanSpawnGameObject)
 			{
 				//Spawn current GameObject type
-				GameObject* gameObjectToSpawn;
+				//GameObject* gameObjectToSpawn;
 
 				switch (currentGameObjectType)
 				{
 				case GameObjectType::ROCK:
 				{
 					pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
-					gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
-					pNetworkManager->addGameObject(gameObjectToSpawn, networkID);
+					//gameObjectToSpawn = dynamic_cast<GameObject*>(new Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
+					//gameObjectToSpawn = dynamic_cast<shared_ptr<GameObject>>(Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
+					shared_ptr<Rock> newRock = std::make_shared<Rock>(Rock(networkID, pGraphics, mousePos, ROCK_SPRITE_IDENTIFIER));
+					pNetworkManager->addGameObject(newRock, networkID);
 					//pNetworkManager->sendGameObjectState(networkID, PacketType::PACKET_CREATE);
 					pNetworkManager->sendGameObjectStateUDP(networkID, PacketType::PACKET_CREATE);
 					networkID++;
@@ -180,8 +185,9 @@ void update()
 				case GameObjectType::WALL:
 				{
 					pair<float, float> mousePos = std::make_pair(pInput->getMouseX(), pInput->getMouseY());
-					gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, wallColour, wallBorderThickness));
-					pNetworkManager->addGameObject(gameObjectToSpawn, networkID);
+					//gameObjectToSpawn = dynamic_cast<GameObject*>(new Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, wallColour, wallBorderThickness));
+					shared_ptr<Wall> newWall = std::make_shared<Wall>(Wall(networkID, pGraphics, mousePos, wallSizeX, wallSizeY, wallColour, wallBorderThickness));
+					pNetworkManager->addGameObject(newWall, networkID);
 					//pNetworkManager->sendGameObjectState(networkID, PacketType::PACKET_CREATE);
 					pNetworkManager->sendGameObjectStateUDP(networkID, PacketType::PACKET_CREATE);
 					networkID++;
@@ -197,7 +203,8 @@ void update()
 				}
 				}
 
-				gameObjectToSpawn = nullptr;
+				//delete gameObjectToSpawn;
+				//gameObjectToSpawn = nullptr;
 				bCanSpawnGameObject = true;
 			}
 		}
