@@ -357,7 +357,7 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().first);
 			OMBStream->Write(mGameObjectsVec[ID].second->getPosition().second);
-			pInFlightPacket->SetTransmissionData(0, std::shared_ptr<GameObject>(mGameObjectsVec[ID].second));
+			pInFlightPacket->SetTransmissionData(0, mGameObjectsVec[ID].second);
 			//pInFlightPacket = nullptr;
 			break;
 
@@ -368,7 +368,7 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 			OMBStream->Write(wall->getWallSizeX());
 			OMBStream->Write(wall->getWallSizeY());
 			OMBStream->Write(wall->getWallThickness());
-			pInFlightPacket->SetTransmissionData(0, std::shared_ptr<GameObject>(wall));
+			pInFlightPacket->SetTransmissionData(0, wall);
 			//pInFlightPacket = nullptr;
 			break;
 		}
@@ -387,7 +387,7 @@ void Networker::sendGameObjectStateUDP(int ID, PacketType packetHeader)
 				if (it->first == ID && it->second->getGameObjectType() != GameObjectType::PLAYER)
 				{
 					mGameObjectsVec.erase(it);
-					pInFlightPacket->SetTransmissionData(0, std::shared_ptr<GameObject>(it->second));
+					pInFlightPacket->SetTransmissionData(0, it->second);
 					//pInFlightPacket = nullptr;
 
 					break;
