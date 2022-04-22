@@ -1,4 +1,5 @@
 #include "RoboCatPCH.h"
+#include "AckRange.h"
 
 void AckRange::Write( OutputMemoryBitStream& inOutputStream ) const
 {

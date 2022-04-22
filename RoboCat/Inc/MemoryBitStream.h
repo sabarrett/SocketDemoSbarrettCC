@@ -1,8 +1,10 @@
+#pragma once
 
 #include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <iostream>
+#include "RoboMath.h"
 
 class GameObject;
 

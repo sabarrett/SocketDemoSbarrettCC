@@ -1,3 +1,9 @@
+#pragma once
+
+#include <unordered_map>
+
+using std::unordered_map;
+
 class DeliveryNotificationManager;
 
 //in case we decide to change the type of the sequence number to use fewer or more bits
@@ -12,22 +18,22 @@ public:
 	PacketSequenceNumber GetSequenceNumber() const	{ return mSequenceNumber; }
 	float				 GetTimeDispatched() const	{ return mTimeDispatched; }
 	
-	void 				 SetTransmissionData( int inKey, TransmissionDataPtr	inTransmissionData )
+	void 				 SetTransmissionData( int inKey, TransmissionData*	inTransmissionData )
 	{
 		mTransmissionDataMap[ inKey ] = inTransmissionData;
 	}
-	const TransmissionDataPtr GetTransmissionData( int inKey ) const
+	const TransmissionData* GetTransmissionData( int inKey ) const
 	{
 		auto it = mTransmissionDataMap.find( inKey );
 		return ( it != mTransmissionDataMap.end() ) ? it->second : nullptr;
 	}
 	
-	void			HandleDeliveryFailure( DeliveryNotificationManager* inDeliveryNotificationManager ) const;
-	void			HandleDeliverySuccess( DeliveryNotificationManager* inDeliveryNotificationManager ) const;
+	void			HandleDeliveryFailure(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const;
+	void			HandleDeliverySuccess(DeliveryNotificationManager* inDeliveryNotificationManager, const PacketSequenceNumber packetSequenceNum) const;
 	
 private:
 	PacketSequenceNumber	mSequenceNumber;
 	float			mTimeDispatched;
 	
-	unordered_map< int, TransmissionDataPtr >	mTransmissionDataMap;
+	unordered_map< int, TransmissionData* >	mTransmissionDataMap;
 };

@@ -1,0 +1,43 @@
+Assignment Requirements:
+
+"Enhance" your previous game to simulate jitter, latency, and dropped packets, and add a reliability layer to deal with these potential pitfalls. Your game must:
+
+. Pass all checks on github
+. Be able to open a window
+. Have at least two players able to connect at once
+--> These are the minimum requirements for the assignment to be gradable.
+
+- Packets are occasionally "dropped," by random chance or by some algorithm. Dropped packets are registered as having been sent by the sender, but do not actually call the socket's send() function. Random delay is introduced to some packet's send time, and packets can be delivered out of order.
+- Game state is sent through a reliability layer. Important data is sent through guaranteed mechanisms, while data that does not require guaranteed delivery is sent through simpler mechanisms. Important data is resilient to jitter, out-of-order delivery, and high latency.
+
+---------------------------------------------------------------
+Notes and Ideas:
+
+--> Chapter 7 slide 14 gives a good explanation of how this can be done
+
+CLASS NOTES 19/04/2022:
+For handling delviery failure and success, InFlightPacket implicit constructor call, need to give it transmission data. How?
+--> override void HandleDelivery... in inherited classes
+--> Pass an instance of the class to InFlightPacket
+--> Tip: use std::shared_ptr<ClassName> as type so you don't have to worry about memory leaks
+--> InFlightPacket::SetTransmissionData(any key (0 is best as it is the index and we only want 1 thing in container), instance of class);
+
+--> TransmissionDataPtr classInstance = std::make_shared<ClassName>(constructor args);
+--> InFlightPacket* packet = deliveryNotificationManager->WriteState(packetData);
+--> packet->SetTransmissionData(index, classInstance);
+--> //Write rest of packetData
+
+-----------------------------------------------------------------
+
+Simulating Latency/Jitter
+
+1. Along with header, send a float for arrival time
+	Note: Arrival time should be +/- a random amount, for simulating jitter
+
+2. Insert inflightpacket into a queue (couple ways to do this)
+	Note: one way the professor recommended is to enqueue the bytes recieve and split it that way (memory management yaaaaay)
+
+3. Sort Queue based on arrival time (this will simulate jitter)
+
+4. Each frame of the game, we process only the packets that arrvive based on the current arrival time
+	Note: if arrival time = x seconds, we only process the packets x seconds ago
