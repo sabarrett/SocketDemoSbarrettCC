@@ -1,9 +1,0 @@
-*.exe
-*.obj
-.vs/
-*.filters
-*.user
-*.pdb
-
-Debug/
-packages/
