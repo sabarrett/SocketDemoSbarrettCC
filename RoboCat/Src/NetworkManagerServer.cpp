@@ -1,5 +1,6 @@
 #include "NetworkManagerServer.h"
 
+//put this in receiving packets, so receive and then chance to drop
 /*
 if( RoboMath::GetRandomFloat() >= mDropPacketChance )
 			{
