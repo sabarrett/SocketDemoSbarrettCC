@@ -137,11 +137,17 @@ void NetworkManager::createConfirmPacket(int ID)
 	(*mpTCPSocket)->Send(OutMBStream->GetBufferPtr(), OutMBStream->GetBitLength());
 }
 
-void NetworkManager::waitForConfirmPacket(int ID)
+bool NetworkManager::waitForConfirmPacket(int ID)
 {
-	if (ID == mLastSentID)
+	if (mPendingResendPackets.size() > 0)
 	{
-		mPendingResendPackets.pop();
+		if (ID == mLastSentID)
+		{
+			mPendingResendPackets.pop();
+			return true;
+		}
+		else
+			return false;
 	}
 }
 
@@ -170,7 +176,7 @@ void NetworkManager::recieve()
 				if (mCurrentID < networkID)
 					mCurrentID = networkID;
 
-	if (randDrop > mDropOdds)
+	//if (randDrop > mDropOdds)
 	{
 				GameObjType recieveObjType;
 				InMBStream.Read(recieveObjType);
@@ -233,10 +239,14 @@ void NetworkManager::recieve()
 						newPlayer = nullptr;
 						break;
 					}
+					createConfirmPacket(mCurrentID);
 				}
 
 				case TypePacket::PACKET_UPDATE:
 				{
+					//if (mGameObjVector.size() < networkID - 1)
+					//	waitForConfirmPacket(networkID);
+					
 					if (mGameObjVector[networkID].first != nullptr)
 					{
 						float posY;
@@ -266,6 +276,7 @@ void NetworkManager::recieve()
 							mGameObjVector[networkID].first->setPosition(0, 0); //placeholder content, player is just entity spawning as obj
 							break;
 						}
+						createConfirmPacket(mCurrentID);
 					}
 					else
 					{
@@ -291,6 +302,7 @@ void NetworkManager::recieve()
 						}
 
 					}
+					createConfirmPacket(mCurrentID);
 					break;
 				}
 
@@ -298,7 +310,8 @@ void NetworkManager::recieve()
 				{
 					int ID;
 					InMBStream.Read(ID);
-					if (ID == mLastSentID)
+					waitForConfirmPacket(ID);
+					/*if (ID == mLastSentID)
 					{
 						mPendingResendPackets.pop();
 						break;
@@ -306,7 +319,7 @@ void NetworkManager::recieve()
 					else
 					{
 
-					}
+					}*/
 				}
 
 				default:
@@ -315,6 +328,7 @@ void NetworkManager::recieve()
 				}
 				//(*mpTCPSocket)->Send(, OutMBStream->GetBitLength());
 			}
+
 		}
 		else if (bytesRecieved == -10053 || bytesRecieved == -10054)
 		{

@@ -54,7 +54,7 @@ public:
 	float getTimeStamp() { return mPacketTimeStamp; }
 
 	void createConfirmPacket(int ID);
-	void waitForConfirmPacket(int ID);
+	bool waitForConfirmPacket(int ID);
 
 	GameObjects* getObj() {};
 

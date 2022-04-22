@@ -9,6 +9,7 @@
 #include "GameController.h"
 #include "NetworkManager.h"
 #include "PlayerController.h"
+#include <time.h>
 
 GraphicsLibrary* pGraphicsLib;
 float screenSizeX = 1000.0;
@@ -46,7 +47,7 @@ int tempPlayerID;
 bool init()
 {
 	bool initted = false;
-	srand(6);
+	srand(time(0));
 
 	pGraphicsLib = new GraphicsLibrary(screenSizeX, screenSizeY);
 	initted = pGraphicsLib->init();
@@ -182,6 +183,7 @@ void update()
 	}
 
 	pNetworkManager->updateObj();
+	//pNetworkManager->update();
 }
 
 void cleanup()
