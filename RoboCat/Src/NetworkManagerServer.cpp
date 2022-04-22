@@ -1,5 +1,23 @@
 #include "NetworkManagerServer.h"
 
+/*
+if( RoboMath::GetRandomFloat() >= mDropPacketChance )
+			{
+				//we made it
+				//shove the packet into the queue and we'll handle it as soon as we should...
+				//we'll pretend it wasn't received until simulated latency from now
+				//this doesn't sim jitter, for that we would need to.....
+
+				float simulatedReceivedTime = Timing::sInstance.GetTimef() + mSimulatedLatency;
+				mPacketQueue.emplace( simulatedReceivedTime, inputStream, fromAddress );
+			}
+			else
+			{
+				LOG( "Dropped packet!", 0 );
+				//dropped!
+			}
+*/
+
 NetworkManagerServer::NetworkManagerServer()
 {
 	mName = "server";
