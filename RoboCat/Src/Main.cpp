@@ -1,4 +1,3 @@
-
 //#include "RoboCatPCH.h"
 #include "InputSystem.h"
 #include "GraphicsLibrary.h"
@@ -122,6 +121,7 @@ int main(int argc, const char** argv)
 			mNetworkManager.update(mGameObjects);
 		}
 
+		//al_create_bitmap(1600, 1200);
 		//mpGraphicsLibrary->drawImage("Woods.png", 0, 0); //i need to make this work
 		mpGraphicsLibrary->render(); //render at the very end
 	}
