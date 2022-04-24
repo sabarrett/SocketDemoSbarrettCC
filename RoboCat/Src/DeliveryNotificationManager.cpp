@@ -39,7 +39,6 @@ InFlightPacket* DeliveryNotificationManager::WriteSequenceNumber( OutputMemoryBi
 	if( mShouldProcessAcks )
 	{
 		mInFlightPackets.emplace_back( sequenceNumber );
-
 		return &mInFlightPackets.back();
 	}
 	else

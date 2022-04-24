@@ -12,7 +12,7 @@ void InFlightPacket::HandleDeliveryFailure( DeliveryNotificationManager* inDeliv
 {
 	for( const auto& pair : mTransmissionDataMap )
 	{
-		pair.second->HandleDeliveryFailure( inDeliveryNotificationManager );
+		pair->HandleDeliveryFailure( inDeliveryNotificationManager );
 	}
 }
 
@@ -20,6 +20,6 @@ void InFlightPacket::HandleDeliverySuccess( DeliveryNotificationManager* inDeliv
 {
 	for( const auto& pair : mTransmissionDataMap )
 	{
-		pair.second->HandleDeliverySuccess( inDeliveryNotificationManager );
+		pair->HandleDeliverySuccess( inDeliveryNotificationManager );
 	}
 }
