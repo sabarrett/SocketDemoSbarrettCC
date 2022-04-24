@@ -344,8 +344,7 @@ int Game::Send(OutputMemoryBitStream& oStream)
 
 void Game::Receive()
 {
-	while (mRunning)
-	{	
+	
 		bool temp = true;
 		char buffer[1024];
 		int32_t bytesReceived = TCPSocket->Receive(buffer, 1024);
@@ -410,7 +409,7 @@ void Game::Receive()
 				}
 			}
 		}
-	}
+	
 }
 
 void Game::Render()
@@ -444,13 +443,13 @@ void Game::CheckCollisions(ball* ball)
 
 void Game::Update()
 {
-	std::thread receiveThread(&Game::Receive,this);
+	//std::thread receiveThread(&Game::Receive,this);
 
 	std::cout << "UPDATE THREAD" << std::endl;
 	while (mRunning)
 	{
 
-		
+		Receive();
 
 		ProcessLocalInput();
 		Render();
@@ -474,7 +473,7 @@ void Game::Update()
 		
 	}
 
-	receiveThread.join();
+	//receiveThread.join();
 
 	string junk;
 	std::cout << "Press any key to continue." << std::endl;
