@@ -68,7 +68,7 @@ private:
 	float mPacketTimeStamp;
 
 	std::vector<std::pair<GameObjects*, int>> mGameObjVector;
-	std::queue<std::pair<const void*, size_t>> mPendingResendPackets;
+	std::vector<std::pair<std::pair<const void*, size_t>, int>> mPendingResendPackets;
 
 	Colour mP1Color, mP2Color;
 	std::string mBubbleImgID;

@@ -39,7 +39,7 @@ float FPS = 60.0;
 Colour blue(0, 0, 255); //P1
 Colour red(255, 0, 0); //P2
 int networkID = 0;
-int dropOdds = 80;
+int dropOdds = 20;
 
 int tempPlayerID;
 
@@ -110,7 +110,7 @@ void draw()
 
 void update()
 {
-	if(networkID != pNetworkManager->getCurrentID())
+	if (networkID != pNetworkManager->getCurrentID())
 	{
 		if (networkID > pNetworkManager->getCurrentID())
 			pNetworkManager->setCurrentID(networkID);
@@ -122,69 +122,73 @@ void update()
 	KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyPressed);
 	switch (keyCode)
 	{
-		case KeyCode::ESC:
+	case KeyCode::ESC:
+	{
+		isRunning = false;
+		break;
+	}
+	case KeyCode::B:
+	{
+		float randPosX = rand() % (int)screenSizeX;
+		float randPosY = 10.0;
+
+		GameObjects* newBubble;
+		newBubble = new Bubble(pGraphicsLib, networkID, BUBBLE_IMG_IDENTIFIER, randPosX, randPosY, tempPlayerID); //watch out for this
+
+		pNetworkManager->spawnObj(newBubble, networkID);
+		pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+		networkID++;
+		break;
+	}
+
+	case KeyCode::LEFT:
+	{
+		//make left bees
+		float randPosY = rand() % (int)screenSizeY;
+		float randPosX = 10.0;
+		float randNum = rand() % 10;
+
+		GameObjects* newBee;
+		newBee = new Bees(pGraphicsLib, networkID, BEE_IMG_IDENTIFIER, randPosX, randPosY, randNum); //watch out for this
+
+		pNetworkManager->spawnObj(newBee, networkID);
+		pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+		networkID++;
+		break;
+	}
+
+	case KeyCode::RIGHT: //maybe someday will be more bees
+	{
+		if (networkID > 1)
 		{
-			isRunning = false;
-			break;
+			pNetworkManager->send(networkID - 1, TypePacket::PACKET_DESTROY);
+			networkID = pNetworkManager->getCurrentID();
 		}
-		case KeyCode::B:
-		{
-			float randPosX = rand() % (int)screenSizeX;
-			float randPosY = 10.0;
+		break;
+	}
 
-			GameObjects* newBubble;
-			newBubble = new Bubble(pGraphicsLib, networkID, BUBBLE_IMG_IDENTIFIER, randPosX, randPosY, tempPlayerID);
+	case KeyCode::SPACE:
+	{
+		float randPosX = rand() % (int)screenSizeX;
+		float randPosY = rand() % (int)screenSizeY;
 
-			pNetworkManager->spawnObj(newBubble, networkID);
-			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-			networkID++;
-			break;
-		}
+		GameObjects* newBoulder;
+		newBoulder = new Boulder(pGraphicsLib, networkID, BOULDER_IMG_IDENTIFIER, randPosX, randPosY);
 
-		case KeyCode::LEFT:
-		{
-			//make left bees
-			float randPosY = rand() % (int)screenSizeY;
-			float randPosX = 10.0;
-			float randNum = rand() % 10;
-
-			GameObjects* newBee;
-			newBee = new Bees(pGraphicsLib, networkID, BEE_IMG_IDENTIFIER, randPosX, randPosY, randNum);
-
-			pNetworkManager->spawnObj(newBee, networkID);
-			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-			networkID++;
-			break;
-		}
-	
-		case KeyCode::RIGHT: //maybe someday will be more bees
-		{	
-			if (networkID > 1)
-			{
-				pNetworkManager->send(networkID-1, TypePacket::PACKET_DESTROY);
-				networkID = pNetworkManager->getCurrentID();
-			}
-			break;
-		}
-
-		case KeyCode::SPACE:
-		{	
-			float randPosX = rand() % (int)screenSizeX;
-			float randPosY = rand() % (int)screenSizeY;
-
-			GameObjects* newBoulder;
-			newBoulder = new Boulder(pGraphicsLib, networkID, BOULDER_IMG_IDENTIFIER, randPosX, randPosY);
-
-			pNetworkManager->spawnObj(newBoulder, networkID);
-			pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-			networkID++;
-			break;
-		}
+		pNetworkManager->spawnObj(newBoulder, networkID);
+		pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+		networkID++;
+		break;
+	}
 	}
 
 	pNetworkManager->updateObj();
-	//pNetworkManager->update();
+	//pNetworkManager->update(Timing::sInstance.GetDeltaTime(), Timing::sInstance.GetTime());
+	Timing::sInstance.Update();
+	pNetworkManager->update(Timing::sInstance.GetDeltaTime(), Timing::sInstance.GetTime());
+
 }
+
 
 void cleanup()
 {
@@ -243,14 +247,14 @@ int main(int argc, const char** argv)
 			if (successConnect)
 				std::cout << "Client Connected\n";
 
-			tempPlayerID = 1;
-			networkID = 1;
+			tempPlayerID = 0;
+			networkID = 0;
 		}
 
 		if (successConnect)
 		{
 			start();
-			networkID = 2; //don't overwrite players
+			//networkID = 2; //don't overwrite players
 
 			while (isRunning)
 			{
