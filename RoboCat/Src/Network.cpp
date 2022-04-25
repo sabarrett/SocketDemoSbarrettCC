@@ -116,8 +116,6 @@ void Network::Receive()
 
 	if (byteReceive > 0)
 	{
-		
-
 		//we made it, queue packet for later processing
 		float simulatedReceivedTime =
 			Timing::sInstance.GetTimef() +
@@ -125,7 +123,7 @@ void Network::Receive()
 			(rand() - 0.5f) *
 			mDoubleSimulatedMaxJitter;
 		//keep list sorted by simulated Receive time
-		std::vector<std::pair<float, InputMemoryBitStream>>::iterator it = mPacketList.end();
+		std::list<std::pair<float, InputMemoryBitStream>>::iterator it = mPacketList.end();
 		if (mPacketList.empty())
 		{
 			mPacketList.push_back(std::make_pair(Timing::sInstance.GetTimef(), InputMemoryBitStream(buffer, byteReceive * 8)));
@@ -161,15 +159,14 @@ void Network::Draw()
 void Network::ProcessQueuedPackets()
 {
 	float currentTime = Timing::sInstance.GetTimef();
-	//look at the front packet...
-	std::vector<std::pair<float, InputMemoryBitStream>>::iterator it = mPacketList.begin();
-	while (it != mPacketList.end())
+	while (!mPacketList.empty())
 	{
+		std::pair<float, InputMemoryBitStream> packet = mPacketList.front();
 		//is it time to process this packet?
-		if (currentTime > it->first)
+		if (currentTime > packet.first)
 		{
-			ProcessPacket(it->second);
-			mPacketList.erase(it);
+			ProcessPacket(packet.second);
+			mPacketList.pop_front();
 		}
 		else
 		{

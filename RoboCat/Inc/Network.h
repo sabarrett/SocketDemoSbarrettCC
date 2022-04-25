@@ -48,6 +48,6 @@ private:
 	int mDropPacketChance = 25;
 	int mSimulatedLatency = 250;
 	int mDoubleSimulatedMaxJitter = 250;
-	std::vector<std::pair<float, InputMemoryBitStream>> mPacketList;
+	std::list<std::pair<float, InputMemoryBitStream>> mPacketList;
 
 };
