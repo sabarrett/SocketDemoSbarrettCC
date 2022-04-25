@@ -30,7 +30,7 @@
 //					mSimulatedLatency +
 //					(RoboMath::GetRandomFloat() - 0.5f) *
 //					mDoubleSimulatedMaxJitter;
-//				//keep list sorted by simulated receive time
+//				//keep list sorted by simulated Receive time
 //				auto it = mPacketList.end();
 //				while (it != mPacketList.begin())
 //				{

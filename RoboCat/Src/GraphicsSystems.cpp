@@ -13,10 +13,11 @@ GraphicsSystems::GraphicsSystems()
 
 GraphicsSystems::~GraphicsSystems()
 {
-	cleanup();
+	al_destroy_display(mpDisplay);
+	mpDisplay = nullptr;
 };
 
-bool GraphicsSystems::init(int width, int height)
+bool GraphicsSystems::Init(int width, int height)
 {
 	if (!al_init())
 	{
@@ -36,21 +37,9 @@ bool GraphicsSystems::init(int width, int height)
 	return true;
 }
 
-void GraphicsSystems::cleanup()
-{
-	al_destroy_display(mpDisplay);
-	mpDisplay = nullptr;
-}
-
-
-void GraphicsSystems::draw(int locX, int locY, ALLEGRO_BITMAP* bitmap)//draws to the back buffer
+void GraphicsSystems::Draw(int locX, int locY, ALLEGRO_BITMAP* bitmap)//draws to the back buffer
 {
 	al_draw_bitmap(bitmap,locX, locY, 0);
-}
-
-void GraphicsSystems::flip()
-{
-   al_flip_display();
 }
 
 

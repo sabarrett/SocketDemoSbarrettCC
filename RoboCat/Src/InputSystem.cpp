@@ -11,23 +11,16 @@ InputSystem::InputSystem()
 
 InputSystem::~InputSystem()
 {
-	cleanup();
-}
-
-void InputSystem::cleanup()
-{
 	al_unregister_event_source(mpKeyboardEvents, al_get_keyboard_event_source());
 	al_destroy_event_queue(mpKeyboardEvents);
 
 	delete mpKeyboardState;
 	mpKeyboardState = nullptr;
 
-	
-
 	al_uninstall_keyboard();
 }
 
-bool InputSystem::initInputSystem(GraphicsSystems* mpGraphicsSystem)
+bool InputSystem::InitInputSystem(GraphicsSystems* mpGraphicsSystem)
 {
 	if (!al_install_keyboard())
 	{
@@ -41,7 +34,7 @@ bool InputSystem::initInputSystem(GraphicsSystems* mpGraphicsSystem)
 	return true;
 }
 
-void InputSystem::keyUpdate()//updates the key state
+void InputSystem::KeyUpdate()//updates the key state
 {
 	al_get_keyboard_state(mpKeyboardState);
 }
@@ -49,6 +42,6 @@ void InputSystem::keyUpdate()//updates the key state
 
 bool InputSystem::getKeyState(int keycode)//tracks the current key stokes
 {
-	keyUpdate();
+	KeyUpdate();
 	return al_key_down(mpKeyboardState, keycode);
 }

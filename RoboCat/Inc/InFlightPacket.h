@@ -12,6 +12,8 @@ public:
 	
 	PacketSequenceNumber GetSequenceNumber() const	{ return mSequenceNumber; }
 	float				 GetTimeDispatched() const	{ return mTimeDispatched; }
+	float				 GetReceivedTime() const	{ return mTimeDispatched; }
+	void				 SetReceivedTime(float timeReceived)	{ mTimeReceived = timeReceived; }
 	
 	void 				 SetTransmissionData( int inKey, TransmissionDataPtr	inTransmissionData )
 	{
@@ -29,6 +31,7 @@ public:
 private:
 	PacketSequenceNumber	mSequenceNumber;
 	float			mTimeDispatched;
+	float			mTimeReceived;
 	
 	unordered_map< int, TransmissionDataPtr >	mTransmissionDataMap;
 };

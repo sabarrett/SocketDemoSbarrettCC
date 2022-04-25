@@ -28,10 +28,9 @@ public:
 	InputSystem();
 	~InputSystem();
 
-	bool initInputSystem(GraphicsSystems* mpGraphicsSystem);
-	void cleanup();
+	bool InitInputSystem(GraphicsSystems* mpGraphicsSystem);
 
-	void keyUpdate();
+	void KeyUpdate();
 
 	bool getKeyState(int keycode);
 

@@ -76,8 +76,7 @@ void DoTcpServer(std::string port)
 
 	connSocket->SetNonBlockingMode(true);
 
-	ServerNetwork = new Network();
-	ServerNetwork->init(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
+	ServerNetwork = new Network(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", connSocket);
 }
 
 void DoTcpClient(std::string port)
@@ -130,8 +129,7 @@ void DoTcpClient(std::string port)
 
 	clientSocket->SetNonBlockingMode(true);
 
-	ClientNetwork = new Network();
-	ClientNetwork->init(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
+	ClientNetwork = new Network(Graphics, DeliveryManager, ASSET_PATH + "dean_spritesCropped.png", ASSET_PATH + "amongUs.png", ASSET_PATH + "SCOTT.png", clientSocket);
 }
 
 bool initGame()
@@ -141,7 +139,7 @@ bool initGame()
 	bool didInIt = false;
 
 	Graphics = new GraphicsSystems;
-	didInIt = Graphics->init(ScreenSizeX, ScreenSizeY);
+	didInIt = Graphics->Init(ScreenSizeX, ScreenSizeY);
 
 	if (!didInIt)
 	{
@@ -149,7 +147,7 @@ bool initGame()
 	}
 
 	Inputs = new InputSystem;
-	didInIt = Inputs->initInputSystem(Graphics);
+	didInIt = Inputs->InitInputSystem(Graphics);
 
 	if (!didInIt)
 	{
@@ -176,25 +174,24 @@ void initCleanup()
 {
 	if (ClientNetwork)
 	{
-		ClientNetwork->cleanUp();
 		delete ClientNetwork;
 		ClientNetwork = nullptr;
 	}
 
 	if (ServerNetwork)
 	{
-		ServerNetwork->cleanUp();
 		delete ServerNetwork;
 		ServerNetwork = nullptr;
 	}
 
-	Inputs->cleanup();
 	delete Inputs;
 	Inputs = nullptr;
 
-	Graphics->cleanup();
 	delete Graphics;
 	Graphics = nullptr;
+
+	delete DeliveryManager;
+	DeliveryManager = nullptr;
 }
 
 bool DrawRandomly(bool isServer)
@@ -217,11 +214,11 @@ bool DrawRandomly(bool isServer)
 
 				if (isServer)
 				{
-					ServerNetwork->send(PacketType::CREATE_PACKET, Dean);
+					ServerNetwork->Send(PacketType::CREATE_PACKET, Dean);
 				}
 				else
 				{
-					ClientNetwork->send(PacketType::CREATE_PACKET, Dean);
+					ClientNetwork->Send(PacketType::CREATE_PACKET, Dean);
 				}
 				break;
 			}
@@ -236,11 +233,11 @@ bool DrawRandomly(bool isServer)
 
 				if (isServer)
 				{
-					ServerNetwork->send(PacketType::CREATE_PACKET, Among);
+					ServerNetwork->Send(PacketType::CREATE_PACKET, Among);
 				}
 				else
 				{
-					ClientNetwork->send(PacketType::CREATE_PACKET, Among);
+					ClientNetwork->Send(PacketType::CREATE_PACKET, Among);
 				}
 
 				break;
@@ -256,11 +253,11 @@ bool DrawRandomly(bool isServer)
 
 				if (isServer)
 				{
-					ServerNetwork->send(PacketType::CREATE_PACKET, Scott);
+					ServerNetwork->Send(PacketType::CREATE_PACKET, Scott);
 				}
 				else
 				{
-					ClientNetwork->send(PacketType::CREATE_PACKET, Scott);
+					ClientNetwork->Send(PacketType::CREATE_PACKET, Scott);
 				}
 				break;
 			}
@@ -277,12 +274,12 @@ void DeleteRandomly(bool isServer)
 	{
 		if (isServer)
 		{
-			ServerNetwork->send(PacketType::DELETE_PACKET, ServerNetwork->getmGameObjects().back().second);
+			ServerNetwork->Send(PacketType::DELETE_PACKET, ServerNetwork->getmGameObjects().back().second);
 			mNetworkID--;
 		}
 		else
 		{
-			ClientNetwork->send(PacketType::DELETE_PACKET, ClientNetwork->getmGameObjects().back().second);
+			ClientNetwork->Send(PacketType::DELETE_PACKET, ClientNetwork->getmGameObjects().back().second);
 			mNetworkID--;
 		}
 	}
@@ -358,7 +355,7 @@ int main(int argc, const char** argv)
 
 		if (isServer)
 		{
-			ServerNetwork->receive();
+			ServerNetwork->Receive();
 
 			// Redraw Scene
 			al_clear_to_color(al_map_rgba(0, 0, 0, 1));
@@ -372,7 +369,7 @@ int main(int argc, const char** argv)
 		}
 		else
 		{
-			ClientNetwork->receive();
+			ClientNetwork->Receive();
 
 			// Redraw Scene
 			al_clear_to_color(al_map_rgba(0, 0, 0, 1));

@@ -14,7 +14,7 @@ using std::pair;
 using std::string;
 using std::map;
 
-enum PacketType
+enum class PacketType
 {
 	CREATE_PACKET,
 	DELETE_PACKET
@@ -23,14 +23,14 @@ enum PacketType
 class Network
 {
 public :
-	Network() {};
+	Network(GraphicsSystems* graphicsSystem, DeliveryNotificationManager* deliveryManager, std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket);
+	~Network();
 
-	bool init(GraphicsSystems* graphicsSystem, DeliveryNotificationManager* deliveryManager, std::string deanSprite, std::string amongSprite, std::string scottSprite, TCPSocketPtr liveSocket);
-	void cleanUp();
-
-	void send(PacketType packetTypeHead, GameObject* object);
-	void receive();
-	void draw();
+	void Send(PacketType packetTypeHead, GameObject* object);
+	void Receive();
+	void Draw();
+	void ProcessQueuedPackets();
+	void ProcessPacket(InputMemoryBitStream inputBitStream);
 
 	std::vector<std::pair<int, GameObject*>> getmGameObjects() { return mGameObjects; };
 
@@ -46,5 +46,8 @@ private:
 	std::string mScottSprite;
 
 	int mDropPacketChance = 25;
+	int mSimulatedLatency = 250;
+	int mDoubleSimulatedMaxJitter = 250;
+	std::vector<std::pair<float, InputMemoryBitStream>> mPacketList;
 
 };

@@ -21,8 +21,8 @@ GameObject::~GameObject()
 
 void GameObject::Draw()
 {
-	mGraphics->draw(mPosition.first - (al_get_bitmap_width(mpBitmap) * 0.5), mPosition.second - (al_get_bitmap_height(mpBitmap) * 0.5), mpBitmap);
-	//mGraphics->flip();
+	mGraphics->Draw(mPosition.first - (al_get_bitmap_width(mpBitmap) * 0.5), mPosition.second - (al_get_bitmap_height(mpBitmap) * 0.5), mpBitmap);
+	//mGraphics->Flip();
 }
 
 DeanSprite::DeanSprite(int networkId, std::pair<float, float> position, std::string imageFilePath, GraphicsSystems* graphics)

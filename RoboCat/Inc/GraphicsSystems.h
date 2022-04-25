@@ -19,20 +19,15 @@ public:
 	~GraphicsSystems(); //destructor
 
 
-	bool init(int mWidth, int mHeight);
-
-	void cleanup();
-	void draw(int locX, int locY, ALLEGRO_BITMAP* bitmap); //draw to current backbuffer
+	bool Init(int mWidth, int mHeight);
+	void Draw(int locX, int locY, ALLEGRO_BITMAP* bitmap); //Draw to current backbuffer
 
 	
-    void flip();//flips display
+    void Flip() { al_flip_display(); };//flips display
 
 	int getmScreenHeight() { return mScreenHeight; };
 	int getmScreenWidth() { return mScreenWidth; };
 	ALLEGRO_DISPLAY* getmpDisplay() { return mpDisplay; };
-	
-	//mutators
-	//void setmInited(bool torf) { mInited = torf; };
 
 private:
 

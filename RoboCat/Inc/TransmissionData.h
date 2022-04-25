@@ -1,4 +1,8 @@
 #pragma once
+
+#include "TCPSocket.h"
+#include "MemoryBitStream.h"
+
 class DeliveryNotificationManager;
 
 class TransmissionData
