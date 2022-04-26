@@ -242,6 +242,10 @@ void NetworkManager::requestPacket(KeyCode key) //client ask
 		type = PACKET_CREATE;
 		break;
 	}
+	default:
+		objType = INVALID;
+		type = PACKET_UPDATE;
+		break;
 	}
 
 	OutMBStream.Write(type);
@@ -532,7 +536,6 @@ void NetworkManager::updateObj()
 
 void NetworkManager::update(float deltaTime, float time) //server
 {
-	std::cout << deltaTime << std::endl;
 	if (mPendingResendPackets.size() > 0)
 	{
 		if (mTimeTillResend <= 0.0f)
