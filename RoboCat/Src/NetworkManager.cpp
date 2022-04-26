@@ -153,10 +153,112 @@ bool NetworkManager::waitForConfirmPacket(int ID)
 	}
 }
 
+void NetworkManager::processPacket(KeyCode key, string img, int player)
+{
+	switch (key)
+	{
+	case KeyCode::B:
+	{
+		float randPosX = rand() % (int)screenSizeX;
+		float randPosY = 10.0;
+
+		GameObjects* newBubble;
+		newBubble = new Bubble(mpGraphicsLib, mServerNetworkID, img, randPosX, randPosY, player);
+
+		spawnObj(newBubble, mServerNetworkID);
+		send(mServerNetworkID, TypePacket::PACKET_CREATE);
+		mServerNetworkID++;
+		break;
+	}
+	case KeyCode::LEFT:
+	{
+		//make left bees
+		float randPosY = rand() % (int)screenSizeY;
+		float randPosX = 10.0;
+		float randNum = rand() % 10;
+
+		GameObjects* newBee;
+		newBee = new Bees(mpGraphicsLib, mServerNetworkID, img, randPosX, randPosY, randNum); //watch out for this
+
+		spawnObj(newBee, mServerNetworkID);
+		send(mServerNetworkID, TypePacket::PACKET_CREATE);
+		mServerNetworkID++;
+		break;
+	}
+	case KeyCode::RIGHT: //maybe someday will be more bees
+	{
+		if (mServerNetworkID > 1)
+		{
+			send(mServerNetworkID, TypePacket::PACKET_DESTROY);
+		}
+		break;
+	}
+	case KeyCode::SPACE:
+	{
+		float randPosX = rand() % (int)screenSizeX;
+		float randPosY = rand() % (int)screenSizeY;
+
+		GameObjects* newBoulder;
+		newBoulder = new Boulder(mpGraphicsLib, mServerNetworkID, img, randPosX, randPosY);
+
+		spawnObj(newBoulder, mServerNetworkID);
+		send(mServerNetworkID, TypePacket::PACKET_CREATE);
+		mServerNetworkID++;
+		break;
+	}
+	}
+
+}
+
+void NetworkManager::requestPacket(KeyCode key) //client ask
+{
+	OutputMemoryBitStream OutMBStream;
+	GameObjType objType;
+	TypePacket type;
+
+	switch (key)
+	{
+	case KeyCode::B:
+	{
+		objType = BUBBLE;
+		type = PACKET_CREATE;
+		break;
+	}
+	case KeyCode::LEFT:
+	{
+		objType = BEE;
+		type = PACKET_CREATE;
+		break;
+	}
+	case KeyCode::RIGHT: //maybe someday will be more bees
+	{
+		objType = BOULDER;
+		type = PACKET_DESTROY;
+		break;
+	}
+	case KeyCode::SPACE:
+	{
+		objType = BOULDER;
+		type = PACKET_CREATE;
+		break;
+	}
+	}
+
+	OutMBStream.Write(type);
+	OutMBStream.Write(objType);
+	OutMBStream.Write(mClientPacketID);
+
+	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength());
+
+	mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mClientPacketID));
+	mClientPacketID++;
+}
+
 void NetworkManager::recieve()
 {
 	char buffer[1024];
 	int32_t bytesRecieved = (*mpTCPSocket)->Receive(buffer, 1024);
+	KeyCode key;
 
 	int randDrop = 100;
 	if (mIsConnected)
@@ -169,157 +271,176 @@ void NetworkManager::recieve()
 		TypePacket recievePacketType;
 		InMBStream.Read(recievePacketType);
 
-		int networkID;
-		InMBStream.Read(networkID);
-		if (mCurrentID < networkID)
-			mCurrentID = networkID;
-
-	if (randDrop < mDropOdds)
-	{
+		if (randDrop < mDropOdds)
+		{
 			GameObjType recieveObjType;
 			InMBStream.Read(recieveObjType);
 
-			switch (recievePacketType)
-			{
-			case TypePacket::PACKET_CREATE:
-			{
-				float posX;
-				float posY;
-				string imgID = "";
-				int inPlayerID;
-				int num;
+			string imgID = "";
 
-				InMBStream.Read(posX);
-				InMBStream.Read(posY);
-
-				switch (recieveObjType)
+			if (mIsServer)
+			{
+				switch (recievePacketType)
 				{
-				case GameObjType::BUBBLE:
-					InMBStream.Read(imgID);
-					InMBStream.Read(inPlayerID);
-
-					Bubble* newBubble;
-					newBubble = new Bubble(mpGraphicsLib, networkID, imgID, posX, posY, inPlayerID);
-					if (networkID < mGameObjVector.size() - 1) //compensate for dropped packets
-						networkID = mGameObjVector.size();
-
-					mGameObjVector.push_back(pair<GameObjects*, int>(newBubble, networkID));
-
-					newBubble = nullptr;
-					break;
-
-				case GameObjType::BOULDER:
-					InMBStream.Read(imgID);
-
-					Boulder* newBoulder;
-					newBoulder = new Boulder(mpGraphicsLib, networkID, imgID, posX, posY);
-					mGameObjVector.push_back(pair<GameObjects*, int>(newBoulder, networkID));
-
-					newBoulder = nullptr;
-					break;
-
-				case GameObjType::BEE:
-					InMBStream.Read(imgID);
-					InMBStream.Read(num);
-
-					Bees* newBee;
-					newBee = new Bees(mpGraphicsLib, networkID, imgID, posX, posY, num);
-					mGameObjVector.push_back(pair<GameObjects*, int>(newBee, networkID));
-
-					newBee = nullptr;
-					break;
-
-				case GameObjType::PLAYER:
-					InMBStream.Read(inPlayerID);
-					PlayerController* newPlayer;
-					newPlayer = new PlayerController(networkID, mpGraphicsLib);
-					mGameObjVector.push_back(pair<GameObjects*, int>(newPlayer, networkID));
-
-					newPlayer = nullptr;
-					break;
-				}
-
-				createConfirmPacket(networkID);
-			}
-
-			case TypePacket::PACKET_UPDATE:
-			{
-				if (mGameObjVector[networkID].first != nullptr)
-				{
-					float posY;
-					float posX;
-					float num;
-
+				case TypePacket::PACKET_CREATE:
 					switch (recieveObjType)
 					{
 					case GameObjType::BUBBLE:
+						InMBStream.Read(imgID);
 
-						InMBStream.Read(posY);
-
-						mGameObjVector[networkID].first->setPosY(posY);
-						break;
-
-					case GameObjType::BOULDER:
-						/*InMBStream.Read(posX);
-						InMBStream.Read(posY);
-
-						mGameObjVector[networkID].first->setPosition(posX, posY);*/
+						processPacket(KeyCode::B, imgID, 1);
 						break;
 
 					case GameObjType::BEE:
-						InMBStream.Read(posX);
-						InMBStream.Read(num);
+						InMBStream.Read(imgID);
 
-						mGameObjVector[networkID].first->setPosX(posX);
+						processPacket(KeyCode::LEFT, imgID, 1);
+						break;
+
+					case GameObjType::BOULDER:
+						InMBStream.Read(imgID);
+
+						processPacket(KeyCode::SPACE, imgID, 1);
 						break;
 
 					case GameObjType::PLAYER:
-						mGameObjVector[networkID].first->setPosition(0, 0); //placeholder content, player is just entity spawning as obj
+						PlayerController* newPlayer;
+						newPlayer = new PlayerController(mServerNetworkID, mpGraphicsLib);
+						mGameObjVector.push_back(pair<GameObjects*, int>(newPlayer, mServerNetworkID));
+
+						newPlayer = nullptr;
+						mServerNetworkID++;
 						break;
 					}
-				}
-				else
-				{
-					std::cout << "Broken broken";
-					system("pause");
-				}
-				break;
-			}
+					break;
 
-			case TypePacket::PACKET_DESTROY:
-			{
-				if (mGameObjVector.size() > 0)
-				{
-					std::vector<std::pair<GameObjects*, int>>::iterator iter;
-					for (iter = mGameObjVector.begin(); iter != mGameObjVector.end(); iter++)
+				case TypePacket::PACKET_DESTROY:
+					if (mServerNetworkID > 1)
 					{
-						if (iter->first->getObjType() == GameObjType::BOULDER)
-						{
-							mGameObjVector.erase(iter);
-							mCurrentID--;
-							break;
-						}
+						send(mServerNetworkID, TypePacket::PACKET_DESTROY);
 					}
-
+					break;
 				}
 
-				createConfirmPacket(networkID);
-				break;
+				int packetID;
+				InMBStream.Read(packetID);
+				createConfirmPacket(packetID);
+
 			}
 
-			case TypePacket::CONFIRM:
+			else
 			{
-				int ID;
-				InMBStream.Read(ID);
-				waitForConfirmPacket(ID);
-			}
+				//int posX;
+				//int posY;
+				//int num;
+				int netID;
+				InMBStream.Read(netID);
+				GameObjects* obj;
+				int posX, posY;
+				std::vector<std::pair<GameObjects*, int>>::iterator iter;
 
-			default:
-				return;
+				switch (recievePacketType)
+				{
+					case TypePacket::PACKET_CREATE:
+						switch (recieveObjType)
+						{
+							case GameObjType::BUBBLE:
+								//InMBStream.Read(obj);
+								InMBStream.Read(imgID);
+								InMBStream.Read(posX);
+								InMBStream.Read(posY);
+
+								GameObjects* newBubble;
+								newBubble = new Bubble(mpGraphicsLib, netID, imgID, posX, posY, 0);
+								spawnObj(newBubble, netID);
+								newBubble = nullptr;
+								break;
+
+							case GameObjType::BEE:
+								//InMBStream.Read(obj);
+								int num;
+								InMBStream.Read(imgID);
+								InMBStream.Read(posX);
+								InMBStream.Read(posY);
+								InMBStream.Read(num);
+
+								GameObjects* newBee;
+								newBee = new Bees(mpGraphicsLib, netID, imgID, posX, posY, num);
+								//newBee = new Bees(pGraphicsLib, netID, obj->getImageID(), obj->getPosition().first, obj->getPosition().second, obj->getNum());
+								spawnObj(newBee, netID);
+								newBee = nullptr;
+								break;
+
+							case GameObjType::BOULDER:
+								//InMBStream.Read(obj);
+								InMBStream.Read(imgID);
+								InMBStream.Read(posX);
+								InMBStream.Read(posY);
+
+								GameObjects* newBoulder;
+								newBoulder = new Boulder(mpGraphicsLib, netID, imgID, posX, posY);
+								spawnObj(newBoulder, netID);
+								newBoulder = nullptr;
+								break;
+
+							case GameObjType::PLAYER:
+								PlayerController* newPlayer;
+								newPlayer = new PlayerController(netID, mpGraphicsLib);
+
+								spawnObj(newPlayer, netID);
+								newPlayer = nullptr;
+								break;
+						}
+						break;
+
+					case TypePacket::PACKET_UPDATE:
+						int posX, posY;
+						switch (recieveObjType)
+						{
+							case GameObjType::BUBBLE:
+								InMBStream.Read(netID);
+								InMBStream.Read(posY);
+
+								mGameObjVector[netID].first->setPosY(posY);
+								break;
+
+							case GameObjType::BEE:
+								InMBStream.Read(netID);
+								InMBStream.Read(posX);
+
+								mGameObjVector[netID].first->setPosX(posX);
+								break;
+
+							default:
+								break;
+						}
+						break;
+
+					case TypePacket::PACKET_DESTROY:
+						int destroyID;
+						InMBStream.Read(destroyID);
+						for (iter = mGameObjVector.begin(); iter != mGameObjVector.end(); iter++)
+						{
+							if (iter->second == destroyID)
+							{
+								mGameObjVector.erase(iter);
+								break;
+							}
+						}
+						break;
+
+					case TypePacket::CONFIRM:
+						int packetID;
+						InMBStream.Read(packetID);
+						createConfirmPacket(packetID);
+
+					default:
+						break;
+				}
 			}
 		}
 	}
-	else if (bytesRecieved == -10053 || bytesRecieved == -10054)
+	else if (bytesRecieved <= -10000)
 	{
 		std::cout << "disconnected";
 		system("pause");
@@ -327,109 +448,72 @@ void NetworkManager::recieve()
 	}
 }
 
-void NetworkManager::send(int networkID, TypePacket type)
+void NetworkManager::send(int networkID, TypePacket type) //server mainly
 {
-	bool destroyed = false;
 	bool needsConfirm = false;
 	OutputMemoryBitStream OutMBStream;
 	OutMBStream.Write(type);
-	OutMBStream.Write(mGameObjVector[networkID].first->getNetworkID());
 	OutMBStream.Write(mGameObjVector[networkID].first->getObjType());
+	OutMBStream.Write(mGameObjVector[networkID].first->getNetworkID());
 
 	switch (type)
 	{
 	case TypePacket::PACKET_CREATE:
-	{
 		needsConfirm = true;
+		//OutMBStream.Write(mGameObjVector[networkID]);
 		switch (mGameObjVector[networkID].first->getObjType())
 		{
-		case GameObjType::BUBBLE:
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
-			OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
-			OutMBStream.Write(mGameObjVector[networkID].first->getPlayerID());
-			break;
+			case GameObjType::BUBBLE:
+				OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				break;
 
-		case GameObjType::BOULDER:
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
-			OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
-			break;
+			case GameObjType::BEE:
+				OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				OutMBStream.Write(mGameObjVector[networkID].first->getNum());
+				break;
 
-		case GameObjType::BEE:
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
-			OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
-			OutMBStream.Write(mGameObjVector[networkID].first->getNum());
-			break;
+			case GameObjType::BOULDER:
+				OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				break;
 
-		case GameObjType::PLAYER:
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
-			OutMBStream.Write(mGameObjVector[networkID].first->getNetworkID());
-			break;
+			default:
+				break;
 		}
+		mServerNetworkID++;
 		break;
-	}
 
 	case TypePacket::PACKET_UPDATE:
-	{
 		switch (mGameObjVector[networkID].first->getObjType())
 		{
-		case GameObjType::BUBBLE:
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
-			break;
+			case GameObjType::BUBBLE:
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				break;
 
-		case GameObjType::BOULDER:
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
-			break;
+			case GameObjType::BEE:
+				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				break;
 
-		case GameObjType::BEE:
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
-			break;
-
-		case GameObjType::PLAYER:
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
-			OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
-			OutMBStream.Write(mGameObjVector[networkID].first->getNetworkID());
-			break;
+			default:
+				break;
 		}
 		break;
-	}
 
 	case TypePacket::PACKET_DESTROY:
-	{
 		needsConfirm = true;
-		if (mGameObjVector.size() > 0)
-		{
-			std::vector<std::pair<GameObjects*, int>>::iterator iter;
-			for (iter = mGameObjVector.begin(); iter != mGameObjVector.end(); iter++)
-			{
-				if (iter->first->getObjType() == GameObjType::BOULDER)
-				{
-					mGameObjVector.erase(iter);
-					destroyed = true;
-					break;
-				}
-			}
-
-		}
+		OutMBStream.Write(networkID);
 		break;
-	}
-
-	default:
-		return;
 	}
 
 	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength());
-	if (needsConfirm)
-		mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mCurrentID));
-		//mPendingResendPackets.push_back(std::pair<(std::pair<const void*, size_t>(),int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mCurrentID)>;
 
-	if (destroyed)
-		mCurrentID--;
+	if (needsConfirm)
+		mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mServerNetworkID));
 }
 
 void NetworkManager::spawnObj(GameObjects* obj, int id)
@@ -446,7 +530,7 @@ void NetworkManager::updateObj()
 	}
 }
 
-void NetworkManager::update(float deltaTime, float time)
+void NetworkManager::update(float deltaTime, float time) //server
 {
 	std::cout << deltaTime << std::endl;
 	if (mPendingResendPackets.size() > 0)

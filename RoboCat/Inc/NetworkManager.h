@@ -8,6 +8,7 @@
 #include <time.h>
 #include "DeliveryNotificationManager.h"
 #include <queue>
+#include "GraphicsLibrary.h"
 
 enum TypePacket
 {
@@ -32,6 +33,7 @@ public:
 		return mpNetworkInstance;
 	};
 
+
 	NetworkManager();
 	~NetworkManager();
 	
@@ -48,13 +50,19 @@ public:
 
 	void update(float deltaTime, float time);
 
-	int getCurrentID() { return mCurrentID; }
-	void setCurrentID(int newID) { mCurrentID = newID; }
+	int getCurrentID() { return mServerNetworkID; }
+	void setCurrentID(int newID) { mServerNetworkID = newID; }
 
 	float getTimeStamp() { return mPacketTimeStamp; }
 
 	void createConfirmPacket(int ID);
 	bool waitForConfirmPacket(int ID);
+
+	void processPacket(KeyCode key, string img, int player);
+	void requestPacket(KeyCode key);
+
+	void setServerRole(bool role) { mIsServer = role; }
+	bool getServerRole() { return mIsServer; }
 
 	GameObjects* getObj() {};
 
@@ -75,10 +83,17 @@ private:
 	std::string mBoulderImgID;
 	std::string mBeeImgID;
 
-	int mCurrentID;
+	int mServerNetworkID = 0;
 	int mDropOdds;
 	int mLastSentID;
 	float mTimeTillResend;
 
+	int mClientPacketID = 0;
+
 	bool mIsConnected;
+	bool mIsServer;
+
+	GraphicsLibrary* pGraphicsLib;
+	float screenSizeX = 1000.0;
+	float screenSizeY = 700.0;
 };

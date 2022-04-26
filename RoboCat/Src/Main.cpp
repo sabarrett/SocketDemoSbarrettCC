@@ -28,7 +28,8 @@ const std::string BOULDER_IMG_IDENTIFIER = "boulder_img";
 const std::string BUBBLE_IMG_IDENTIFIER = "bubble_img";
 const std::string BEE_IMG_IDENTIFIER = "bee_img";
 
-PlayerController* player;
+PlayerController* playerServer;
+PlayerController* playerClient;
 ALLEGRO_EVENT_QUEUE* pEventQueue = nullptr;
 ALLEGRO_TIMER* timer = nullptr;
 NetworkManager* NetworkManager::mpNetworkInstance = 0;
@@ -70,30 +71,35 @@ bool init()
 
 void start()
 {
-	//server
-	if (networkID == 0)
+	if (networkID == 1)
 	{
-		player = new PlayerController(networkID, pGraphicsLib);
-		tempPlayerID = 0;
-		player->setPlayerID(tempPlayerID);
-		pNetworkManager->spawnObj(player, networkID);
-		networkID++;
-
-		pNetworkManager->send(player->getNetworkID(), TypePacket::PACKET_CREATE);
-		pNetworkManager->recieve();
-	}
-
-	//client
-	else if (networkID == 1)
-	{
-		player = new PlayerController(networkID, pGraphicsLib);
 		tempPlayerID = 1;
-		player->setPlayerID(tempPlayerID);
-		pNetworkManager->recieve();
-		pNetworkManager->spawnObj(player, networkID);
+		pNetworkManager->setServerRole(false);
+		//pNetworkManager->recieve(); //server
+		//pNetworkManager->recieve(); //client
+	}
+	else
+	{
+		tempPlayerID = 0;
+		pNetworkManager->setServerRole(true);
+
+		playerServer = new PlayerController(0, pGraphicsLib);
+		playerServer->setPlayerID(0);
+		pNetworkManager->spawnObj(playerServer, networkID);
 		networkID++;
 
-		pNetworkManager->send(player->getNetworkID(), TypePacket::PACKET_CREATE);
+		pNetworkManager->send(playerServer->getNetworkID(), TypePacket::PACKET_CREATE);
+		//pNetworkManager->recieve();
+
+
+		playerClient = new PlayerController(1, pGraphicsLib);
+		tempPlayerID = 1;
+		playerClient->setPlayerID(1);
+		pNetworkManager->spawnObj(playerClient, networkID);
+		//pNetworkManager->recieve();
+		networkID++;
+
+		pNetworkManager->send(playerClient->getNetworkID(), TypePacket::PACKET_CREATE);
 	}
 
 	al_start_timer(timer);
@@ -110,79 +116,100 @@ void draw()
 
 void update()
 {
-	if (networkID != pNetworkManager->getCurrentID())
-	{
-		if (networkID > pNetworkManager->getCurrentID())
-			pNetworkManager->setCurrentID(networkID);
-		else
-			networkID = pNetworkManager->getCurrentID();
-	}
-
-
 	KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyPressed);
+
+	string imgID;
+
 	switch (keyCode)
 	{
-	case KeyCode::ESC:
-	{
-		isRunning = false;
-		break;
-	}
-	case KeyCode::B:
-	{
-		float randPosX = rand() % (int)screenSizeX;
-		float randPosY = 10.0;
+		case KeyCode::B:
+			imgID = BUBBLE_IMG_IDENTIFIER;
+			break;
 
-		GameObjects* newBubble;
-		newBubble = new Bubble(pGraphicsLib, networkID, BUBBLE_IMG_IDENTIFIER, randPosX, randPosY, tempPlayerID); //watch out for this
+		case KeyCode::LEFT:
+			imgID = BEE_IMG_IDENTIFIER;
+			break;
 
-		pNetworkManager->spawnObj(newBubble, networkID);
-		pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-		networkID++;
-		break;
-	}
+		case KeyCode::RIGHT:
+			imgID = "";
+			break;
 
-	case KeyCode::LEFT:
-	{
-		//make left bees
-		float randPosY = rand() % (int)screenSizeY;
-		float randPosX = 10.0;
-		float randNum = rand() % 10;
+		case KeyCode::SPACE:
+			imgID = BOULDER_IMG_IDENTIFIER;
+			break;
 
-		GameObjects* newBee;
-		newBee = new Bees(pGraphicsLib, networkID, BEE_IMG_IDENTIFIER, randPosX, randPosY, randNum); //watch out for this
-
-		pNetworkManager->spawnObj(newBee, networkID);
-		pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-		networkID++;
-		break;
+		case KeyCode::ESC:
+			isRunning = false;
+			break;
 	}
 
-	case KeyCode::RIGHT: //maybe someday will be more bees
-	{
-		if (networkID > 1)
-		{
-			pNetworkManager->send(networkID - 1, TypePacket::PACKET_DESTROY);
-			networkID = pNetworkManager->getCurrentID();
-		}
-		break;
-	}
-
-	case KeyCode::SPACE:
-	{
-		float randPosX = rand() % (int)screenSizeX;
-		float randPosY = rand() % (int)screenSizeY;
-
-		GameObjects* newBoulder;
-		newBoulder = new Boulder(pGraphicsLib, networkID, BOULDER_IMG_IDENTIFIER, randPosX, randPosY);
-
-		pNetworkManager->spawnObj(newBoulder, networkID);
-		pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-		networkID++;
-		break;
-	}
-	}
-
+	pNetworkManager->processPacket(keyCode, imgID, pNetworkManager->getServerRole());
 	pNetworkManager->updateObj();
+
+
+	//switch (keyCode)
+	//{
+	//case KeyCode::ESC:
+	//{
+	//	isRunning = false;
+	//	break;
+	//}
+	//case KeyCode::B:
+	//{
+	//	float randPosX = rand() % (int)screenSizeX;
+	//	float randPosY = 10.0;
+
+	//	GameObjects* newBubble;
+	//	newBubble = new Bubble(pGraphicsLib, networkID, BUBBLE_IMG_IDENTIFIER, randPosX, randPosY, tempPlayerID); //watch out for this
+
+	//	pNetworkManager->spawnObj(newBubble, networkID);
+	//	pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+	//	networkID++;
+	//	break;
+	//}
+
+	//case KeyCode::LEFT:
+	//{
+	//	//make left bees
+	//	float randPosY = rand() % (int)screenSizeY;
+	//	float randPosX = 10.0;
+	//	float randNum = rand() % 10;
+
+	//	GameObjects* newBee;
+	//	newBee = new Bees(pGraphicsLib, networkID, BEE_IMG_IDENTIFIER, randPosX, randPosY, randNum); //watch out for this
+
+	//	pNetworkManager->spawnObj(newBee, networkID);
+	//	pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+	//	networkID++;
+	//	break;
+	//}
+
+	//case KeyCode::RIGHT: //maybe someday will be more bees
+	//{
+	//	if (networkID > 1)
+	//	{
+	//		pNetworkManager->send(networkID - 1, TypePacket::PACKET_DESTROY);
+	//		networkID = pNetworkManager->getCurrentID();
+	//	}
+	//	break;
+	//}
+
+	//case KeyCode::SPACE:
+	//{
+	//	float randPosX = rand() % (int)screenSizeX;
+	//	float randPosY = rand() % (int)screenSizeY;
+
+	//	GameObjects* newBoulder;
+	//	newBoulder = new Boulder(pGraphicsLib, networkID, BOULDER_IMG_IDENTIFIER, randPosX, randPosY);
+
+	//	pNetworkManager->spawnObj(newBoulder, networkID);
+	//	pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
+	//	networkID++;
+	//	break;
+	//}
+	//}
+
+	//pNetworkManager->updateObj();
 	//pNetworkManager->update(Timing::sInstance.GetDeltaTime(), Timing::sInstance.GetTime());
 	Timing::sInstance.Update();
 	pNetworkManager->update(Timing::sInstance.GetDeltaTime(), Timing::sInstance.GetTime());
@@ -264,7 +291,7 @@ int main(int argc, const char** argv)
 				if (alEvent.type == ALLEGRO_EVENT_TIMER)
 				{
 					update();
-					pNetworkManager->send(player->getNetworkID(), TypePacket::PACKET_UPDATE);
+					pNetworkManager->send(playerServer->getNetworkID(), TypePacket::PACKET_UPDATE);
 
 					pNetworkManager->recieve();
 					draw();
