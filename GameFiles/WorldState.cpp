@@ -17,7 +17,9 @@ WorldState::WorldState(GraphicsLibrary* gl)
 WorldState::~WorldState()
 {
 	ClearGameObjectsOut();
-	mpGraphicsLibrary = nullptr;
+	
+	// bb - I commented this out because this class doesn't own this pointer
+	//mpGraphicsLibrary = nullptr;
 }
 
 void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs, int delta)
@@ -73,9 +75,7 @@ void WorldState::Render(string background)
 	//std::cout << 5.6 << '\n';
 	if (mGameObjects.size() > 1)
 	{
-		std::cout << "Allegro's render crashed";
 		mpGraphicsLibrary->render();
-		std::cout << "\r";
 	}
 	//std::cout << 5.9 << '\n';
 
