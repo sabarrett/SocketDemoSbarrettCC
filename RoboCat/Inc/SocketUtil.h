@@ -1,3 +1,6 @@
+#pragma once
+#include "UDPSocket.h"
+
 enum class SocketAddressFamily
 {
 	INET = AF_INET,
