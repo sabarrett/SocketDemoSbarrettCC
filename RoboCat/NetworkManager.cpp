@@ -10,7 +10,7 @@ NetworkManager::~NetworkManager()
 {
 }
 
-void NetworkManager::initServer(std::string serverPort)
+bool NetworkManager::initServer(std::string serverPort)
 {
 	SocketUtil::StaticInit();
 
@@ -27,7 +27,7 @@ void NetworkManager::initServer(std::string serverPort)
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("0.0.0.0:" + serverPort);
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -65,33 +65,113 @@ void NetworkManager::initServer(std::string serverPort)
 	}
 
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
+
+	*mpSocket = connSocket;
+
+	if (!mpSocket)
+	{
+		return false;
+	}
+
+	else
+	{
+		return true;
+	}
 }
 
-void NetworkManager::connect(std::string serverPort, std::string clientPort)
+bool NetworkManager::connect(std::string clientIP, std::string clientPort)
 {
+	SocketUtil::StaticInit();
+
+	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+	if (clientSocket == nullptr)
+	{
+		SocketUtil::ReportError("Creating client socket");
+		ExitProcess(1);
+		return false;
+	}
+
+	LOG("%s", "Client socket created");
+
+	std::string address = "0.0.0.0:0";
+	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
+	if (clientAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating client address");
+		ExitProcess(1);
+		return false;
+	}
+
+	if (clientSocket->Bind(*clientAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Binding client socket");
+		// This doesn't block!
+		ExitProcess(1);
+	}
+
+	LOG("%s", "Bound client socket");
+
+	// Connect() -> Connect socket to remote host
+
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString(clientIP + ":" + clientPort);
+	if (servAddress == nullptr)
+	{
+		SocketUtil::ReportError("Creating server address");
+		ExitProcess(1);
+	}
+
+	if (clientSocket->Connect(*servAddress) != NO_ERROR)
+	{
+		SocketUtil::ReportError("Connecting to server");
+		ExitProcess(1);
+	}
+
+	*mpSocket = clientSocket;
+
+	if (!mpSocket)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
-void NetworkManager::createObject()
+void NetworkManager::createObject(Game* obj, int objID)
 {
+	mvGameObjects.push_back(pair<Game*, int>(obj, objID));
 }
 
 void NetworkManager::updateObject()
 {
-	mpGame->update();
-}
-
-void NetworkManager::destroyObject()
-{
-
+	std::vector<std::pair<Game*, int>>::iterator iter;
+	for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
+	{
+		iter->first->update();
+	}
 }
 
 void NetworkManager::renderObject()
 {
-	mpGame->render();
+	std::vector<std::pair<Game*, int>>::iterator iter;
+	for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
+	{
+		iter->first->render();
+	}
 }
 
-void NetworkManager::sendData()
+void NetworkManager::sendData(PacketTypes packet)
 {
+	switch (packet)
+	{
+	case CREATE_OBJECT:
+
+	case UPDATE_OBJECT:
+
+	case DESTROY_OBJECT:
+
+	}
 }
 
 void NetworkManager::receiveData()

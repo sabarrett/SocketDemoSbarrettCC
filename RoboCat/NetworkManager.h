@@ -13,22 +13,36 @@ enum PacketTypes
 class NetworkManager : public Trackable
 {
 public:
+
+	static NetworkManager* GetInstance()
+	{
+		if (mpsNetworkInstance)
+		{
+			delete mpsNetworkInstance;
+			mpsNetworkInstance = nullptr;
+		}
+		mpsNetworkInstance = new NetworkManager;
+		return mpsNetworkInstance;
+	}
+
 	NetworkManager();
 	~NetworkManager();
 
-	void initServer(std::string serverPort);
-	void connect(std::string serverPort, std::string clientPort);
+	bool initServer(std::string serverPort);
+	bool connect(std::string clientIP, std::string clientPort);
 
-	void createObject();
+	void createObject(Game* obj, int objID);
 	void updateObject();
-	void destroyObject();
 	void renderObject();
 
-	void sendData();
+	void sendData(PacketTypes packet);
 	void receiveData();
 
 private:
 
 	Game* mpGame;
-	TCPSocket* mpSocket;
+	TCPSocketPtr* mpSocket;
+	static NetworkManager* mpsNetworkInstance;
+
+	std::vector<std::pair<Game*, int>> mvGameObjects;
 };
