@@ -17,23 +17,24 @@
 #include "GameFiles/NetworkManager.h"
 #include <windows.h>
 
-///			TODO Assignment 4
-///	O - client-side simulation
-/// O - dead reckoning
-///	O - Simulate high (250ms+) latency to make this effect very visible. 
-///		O - Send a packet from the server to the client no more than twice per second (once every 500ms) to simulate a low-bandwidth environment to make the effect clear.
-///	O - Client Prediction Behavior
-///		O - The client interpolates state between its own, stale state and the authoritative state it received from the server.
-///		O - For determinist objects, it uses the same simulation as the server.
-///		O - For non - deterministic objects, it estimates using dead reckoning.
-/// O - Client Prediction Implementation
+///	Assignment 4
+///			TODO
+///	X - client-side simulation
+/// X - dead reckoning
+///	X - Simulate high (250ms+) latency to make this effect very visible. 
+///		X - Send a packet from the server to the client no more than twice per second (once every 500ms) to simulate a low-bandwidth environment to make the effect clear.
+///	X - Client Prediction Behavior
+///		X - The client interpolates state between its own, stale state and the authoritative state it received from the server.
+///		X - For determinist objects, it uses the same simulation as the server.
+///		X - For non - deterministic objects, it estimates using dead reckoning.
+/// X - Client Prediction Implementation
 ///		O - The server sends messages infrequently
 ///		O - there is a high amount of latency simulated.
-///		O - The client uses the same algorithms as the server where possible, and uses dead reckoning otherwise.
-///		O - Both forms of client - side prediction are clearly present.
-///	O - There are at least 3 distinct game object types with different data requirements. 
-///		O - At least one object can be simulated on the client
-///		O - at least one object requires dead reckoning (i.e., is another player)
+///		X - The client uses the same algorithms as the server where possible, and uses dead reckoning otherwise.
+///		X - Both forms of client - side prediction are clearly present.
+///	X - There are at least 3 distinct game object types with different data requirements. 
+///		X - At least one object can be simulated on the client
+///		X - at least one object requires dead reckoning (i.e., is another player)
 
 const float SCREEN_X = 1500;
 const float SCREEN_Y = 750;
@@ -196,8 +197,11 @@ int main(int argc, const char** argv)
 	system_clock::time_point lastTimeOfSendingConnection = system_clock::now();
 
 
+	int latencyTimer = 0;
+	const int LATENCY_TIME = 500;
+
 	int deltaTime;
-	int timestep = 16;
+	const int TIME_STEP = 16;
 	bool isGameRunning = true;
 
 	// `````````````````````````  main game loop  ``````````````````````````` 
@@ -206,6 +210,7 @@ int main(int argc, const char** argv)
 		deltaTime = duration_cast<milliseconds>(system_clock::now() - lastTime).count();
 		startTime = lastTime;
 		lastTime = system_clock::now();
+		latencyTimer += deltaTime;
 
 		//std::cout << 0 << '\n';
 
@@ -223,7 +228,11 @@ int main(int argc, const char** argv)
 			gameWorld.Update(userIsCreator, ref(joinerInputs), deltaTime);
 
 			//std::cout << 4 << '\n';
-			NetworkManager::HandleOutgoingWorldStatePackets(ref(gameWorld), sendingSocket, addressToSendTo, deltaTime);
+			if (latencyTimer > LATENCY_TIME)
+			{
+				NetworkManager::HandleOutgoingWorldStatePackets(ref(gameWorld), sendingSocket, addressToSendTo, deltaTime);
+				latencyTimer = 0;
+			}
 		}
 		else
 		{
@@ -235,7 +244,11 @@ int main(int argc, const char** argv)
 			{
 				isGameRunning = false;
 			}
-			NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo, ref(lastTimeOfSendingConnection), deltaTime);
+			if (latencyTimer > LATENCY_TIME)
+			{
+				NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo, ref(lastTimeOfSendingConnection), deltaTime);
+				latencyTimer = 0;
+			}
 			//std::cout << 4 << '\n';
 		}
 
@@ -244,7 +257,7 @@ int main(int argc, const char** argv)
 		//std::cout << 6 << '\n';
 
 
-		while (duration_cast<milliseconds>(system_clock::now() - startTime).count() < 16)
+		while (duration_cast<milliseconds>(system_clock::now() - startTime).count() < TIME_STEP)
 		{
 			;
 			// makes the program maintain a maximum framerate
