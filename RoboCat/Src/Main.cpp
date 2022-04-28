@@ -75,6 +75,8 @@ void start()
 	{
 		tempPlayerID = 1;
 		pNetworkManager->setServerRole(false);
+		pNetworkManager->recieve(); //need to get player server? getting errors in update function for client at line 299
+		pNetworkManager->recieve();
 	}
 	else
 	{
