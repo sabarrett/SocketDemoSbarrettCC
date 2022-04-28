@@ -144,7 +144,6 @@
   <ItemGroup>
     <ClCompile Include="Crosshair.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
@@ -153,7 +152,6 @@
     <ClInclude Include="Crosshair.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Texture.h" />
-    <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Vec2D.h" />
   </ItemGroup>

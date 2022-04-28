@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <time.h>
 #include "Player.h"
 #include "Crosshair.h"
 #include "Globals.h"
@@ -23,6 +24,7 @@ Crosshair crosshair1;
 
 bool init()
 {
+	srand(time(NULL));
 	bool success = true;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -116,7 +118,7 @@ int main(int argc, char* args[])
 
 			SDL_Event e;
 
-			Color clientColor = Color(rand() % 255 + 100, rand() % 255 + 100, rand() % 255 + 100);
+			Color clientColor = Color(rand() % 155 + 100, rand() % 155 + 100, rand() % 155 + 100);
 			player1.setColor(clientColor);
 			crosshair1.setColor(clientColor);
 

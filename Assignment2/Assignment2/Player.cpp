@@ -30,8 +30,8 @@ void Player::handleEvent(SDL_Event& e)
 void Player::faceTowards(Vec2D pos)
 {
 	// help from https://gamefromscratch.com/gamedev-math-recipes-rotating-to-face-a-point/
-	int centerX = int(mPosition.x + (mSize.x / 2));
-	int centerY = int(mPosition.y + (mSize.y / 2));
+	int centerX = mPosition.x + (mSize.x / 4);
+	int centerY = mPosition.y + (mSize.y / 4);
 	double angle = atan2(pos.y - centerY, pos.x - centerX);
 	angle = angle * (180 / M_PI);
 	mAngle = angle;
