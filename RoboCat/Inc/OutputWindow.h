@@ -5,6 +5,7 @@
 // buffer at the bottom of the screen.
 //
 // Doesn't really work on small console windows (less than 20 rows).
+#pragma once
 class OutputWindow
 {
 public:

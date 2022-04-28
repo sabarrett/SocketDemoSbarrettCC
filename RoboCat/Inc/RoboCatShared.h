@@ -36,6 +36,8 @@
 #include "unordered_set"
 #include "cassert"
 
+
+
 using std::shared_ptr;
 using std::unique_ptr;
 using std::vector;
@@ -51,10 +53,15 @@ class GameObject;
 
 #include "RoboMath.h"
 
+#include "TransmissionData.h"
+#include "InFlightPacket.h"
+
 #include "LinkingContext.h"
 #include "ByteSwap.h"
 #include "MemoryBitStream.h"
+#include "AckRange.h"
 
+#include "Timing.h"
 #include "StringUtils.h"
 #include "SocketAddress.h"
 #include "SocketAddressFactory.h"
@@ -62,3 +69,4 @@ class GameObject;
 #include "TCPSocket.h"
 #include "SocketUtil.h"
 #include "OutputWindow.h"
+#include "DeliveryNotificationManager.h"
