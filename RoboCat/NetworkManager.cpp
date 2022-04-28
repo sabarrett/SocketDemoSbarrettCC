@@ -161,17 +161,49 @@ void NetworkManager::renderObject()
 	}
 }
 
-void NetworkManager::sendData(PacketTypes packet)
+void NetworkManager::sendData(PacketTypes packet, int ID)
 {
+	bool destroyed = false;
+	OutputMemoryBitStream MemStream;
+	MemStream.Write(packet);
+
 	switch (packet)
 	{
 	case CREATE_OBJECT:
-
-	case UPDATE_OBJECT:
-
-	case DESTROY_OBJECT:
-
+	{
+		MemStream.Write(mvGameObjects[ID].first->getInstance.handleEvent(GameEventType::CREATE_UNIT_EVENT));
+		break;
 	}
+	case UPDATE_OBJECT:
+	{
+		MemStream.Write(mvGameObjects[ID].first->getInstance.update());
+		break;
+	}
+	case DESTROY_OBJECT:
+	{
+		if (mvGameObjects.size() > 0)
+		{
+			std::vector<std::pair<Game*, int>>::iterator iter;
+			for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
+			{
+				mvGameObjects.erase(iter);
+				destroyed = true;
+				break;
+			}
+		}
+		break;
+	}
+	default:
+		return;
+	}
+
+	(*mpSocket)->Send(MemStream.GetBufferPtr(), MemStream.GetBitLength());
+
+	if (destroyed)
+	{
+		mCurrentID--;
+	}
+
 }
 
 void NetworkManager::receiveData()

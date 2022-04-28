@@ -2,6 +2,7 @@
 #include "../common/DeanLib/include/Trackable.h"
 #include "Game.h"
 #include "RoboCatPCH.h"
+#include "GameEvent.h"
 
 enum PacketTypes
 {
@@ -35,7 +36,7 @@ public:
 	void updateObject();
 	void renderObject();
 
-	void sendData(PacketTypes packet);
+	void sendData(PacketTypes packet, int ID);
 	void receiveData();
 
 private:
@@ -45,4 +46,5 @@ private:
 	static NetworkManager* mpsNetworkInstance;
 
 	std::vector<std::pair<Game*, int>> mvGameObjects;
+	int mCurrentID;
 };
