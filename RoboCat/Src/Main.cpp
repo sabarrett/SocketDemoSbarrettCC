@@ -348,6 +348,52 @@ int main(int argc, const char** argv)
 			canDelete = true;
 		}
 
+		if (Inputs->getKeyState(KEYCODES::UP_ARROW))
+		{
+			if (isServer)
+			{
+				ServerNetwork->Send(PacketType::UP_PACKET, ServerNetwork->getmGameObjects().back().second);
+			}
+			else
+			{
+				ClientNetwork->Send(PacketType::UP_PACKET, ClientNetwork->getmGameObjects().back().second);
+			}
+		}
+		else if (Inputs->getKeyState(KEYCODES::DOWN_ARROW))
+		{
+			if (isServer)
+			{
+				ServerNetwork->Send(PacketType::DOWN_PACKET, ServerNetwork->getmGameObjects().back().second);
+			}
+			else
+			{
+				ClientNetwork->Send(PacketType::DOWN_PACKET, ClientNetwork->getmGameObjects().back().second);
+			}
+		}
+		else if (Inputs->getKeyState(KEYCODES::LEFT_ARROW))
+		{
+			if (isServer)
+			{
+				ServerNetwork->Send(PacketType::LEFT_PACKET, ServerNetwork->getmGameObjects().back().second);
+			}
+			else
+			{
+				ClientNetwork->Send(PacketType::LEFT_PACKET, ClientNetwork->getmGameObjects().back().second);
+			}
+		}
+		else if (Inputs->getKeyState(KEYCODES::RIGHT_ARROW))
+		{
+			if (isServer)
+			{
+				ServerNetwork->Send(PacketType::RIGHT_PACKET, ServerNetwork->getmGameObjects().back().second);
+			}
+			else
+			{
+				ClientNetwork->Send(PacketType::RIGHT_PACKET, ClientNetwork->getmGameObjects().back().second);
+			}
+		}
+		
+
 		if (Inputs->getKeyState(KEYCODES::Esc))
 		{
 			run = false;

@@ -94,6 +94,50 @@ void Network::Send(PacketType packetTypeHead, GameObject* object)
 			//	}
 			//}
 		}
+	case PacketType::UP_PACKET:
+	{
+		if (mGameObjects.size() > 0)
+		{
+			object->setPosition(object->getPosition().first, object->getPosition().second - 1);
+			outBitStream->Write(object->getPosition().first);
+			outBitStream->Write(object->getPosition().second);
+		}
+
+		break;
+	}
+	case PacketType::DOWN_PACKET:
+	{
+		if (mGameObjects.size() > 0)
+		{
+			object->setPosition(object->getPosition().first, object->getPosition().second + 1);
+			outBitStream->Write(object->getPosition().first);
+			outBitStream->Write(object->getPosition().second);
+		}
+
+		break;
+	}
+	case PacketType::LEFT_PACKET:
+	{
+		if (mGameObjects.size() > 0)
+		{
+			object->setPosition(object->getPosition().first - 1, object->getPosition().second);
+			outBitStream->Write(object->getPosition().first);
+			outBitStream->Write(object->getPosition().second);
+		}
+
+		break;
+	}
+	case PacketType::RIGHT_PACKET:
+	{
+		if (mGameObjects.size() > 0)
+		{
+			object->setPosition(object->getPosition().first + 1, object->getPosition().second);
+			outBitStream->Write(object->getPosition().first);
+			outBitStream->Write(object->getPosition().second);
+		}
+
+		break;
+	}
 		break;
 	}
 
@@ -245,5 +289,53 @@ void Network::ProcessPacket(InputMemoryBitStream inputBitStream)
 			}
 		}
 		break;
+	case PacketType::UP_PACKET:
+	{
+		if (mGameObjects.size() > 0)
+		{
+			int currentXPos = mGameObjects.at(networkID).second->getPosition().first;
+			int currentYPos = mGameObjects.at(networkID).second->getPosition().second;
+			mGameObjects.at(networkID).second->setPosition(currentXPos, currentYPos - 1);
+		}
+		Draw();
+
+		break;
+	}
+	case PacketType::DOWN_PACKET:
+	{
+		if (mGameObjects.size() > 0)
+		{
+			int currentXPos = mGameObjects.at(networkID).second->getPosition().first;
+			int currentYPos = mGameObjects.at(networkID).second->getPosition().second;
+			mGameObjects.at(networkID).second->setPosition(currentXPos, currentYPos + 1);
+		}
+		Draw();
+
+		break;
+	}
+	case PacketType::LEFT_PACKET:
+	{
+		if (mGameObjects.size() > 0)
+		{
+			int currentXPos = mGameObjects.at(networkID).second->getPosition().first;
+			int currentYPos = mGameObjects.at(networkID).second->getPosition().second;
+			mGameObjects.at(networkID).second->setPosition(currentXPos - 1, currentYPos);
+		}
+		Draw();
+
+		break;
+	}
+	case PacketType::RIGHT_PACKET:
+	{
+		if (mGameObjects.size() > 0)
+		{
+			int currentXPos = mGameObjects.at(networkID).second->getPosition().first;
+			int currentYPos = mGameObjects.at(networkID).second->getPosition().second;
+			mGameObjects.at(networkID).second->setPosition(currentXPos + 1, currentYPos);
+		}
+		Draw();
+
+		break;
+	}
 	}
 }

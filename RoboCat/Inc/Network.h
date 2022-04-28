@@ -17,7 +17,11 @@ using std::map;
 enum class PacketType
 {
 	CREATE_PACKET,
-	DELETE_PACKET
+	DELETE_PACKET,
+	UP_PACKET,
+	DOWN_PACKET,
+	LEFT_PACKET,
+	RIGHT_PACKET
 };
 
 class Network
