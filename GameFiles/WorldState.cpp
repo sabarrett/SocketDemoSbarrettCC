@@ -34,10 +34,11 @@ void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs, int d
 				{
 					int count = joinerInputs[i].inputID - WorldState::currentInputNum;
 					std::cout << "for count = " << count << ".\n";
+
 					for (int i = 0; i < (count); i++)
 					{
 						std::cout << "2\n";
-						CreateKey(joinerInputs[i].location.x, joinerInputs[i].location.y);
+						CreateKey(1500, 375); // x = best guess for starting position, y  = middle of screen
 						std::cout << "3\n";
 					}
 					std::cout << "4\n";

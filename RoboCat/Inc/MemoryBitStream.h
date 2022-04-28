@@ -29,7 +29,10 @@ public:
 		ReallocBuffer( 1500 * 8 );
 	}
 
-	~OutputMemoryBitStream() { std::free(mBuffer); }
+	~OutputMemoryBitStream() 
+	{ 
+		std::free(mBuffer); 
+	}
 
 	void		WriteBits( uint8_t inData, uint32_t inBitCount );
 	void		WriteBits( const void* inData, uint32_t inBitCount );
