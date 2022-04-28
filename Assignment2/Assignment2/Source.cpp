@@ -2,11 +2,12 @@
 #include <SDL_image.h>
 #include <stdio.h>
 #include <string>
-#include "LTexture.h"
+#include <vector>
+#include "Player.h"
+#include "Crosshair.h"
+#include "Globals.h"
 
 bool init();
-// SDL_Surface* loadSurface();
-// SDL_Texture* loadTexture(std::string path);
 bool loadMedia();
 void close();
 
@@ -14,17 +15,11 @@ const int SCREEN_WIDTH = 960;
 const int SCREEN_HEIGHT = 540;
 
 SDL_Window* gWindow = NULL;
-SDL_Renderer* gRenderer = NULL;
 
-LTexture playerTexture = LTexture(&gRenderer);
+SDL_Renderer* gRenderer;
 
-LTexture crosshair = LTexture(&gRenderer);
-
-LTexture bullets[50];
-int bulletArrSize = 0;
-
-// SDL_Surface* gScreenSurface = NULL;
-// SDL_Surface* gHelloWorld = NULL;
+Player player1;
+Crosshair crosshair1;
 
 bool init()
 {
@@ -72,13 +67,13 @@ bool loadMedia()
 {
 	bool success = true;
 
-	if (!playerTexture.loadFromFile("images/player.png"))
+	if (!Player::playerTexture.loadFromFile("images/player.png"))
 	{
 		printf("Failed to load player texture");
 		success = false;
 	}
 
-	if (!crosshair.loadFromFile("images/crosshair.png"))
+	if (!Crosshair::crosshairTexture.loadFromFile("images/crosshair.png"))
 	{
 		printf("Failed to load crosshair texture");
 		success = false;
@@ -89,12 +84,8 @@ bool loadMedia()
 
 void close()
 {
-	playerTexture.free();
-	crosshair.free();
-	for(int i = 0; i < bulletArrSize; i++)
-	{
-		bullets[i].free();
-	}
+	Player::playerTexture.free();
+	Crosshair::crosshairTexture.free();
 
 	SDL_DestroyWindow(gWindow);
 	gWindow = NULL;
@@ -109,8 +100,6 @@ void close()
 // SDL requires this type of main function
 int main(int argc, char* args[])
 {
-
-
 	if (!init())
 	{
 		printf("init failure");
@@ -125,70 +114,38 @@ int main(int argc, char* args[])
 		{
 			bool quit = false;
 
-			playerTexture.setPos(Vec2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2));
-
 			SDL_Event e;
+
+			Color clientColor = Color(rand() % 255 + 100, rand() % 255 + 100, rand() % 255 + 100);
+			player1.setColor(clientColor);
+			crosshair1.setColor(clientColor);
 
 			while (!quit)
 			{
-				int mouseX, mouseY;
-
 				while (SDL_PollEvent(&e) != 0)
 				{
 					if (e.type == SDL_QUIT)
 					{
 						quit = true;
 					}
-					else if (e.type == SDL_MOUSEMOTION)
-					{
-						SDL_GetMouseState(&mouseX, &mouseY);
 
-						playerTexture.faceTowards(Vec2D(mouseX, mouseY));
-						crosshair.setPos(Vec2D(mouseX - crosshair.getSize().x / 2, mouseY - crosshair.getSize().y / 2));
-					}
-					else if (e.type == SDL_MOUSEBUTTONDOWN)
-					{
-						double degrees = (playerTexture.getAngle() + 180.0) * M_PI / 180;
-						playerTexture.setVelocity(
-							Vec2D(
-								cos(degrees) / 3.0, sin(degrees) / 3.0
-							)
-						);
-
-						if (bulletArrSize < 50)
-						{
-							LTexture bullet = LTexture(&gRenderer);
-							bullet.loadFromFile("images/bullet.png");
-							bullet.setPos(Vec2D(playerTexture.getPosition().x, playerTexture.getPosition().y));
-							bullet.setRenderer(&gRenderer);
-							bullets[bulletArrSize] = bullet;
-							bulletArrSize++;
-						}
-					}
+					player1.handleEvent(e);
+					crosshair1.handleEvent(e);
 				}
 
 				// fill screen with SDL_SetRenderDrawColor
 				SDL_RenderClear(gRenderer);
 
 				// update textures
-				playerTexture.update();
+				player1.update();
+				crosshair1.update();
 
 				// render textures
-				playerTexture.render();
-				crosshair.render();
-				for (int i = 0; i < bulletArrSize; i++)
-				{
-					bullets[i].render();
-				}
+				player1.render();
+				crosshair1.render();
 
 				// update screen
 				SDL_RenderPresent(gRenderer);
-
-				/*
-				SDL_BlitSurface(gHelloWorld, NULL, gScreenSurface, NULL);
-
-				SDL_UpdateWindowSurface(gWindow);
-				*/
 			}
 		}
 	}

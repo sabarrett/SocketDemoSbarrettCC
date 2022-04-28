@@ -142,11 +142,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="LTexture.cpp" />
+    <ClCompile Include="Crosshair.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="NetworkManager.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LTexture.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="Crosshair.h" />
+    <ClInclude Include="Globals.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="NetworkManager.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Vec2D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

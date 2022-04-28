@@ -1,15 +1,5 @@
-﻿  LTexture.cpp
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(13,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(26,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(80,35): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(80,35): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(80,48): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(80,48): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(80,57): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(80,57): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(80,66): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(80,66): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(107,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(113,14): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\LTexture.cpp(114,14): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+﻿  Source.cpp
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(11,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(12,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(13,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
   Assignment2.vcxproj -> C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\x64\Debug\Assignment2.exe
