@@ -196,7 +196,8 @@ int main(int argc, const char** argv)
 	system_clock::time_point lastTimeOfRecievingConnection = system_clock::now();
 	system_clock::time_point lastTimeOfSendingConnection = system_clock::now();
 
-
+	//"Send a packet from the server to the client no more than twice per second 
+	//(once every 500ms) to simulate a low-bandwidth environment to make the effect clear."
 	int latencyTimer = 0;
 	const int LATENCY_TIME = 500;
 
