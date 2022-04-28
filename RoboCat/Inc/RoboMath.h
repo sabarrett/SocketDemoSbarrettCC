@@ -1,3 +1,20 @@
+#pragma once
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+
+#include "Windows.h"
+#include "WinSock2.h"
+#include "Ws2tcpip.h"
+//#include "MemoryBitStream.h"
+
+#include <vector>
+#include <math.h>
+#include <iostream>
+
+//using std::vector;
+using namespace std;
+
 class Vector3
 {
 public:

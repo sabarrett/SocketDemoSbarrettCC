@@ -1,3 +1,4 @@
+#pragma once
 class DeliveryNotificationManager;
 
 //in case we decide to change the type of the sequence number to use fewer or more bits
@@ -11,6 +12,8 @@ public:
 	
 	PacketSequenceNumber GetSequenceNumber() const	{ return mSequenceNumber; }
 	float				 GetTimeDispatched() const	{ return mTimeDispatched; }
+	float				 GetReceivedTime() const	{ return mTimeDispatched; }
+	void				 SetReceivedTime(float timeReceived)	{ mTimeReceived = timeReceived; }
 	
 	void 				 SetTransmissionData( int inKey, TransmissionDataPtr	inTransmissionData )
 	{
@@ -28,6 +31,7 @@ public:
 private:
 	PacketSequenceNumber	mSequenceNumber;
 	float			mTimeDispatched;
+	float			mTimeReceived;
 	
 	unordered_map< int, TransmissionDataPtr >	mTransmissionDataMap;
 };
