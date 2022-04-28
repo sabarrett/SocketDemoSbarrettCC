@@ -20,11 +20,17 @@
 GameListener* gameListener;// = new GameListener();
 PerformanceTracker* pPerformanceTracker;
 
+/// <summary>
+/// Run the game state
+/// </summary>
 void runGame()
 {
 	Game::getInstance()->doLoop();
 }
 
+/// <summary>
+/// Set up the server controller
+/// </summary>
 void DoTcpServer()
 {
 	// Create socket
@@ -291,12 +297,19 @@ void DoTcpServer()
 	receiveThread.join();
 }
 
+/// <summary>
+/// Set up the Client controller
+/// </summary>
+/// <param name="port">specify the port of the client</param>
 void DoTcpClient(std::string port)
 {
 	// Create socket
+	//Set up the unacknowledged packages and recieved 
 	unordered_map<int, pair<string,bool>> unackPacks;
 	vector<int> recievedPacks;
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
+
+	//Creating client socket
 	if (clientSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating client socket");
@@ -305,8 +318,8 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Client socket created");
 
-	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
+	//Setting clients address on the local network
 	std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
@@ -324,8 +337,8 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Bound client socket");
 
-	// Connect() -> Connect socket to remote host
 
+	//Check the Servers address to see if the client can connect to the port
 	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 	if (servAddress == nullptr)
 	{
@@ -340,28 +353,15 @@ void DoTcpClient(std::string port)
 	}
 
 	LOG("%s", "Connected to server!");
+
+
 	bool quit = false;
+	//Set up thread to recieve packets 
 	std::thread receiveThread([&clientSocket, &quit, &unackPacks, &recievedPacks]() {
 		while (!quit)
 		{
-			//TODO: Recieve Acknowledgement
-			/*
-			* if (recieved)
-			* set Acknowledged true
-			* recieve bytes
-			* else
-			* set !Acknowledged
-			*/
 			char buffer[8192];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
-
-			//TODO: Send Acknowledgement
-			/*
-			* if(Acknowledged){
-			* send Acknowledged
-			* else{
-			* send NotAcknowledged
-			*/
 			if (bytesReceived == 0)
 			{
 				std::cout << "Server disconnected";
@@ -425,16 +425,14 @@ void DoTcpClient(std::string port)
 					size_t pos2 = 0;
 					std::string token;
 					cout << endl;
-
+					//
 					size_t tempPos = receivedMsg.find(del3);
 					string tempMsg = receivedMsg.substr(0, tempPos);
 					receivedMsg.erase(0, tempPos + del3.length());
 					while ((pos = tempMsg.find(del1)) != std::string::npos) {
 						token = tempMsg.substr(0, pos);
-						cout << "getting a new unit " << token << endl;
 						vector<int> unitData;
 						while ((pos2 = token.find(del2)) != std::string::npos) {
-							cout << "getting new data from unit" << endl;
 							string token2 = token.substr(0, pos);
 							unitData.push_back(stoi(token2));
 							cout << stoi(token2) << " ";
@@ -445,8 +443,6 @@ void DoTcpClient(std::string port)
 						tempMsg.erase(0, pos + del1.length());
 					}
 					
-					cout << "got all the data " << data.size() << endl;
-
 					while ((pos2 = receivedMsg.find(del1)) != std::string::npos) {
 						string token2 = receivedMsg.substr(0, pos);
 						cout << "getting deleted data" << endl;
@@ -454,8 +450,6 @@ void DoTcpClient(std::string port)
 						//cout << stoi(token2) << " ";
 						receivedMsg.erase(0, pos2 + del1.length());
 					}
-
-					cout << "got all the data for realizies " << data.size() << " " << deletedUnits.size() << endl;
 
 					for (int i = 0; i < data.size(); i++)
 					{
@@ -469,12 +463,10 @@ void DoTcpClient(std::string port)
 							Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2], data[i][3]);
 						}
 					}
-					cout << "units placed" << endl;
 					for (int i = 0; i < deletedUnits.size(); i++)
 					{
 						if (Game::getInstance()->unitWithID(deletedUnits[i]) != nullptr)
 						{
-							cout << "deleting unit " << deletedUnits[i] << endl;
 							Game::getInstance()->deleteUnit(deletedUnits[i]);
 							//cout << "unit deleted " << deletedUnits[i] << endl;
 						}
@@ -483,9 +475,6 @@ void DoTcpClient(std::string port)
 							cout << "there is no unit with id " << deletedUnits[i] << endl;
 						}
 					}
-
-					//LOG("%s", receivedMsg.c_str());
-					std::cout << ">";
 				}
 			}
 		}
@@ -506,7 +495,6 @@ void DoTcpClient(std::string port)
 			{
 				cout << "deleting acknowledged packet " << it.first << endl;
 				toDelte.push_back(it.first);
-				//unackPacks.erase(it.first);
 			}
 		}
 
@@ -546,124 +534,15 @@ void DoTcpClient(std::string port)
 			}
 			cout << "MINE\n" << id << endl;
 		}
-		/*
-		std::cout << ">";
-		std::string msg = "Test";
-		//std::getline(std::cin, msg);
-		if (msg == "/quit")
-		{
-			quit = true;
-		}
-		//Game::getInstance()->getUnitData();
-		//clientSocket->Send(msg.c_str(), msg.length());
-		*/
-		//std::this_thread::sleep_for(std::chrono::seconds(1));//SECONDWAIT
 	}
 	clientSocket->~TCPSocket();
 	receiveThread.join();
 }
 
-std::mutex coutMutex;
-
-void DoCout(std::string msg)
-{
-	for (int i = 0; i < 5; i++)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracefully\n";
-}
-
-bool gQuit;
-
-void DoCoutLoop(std::string msg)
-{
-	while (!gQuit)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracfully\n";
-}
-
-void DoCoutLoopLocal(std::string msg, const bool& quit)
-{
-	while (!quit)
-	{
-		coutMutex.lock();  // can block!
-		std::cout << msg << std::endl;
-		coutMutex.unlock();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
-	std::cout << "Exiting loop gracfully\n";
-}
-
-void DoCoutAndExit(std::string msg)
-{
-	std::cout << msg << std::endl;
-
-	std::cout << "Exiting 'loop' gracefully\n";
-}
-
-void DoThreadExample()
-{
-	// Thread Example
-
-	// Ex. 1: Two cout's at once
-
-	//DoCout();
-	gQuit = false;
-	bool quit = false;
-
-	// Lambdas = anonymous functions = Functions with no name.
-	//		max(5, 7) <- two 'anonymous' ints
-	//			int five = 5, seven = 7; max(five, seven);
-	//
-	//	Lambda syntax: [](args) {body} <- a lambda!
-	//		[] -> captures (can use variables from outside scope of function
-
-	//  TcpSocketPtr s;
-	//	std::thread receiveThread([&s]() {
-	//			s->Receive(...);
-	//		});
-	//
-	//  ReceiveOnSocket() {
-	//		s->Receive		// Not global! What are we referencing here?
-	//	}
-
-	std::thread t1(DoCoutLoopLocal, "Hello from thread 1!", std::ref(quit));
-	std::thread t2(DoCoutLoopLocal, "Thread 2 reporting in!", std::ref(quit));
-	std::thread t3([&quit](std::string msg)
-		{
-			while (!quit)
-			{
-				std::cout << msg << std::endl;
-
-				std::cout << "Exiting 'loop' gracefully\n";
-			}
-		}, "Thread 3 here!");
-
-	std::cout << "Hello from the main thread!\n";
-
-	std::cout << "Press enter to exit at any time.\n\n";
-	std::cin.get();
-
-	gQuit = true;
-	quit = true;
-
-	t1.join();
-	t2.join();
-	t3.join();
-}
-
+/// <summary>
+/// shuts down the game and and deletes pointers for
+/// performance tracking 
+/// </summary>
 void shutGame()
 {
 	Game::getInstance()->cleanUpInstance();
@@ -694,32 +573,17 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	// WinSock2.h
-	//    https://docs.microsoft.com/en-us/windows/win32/api/winsock/
-
-
 	SocketUtil::StaticInit();
 
-	//DoThreadExample();
-
-
+	//Check if its the client or server
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
 	//Init Game
 	EventSystem::initInstance();
-	cout << "1" << endl;
 
 	const double SLEEP_TIME = 5.0;
 
 	pPerformanceTracker = new PerformanceTracker;
-
-	cout << "2" << endl;
-	Game::initInstance();
-	cout << "3" << endl;
-
-	//EventSystem* mpESystem = EventSystem::getInstance();
-	//mpESystem->addListener(MOUSE_EVENT_B, this);
-	//mpESystem->addListener(KEY_EVENT_B, this);
 
 	gameListener = new GameListener();
 	gameListener->init();
@@ -737,7 +601,6 @@ int main(int argc, const char** argv)
 	{
 		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
-	cout << "6" << endl;
 	shutGame();
 	SocketUtil::CleanUp();
 
