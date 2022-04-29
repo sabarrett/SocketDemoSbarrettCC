@@ -16,12 +16,8 @@
 #include <GameEventSystem.h>
 #include <GameListener.h>
 
-
-GameListener* gameListener;// = new GameListener();
-PerformanceTracker* pPerformanceTracker;
-
 /// <summary>
-/// Run the game state
+/// Run the game
 /// </summary>
 void runGame()
 {
@@ -29,7 +25,7 @@ void runGame()
 }
 
 /// <summary>
-/// Set up the server controller
+/// Create TCP Server Program to send and recieve data
 /// </summary>
 void DoTcpServer()
 {
@@ -96,23 +92,10 @@ void DoTcpServer()
 	std::thread receiveThread([&connSocket, &quit, &incomingAddress, &unackPacks, &recievedPacks]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
 		{
-			//TODO: Recieve Acknowledgement
-			/*
-			* if (recieved)
-			* set Acknowledged true
-			* recieve bytes
-			* else
-			* set !Acknowledged
-			*/
+			//Create Buffer
 			char buffer[8192];
 			int32_t bytesReceived = connSocket->Receive(buffer, 4096);
-			//TODO: Send Acknowledgement
-			/*
-			* if(Acknowledged){
-			* send Acknowledged
-			* else{
-			* send NotAcknowledged
-			*/
+			//Check recieved buffer for any data
 			if (bytesReceived == 0)
 			{
 				std::cout << incomingAddress.ToString() << " has disconnected";
@@ -124,12 +107,14 @@ void DoTcpServer()
 				return;
 			}
 
+			//Random Ignore Packet
 			if (rand() % 10 == 1)
 			{
-				cout << "gonna ignore this packet :( \n";
+				std::cout << "gonna ignore this packet :( \n";
 			}
 			else
 			{
+				//Recieve data
 				std::string receivedMsg(buffer, bytesReceived);
 				vector<vector<int>> data;
 				vector<int> deletedUnits;
@@ -150,91 +135,88 @@ void DoTcpServer()
 				{
 					//Check if acknowledged
 					unackPacks.find(id)->second.second = true;
-					cout << "packet acknowledged " << id << "\n";
 					cont = false;
 				}
 				else
 				{
-					cout << "acknowledging packet " << id << "\n";
-					if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) //acknowledgment was lost, do not repeat instructions
+					std::cout << "acknowledging packet " << id << "\n";
+					if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) 
 					{
-						cout << "acknowledgment was lost, do not repeat instructions" << endl;
+						//acknowledgment was lost, do not repeat instructions
 						cont = false;
 					}
 					else
 					{
-						cout << "adding to recieved packets" << endl;
+						//Acknowledgement was found push packet to be interpreted
 						recievedPacks.push_back(id);
 					}
-					//Send Acknowledgement
 
-					cout << "sending acknowledgement" << endl;
+
+					//Send Acknowledgement
 					connSocket->Send(to_string(id).c_str(), to_string(id).length());
 				}
 
+				//If packets were aquired load the data into the game
 				if (cont)
 				{
 					//Game::getInstance()->deleteAllUnits();
 					size_t pos = 0;
 					size_t pos2 = 0;
 					std::string token;
-					cout << endl;
+					std::cout << endl;
 
 					size_t tempPos = receivedMsg.find(del3);
 					string tempMsg = receivedMsg.substr(0, tempPos);
 					receivedMsg.erase(0, tempPos + del3.length());
-					cout << tempMsg << " END\n" << receivedMsg << endl;
+					std::cout << tempMsg << " END\n" << receivedMsg << endl;
 					while ((pos = tempMsg.find(del1)) != std::string::npos) {
 						token = tempMsg.substr(0, pos);
-						//cout << "getting a new unit " << token << endl;
+						//Add new Unit
 						vector<int> unitData;
 						while ((pos2 = token.find(del2)) != std::string::npos) {
-							//cout << "getting new data from unit" << endl;
+							//Getting new Unit position
 							string token2 = token.substr(0, pos);
 							unitData.push_back(stoi(token2));
-							//cout << stoi(token2) << " ";
 							token.erase(0, pos2 + del2.length());
 						}
-						//cout <<"\n";
+						//Add Unit to the data to get updated
 						data.push_back(unitData);
 						tempMsg.erase(0, pos + del1.length());
 					}
 
 					while ((pos2 = receivedMsg.find(del1)) != std::string::npos) {
-						//cout << "getting new data from unit" << endl;
+						//Get new Unit data
 						string token2 = receivedMsg.substr(0, pos);
 						deletedUnits.push_back(stoi(token2));
-						//cout << stoi(token2) << " ";
 						receivedMsg.erase(0, pos2 + del1.length());
 					}
 
-					//cout << "got all the data " << data.size() << endl;
+					//All data aquired
 
-					for (int i = 0; i < data.size(); i++)
+					for (UINT i = 0; i < data.size(); i++)
 					{
-						//cout << "placing unit" << endl << endl;
+						//Update Unit position
 						if (Game::getInstance()->unitWithID(data[i][0]))
 						{
 							Game::getInstance()->updateUnitLocation(data[i][0], data[i][2], data[i][3]);
 						}
 						else
 						{
+							//Place new Units
 							Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2], data[i][3]);
 						}
 					}
 
-					for (int i = 0; i < deletedUnits.size(); i++)
+					for (UINT i = 0; i < deletedUnits.size(); i++)
 					{
+						//Delete deleted units
 						Game::getInstance()->deleteUnit(deletedUnits[i]);
 					}
-
-					//LOG("%s", receivedMsg.c_str());
-					std::cout << ">";
 				}
 			}
 		}
 		});
-	while (!quit) // Need to add a quit here to have it really exit!
+	while (!quit)
 	{
 		runGame();
 
@@ -242,18 +224,19 @@ void DoTcpServer()
 		for (auto& it : unackPacks) {
 			if (!it.second.second)
 			{
-				cout << "resending lost packet " << it.first <<"\n";
+				//If data lost resend the data
+				std::cout << "resending lost packet " << it.first <<"\n";
 				connSocket->Send(it.second.first.c_str(), it.second.first.length());
 			}
 			else if (it.second.second)
 			{
-				cout << "deleting acknowledged packet " << it.first <<  "\n";
+				//Delete packets
+				std::cout << "deleting acknowledged packet " << it.first <<  "\n";
 				toDelte.push_back(it.first);
-				//unackPacks.erase(it.first);
 			}
 		}
 
-		for (int i = 0; i < toDelte.size(); i++)
+		for (UINT i = 0; i < toDelte.size(); i++)
 		{
 			unackPacks.erase(toDelte[i]);
 		}
@@ -268,48 +251,42 @@ void DoTcpServer()
 			}
 
 			string msg = to_string(id) + "\n";
-
+			//Begin transferring data
 			Game::getInstance()->setWorldStateChanged(false);
 			vector<vector<int>> data = Game::getInstance()->getUnitData();
-			for (int i = 1; i < data.size(); i++)
+			for (UINT i = 1; i < data.size(); i++)
 			{
 				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " " + to_string(data[i][3]) + " \n";
 			}
 			msg += "END";
+			//Add unit deletion
 			vector<int> data2 = Game::getInstance()->getUnitDeletion();
-			cout << data2.size() << endl;
-			for (int i = 0; i < data2.size(); i++)
+			for (UINT i = 0; i < data2.size(); i++)
 			{
 				msg += to_string(data2[i]) + " \n";
-				cout << data2[i] << endl;
 			}
-
+			//Send data
 			unackPacks.emplace(id, std::make_pair(msg, false));
 			if (rand() % 10 != 5)
 			{
 				connSocket->Send(msg.c_str(), msg.length());
 			}
-			cout << "MINE\n" << id << endl;
 		}
-		//std::this_thread::sleep_for(std::chrono::seconds(1)); //SECONDWAIT
 	}
 	connSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveThread.join();
 }
 
 /// <summary>
-/// Set up the Client controller
+/// Create TCP Client Program to send and recieve data
 /// </summary>
-/// <param name="port">specify the port of the client</param>
+/// <param name="port">Client port to connect to the server</param>
 void DoTcpClient(std::string port)
 {
 	// Create socket
-	//Set up the unacknowledged packages and recieved 
 	unordered_map<int, pair<string,bool>> unackPacks;
 	vector<int> recievedPacks;
 	TCPSocketPtr clientSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
-
-	//Creating client socket
 	if (clientSocket == nullptr)
 	{
 		SocketUtil::ReportError("Creating client socket");
@@ -318,8 +295,6 @@ void DoTcpClient(std::string port)
 
 	LOG("%s", "Client socket created");
 
-
-	//Setting clients address on the local network
 	std::string address = StringUtils::Sprintf("127.0.0.1:%s", port.c_str());
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
@@ -331,14 +306,10 @@ void DoTcpClient(std::string port)
 	if (clientSocket->Bind(*clientAddress) != NO_ERROR)
 	{
 		SocketUtil::ReportError("Binding client socket");
-		// This doesn't block!
 		ExitProcess(1);
 	}
 
 	LOG("%s", "Bound client socket");
-
-
-	//Check the Servers address to see if the client can connect to the port
 	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:8080");
 	if (servAddress == nullptr)
 	{
@@ -353,15 +324,17 @@ void DoTcpClient(std::string port)
 	}
 
 	LOG("%s", "Connected to server!");
-
-
 	bool quit = false;
-	//Set up thread to recieve packets 
+
+	//Recieve game data from server
 	std::thread receiveThread([&clientSocket, &quit, &unackPacks, &recievedPacks]() {
 		while (!quit)
 		{
+			//Create Buffer
 			char buffer[8192];
 			int32_t bytesReceived = clientSocket->Receive(buffer, 4096);
+			
+			//Check how many bytes have been recieved
 			if (bytesReceived == 0)
 			{
 				std::cout << "Server disconnected";
@@ -373,14 +346,18 @@ void DoTcpClient(std::string port)
 				return;
 			}
 
+			//Variation of randomness
 			if (rand() % 10 == 0)
 			{
 				cout << "ignoring this packet :(\n";
 			}
+			//Recieve packets
 			else
 			{
+				//Create recieved message to send back
 				std::string receivedMsg(buffer, bytesReceived);
 
+				
 				vector<vector<int>> data;
 				vector<int> deletedUnits;
 
@@ -396,16 +373,16 @@ void DoTcpClient(std::string port)
 
 				bool cont = true;
 
+				//Check if acknowledged
 				if (unackPacks.find(id) != unackPacks.end())
 				{
 					cout << "setting packet as acknowledged " << id << endl;
-					//Check if acknowledged
 					unackPacks.find(id)->second.second = true;
 					cont = false;
 				}
 				else
 				{
-					cout << "sending packet acknowledgment " << id << endl;
+					//Send Acknowledgement Packet 
 					if (std::find(recievedPacks.begin(), recievedPacks.end(), id) != recievedPacks.end()) //acknowledgment was lost, do not repeat instructions
 					{
 						cont = false;
@@ -418,55 +395,64 @@ void DoTcpClient(std::string port)
 					clientSocket->Send(to_string(id).c_str(), to_string(id).length());
 				}
 
+				//If the packet was aquired then translate the data otherwise disregard
 				if (cont)
 				{
-					//Game::getInstance()->deleteAllUnits();
+					
 					size_t pos = 0;
 					size_t pos2 = 0;
 					std::string token;
 					cout << endl;
-					//
 					size_t tempPos = receivedMsg.find(del3);
 					string tempMsg = receivedMsg.substr(0, tempPos);
 					receivedMsg.erase(0, tempPos + del3.length());
 					while ((pos = tempMsg.find(del1)) != std::string::npos) {
 						token = tempMsg.substr(0, pos);
+						//Getting new Unit
 						vector<int> unitData;
 						while ((pos2 = token.find(del2)) != std::string::npos) {
+							//Getting units data
 							string token2 = token.substr(0, pos);
 							unitData.push_back(stoi(token2));
 							cout << stoi(token2) << " ";
 							token.erase(0, pos2 + del2.length());
 						}
-						//cout <<"\n";
+						//Add this unit to the data list
 						data.push_back(unitData);
 						tempMsg.erase(0, pos + del1.length());
 					}
 					
+					//Unit Position Data Aquired
 					while ((pos2 = receivedMsg.find(del1)) != std::string::npos) {
 						string token2 = receivedMsg.substr(0, pos);
-						cout << "getting deleted data" << endl;
+						//Check deleted Units
 						deletedUnits.push_back(stoi(token2));
-						//cout << stoi(token2) << " ";
 						receivedMsg.erase(0, pos2 + del1.length());
 					}
 
-					for (int i = 0; i < data.size(); i++)
+					//All Data Aquired
+
+					for (UINT i = 0; i < data.size(); i++)
 					{
-						//cout << "placing unit" << endl;
+						//Update Unit location based on Unit ID
 						if (Game::getInstance()->unitWithID(data[i][0]))
 						{
 							Game::getInstance()->updateUnitLocation(data[i][0], data[i][2], data[i][3]);
 						}
+						//If its a new Unit place it with new ID
 						else
 						{
 							Game::getInstance()->placeUnit(data[i][0], data[i][1], data[i][2], data[i][3]);
 						}
 					}
-					for (int i = 0; i < deletedUnits.size(); i++)
+					//All Units updated/added
+
+					//Delete units
+					for (UINT i = 0; i < deletedUnits.size(); i++)
 					{
 						if (Game::getInstance()->unitWithID(deletedUnits[i]) != nullptr)
 						{
+							cout << "deleting unit " << deletedUnits[i] << endl;
 							Game::getInstance()->deleteUnit(deletedUnits[i]);
 							//cout << "unit deleted " << deletedUnits[i] << endl;
 						}
@@ -475,17 +461,23 @@ void DoTcpClient(std::string port)
 							cout << "there is no unit with id " << deletedUnits[i] << endl;
 						}
 					}
+
+					//LOG("%s", receivedMsg.c_str());
+					std::cout << ">";
 				}
 			}
 		}
 		});
+	//End of Recieve Thread
+
+
 	while (!quit)
 	{
 		runGame();
 
 		vector<int> toDelte;
 		for (auto& it : unackPacks) {
-			// Do stuff
+			// Resend packets that have been dropped
 			if (!it.second.second)
 			{
 				cout << "resending lost packet " << it.first << endl;
@@ -495,10 +487,11 @@ void DoTcpClient(std::string port)
 			{
 				cout << "deleting acknowledged packet " << it.first << endl;
 				toDelte.push_back(it.first);
+				//unackPacks.erase(it.first);
 			}
 		}
 
-		for (int i = 0; i < toDelte.size(); i++)
+		for (UINT i = 0; i < toDelte.size(); i++)
 		{
 			unackPacks.erase(toDelte[i]);
 		}
@@ -515,24 +508,25 @@ void DoTcpClient(std::string port)
 			string msg = to_string(id) + " ";
 			Game::getInstance()->setWorldStateChanged(false);
 			vector<vector<int>> data = Game::getInstance()->getUnitData();
-			for (int i = 1; i < data.size(); i++)
+			//Send the game state
+			for (UINT i = 1; i < data.size(); i++)
 			{
 				msg += to_string(data[i][0]) + " " + to_string(data[i][1]) + " " + to_string(data[i][2]) + " " + to_string(data[i][3]) + " \n";
 			}
 
+			//Send unit deletions
 			msg += "END";
 			vector<int> data2 = Game::getInstance()->getUnitDeletion();
-			for (int i = 1; i < data2.size(); i++)
+			for (UINT i = 1; i < data2.size(); i++)
 			{
 				msg += to_string(data2[i]) + " \n";
 			}
-
+			//Attempt to send Unit data
 			unackPacks.emplace(id, std::make_pair(msg, false));
 			if (rand() % 10 != 2)
 			{
 				clientSocket->Send(msg.c_str(), msg.length());
 			}
-			cout << "MINE\n" << id << endl;
 		}
 	}
 	clientSocket->~TCPSocket();
@@ -540,10 +534,11 @@ void DoTcpClient(std::string port)
 }
 
 /// <summary>
-/// shuts down the game and and deletes pointers for
-/// performance tracking 
+/// End game
 /// </summary>
-void shutGame()
+/// <param name="gameListener">Game Event Manager</param>
+/// <param name="performanceTracker">Pointer performance tracker</param>
+void shutGame(GameListener* gameListener, PerformanceTracker* performanceTracker)
 {
 	Game::getInstance()->cleanUpInstance();
 
@@ -552,7 +547,7 @@ void shutGame()
 
 	EventSystem::getInstance()->cleanupInstance();
 
-	delete pPerformanceTracker;
+	delete performanceTracker;
 
 	MemoryTracker::getInstance()->reportAllocations(cout);
 	system("pause");
@@ -573,35 +568,39 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
+	GameListener* gameListener;// = new GameListener();
+	PerformanceTracker* pPerformanceTracker;
+
 	SocketUtil::StaticInit();
 
-	//Check if its the client or server
 	bool isServer = StringUtils::GetCommandLineArg(1) == "server";
 
 	//Init Game
 	EventSystem::initInstance();
-
-	const double SLEEP_TIME = 5.0;
+	//Game Initted
 
 	pPerformanceTracker = new PerformanceTracker;
 
+	//Performance Tracker created
+	Game::initInstance();
+	//Create insance of game
 	gameListener = new GameListener();
 	gameListener->init();
-	cout << "4" << endl;
+	//Create the Game Event Manager
 
 	Game::getInstance()->setFrameRate(60.0);
-	cout << "5" << endl;
+
 	//Game Initted
 	if (isServer)
 	{
-		
 		DoTcpServer();
 	}
 	else
 	{
 		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
-	shutGame();
+	//Program success
+	shutGame(gameListener, pPerformanceTracker);
 	SocketUtil::CleanUp();
 
 	return 0;
