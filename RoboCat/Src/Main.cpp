@@ -234,6 +234,7 @@ int main(int argc, const char** argv)
 			//std::cout << 4 << '\n';
 			if (latencyTimer > LATENCY_TIME)
 			{
+				std::cout << "network update\n";
 				NetworkManager::HandleOutgoingWorldStatePackets(ref(gameWorld), sendingSocket, addressToSendTo, deltaTime);
 				latencyTimer = 0;
 			}

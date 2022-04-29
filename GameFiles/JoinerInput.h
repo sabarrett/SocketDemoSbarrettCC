@@ -21,7 +21,7 @@ class JoinerInput
 
 	int inputID;
 	static unsigned int inputIdIterator;
-	static std::map<int, int> inputTimings; // <input id, time created>
+	static std::map<int, system_clock::time_point> inputTimings; // <input id, time created>
 
 	JoinerInput(InputActionIDs initalType, Location loc);
 

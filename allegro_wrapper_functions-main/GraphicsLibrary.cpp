@@ -75,7 +75,7 @@ bool GraphicsLibrary::init()
 
 void GraphicsLibrary::render()
 {
-	std::cout << "Allegro's render crashed";
+	std::cout << "Algr crashd";
 	//Flip display buffers
 	al_flip_display();
 	std::cout << "\r";

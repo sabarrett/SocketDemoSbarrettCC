@@ -175,7 +175,7 @@ void WorldState::Read(InputMemoryBitStream& stream)
 	stream.Read(creatorsLatestInputID);
 	
 	int result = CheckForRoundTripTime(creatorsLatestInputID);
-	if (result > -1)
+	if (result != -1)
 	{
 		std::cout << "RTT from creator for input id: " << creatorsLatestInputID << " was " << result << ".\n";
 	}
@@ -277,10 +277,10 @@ void WorldState::RemoveUnneededGameObjects()
 
 int WorldState::CheckForRoundTripTime(int idToCheckFor)
 {
-	std::map<int,int>::iterator result = JoinerInput::inputTimings.find(idToCheckFor);
+	std::map<int,system_clock::time_point>::iterator result = JoinerInput::inputTimings.find(idToCheckFor);
 	if (result != JoinerInput::inputTimings.end())
 	{
-		int timeDif = time(0) - result->second;
+		int timeDif = (duration_cast<milliseconds>(system_clock::now() - result->second).count());
 		JoinerInput::inputTimings.erase(result);
 		return timeDif;
 	}

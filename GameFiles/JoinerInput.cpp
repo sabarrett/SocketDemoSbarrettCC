@@ -3,7 +3,7 @@
 #include "JoinerInput.h"
 
 unsigned int JoinerInput::inputIdIterator = 0;
-std::map<int, int> JoinerInput::inputTimings = std::map<int, int>(); // <input id, time created>
+std::map<int, system_clock::time_point> JoinerInput::inputTimings = std::map<int, system_clock::time_point>(); // <input id, time created>
 
 
 JoinerInput::JoinerInput(InputActionIDs initalType, Location loc)
@@ -15,7 +15,7 @@ JoinerInput::JoinerInput(InputActionIDs initalType, Location loc)
 	if (inputIDType == InputActionIDs::JOINER_KEY_SPAWN)
 	{
 		inputID = ++JoinerInput::inputIdIterator;
-		inputTimings.emplace(inputID, time(0));
+		inputTimings.emplace(inputID, system_clock::now());
 	}
 	else
 		inputID = 00; //these don't need an id
