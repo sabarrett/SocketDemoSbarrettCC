@@ -2,13 +2,13 @@
 
 using namespace std;
 
-#include "Trackable.h"
+
 #include <vector>
 #include "Vector2D.h"
 #include "Unit.h"
 #include "Animation.h"
 
-class UnitManager : public Trackable
+class UnitManager
 {
 private:
 	vector<Unit*> mUnits;

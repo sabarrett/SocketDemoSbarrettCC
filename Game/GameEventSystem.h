@@ -9,7 +9,7 @@ enum GameEventType;
 
 using namespace std;
 
-class GameEventSystem : public Trackable
+class GameEventSystem : 
 {
 public:
 	static GameEventSystem* getInstance();

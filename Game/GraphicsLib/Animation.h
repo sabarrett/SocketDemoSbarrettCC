@@ -5,9 +5,9 @@ using namespace std;
 #include <vector>
 
 #include "Sprite.h"
-#include "Trackable.h"
 
-class Animation : public Trackable
+
+class Animation
 {
 private:
 	//Keeps track of sprites

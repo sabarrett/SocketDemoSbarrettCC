@@ -2,7 +2,7 @@
 
 #include "System.h"
 
-#include "Trackable.h"
+
 #include "Timer.h"
 #include "UnitManager.h"
 #include "GraphicsBuffer.h"
@@ -22,7 +22,7 @@ const int SMURF_ROWS = 4;
 const int SMURF_COLS = 4;
 const int SMURF_SIZE = 32;
 
-class Game : public Trackable
+class Game
 {
 private:
 	Game();

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Trackable.h"
+
 
 template < class T >
-class MultiDimensionalArray :public Trackable
+class MultiDimensionalArray :
 {
 public:
 	explicit MultiDimensionalArray(unsigned int numRows, unsigned int numCols, const T& initialValue)

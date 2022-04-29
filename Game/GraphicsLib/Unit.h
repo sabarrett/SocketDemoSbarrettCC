@@ -5,10 +5,10 @@ using namespace std;
 #include <vector>
 
 #include "Animation.h"
-#include "Trackable.h"
+
 #include "GraphicsSystem.h"
 
-class Unit : public Trackable
+class Unit
 {
 private:
 	//current state of unit

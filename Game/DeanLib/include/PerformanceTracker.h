@@ -4,9 +4,9 @@
 
 #include <map>
 #include <string>
-#include "Trackable.h"
 
-class PerformanceTracker: public Trackable
+
+class PerformanceTracker
 {
 public:
 	PerformanceTracker();

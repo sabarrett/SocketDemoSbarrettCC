@@ -10,13 +10,13 @@
 	2011
 */
 
-#include "Trackable.h"
+
 #include "DeanMath.h"
 #include <iostream>
 #include <cfloat>
 
 
-class Vector2D:public Trackable
+class Vector2D
 {
 	friend std::ostream & operator<< (std::ostream& out, const Vector2D& vector);
 

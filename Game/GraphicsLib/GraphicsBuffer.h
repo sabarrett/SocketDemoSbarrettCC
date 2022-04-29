@@ -3,11 +3,11 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <string>
-#include "Trackable.h"
+
 
 using namespace std;
 
-class GraphicsBuffer : public Trackable
+class GraphicsBuffer
 {
 public:
 	friend class GraphicsSystem;

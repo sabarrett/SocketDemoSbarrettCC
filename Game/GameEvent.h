@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <trackable.h>
+
 
 using namespace std;
 
@@ -17,7 +17,7 @@ using namespace std;
 	NUM_EVENT_TYPES
 };
 
-class GameEvent:public Trackable
+class GameEvent:
 {
 public:
 	GameEvent(GameEventType type );

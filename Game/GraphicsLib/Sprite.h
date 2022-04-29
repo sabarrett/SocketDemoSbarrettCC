@@ -4,11 +4,11 @@
 #include "GraphicsBuffer.h"
 #include <vector>
 #include <string>
-#include "Trackable.h"
+
 
 using namespace std;
 
-class Sprite : public Trackable
+class Sprite
 {
 public:
 	Sprite(GraphicsBuffer *image, vector<int> sourceLoc, int width, int height);

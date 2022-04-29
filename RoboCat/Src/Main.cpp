@@ -8,8 +8,6 @@
 #include <sstream>
 
 //Game Includes
-#include <PerformanceTracker.h>
-#include <MemoryTracker.h>
 #include <Game.h>
 #include "allegro5/allegro.h"
 #include <EventSystem.h>
@@ -247,7 +245,7 @@ void DoTcpServer()
 
 			while (unackPacks.find(id) != unackPacks.end())
 			{
-				int id = (rand() % 2000) + 2001;
+				id = (rand() % 2000) + 2001;
 			}
 
 			string msg = to_string(id) + "\n";
@@ -502,7 +500,7 @@ void DoTcpClient(std::string port)
 
 			while (unackPacks.find(id) != unackPacks.end())
 			{
-				int id = rand() % 2000;
+				id = rand() % 2000;
 			}
 
 			string msg = to_string(id) + " ";
@@ -538,7 +536,7 @@ void DoTcpClient(std::string port)
 /// </summary>
 /// <param name="gameListener">Game Event Manager</param>
 /// <param name="performanceTracker">Pointer performance tracker</param>
-void shutGame(GameListener* gameListener, PerformanceTracker* performanceTracker)
+void shutGame(GameListener* gameListener)
 {
 	Game::getInstance()->cleanUpInstance();
 
@@ -547,9 +545,7 @@ void shutGame(GameListener* gameListener, PerformanceTracker* performanceTracker
 
 	EventSystem::getInstance()->cleanupInstance();
 
-	delete performanceTracker;
 
-	MemoryTracker::getInstance()->reportAllocations(cout);
 	system("pause");
 }
 
@@ -569,7 +565,6 @@ int main(int argc, const char** argv)
 #endif
 
 	GameListener* gameListener;// = new GameListener();
-	PerformanceTracker* pPerformanceTracker;
 
 	SocketUtil::StaticInit();
 
@@ -579,7 +574,6 @@ int main(int argc, const char** argv)
 	EventSystem::initInstance();
 	//Game Initted
 
-	pPerformanceTracker = new PerformanceTracker;
 
 	//Performance Tracker created
 	Game::initInstance();
@@ -600,7 +594,7 @@ int main(int argc, const char** argv)
 		DoTcpClient(StringUtils::GetCommandLineArg(2));
 	}
 	//Program success
-	shutGame(gameListener, pPerformanceTracker);
+	shutGame(gameListener);
 	SocketUtil::CleanUp();
 
 	return 0;

@@ -11,7 +11,7 @@
 
 using namespace std;
 
-class InputSystem : public Trackable
+class InputSystem
 {
 public:
 	InputSystem();

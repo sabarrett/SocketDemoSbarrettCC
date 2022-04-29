@@ -1,5 +1,5 @@
 #pragma once
-#include <Trackable.h>
+
 
 #include <string>
 #include <windows.h>
@@ -27,7 +27,7 @@ enum DataType
 	UINT_VAL
 };
 
-class DataEntry: public Trackable
+class DataEntry
 {
 public:
 	DataEntry( int val );
@@ -52,7 +52,7 @@ private:
 
 typedef int DataKey;
 
-class DataRepository : public Trackable
+class DataRepository
 {
 
 public:

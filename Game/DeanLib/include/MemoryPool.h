@@ -2,10 +2,10 @@
 
 #include "DeanLibDefines.h"
 #include "CircularQueue.h"
-#include "Trackable.h"
 
 
-class MemoryPool: public Trackable
+
+class MemoryPool
 {
 public:
 	MemoryPool(unsigned int maxNumObjects, unsigned int objectSize);

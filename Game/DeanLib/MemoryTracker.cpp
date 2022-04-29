@@ -1,7 +1,7 @@
 #include <iostream>
 #include <map>
 #include "MemoryTracker.h"
-#include "Trackable.h"
+
 
 using namespace std;
 
@@ -65,6 +65,5 @@ void MemoryTracker::reportAllocations( std::ostream& stream )
 	unordered_map<void*, AllocationRecord>::iterator iter;
 	for( iter = mAllocations.begin(); iter != mAllocations.end(); ++iter )
 	{
-		stream << "address:" << iter->first << " size:" << iter->second.size << " num:" << iter->second.num << " debug:" <<((Trackable*)(iter->first))->getDebugSource().c_str() << endl;
 	}
 }

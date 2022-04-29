@@ -1,9 +1,9 @@
 #pragma once
-#include <Trackable.h>
+
 #include <DeanLibDefines.h>
 
 template < class T >
-class CircularQueue : public Trackable
+class CircularQueue
 {
 public:
 	explicit CircularQueue(Uint32 size)

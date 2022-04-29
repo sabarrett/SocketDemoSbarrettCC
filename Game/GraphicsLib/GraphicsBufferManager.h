@@ -2,11 +2,11 @@
 
 using namespace std;
 
-#include "Trackable.h"
+
 #include <unordered_map>
 #include "GraphicsBuffer.h"
 
-class GraphicsBufferManager : public Trackable
+class GraphicsBufferManager
 {
 private:
 	unordered_map<string, GraphicsBuffer*> mUMap;

@@ -6,9 +6,9 @@ using namespace std;
 #include "GraphicsSystem.h"
 #include "InputSystem.h"
 
-#include "Trackable.h"
 
-class System : public Trackable
+
+class System 
 {
 private:
     GraphicsSystem * mpGraphicsSystem;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Trackable.h>
+
 
 /*template <class T, void (*F)(T)>
 void callbackFunc(T var)
@@ -9,7 +9,7 @@ void callbackFunc(T var)
 }*/
 
 template <class T>
-class TimedCallback :public Trackable
+class TimedCallback
 {
 public:
 	TimedCallback(double delayInMS, void(*func)(T), T val)

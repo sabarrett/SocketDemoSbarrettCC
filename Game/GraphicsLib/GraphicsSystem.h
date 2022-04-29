@@ -3,13 +3,13 @@
 #include <allegro5/allegro.h>
 
 #include "Sprite.h"
-#include "Trackable.h"
+
 
 #include <string>
 
 using namespace std;
 
-class GraphicsSystem : public Trackable
+class GraphicsSystem
 {
 public:
 	GraphicsSystem();
