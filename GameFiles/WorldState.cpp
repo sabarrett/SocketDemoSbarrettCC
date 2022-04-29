@@ -192,28 +192,29 @@ void WorldState::ClearGameObjectsOut()
 
 void WorldState::RemoveUnneededGameObjects()
 {
-	for each(GameObject* obj in mToDestroy)
+	// backwards so we don't loop out
+	for (int i = mToDestroy.size() - 1; i > -1; i--)
 	{
-		mpGameObjectLinker->RemoveGameObject(obj);
-		for (int i = 0; i < mGameObjects.size(); i++)
+		mpGameObjectLinker->RemoveGameObject(mToDestroy[i]);
+		for (int j = mGameObjects.size() - 1; j > -1; j--)
 		{
-			if (mGameObjects[i] == obj)
+			if (mGameObjects[j] == mToDestroy[i])
 			{
-				mGameObjects.erase(mGameObjects.begin() + i);
+				mGameObjects.erase(mGameObjects.begin() + j);
 				break;
 			}
 		}
-		
-		switch (obj->GetClassId())
+
+		switch (mToDestroy[i]->GetClassId())
 		{
 		case 'LOCK':
-			delete (Lock*)obj;
+			delete (Lock*)mToDestroy[i];
 			break;
 		case 'KEYS':
-			delete (Key*)obj;
+			delete (Key*)mToDestroy[i];
 			break;
 		case 'COIN':
-			delete (Coin*)obj;
+			delete (Coin*)mToDestroy[i];
 			break;
 		default:
 			break;
