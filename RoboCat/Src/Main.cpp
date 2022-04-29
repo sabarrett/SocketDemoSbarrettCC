@@ -245,31 +245,32 @@ void BradsTotallyOriginalServer()
 			{
 				InputMemoryBitStream packStream(packets.front()->mBufferPtr, 4096);
 
-				deliveryManager.ReadAndProcessState(packStream);
-				deliveryManager.ProcessTimedOutPackets();
+				if (deliveryManager.ReadAndProcessState(packStream))
+				{
+					deliveryManager.ProcessTimedOutPackets();
 
-				for (int i = 0; i < numObjects; i++)
-				{
-					inObjects[i].Read(packStream);
+					for (int i = 0; i < numObjects; i++)
+					{
+						inObjects[i].Read(packStream);
+					}
+					int clientProjectilesCount;
+					packStream.Read(clientProjectilesCount);
+					clientProjectiles.clear();
+					for (int i = 0; i < clientProjectilesCount; i++)
+					{
+						RectangleObject* temp = new RectangleObject();
+						temp->Read(packStream);
+						clientProjectiles.push_back(temp);
+					}
 				}
-				int clientProjectilesCount;
-				packStream.Read(clientProjectilesCount);
-				clientProjectiles.clear();
-				for (int i = 0; i < clientProjectilesCount; i++)
-				{
-					RectangleObject* temp = new RectangleObject();
-					temp->Read(packStream);
-					clientProjectiles.push_back(temp);
-				}
-				if(!packets.empty())
+				if (!packets.empty())
 					packets.pop_front();
 
 				//process timed out acks
 				if (!packets.empty())
 					processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
-				else				
-					processOrNot = false;		
-
+				else
+					processOrNot = false;
 			}
 		}
 
@@ -533,34 +534,35 @@ void BradsLessOriginalClient()
 
 				InputMemoryBitStream packStream(packets.front()->mBufferPtr, 4096);
 
-				deliveryManager.ReadAndProcessState(packStream);
-				deliveryManager.ProcessTimedOutPackets();
+				if (deliveryManager.ReadAndProcessState(packStream))
+				{
+					deliveryManager.ProcessTimedOutPackets();
 
 
-				for (int i = 0; i < numObjects; i++)
-				{
-					inObjects[i].Read(packStream);
-				}
-				for (int j = 0; j < numDroplets; j++)
-				{
-					rain[j].Read(packStream);
-				}
-				int serverProjectilesCount;
-				packStream.Read(serverProjectilesCount);
-				serverProjectiles.clear();
-				for (int i = 0; i < serverProjectilesCount; i++)
-				{
-					CircleClass* temp = new CircleClass();
-					temp->Read(packStream);
-					serverProjectiles.emplace_back(temp);
+					for (int i = 0; i < numObjects; i++)
+					{
+						inObjects[i].Read(packStream);
+					}
+					for (int j = 0; j < numDroplets; j++)
+					{
+						rain[j].Read(packStream);
+					}
+					int serverProjectilesCount;
+					packStream.Read(serverProjectilesCount);
+					serverProjectiles.clear();
+					for (int i = 0; i < serverProjectilesCount; i++)
+					{
+						CircleClass* temp = new CircleClass();
+						temp->Read(packStream);
+						serverProjectiles.emplace_back(temp);
+					}
 				}
 				packets.pop_front();
 				//readack
-				if(!packets.empty())
+				if (!packets.empty())
 					processOrNot = packets.front()->timeStamp < al_get_timer_count(timer);
 				else
 					processOrNot = false;
-
 
 			}
 
