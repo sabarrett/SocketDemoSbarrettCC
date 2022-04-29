@@ -35,7 +35,13 @@
 #include "deque"
 #include "unordered_set"
 #include "cassert"
+#include <thread>
+#include <stack>
+#include <typeinfo>
+#include <atomic>
 
+using std::stack;
+using std::thread;
 using std::shared_ptr;
 using std::unique_ptr;
 using std::vector;
@@ -45,11 +51,20 @@ using std::deque;
 using std::unordered_map;
 using std::string;
 using std::unordered_set;
+using std::pair;
+using std::priority_queue;
+using std::chrono::system_clock;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
+using std::ref;
 
 class RoboCat;
 class GameObject;
 
+
+
 #include "RoboMath.h"
+
 
 #include "TransmissionData.h"
 #include "InFlightPacket.h"
@@ -60,6 +75,12 @@ class GameObject;
 #include "AckRange.h"
 
 #include "Timing.h"
+
+#include "LinkingContext.h"
+#include "ByteSwap.h"
+#include "MemoryBitStream.h"
+
+
 #include "StringUtils.h"
 #include "SocketAddress.h"
 #include "SocketAddressFactory.h"
