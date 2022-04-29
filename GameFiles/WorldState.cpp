@@ -17,7 +17,9 @@ WorldState::WorldState(GraphicsLibrary* gl)
 WorldState::~WorldState()
 {
 	ClearGameObjectsOut();
-	mpGraphicsLibrary = nullptr;
+
+
+	//mpGraphicsLibrary = nullptr;
 }
 
 void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs, int delta)
