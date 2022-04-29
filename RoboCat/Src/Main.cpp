@@ -33,8 +33,8 @@
 ///		X - The client uses the same algorithms as the server where possible, and uses dead reckoning otherwise.
 ///		X - Both forms of client - side prediction are clearly present.
 ///	X - There are at least 3 distinct game object types with different data requirements. 
-///		X - At least one object can be simulated on the client
-///		X - at least one object requires dead reckoning (i.e., is another player)
+///		O - At least one object can be simulated on the client
+///		O - at least one object requires dead reckoning (i.e., is another player)
 
 const float SCREEN_X = 1500;
 const float SCREEN_Y = 750;
@@ -248,11 +248,8 @@ int main(int argc, const char** argv)
 			{
 				isGameRunning = false;
 			}
-			if (latencyTimer > LATENCY_TIME)
-			{
-				NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo, ref(lastTimeOfSendingConnection), deltaTime);
-				latencyTimer = 0;
-			}
+			NetworkManager::HandleOutgoingInputPackets(ref(joinerInputs), sendingSocket, addressToSendTo, ref(lastTimeOfSendingConnection), deltaTime);
+			latencyTimer = 0;
 			//std::cout << 4 << '\n';
 		}
 

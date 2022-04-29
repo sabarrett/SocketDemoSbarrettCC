@@ -112,14 +112,14 @@ void WorldState::CreatePlayers()
 	GameObject* createdGameObject = PlayerMarcher::CreateInstance();
 	createdGameObject->SetPostion(0, 375);
 	((PlayerMarcher*)createdGameObject)->SetIsServer(true);
-	((PlayerMarcher*)createdGameObject)->SetGoalPos(0, 375,true);
+	((PlayerMarcher*)createdGameObject)->SetGoalPos(750, 375,true);
 	mpGameObjectLinker->GetNetworkId(createdGameObject, true);
 	mGameObjects.push_back(createdGameObject);
 	
 	createdGameObject = PlayerMarcher::CreateInstance();
 	createdGameObject->SetPostion(1500, 375);
 	((PlayerMarcher*)createdGameObject)->SetIsServer(false);
-	((PlayerMarcher*)createdGameObject)->SetGoalPos(1500, 375, false);
+	((PlayerMarcher*)createdGameObject)->SetGoalPos(750, 375, false);
 	mpGameObjectLinker->GetNetworkId(createdGameObject, true);
 	mGameObjects.push_back(createdGameObject);
 }
