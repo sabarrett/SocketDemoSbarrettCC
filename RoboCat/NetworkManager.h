@@ -1,7 +1,7 @@
 #pragma once
+#include "RoboCatPCH.h"
 #include "../common/DeanLib/include/Trackable.h"
 #include "Game.h"
-#include "RoboCatPCH.h"
 #include "GameEvent.h"
 
 enum PacketTypes

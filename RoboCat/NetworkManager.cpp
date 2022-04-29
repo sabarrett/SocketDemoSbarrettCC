@@ -177,12 +177,12 @@ void NetworkManager::sendData(PacketTypes packet, int ID)
 	{
 	case CREATE_OBJECT:
 	{
-		MemStream.Write(mvGameObjects[ID].first->getInstance.handleEvent(GameEventType::CREATE_UNIT_EVENT));
+		mvGameObjects[ID].first->getInstance()->handleEvent(Event(EventType::MOUSE_DOWN_EVENT));
 		break;
 	}
 	case UPDATE_OBJECT:
 	{
-		MemStream.Write(mvGameObjects[ID].first->getInstance.update());
+		mvGameObjects[ID].first->getInstance()->update();
 		break;
 	}
 	case DESTROY_OBJECT:
@@ -234,7 +234,7 @@ void NetworkManager::receiveData()
 		{
 		case CREATE_OBJECT:
 		{
-			MemStream.Read(mvGameObjects[networkID].first->getInstance.handleEvent(GameEventType::CREATE_UNIT_EVENT));
+			mvGameObjects[networkID].first->getInstance()->handleEvent(Event(EventType::MOUSE_DOWN_EVENT));
 			break;
 		}
 			
