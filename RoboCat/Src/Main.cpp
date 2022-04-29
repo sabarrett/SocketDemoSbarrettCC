@@ -4,6 +4,7 @@
 #include "RoboCat/Game.h"
 #include"./RoboCat/EventSystem.h"
 #include "./common/DeanLib/include/MemoryTracker.h"
+#include "./RoboCat/NetworkManager.h"
 
 #if _WIN32
 
@@ -107,6 +108,23 @@ int main(int argc, const char** argv)
 	cout << endl;
 
 	MemoryTracker::getInstance()->reportAllocations(cout);
+
+
+	//Assignment 2 code here
+	NetworkManager* mpNetManager = new NetworkManager();
+
+	std::string serverPort = "8080";
+	std::string clientIP = "127.0.0.1";
+	std::string clientPort = "8081";
+
+	bool serverInited = mpNetManager->initServer(serverPort);
+	bool clientInited = mpNetManager->connect(clientIP, clientPort);
+
+	if (serverInited && clientInited)
+	{
+
+	}
+
 	system("pause");
 
 	return 0;

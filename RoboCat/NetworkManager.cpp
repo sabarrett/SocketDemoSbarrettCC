@@ -75,6 +75,9 @@ bool NetworkManager::initServer(std::string serverPort)
 
 	else
 	{
+		Game::initInstance();
+		mpGame = Game::getInstance();
+		mpGame->init();
 		return true;
 	}
 }
@@ -134,6 +137,9 @@ bool NetworkManager::connect(std::string clientIP, std::string clientPort)
 	}
 	else
 	{
+		Game::initInstance();
+		mpGame = Game::getInstance();
+		mpGame->init();
 		return true;
 	}
 }
@@ -208,4 +214,67 @@ void NetworkManager::sendData(PacketTypes packet, int ID)
 
 void NetworkManager::receiveData()
 {
+	char buffer[4096];
+	int32_t bytesReceived = (*mpSocket)->Receive(buffer, 4096);
+
+	if (bytesReceived > 0)
+	{
+		InputMemoryBitStream MemStream = InputMemoryBitStream(buffer, 4096);
+		PacketTypes recievePacketType;
+		MemStream.Read(recievePacketType);
+
+		int networkID;
+		MemStream.Read(networkID);
+		if (mCurrentID < networkID)
+		{
+			mCurrentID = networkID;
+		}
+
+		switch (recievePacketType)
+		{
+		case CREATE_OBJECT:
+		{
+			MemStream.Read(mvGameObjects[networkID].first->getInstance.handleEvent(GameEventType::CREATE_UNIT_EVENT));
+			break;
+		}
+			
+		case UPDATE_OBJECT:
+		{
+			if (mvGameObjects[networkID].first != nullptr)
+			{
+				mvGameObjects[networkID].first->getInstance()->update();
+				break;
+			}
+			else
+			{
+				std::cout << "Nothing to update.\n";
+			}
+
+			break;
+		}
+
+		case DESTROY_OBJECT:
+		{
+			if (mvGameObjects.size() > 0)
+			{
+				std::vector<std::pair<Game*, int>>::iterator iter;
+				for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
+				{
+					mvGameObjects.erase(iter);
+					mCurrentID--;
+					break;
+				}
+			}
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
+	else if (bytesReceived <= -10035)
+	{
+		std::cout << "Connection terminated";
+		exit(0);
+	}
 }
