@@ -60,6 +60,8 @@ class WorldState
 		vector<GameObject*> mToDestroy;
 		LinkingContext* mpGameObjectLinker;
 		GraphicsLibrary* mpGraphicsLibrary;
+		int CheckForRoundTripTime(int idToCheckFor);
+
 
 	friend Key;
 };

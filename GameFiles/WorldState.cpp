@@ -146,7 +146,10 @@ void WorldState::Write(OutputMemoryBitStream& stream) const
 {
 	int count = mGameObjects.size();
 	GameObject* tempObj;
+
 	stream.Write(count);
+	stream.Write(WorldState::currentInputNum);
+
 	for (int i = 0; i < count; i++)
 	{
 		tempObj = mGameObjects[i];
@@ -165,7 +168,20 @@ void WorldState::Read(InputMemoryBitStream& stream)
 	uint32_t networkID;
 	uint32_t classID;
 	GameObject* tempObj;
+
 	stream.Read(count);
+	
+	int creatorsLatestInputID;
+	stream.Read(creatorsLatestInputID);
+	
+	int result = CheckForRoundTripTime(creatorsLatestInputID);
+	if (result > -1)
+	{
+		std::cout << "RTT from creator for input id: " << creatorsLatestInputID << " was " << result << ".\n";
+	}
+
+
+
 	for (int i = 0; i < count; i++)
 	{
 		stream.Read(networkID);
@@ -240,7 +256,6 @@ void WorldState::RemoveUnneededGameObjects()
 			}
 		}
 
-
 		switch (mToDestroy[i]->GetClassId())
 		{
 		case 'LOCK':
@@ -255,10 +270,19 @@ void WorldState::RemoveUnneededGameObjects()
 		default:
 			break;
 		}
-
-	
-
 	}
 
 	mToDestroy.clear();
+}
+
+int WorldState::CheckForRoundTripTime(int idToCheckFor)
+{
+	std::map<int,int>::iterator result = JoinerInput::inputTimings.find(idToCheckFor);
+	if (result != JoinerInput::inputTimings.end())
+	{
+		int timeDif = time(0) - result->second;
+		JoinerInput::inputTimings.erase(result);
+		return timeDif;
+	}
+	return -1;
 }

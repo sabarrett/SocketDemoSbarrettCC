@@ -32,7 +32,7 @@
 ///		O - there is a high amount of latency simulated.
 ///		X - The client uses the same algorithms as the server where possible, and uses dead reckoning otherwise.
 ///		X - Both forms of client - side prediction are clearly present.
-///	X - There are at least 3 distinct game object types with different data requirements. 
+///	O - There are at least 3 distinct game object types with different data requirements. 
 ///		O - At least one object can be simulated on the client
 ///		O - at least one object requires dead reckoning (i.e., is another player)
 

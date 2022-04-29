@@ -39,6 +39,7 @@
 #include <stack>
 #include <typeinfo>
 #include <atomic>
+#include <map>
 
 using std::stack;
 using std::thread;
