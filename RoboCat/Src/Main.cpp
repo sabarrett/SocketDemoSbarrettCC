@@ -5,6 +5,7 @@
 #include"./RoboCat/EventSystem.h"
 #include "./common/DeanLib/include/MemoryTracker.h"
 #include "./RoboCat/NetworkManager.h"
+#include "./RoboCat/InputSystem.h"
 
 #if _WIN32
 
@@ -54,75 +55,50 @@ int main(int argc, const char** argv)
 
 	SocketUtil::StaticInit();
 
-	UDPSocketPtr cliSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-	UDPSocketPtr srvSock = SocketUtil::CreateUDPSocket(SocketAddressFamily::INET);
-
-	SocketAddressPtr srvAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9001");
-	{
-		SocketAddressPtr cliAddr = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:9000");
-		if (cliAddr == nullptr)
-		{
-			SocketUtil::ReportError("Create client socket");
-			ExitProcess(1);
-		}
-		cliSock->Bind(*cliAddr);
-	}
-	srvSock->Bind(*srvAddr);
-
-	std::string msg("Hello server!");
-	int bytesSent = cliSock->SendTo(msg.c_str(), msg.length(), *srvAddr);
-	if (bytesSent <= 0)
-	{
-		SocketUtil::ReportError("Client Sendto");
-	}
-	std::cout << "Sent: " << bytesSent << std::endl;
-
-	std::thread srvThread([&srvSock]() {
-		char buffer[4096];
-		SocketAddress fromAddr;
-		int bytesReceived = srvSock->ReceiveFrom(buffer, 4096, fromAddr);
-		if (bytesReceived <= 0)
-		{
-			SocketUtil::ReportError("Server ReceiveFrom");
-			return;
-		}
-		std::string msg(buffer, bytesReceived);
-		std::cout << "Received message from " << fromAddr.ToString() << ": " << msg << std::endl;
-	});
-
-	srvThread.join();
-
-	SocketUtil::CleanUp();
-
-	Game::initInstance();
-	Game* instance = Game::getInstance();
-
-	instance->init();
-
-	instance->doLoop();
-
-	instance->cleanup();
-	Game::deleteInstance();
-	EventSystem::cleanupInstance();
-
-	cout << endl;
-
-	MemoryTracker::getInstance()->reportAllocations(cout);
-
-
 	//Assignment 2 code here
 	NetworkManager* mpNetManager = new NetworkManager();
+	InputSystem* mpInput = new InputSystem();
 
 	std::string serverPort = "8080";
 	std::string clientIP = "127.0.0.1";
 	std::string clientPort = "8081";
 
-	bool serverInited = mpNetManager->initServer(serverPort);
-	bool clientInited = mpNetManager->connect(clientIP, clientPort);
+	bool serverInited;
+	bool clientInited;
+
+	int networkID = 0;
+
+	std::thread serverInit([&] {
+		serverInited = mpNetManager->initServer(serverPort);
+	});
+	
+	std::thread clientInit([&] {
+			clientInited = mpNetManager->connect(clientIP, clientPort);
+	});
+	
+	serverInit.join();
+	clientInit.join();
 
 	if (serverInited && clientInited)
 	{
+		while (serverInited && clientInited)
+		{
+			if (mpInput->KEY_S)
+			{
+				mpNetManager->sendData(PacketTypes::CREATE_OBJECT, networkID);
+			}
+			else if (mpInput->KEY_D)
+			{
+				mpNetManager->sendData(PacketTypes::DESTROY_OBJECT, networkID);
+			}
 
+			else
+			{
+				mpNetManager->sendData(PacketTypes::UPDATE_OBJECT, networkID);
+			}
+
+			mpNetManager->receiveData();
+		}
 	}
 
 	system("pause");
