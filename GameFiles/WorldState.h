@@ -27,6 +27,9 @@ class WorldState
 		void CreateLock();
 		void CreateLock(int posX, int posY);
 		void CreateKey(int posX, int posY);
+		void CreatePlayers();
+
+		void ChangeMarcherGoal(Location pos, bool isServer);
 
 		template<typename T>
 		void Create()

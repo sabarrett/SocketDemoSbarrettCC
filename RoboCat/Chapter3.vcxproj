@@ -382,6 +382,7 @@
     <ClInclude Include="..\GameFiles\Key.h" />
     <ClInclude Include="..\GameFiles\Lock.h" />
     <ClInclude Include="..\GameFiles\NetworkManager.h" />
+    <ClInclude Include="..\GameFiles\PlayerMarcher.h" />
     <ClInclude Include="..\GameFiles\WorldState.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
@@ -405,6 +406,7 @@
     <ClCompile Include="..\GameFiles\Key.cpp" />
     <ClCompile Include="..\GameFiles\Lock.cpp" />
     <ClCompile Include="..\GameFiles\NetworkManager.cpp" />
+    <ClCompile Include="..\GameFiles\PlayerMarcher.cpp" />
     <ClCompile Include="..\GameFiles\WorldState.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />

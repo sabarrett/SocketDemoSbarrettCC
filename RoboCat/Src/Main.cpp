@@ -178,6 +178,7 @@ int main(int argc, const char** argv)
 	gl.loadImage(FILE_PATH, "lock_blue.png");
 	gl.loadImage(FILE_PATH, "keyBlue.png");
 	gl.loadImage(FILE_PATH, "coinGold.png");
+	gl.loadImage(FILE_PATH, "hud_p1.png");
 
 	WorldState gameWorld = WorldState(&gl);
 
@@ -186,6 +187,8 @@ int main(int argc, const char** argv)
 		//gameWorld.CreateLock();
 		//gameWorld.Create<Key>(SCREEN_X,0);
 	}
+
+	gameWorld.CreatePlayers();
 
 	vector<JoinerInput> joinerInputs;
 

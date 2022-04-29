@@ -143,13 +143,14 @@ void InputSystem::Update(bool isCreator, WorldState& gameWorld, vector<JoinerInp
 			{
 				// create lock
 				gameWorld.CreateLock();
-
 			}
 			else
 			{
 				// create key
 				joinerInputs.push_back(JoinerInput(JoinerInput::JOINER_KEY_SPAWN, GetMousePosition()));
 			}
+
+			gameWorld.ChangeMarcherGoal(GetMousePosition(),isCreator);
 		}
 		break;
 	case MouseButton::MiddleMouse:

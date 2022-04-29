@@ -3,6 +3,7 @@
 #include "Lock.h"
 #include "Key.h"
 #include "Coin.h"
+#include "PlayerMarcher.h"
 #include "allegro_wrapper_functions-main/GraphicsLibrary.h"
 
 unsigned int WorldState::currentInputNum = 0;
@@ -43,6 +44,8 @@ void WorldState::Update(bool isCreator, vector<JoinerInput>& joinerInputs, int d
 					}
 					std::cout << "4\n";
 					WorldState::currentInputNum = joinerInputs[i].inputID;
+
+					ChangeMarcherGoal(joinerInputs[i].location, false);
 
 				}
 
@@ -104,6 +107,36 @@ void WorldState::CreateKey(int posX, int posY)
 	mGameObjects.push_back(createdGameObject);
 }
 
+void WorldState::CreatePlayers()
+{
+	GameObject* createdGameObject = PlayerMarcher::CreateInstance();
+	createdGameObject->SetPostion(0, 375);
+	((PlayerMarcher*)createdGameObject)->SetIsServer(true);
+	((PlayerMarcher*)createdGameObject)->SetGoalPos(0, 375,true);
+	mpGameObjectLinker->GetNetworkId(createdGameObject, true);
+	mGameObjects.push_back(createdGameObject);
+	
+	createdGameObject = PlayerMarcher::CreateInstance();
+	createdGameObject->SetPostion(1500, 375);
+	((PlayerMarcher*)createdGameObject)->SetIsServer(false);
+	((PlayerMarcher*)createdGameObject)->SetGoalPos(1500, 375, false);
+	mpGameObjectLinker->GetNetworkId(createdGameObject, true);
+	mGameObjects.push_back(createdGameObject);
+}
+
+void WorldState::ChangeMarcherGoal(Location pos, bool isServer)
+{
+	int marchersAffected = 0;
+	for (int j = 0; j < mGameObjects.size() && marchersAffected < 2; j++)
+	{
+		if (mGameObjects[j]->GetClassId() == 'MRCH')
+		{
+			marchersAffected++;
+			((PlayerMarcher*)mGameObjects[j])->SetGoalPos(pos.x, pos.y, isServer);
+		}
+	}
+}
+
 void WorldState::SetForDestroy(GameObject* obj)
 {
 	mToDestroy.push_back(obj);
@@ -152,6 +185,9 @@ void WorldState::Read(InputMemoryBitStream& stream)
 					break;
 				case 'COIN':
 					tempObj = Coin::CreateInstance();
+					break;
+				case 'MRCH':
+					tempObj = PlayerMarcher::CreateInstance();
 					break;
 				default:
 					break;
