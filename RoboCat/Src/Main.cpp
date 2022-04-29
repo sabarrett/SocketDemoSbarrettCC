@@ -67,21 +67,23 @@ int main(int argc, const char** argv)
 	bool clientInited;
 
 	int networkID = 0;
+	bool portnumber = StringUtils::GetCommandLineArg(1) == "8080";
 
-	std::thread serverInit([&] {
+	if (portnumber) {
+
 		serverInited = mpNetManager->initServer(serverPort);
-	});
-	
-	std::thread clientInit([&] {
-			clientInited = mpNetManager->connect(clientIP, clientPort);
-	});
-	
-	serverInit.join();
-	clientInit.join();
 
-	if (serverInited && clientInited)
+	}
+	else
 	{
-		while (serverInited && clientInited)
+		
+		clientInited = mpNetManager->connect(clientIP, serverPort);
+
+	}
+	
+	if (serverInited || clientInited)
+	{
+		while (serverInited || clientInited)
 		{
 			if (mpInput->KEY_S)
 			{
