@@ -15,6 +15,7 @@ enum TypePacket
 	PACKET_CREATE,
 	PACKET_UPDATE,
 	PACKET_DESTROY,
+	PACKET_INIT,
 	CONFIRM
 };
 
@@ -44,6 +45,8 @@ public:
 	void spawnObj(GameObjects* newObj, int networkID);
 	void send(int networkID, TypePacket packetType);
 	void recieve();
+	
+	PlayerController* recieveInitFromServer(/*PlayerController** playerServer, */GraphicsLibrary* gLib);
 
 	void updateObj();
 	void renderObj();

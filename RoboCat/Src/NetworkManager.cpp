@@ -258,6 +258,30 @@ void NetworkManager::requestPacket(KeyCode key) //client ask
 	mClientPacketID++;
 }
 
+PlayerController* NetworkManager::recieveInitFromServer(/*PlayerController** playerServer = nullptr,*/ GraphicsLibrary* gLib)
+{
+	char buffer[1024];
+	int32_t bytesRecieved = (*mpTCPSocket)->Receive(buffer, 1024);
+
+	InputMemoryBitStream InMBStream = InputMemoryBitStream(buffer, 1024);
+	TypePacket recievePacketType;
+	InMBStream.Read(recievePacketType);
+
+	PlayerController* playerServer = nullptr;
+
+	switch (recievePacketType)
+	{
+	case TypePacket::PACKET_INIT:
+		int objID;
+		InMBStream.Read(objID);
+		playerServer = new PlayerController(objID, gLib);
+		spawnObj(playerServer, objID);
+	}
+
+	return playerServer;
+
+}
+
 void NetworkManager::recieve()
 {
 	char buffer[1024];

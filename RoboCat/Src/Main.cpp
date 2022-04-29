@@ -75,8 +75,9 @@ void start()
 	{
 		tempPlayerID = 1;
 		pNetworkManager->setServerRole(false);
-		pNetworkManager->recieve(); //need to get player server? getting errors in update function for client at line 299
-		pNetworkManager->recieve();
+		playerServer = pNetworkManager->recieveInitFromServer(pGraphicsLib);
+		playerClient = pNetworkManager->recieveInitFromServer(pGraphicsLib);
+
 	}
 	else
 	{
@@ -88,7 +89,7 @@ void start()
 		pNetworkManager->spawnObj(playerServer, networkID);
 		networkID++;
 
-		pNetworkManager->send(playerServer->getNetworkID(), TypePacket::PACKET_CREATE);
+		pNetworkManager->send(playerServer->getNetworkID(), TypePacket::PACKET_INIT);
 		//pNetworkManager->recieve();
 
 
@@ -99,7 +100,7 @@ void start()
 		//pNetworkManager->recieve();
 		networkID++;
 
-		pNetworkManager->send(playerClient->getNetworkID(), TypePacket::PACKET_CREATE);
+		pNetworkManager->send(playerClient->getNetworkID(), TypePacket::PACKET_INIT);
 	}
 
 	al_start_timer(timer);
@@ -150,72 +151,6 @@ void update()
 
 	pNetworkManager->updateObj();
 
-	{
-		//switch (keyCode)
-		//{
-		//case KeyCode::ESC:
-		//{
-		//	isRunning = false;
-		//	break;
-		//}
-		//case KeyCode::B:
-		//{
-		//	float randPosX = rand() % (int)screenSizeX;
-		//	float randPosY = 10.0;
-
-		//	GameObjects* newBubble;
-		//	newBubble = new Bubble(pGraphicsLib, networkID, BUBBLE_IMG_IDENTIFIER, randPosX, randPosY, tempPlayerID); //watch out for this
-
-		//	pNetworkManager->spawnObj(newBubble, networkID);
-		//	pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-		//	networkID++;
-		//	break;
-		//}
-
-		//case KeyCode::LEFT:
-		//{
-		//	//make left bees
-		//	float randPosY = rand() % (int)screenSizeY;
-		//	float randPosX = 10.0;
-		//	float randNum = rand() % 10;
-
-		//	GameObjects* newBee;
-		//	newBee = new Bees(pGraphicsLib, networkID, BEE_IMG_IDENTIFIER, randPosX, randPosY, randNum); //watch out for this
-
-		//	pNetworkManager->spawnObj(newBee, networkID);
-		//	pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-		//	networkID++;
-		//	break;
-		//}
-
-		//case KeyCode::RIGHT: //maybe someday will be more bees
-		//{
-		//	if (networkID > 1)
-		//	{
-		//		pNetworkManager->send(networkID - 1, TypePacket::PACKET_DESTROY);
-		//		networkID = pNetworkManager->getCurrentID();
-		//	}
-		//	break;
-		//}
-
-		//case KeyCode::SPACE:
-		//{
-		//	float randPosX = rand() % (int)screenSizeX;
-		//	float randPosY = rand() % (int)screenSizeY;
-
-		//	GameObjects* newBoulder;
-		//	newBoulder = new Boulder(pGraphicsLib, networkID, BOULDER_IMG_IDENTIFIER, randPosX, randPosY);
-
-		//	pNetworkManager->spawnObj(newBoulder, networkID);
-		//	pNetworkManager->send(networkID, TypePacket::PACKET_CREATE);
-		//	networkID++;
-		//	break;
-		//}
-		//}
-
-		//pNetworkManager->updateObj();
-		//pNetworkManager->update(Timing::sInstance.GetDeltaTime(), Timing::sInstance.GetTime());
-	}
 	Timing::sInstance.Update();
 	pNetworkManager->update(Timing::sInstance.GetDeltaTime(), Timing::sInstance.GetTime());
 
