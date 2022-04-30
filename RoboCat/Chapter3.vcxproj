@@ -128,7 +128,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <AdditionalIncludeDirectories>..\SDL\include;Inc;..\</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -370,14 +370,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Inc\AckRange.h" />
-    <ClInclude Include="Inc\ByteSwap.h" />
-    <ClInclude Include="Inc\DeliveryNotificationManager.h" />
-    <ClInclude Include="Inc\InFlightPacket.h" />
-    <ClInclude Include="Inc\LinkingContext.h" />
-    <ClInclude Include="Inc\MemoryBitStream.h" />
+    <ClCompile Include="PlayerUser.cpp" />
+    <ClCompile Include="Unit.cpp" />
+    <ClCompile Include="UnitManager.cpp" />
+    <ClInclude Include="Color.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
-    <ClInclude Include="Inc\RoboMath.h" />
     <ClInclude Include="Inc\SocketAddress.h" />
     <ClInclude Include="Inc\SocketAddressFactory.h" />
     <ClInclude Include="Inc\SocketUtil.h" />
@@ -385,27 +382,25 @@
     <ClInclude Include="Inc\TCPSocket.h" />
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
-    <ClInclude Include="Inc\Timing.h" />
-    <ClInclude Include="Inc\TransmissionData.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
-    <ClCompile Include="Src\AckRange.cpp" />
-    <ClCompile Include="Src\DeliveryNotificationManager.cpp" />
-    <ClCompile Include="Src\InFlightPacket.cpp" />
-    <ClCompile Include="Src\Main.cpp" />
-    <ClCompile Include="Src\MemoryBitStream.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Src\oldMain.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
     <ClCompile Include="Src\SocketAddress.cpp" />
     <ClCompile Include="Src\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="PlayerUser.h" />
+    <ClInclude Include="TCPHandler.h" />
+    <ClInclude Include="Unit.h" />
+    <ClInclude Include="UnitManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="Src\Timing.cpp" />
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -413,14 +408,14 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets" Condition="Exists('..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" />
-    <Import Project="..\packages\Allegro.5.2.7.1\build\native\Allegro.targets" Condition="Exists('..\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" />
+    <Import Project="..\packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets" Condition="Exists('..\packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets')" />
+    <Import Project="..\packages\sdl2.2.0.5\build\native\sdl2.targets" Condition="Exists('..\packages\sdl2.2.0.5\build\native\sdl2.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets'))" />
-    <Error Condition="!Exists('..\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Allegro.5.2.7.1\build\native\Allegro.targets'))" />
+    <Error Condition="!Exists('..\packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\sdl2.2.0.5\build\native\sdl2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.2.0.5\build\native\sdl2.targets'))" />
   </Target>
 </Project>
