@@ -184,7 +184,7 @@ void ChatUser::initTcpServer()
 			int32_t bytesReceived = recvConnSocket->Receive(buffer, 4096);
 			if (bytesReceived == 0)
 			{
-				// handle disconnect
+				// handle disconnec
 			}
 			if (bytesReceived < 0)
 			{
