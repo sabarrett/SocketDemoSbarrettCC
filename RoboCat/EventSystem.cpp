@@ -69,14 +69,20 @@ void EventSystem::removeListenerFromAllEvents( EventListener* pListener )
 
 EventSystem* EventSystem::getInstance()
 {
-	assert(mspInstance);
-	return mspInstance;
+	if (mspInstance != NULL)
+	{
+		assert(mspInstance);
+		return mspInstance;
+	}
 }
 
 void EventSystem::initInstance()
 {
-	assert(!mspInstance);
-	mspInstance = new EventSystem;
+	if (mspInstance == NULL)
+	{
+		assert(!mspInstance);
+		mspInstance = new EventSystem;
+	}
 }
 
 void EventSystem::cleanupInstance()

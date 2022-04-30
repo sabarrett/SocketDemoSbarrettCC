@@ -3,6 +3,7 @@
 #include "../common/DeanLib/include/Trackable.h"
 #include "Game.h"
 #include "GameEvent.h"
+#include "EventSystem.h"
 
 enum PacketTypes
 {
@@ -44,6 +45,7 @@ private:
 	Game* mpGame;
 	TCPSocketPtr* mpSocket;
 	static NetworkManager* mpsNetworkInstance;
+	EventSystem* mpEventSystem;
 
 	std::vector<std::pair<Game*, int>> mvGameObjects;
 	int mCurrentID;

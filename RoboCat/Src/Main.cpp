@@ -6,6 +6,7 @@
 #include "./common/DeanLib/include/MemoryTracker.h"
 #include "./RoboCat/NetworkManager.h"
 #include "./RoboCat/InputSystem.h"
+#include "./RoboCat/InputTranslator.h"
 
 #if _WIN32
 
@@ -58,27 +59,27 @@ int main(int argc, const char** argv)
 	//Assignment 2 code here
 	NetworkManager* mpNetManager = new NetworkManager();
 	InputSystem* mpInput = new InputSystem();
+	InputTranslator* mpTranslator = new InputTranslator(mpInput);
 
 	std::string serverPort = "8080";
 	std::string clientIP = "127.0.0.1";
 	std::string clientPort = "8081";
 
-	bool serverInited;
-	bool clientInited;
+	bool serverInited = false;
+	bool clientInited = false;
 
-	int networkID = 0;
+	int networkID;
 	bool portnumber = StringUtils::GetCommandLineArg(1) == "8080";
 
-	if (portnumber) {
-
+	if (portnumber) 
+	{
 		serverInited = mpNetManager->initServer(serverPort);
-
+		networkID = 0;
 	}
 	else
 	{
-		
 		clientInited = mpNetManager->connect(clientIP, serverPort);
-
+		networkID = 1;
 	}
 	
 	if (serverInited || clientInited)
@@ -94,11 +95,8 @@ int main(int argc, const char** argv)
 				mpNetManager->sendData(PacketTypes::DESTROY_OBJECT, networkID);
 			}
 
-			else
-			{
-				mpNetManager->sendData(PacketTypes::UPDATE_OBJECT, networkID);
-			}
-
+			mpNetManager->sendData(PacketTypes::UPDATE_OBJECT, networkID);
+			mpNetManager->renderObject();
 			mpNetManager->receiveData();
 		}
 	}

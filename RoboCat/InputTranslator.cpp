@@ -10,6 +10,7 @@ I certify that this assignment is entirely my own work.
 
 InputTranslator::InputTranslator(InputSystem* input)
 {
+	//EventSystem::initInstance();
 	mEventSystem = EventSystem::getInstance();
 	mInputSystem = input;
 	mDeleted = false;

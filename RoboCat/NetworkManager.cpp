@@ -2,6 +2,8 @@
 
 NetworkManager::NetworkManager()
 {
+	mpEventSystem = EventSystem::getInstance();
+
 	mpGame = nullptr;
 	mpSocket = nullptr;
 }
@@ -129,7 +131,7 @@ bool NetworkManager::connect(std::string clientIP, std::string clientPort)
 		ExitProcess(1);
 	}
 
-	*mpSocket = clientSocket;
+	mpSocket = &clientSocket;
 
 	if (!mpSocket)
 	{
@@ -177,12 +179,15 @@ void NetworkManager::sendData(PacketTypes packet, int ID)
 	{
 	case CREATE_OBJECT:
 	{
-		mvGameObjects[ID].first->getInstance()->handleEvent(Event(EventType::MOUSE_DOWN_EVENT));
+		//mvGameObjects[ID].first->getInstance()->handleEvent(Event(EventType::KEY_DOWN_EVENT));
+		GameEvent eventToFire(CREATE_UNIT_EVENT);
+		mpEventSystem->fireEvent(eventToFire);
+
 		break;
 	}
 	case UPDATE_OBJECT:
 	{
-		mvGameObjects[ID].first->getInstance()->update();
+		updateObject();
 		break;
 	}
 	case DESTROY_OBJECT:
