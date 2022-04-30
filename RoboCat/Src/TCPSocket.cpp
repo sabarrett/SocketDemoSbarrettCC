@@ -39,6 +39,37 @@ TCPSocketPtr TCPSocket::Accept( SocketAddress& inFromAddress )
 	}
 }
 
+bool TCPSocket::HasRead() {
+	
+	fd_set readfds;
+	FD_ZERO(&readfds);
+	FD_SET(mSocket, &readfds);
+	timeval timeout = { 0, 0 };
+
+	int ret = select(0, &readfds, NULL, NULL, &timeout);
+	if (ret == SOCKET_ERROR) {
+		SocketUtil::ReportError("TCPSocket::HasRead");
+	}
+
+	return FD_ISSET(mSocket, &readfds);
+}
+
+
+bool TCPSocket::HasWrite() {
+	fd_set writefds;
+	FD_ZERO(&writefds);
+	FD_SET(mSocket, &writefds);
+	timeval timeout = { 0, 0 };
+
+	int ret = select(0, NULL, &writefds, NULL, &timeout);
+	if (ret == SOCKET_ERROR) {
+		SocketUtil::ReportError("TCPSocket::HasWrite");
+	}
+
+	return FD_ISSET(mSocket, &writefds);
+}
+
+
 int32_t	TCPSocket::Send( const void* inData, size_t inLen )
 {
 	int bytesSentCount = send( mSocket, static_cast< const char* >( inData ), inLen, 0 );
@@ -85,12 +116,13 @@ int TCPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
 #endif
 
 	if (result == SOCKET_ERROR)
-	{
+	{	
 		SocketUtil::ReportError("TCPSocket::SetNonBlockingMode");
 		return SocketUtil::GetLastError();
 	}
 	else
 	{
+		mIsNonBlocking = inShouldBeNonBlocking;
 		return NO_ERROR;
 	}
 }

@@ -1,6 +1,8 @@
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN
 	#define NOMINMAX
+	#define NOUSER  
+	#define NOGDI	
 
 	#include "Windows.h"
 	#include "WinSock2.h"
@@ -24,6 +26,7 @@
 	const int SOCKET_ERROR = -1;
 #endif
 
+#include <raylib.h>
 
 #include "memory"
 
@@ -49,6 +52,17 @@ using std::unordered_set;
 class RoboCat;
 class GameObject;
 
+#include "RoboMath.h"
+
+#include "TransmissionData.h"
+#include "InFlightPacket.h"
+
+#include "LinkingContext.h"
+#include "ByteSwap.h"
+#include "MemoryBitStream.h"
+#include "AckRange.h"
+
+#include "Timing.h"
 #include "StringUtils.h"
 #include "SocketAddress.h"
 #include "SocketAddressFactory.h"
@@ -56,3 +70,6 @@ class GameObject;
 #include "TCPSocket.h"
 #include "SocketUtil.h"
 #include "OutputWindow.h"
+#include "Packet.h"
+#include "DeliveryNotificationManager.h"
+#include "NetworkManager.h"
