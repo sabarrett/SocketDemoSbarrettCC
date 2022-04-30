@@ -1,3 +1,4 @@
+#pragma once
 
 // Encapsulates a simulated "output window," where
 // new messages are written from top to bottom
