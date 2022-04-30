@@ -118,7 +118,7 @@ void PacketManager::SendQueuedPackets(UDPSocketPtr socket, const SocketAddress& 
 	uint32_t packetCount = 0;
 	while (packetQueue.size() > 0) {
 		QueuedPacket packet = packetQueue.front();
-		if (packet.timestamp + 200 > current_timestamp ) break; // fake lag
+		if (packet.timestamp + 250 > current_timestamp ) break; // fake lag
 
 		bytesToWrite += packet.size;
 		packetQueue.pop();
@@ -129,4 +129,5 @@ void PacketManager::SendQueuedPackets(UDPSocketPtr socket, const SocketAddress& 
 	int sent = socket->SendTo(packetStream.GetBufferPtr(), bytesToWrite, addr);
 	if (sent != bytesToWrite) puts("FAILED TO WRITE ALL BYTES");
 	packetStream.ShiftForward(bytesToWrite);
+	puts("SENT PACKET");
 }

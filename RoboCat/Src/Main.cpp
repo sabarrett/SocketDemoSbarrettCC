@@ -78,6 +78,8 @@ struct Game {
 
     uint64_t framecount;
 
+    uint64_t move_timeout;
+
     void UpdateGame();
     void InitGame(bool isHost);
     void UpdatePlayer(Player& player);
@@ -577,11 +579,12 @@ void Game::DrawStatsGraph() {
     Vector2 points[32] = {};
 
     for (size_t i = 0; i < 32; i++) {
-        points[i].y = 30 - ( (float)latency_graph[i] / 20.0f);
+        points[i].y = 45 - ( (float)latency_graph[i] / 20.0f);
         points[i].x = 20 + i * 2;
     }
 
-    DrawLineStrip(points, 32, BLACK);
+    DrawRectangle(15, 20, 71, 45, GRAY);
+    DrawLineStrip(points, 32, WHITE);
 
     if (framecount % 100 == 0) {
         for (size_t i = 0; i < 31; i++)
@@ -595,7 +598,7 @@ void Game::DrawStatsGraph() {
 
     char latencyText[10];
     _itoa((int)latency_graph[31], latencyText, 10);
-    DrawText(latencyText, 20, 40, 10, BLACK);
+    DrawText(latencyText, 20, 50, 16, WHITE);
 }
 
 void DrawBall(Ball ball) {
@@ -892,14 +895,14 @@ void Game::UpdatePlayer(Player& player) {
 
 
 
-        if (player.velocity.x != startX) {
+        if (player.velocity.x != startX && move_timeout < timestamp) {
             PacketMove movePacket;
             movePacket.type = PacketMove::TYPE;
             movePacket.objectID = player.id;
             movePacket.timestamp = 0; // because of the damping on the paddles, the prediction doesnt wor
             movePacket.position = player.position;
             movePacket.velocity = player.velocity;
-
+            move_timeout = timestamp;
             packetManager.QueuePacket(&movePacket, timestamp);
         }
     }
