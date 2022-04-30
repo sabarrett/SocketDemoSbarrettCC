@@ -3,6 +3,7 @@
 #include "GameObject.h"
 //#include "RoboCatPCH.h"
 #include "NetworkManager.h"
+#include <vector>
 
 //const float TIME_BETWEEN_PACKETS = 0.25f;
 
@@ -10,6 +11,8 @@ class NetworkManagerServer
 {
 	private:
 		float mLastPacket;
+		float mDropPacketChance;
+		float mSimulatedLatency;
 		std::string mName;
 		int clientWelcomeNumber; //client network id
 
@@ -20,7 +23,9 @@ class NetworkManagerServer
 		//std::string mClientNames[100]; //in case i need to track client names i am not sure
 
 		SocketAddress mServerAddress;
+		//SocketAddress mFromAddress;
 		TCPSocketPtr mSocket;
+		//vector<float, InputMemoryBitStream> mPacketQueue;
 	public:
 		NetworkManagerServer();
 		~NetworkManagerServer();
@@ -32,5 +37,5 @@ class NetworkManagerServer
 		void sendUpdatePacket(GameObject objects[]);
 
 		void receiveHelloPackets(InputMemoryBitStream& inputStream); //InputMemoryBitStream& inputStream
-		void ReceiveUpdatePackets(InputMemoryBitStream& inputStream); //InputMemoryBitStream& inputStream
+		void ReceiveUpdatePackets(InputMemoryBitStream& inputStream, SocketAddress fromAddress); //InputMemoryBitStream& inputStream
 };

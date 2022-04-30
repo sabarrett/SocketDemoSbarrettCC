@@ -23,6 +23,7 @@ NetworkManagerServer::NetworkManagerServer()
 {
 	mName = "server";
 	mLastPacket = 0.0f;
+	mDropPacketChance = 10.0f;
 	clientWelcomeNumber = 0;
 	mSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	//mAddress = 
@@ -38,6 +39,7 @@ void NetworkManagerServer::init(SocketAddress address, std::string name)
 	mServerAddress = address;
 	mName = name;
 	mLastPacket = 0.0f;
+	mDropPacketChance = 10.0f;
 	mSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	clientWelcomeNumber = 0;
 
@@ -93,8 +95,24 @@ void NetworkManagerServer::receiveHelloPackets(InputMemoryBitStream& inputStream
 	sendWelcomePacket();
 }
 
-void NetworkManagerServer::ReceiveUpdatePackets(InputMemoryBitStream& inputStream)
+void NetworkManagerServer::ReceiveUpdatePackets(InputMemoryBitStream& inputStream, SocketAddress fromAddress)
 {
+	//if (RoboMath::GetRandomFloat() >= mDropPacketChance)
+	{
+		//we made it
+		//shove the packet into the queue and we'll handle it as soon as we should...
+		//we'll pretend it wasn't received until simulated latency from now
+		//this doesn't sim jitter, for that we would need to.....
+
+		float simulatedReceivedTime = Timing::sInstance.GetTimef() + mSimulatedLatency;
+		//mPacketQueue.emplace_back(simulatedReceivedTime, inputStream, fromAddress);
+	}
+	//else
+	{
+		LOG("Dropped packet!", 0);
+		//dropped!
+	}
+
 	mSocket->Receive(&inputStream, sizeof(inputStream));
 
 	int gameObjectCount;
