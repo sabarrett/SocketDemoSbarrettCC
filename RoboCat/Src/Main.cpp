@@ -10,7 +10,7 @@
 #if _WIN32
 
 ChatUser* chatter = new ChatUser();
-const std::string SEND_PORT = "7000", RECV_PORT = "8080";
+std::thread tr1, tr2;
 bool run = true;
 
 
@@ -35,42 +35,22 @@ int main(int argc, const char** argv)
 		std::cout << "Invalid entry. Please enter 1 or 2: ";
 		std::getline(std::cin, userNumber);
 	}
-	OutputWindow win1, win2;
-	if (userNumber == "1")
-	{
-		chatter->username = "Chat User 1";
-		std::thread c1([&win1]()
-		{
-			chatter->initTcpClient(SEND_PORT, RECV_PORT);
-		});
-	}
-	else
-	{
-		chatter->username = "Chat User 2";
-		std::thread c2([&win2]()
-		{
-			chatter->initTcpServer(RECV_PORT);
-		});
-	}
-
-
+	
+	chatter->startTcpThread(userNumber == "1");	
+	std::cout << "Enter \"!EXIT\" at any point to exit. Case sensitive.\n";
 
 	while (run)
 	{
 		std::string input;
 		std::getline(std::cin, input);
-		if (input != "!EXIT")
-		{
-			chatter->win.WriteFromStdin("[" + chatter->username + "]: " + input + "\n");
-			chatter->send(input);
-		}
-		else
-		{
+		
+		chatter->win.WriteFromStdin("[" + chatter->username + "]: " + input + "\n");
+		if (input == "!EXIT")
 			run = false;
-		}
+		else
+			chatter->send(input);
 	}
 
-	SocketUtil::CleanUp();
 	delete chatter;
 
 	return 0;

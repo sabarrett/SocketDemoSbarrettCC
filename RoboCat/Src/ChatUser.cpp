@@ -26,10 +26,23 @@ ChatUser::ChatUser()
 
 ChatUser::~ChatUser()
 {
+	send("©DISCONNECT");
+	shutdown();
 	closeSockets();
+	SocketUtil::CleanUp();
 }
 
-void ChatUser::initTcpClient(std::string sendPort, std::string recvPort)
+void ChatUser::startTcpThread(bool isClient)
+{
+	username = isClient ? "Chat User 1" : "Chat User 2";
+
+	if (isClient)
+		t = std::thread([this] { initTcpClient(); });
+	else
+		t = std::thread([this] { initTcpServer(); });
+}
+
+void ChatUser::initTcpClient()
 {
 	sendRecvFlag = 0;
 
@@ -45,7 +58,7 @@ void ChatUser::initTcpClient(std::string sendPort, std::string recvPort)
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	std::string address = StringUtils::Sprintf("127.0.0.1:%s", sendPort.c_str());
+	std::string address = StringUtils::Sprintf("127.0.0.1:%s", SEND_PORT.c_str());
 	SocketAddressPtr clientAddress = SocketAddressFactory::CreateIPv4FromString(address.c_str());
 	if (clientAddress == nullptr)
 	{
@@ -64,7 +77,7 @@ void ChatUser::initTcpClient(std::string sendPort, std::string recvPort)
 
 	// Connect() -> Connect socket to remote host
 
-	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:"+recvPort);
+	SocketAddressPtr servAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:"+RECV_PORT);
 	if (servAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating server address");
@@ -78,7 +91,8 @@ void ChatUser::initTcpClient(std::string sendPort, std::string recvPort)
 	}
 
 	LOG("%s", "Connected to server!");
-
+	hasConnected = true;
+	send("©CONNECT");
 	quit = false;
 	std::thread receiveNewThread([&]() { // don't use [&] :)
 		while (!quit) // Need to add a quit here to have it really exit!
@@ -99,15 +113,10 @@ void ChatUser::initTcpClient(std::string sendPort, std::string recvPort)
 			recv(receivedMsg);
 		}
 		});
-
-	std::cout << "Press enter to exit at any time!\n";
-	std::cin.get();
-	quit = true;
-//	recvConnSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveNewThread.join();
 }
 
-void ChatUser::initTcpServer(std::string listenPort)
+void ChatUser::initTcpServer()
 {
 	sendRecvFlag = 1;
 	// Create socket
@@ -124,7 +133,7 @@ void ChatUser::initTcpServer(std::string listenPort)
 
 	// Bind() - "Bind" socket -> tells OS we want to use a specific address
 
-	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:"+ listenPort);
+	SocketAddressPtr listenAddress = SocketAddressFactory::CreateIPv4FromString("127.0.0.1:"+ RECV_PORT);
 	if (listenAddress == nullptr)
 	{
 		SocketUtil::ReportError("Creating listen address");
@@ -163,7 +172,8 @@ void ChatUser::initTcpServer(std::string listenPort)
 		// SocketUtil::ReportError("Accepting connection");
 		// ExitProcess(1);
 	}
-
+	hasConnected = true;
+	send("©CONNECT");
 	LOG("Accepted connection from %s", incomingAddress.ToString().c_str());
 
 	quit = false;
@@ -187,23 +197,34 @@ void ChatUser::initTcpServer(std::string listenPort)
 		}
 		});
 
-	std::cout << "Press enter to exit at any time!\n";
-	std::cin.get();
-	quit = true;
-//	recvConnSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
 	receiveThread.join();
 }
 
 void ChatUser::send(std::string msg)
 {
-	std::string toSend = username + "¦" + msg;
-	(sendRecvFlag == 0 ? sendSocket : recvConnSocket)->Send(toSend.c_str(), toSend.length());
+	if (strlen(msg.c_str()) > 0)
+	{
+		std::string toSend = username + "¦" + msg;
+		if (msg == "©DISCONNECT")
+			toSend = "©[SERVER]: " + username + " has disconnected!\n";
+		if (msg == "©CONNECT")
+			toSend = "©[SERVER]: " + username + " has connected!\n";
+
+		(sendRecvFlag == 0 ? sendSocket : recvConnSocket)->Send(toSend.c_str(), toSend.length());
+	}
 }
 
 void ChatUser::recv(std::string msg)
 {
-	std::vector<std::string> str = split(msg, "¦");
-	win.Write("[" + str[0] + "]: " + str[1] + "\n");
+	if (msg[0] == '©')
+	{
+		std::cout << msg.erase(0, 1);
+	}
+	else
+	{
+		std::vector<std::string> str = split(msg, "¦");
+		std::cout << ("[" + str[0] + "]: " + str[1] + "\n");
+	}
 }
 
 void ChatUser::closeSockets()
