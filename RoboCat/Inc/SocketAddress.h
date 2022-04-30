@@ -1,3 +1,5 @@
+#pragma once
+
 class SocketAddress
 {
 public:
