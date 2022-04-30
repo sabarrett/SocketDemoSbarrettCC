@@ -106,6 +106,7 @@ public:
 		int byteCount = ( mBitCapacity + 7 ) / 8;
 		mBuffer = static_cast< char* >( malloc( byteCount ) );
 		//copy
+		if (mBuffer == 0 || inOther.mBuffer == 0) return;
 		memcpy( mBuffer, inOther.mBuffer, byteCount );
 	}
 	

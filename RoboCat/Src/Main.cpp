@@ -9,8 +9,6 @@
 #include <time.h>
 
 
-
-
 struct PhysObject {
     Vector2 position;
     Vector2 velocity;
@@ -74,12 +72,20 @@ struct Game {
     uint64_t timestamp_start;
     uint64_t timestamp;
 
+    uint32_t latency_graph[32];
+    uint32_t latency_record;
+    uint32_t latency_record_count;
+
+    uint64_t framecount;
+
     void UpdateGame();
     void InitGame(bool isHost);
     void UpdatePlayer(Player& player);
     void UpdatePhysObjs();
     void UpdateBall(Player& owner, Ball& ball);
     float RandomFloat(float min, float max);
+
+    void DrawStatsGraph();
 };
 
 Game gi;
@@ -119,8 +125,16 @@ void HandleMove(PacketMove* move) {
         return;
     }
 
- 
+    if (move->timestamp != 0) {
+        // lag compensation
+        uint64_t timedif = gi.timestamp - move->timestamp;
+        float clocks_per_frame = CLOCKS_PER_SEC / 60.0f;
+        float diff = timedif / clocks_per_frame;
 
+        gi.latency_record = (uint32_t)timedif;
+        gi.latency_record_count++;
+        move->position = Vector2Add(move->position, Vector2Scale(move->velocity, diff));
+    }
     obj->position = move->position;
     obj->velocity = move->velocity;
 }
@@ -142,7 +156,7 @@ void DrawTextbox(bool active, Rectangle rec, char* text, const char* placeholder
     DrawRectangleRec(rec, LIGHTGRAY);
     DrawRectangleLinesEx(rec, 1.0, DARKGRAY);
 
-    DrawText(msg, rec.x + 10, rec.y + 15, 20, color);
+    DrawText(msg, (int)rec.x + 10, (int)rec.y + 15, 20, color);
 
     if (active && (((framesCounter / 30) % 2) == 0))
      DrawText("|", (int)rec.x + 10 + MeasureText(text, 20), (int)rec.y + 16, 20, MAROON);
@@ -153,9 +167,9 @@ StartupScreenAction StartupScreen(SocketAddress* out_address, std::string& nickn
     float centerX = gi.screenWidth / 2.0f;
     float btnWidth = 400;
 
-    Rectangle nickBox = { centerX - (btnWidth * 0.5f), 100, (btnWidth * 0.7), 50 };
-    Rectangle addrBox = { centerX - (btnWidth * 0.5f), 180, (btnWidth * 0.7), 50 };
-    Rectangle connectBtn = { centerX + (btnWidth * 0.25f), 180, (btnWidth * 0.25), 50 };
+    Rectangle nickBox = { centerX - (btnWidth * 0.5f), 100, (btnWidth * 0.7f), 50 };
+    Rectangle addrBox = { centerX - (btnWidth * 0.5f), 180, (btnWidth * 0.7f), 50 };
+    Rectangle connectBtn = { centerX + (btnWidth * 0.25f), 180, (btnWidth * 0.25f), 50 };
     Rectangle hostBtn = { centerX - (btnWidth * 0.5f), 270, btnWidth, 50 };
 
     const int inputBufferSize = sizeof("000.000.000.000");
@@ -219,7 +233,7 @@ StartupScreenAction StartupScreen(SocketAddress* out_address, std::string& nickn
                 }
                 if (nickCount >= nickCountMax) continue;
                 if ((key >= 'A' && key <= 'Z')) {
-                    nickBuf[nickCount++] = key;
+                    nickBuf[nickCount++] = (char)key;
                 }
             }
         }
@@ -246,11 +260,12 @@ StartupScreenAction StartupScreen(SocketAddress* out_address, std::string& nickn
         DrawRectangleRec(connectBtn, connectHvr ? DARKGRAY : GRAY);
         DrawText("Connect", (int)connectBtn.x + 10, (int)connectBtn.y + 15, 20, LIGHTGRAY);
 
-        DrawText("OR", centerX - 20, 240, 20, GRAY);
+        DrawText("OR", (int)(centerX - 20), 240, 20, GRAY);
 
         
         DrawRectangleRec(hostBtn, hostHvr ? DARKGRAY : GRAY);
-        DrawText("Host", hostBtn.x + 10, hostBtn.y + 15, 20, LIGHTGRAY);
+        DrawText("Host", (int)(hostBtn.x + 10), (int)(hostBtn.y + 15), 20, LIGHTGRAY);
+
 
         
         EndDrawing();
@@ -338,7 +353,7 @@ UDPSocketPtr StartHost() {
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        DrawText(msg, gi.screenWidth / 2.0f - textWidth / 2.0f, gi.screenHeight / 2.0f - 10, 20, GRAY);
+        DrawText(msg, (int)(gi.screenWidth / 2.0f - textWidth / 2.0f), (int)(gi.screenHeight / 2.0f - 10), 20, GRAY);
      
         EndDrawing();
 
@@ -407,7 +422,7 @@ int main(int argc, const char** argv)
     packetManager.RegisterHandler<PacketMove>(HandleMove);
     packetManager.RegisterHandler<PacketPlayerInfo>(HandlePlayerInfo);
 
-    InitWindow(gi.screenWidth, gi.screenHeight, "thornton & max - assignment 4");
+    InitWindow((int)gi.screenWidth, (int)gi.screenHeight, "thornton & max - assignment 4");
 
    
 
@@ -415,7 +430,6 @@ int main(int argc, const char** argv)
     //--------------------------------------------------------------------------------------
 
     std::string nickname;
-    SocketAddress address = SocketAddress(2130706433, 1234);
     StartupScreenAction action = StartupScreen(&address, nickname);
 
     if (nickname.size() == 0) {
@@ -487,12 +501,10 @@ int main(int argc, const char** argv)
 
             gi.timestamp = clock() - gi.timestamp_start;
 
-            DrawRectangle(10, 10, gi.screenWidth-20, gi.screenHeight-20, RAYWHITE);
+            DrawRectangle(10, 10, (int)(gi.screenWidth-20), (int)(gi.screenHeight-20), RAYWHITE);
 
 
-            char timestampBuf[20];
-            itoa(gi.timestamp, timestampBuf, 10);
-            DrawText(timestampBuf, 500, 25, 10, GRAY);
+     
             //Draw Player
 
 
@@ -523,19 +535,21 @@ int main(int argc, const char** argv)
             char scoreBuf[20];
   
             int textsize1 = 20 + gi.player1.scoreFrames;
-            itoa(gi.player1.score, scoreBuf, 10);
+            _itoa(gi.player1.score, scoreBuf, 10);
             DrawText(scoreBuf, 20, GetScreenHeight() - textsize1 - 45, textsize1, BLUE);
 
             int textsize2 = 20 + gi.player2.scoreFrames;
-            itoa(gi.player2.score, scoreBuf, 10);
-            DrawText(scoreBuf, gi.screenWidth - MeasureText(scoreBuf, textsize2) - 45, GetScreenHeight() - textsize2 - 45, textsize2, RED);
+            _itoa(gi.player2.score, scoreBuf, 10);
+            DrawText(scoreBuf, (int)(gi.screenWidth - MeasureText(scoreBuf, textsize2) - 45), GetScreenHeight() - textsize2 - 45, textsize2, RED);
 
             const char* nick1 = gi.player1.nickname.c_str();
             DrawText(nick1, 20, GetScreenHeight() - 20, 20, BLUE);
 
             const char* nick2 = gi.player2.nickname.c_str();
-            DrawText(nick2, gi.screenWidth - MeasureText(nick2, 20) - 20, GetScreenHeight() - 20, 20, RED);
+            DrawText(nick2, (int)(gi.screenWidth - MeasureText(nick2, 20) - 20), GetScreenHeight() - 20, 20, RED);
         }
+
+        gi.DrawStatsGraph();
         EndMode2D();
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -549,7 +563,7 @@ int main(int argc, const char** argv)
 
         const char* msg = "Game Over";
         const int textWidth = MeasureText(msg, 20);
-        DrawText(msg, gi.screenWidth / 2.0f - textWidth / 2.0f, gi.screenHeight / 2.0f - 10, 20, GRAY);
+        DrawText(msg, (int)(gi.screenWidth / 2.0f - textWidth / 2.0f), (int)(gi.screenHeight / 2.0f - 10), 20, GRAY);
         shouldClose = WindowShouldClose();
         EndDrawing();
     }
@@ -559,15 +573,40 @@ int main(int argc, const char** argv)
 	return 0;
 }
 
+void Game::DrawStatsGraph() {
+    Vector2 points[32] = {};
+
+    for (size_t i = 0; i < 32; i++) {
+        points[i].y = 30 - ( (float)latency_graph[i] / 20.0f);
+        points[i].x = 20 + i * 2;
+    }
+
+    DrawLineStrip(points, 32, BLACK);
+
+    if (framecount % 100 == 0) {
+        for (size_t i = 0; i < 31; i++)
+           latency_graph[i] = latency_graph[i + 1];
+        if (latency_record_count > 0) {
+            latency_graph[31] = latency_record / latency_record_count;
+            latency_record = 0;
+            latency_record_count = 0;
+        }
+    }
+
+    char latencyText[10];
+    _itoa((int)latency_graph[31], latencyText, 10);
+    DrawText(latencyText, 20, 40, 10, BLACK);
+}
+
 void DrawBall(Ball ball) {
     float radius = ball.radius + (float)ball.bounceFrames * ball.bounceFrames;
-    float radiusX = radius - ball.impact.x * 0.1;
-    float radiusY = radius - ball.impact.y * 0.1;
-    DrawEllipse(ball.position.x, ball.position.y, radiusX, radiusY, ball.ballColor);
+    float radiusX = radius - ball.impact.x * 0.1f;
+    float radiusY = radius - ball.impact.y * 0.1f;
+    DrawEllipse((int)ball.position.x, (int)ball.position.y, radiusX, radiusY, ball.ballColor);
     //DrawCircleV(ball.position, radius, ball.ballColor);
     Vector2 start = ball.position;
     for (int i = 0; i < 4; i++) {
-        DrawLineEx(start, ball.trail[i], 4 / (i + 1), ball.ballColor);
+        DrawLineEx(start, ball.trail[i], 4.0f / (i + 1.0f), ball.ballColor);
         start = ball.trail[i];
     }
 }
@@ -577,8 +616,8 @@ void DrawBrick(Brick brick) {
     DrawRectangleRec(rect, brick.brickColor);
     Vector2 btmL = { rect.x, rect.y + rect.height };
     Vector2 topR = { rect.x + rect.width, rect.y };
-    float oX = -gi.cameraOffset.x * 1.5;
-    float oY = -gi.cameraOffset.y * 1.5;
+    float oX = -gi.cameraOffset.x * 1.5f;
+    float oY = -gi.cameraOffset.y * 1.5f;
     Vector2 points[6] = {
         { btmL.x, btmL.y },
         { btmL.x + 10 + oX, btmL.y + 10 + oY},
@@ -588,9 +627,9 @@ void DrawBrick(Brick brick) {
         { topR.x + 10 + oX, topR.y + 10 + oY},
     };
     Color color = brick.brickColor;
-    color.r *= 0.8;
-    color.g *= 0.8;
-    color.b *= 0.8;
+    color.r = (uint8_t)( color.r * 0.8f);
+    color.g = (uint8_t)( color.g * 0.8f);
+    color.b = (uint8_t)( color.b * 0.8f);
     DrawTriangleStrip(points, 6, color);
 }
 
@@ -609,8 +648,6 @@ void DrawPlayer(Player player) {
     Vector2 pointL = { rect.x - 10, rect.y + rect.height / 2 };
     Vector2 pointR = { rect.x + 10 + rect.width, rect.y + rect.height / 2 };
 
-    float hheight = rect.height / 2;
-    float hwidth = rect.width / 2;
 
     Vector2 frontPoints[6] = {
         pointL,
@@ -649,6 +686,7 @@ void Game::InitGame(bool isHost)
 {
     gameOver = false;
 
+    framecount = 0;
     //Setting bricks to screen
     bricks = {screenWidth/BRICK_COLUMNS,40};
 
@@ -819,6 +857,7 @@ void Game::UpdateBall(Player& owner, Ball& ball) {
     if (ball.hasAuthority && (startVel.x != ball.velocity.x || startVel.y != ball.velocity.y) ) {
         PacketMove movePacket;
         movePacket.type = PacketMove::TYPE;
+        movePacket.timestamp = timestamp;
         movePacket.objectID = ball.id;
         movePacket.position = ball.position;
         movePacket.velocity = ball.velocity;
@@ -857,6 +896,7 @@ void Game::UpdatePlayer(Player& player) {
             PacketMove movePacket;
             movePacket.type = PacketMove::TYPE;
             movePacket.objectID = player.id;
+            movePacket.timestamp = 0; // because of the damping on the paddles, the prediction doesnt wor
             movePacket.position = player.position;
             movePacket.velocity = player.velocity;
 
@@ -865,7 +905,7 @@ void Game::UpdatePlayer(Player& player) {
     }
 
     // apply damping force and prevent going through sides
-    player.velocity.x = player.velocity.x * 0.8;
+    player.velocity.x = player.velocity.x * 0.8f;
     if (player.position.x - player.size.x / 2 < 0)
     {
         player.position.x = player.size.x / 2;
@@ -884,7 +924,7 @@ void Game::UpdatePlayer(Player& player) {
 
 void Game::UpdateGame()
 {
-
+    framecount++;
    
     UpdatePlayer(player1);
     UpdatePlayer(player2);

@@ -97,7 +97,6 @@ void OutputMemoryBitStream::ShiftForward(uint32_t byteCount) {
 	}
 	memmove(mBuffer, mBuffer + byteCount, GetByteLength()-byteCount);
 	
-	uint32_t oldBitHead = mBitHead;
 	uint32_t newBitHead = mBitHead - (byteCount << 3);
 	mBitHead = mBitHead > newBitHead ? newBitHead : 0; // protect from underflow
 
@@ -111,12 +110,14 @@ void OutputMemoryBitStream::ReallocBuffer( uint32_t inNewBitLength )
 	{
 		//just need to memset on first allocation
 		mBuffer = static_cast<char*>( std::malloc( inNewBitLength >> 3 ) );
+		if (mBuffer == nullptr) return;
 		memset( mBuffer, 0, inNewBitLength >> 3 );
 	}
 	else
 	{
 		//need to memset, then copy the buffer
 		char* tempBuffer = static_cast<char*>( std::malloc( inNewBitLength >> 3 ) );
+		if (tempBuffer == nullptr) return;
 		memset( tempBuffer, 0, inNewBitLength >> 3 );
 		memcpy( tempBuffer, mBuffer, mBitCapacity >> 3 );
 		std::free( mBuffer );

@@ -32,11 +32,6 @@ void NetworkManager::ReceivePackets() {
 }
 
 void NetworkManager::SendPacket(const OutputMemoryBitStream& inOutputStream) {
-	int sentByteCount = mSocket->SendTo(inOutputStream.GetBufferPtr(), inOutputStream.GetByteLength(), mToAddress);
+	mSocket->SendTo(inOutputStream.GetBufferPtr(), inOutputStream.GetByteLength(), mToAddress);
 }
 
-
-void NetworkManager::ProcessPacket(InputMemoryBitStream& stream) {
-
-
-}
