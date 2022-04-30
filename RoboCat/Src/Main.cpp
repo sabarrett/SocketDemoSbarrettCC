@@ -46,6 +46,7 @@ struct Brick {
     Color brickColor;
     int id;
     bool isDead;
+    uint64_t preditive_timeout;
     Rectangle rect();
 };
 
@@ -527,7 +528,8 @@ int main(int argc, const char** argv)
             {
                 for (int j = 0; j < gi.BRICK_COLUMNS; j++)
                 {
-                    if (gi.brickList[i][j].isDead == false)
+                    bool dead = gi.brickList[i][j].isDead || gi.brickList[i][j].preditive_timeout > gi.timestamp;
+                    if (!dead)
                         DrawBrick(gi.brickList[i][j]);
                        
                 }
@@ -745,6 +747,7 @@ void Game::InitGame(bool isHost)
             brickList[i][j].position = { j * bricks.x + bricks.x / 2, i * bricks.y + 50 };
             brickList[i][j].brickColor = ColorFromHSV(hue, saturation, value);
             brickList[i][j].isDead = false;
+            brickList[i][j].preditive_timeout = 0;
         }
     }
 
@@ -780,13 +783,15 @@ void Game::UpdateBall(Player& owner, Ball& ball) {
     {
         for (int j = 0; j < BRICK_COLUMNS; j++)
         {
-            if (brickList[i][j].isDead == false && CheckCollisionCircleRec(ball.position, ball.radius, brickList[i][j].rect()))
+            bool dead = brickList[i][j].isDead || brickList[i][j].preditive_timeout > timestamp;
+            if (!dead && CheckCollisionCircleRec(ball.position, ball.radius, brickList[i][j].rect()))
             {
                 Vector2 normal = { ball.position.x - brickList[i][j].position.x, ball.position.y - brickList[i][j].position.y };
                 normal = Vector2Normalize(normal);
                 ball.velocity = Vector2Reflect(ball.velocity, normal);
-                brickList[i][j].isDead = true;
+               
                 if (ball.hasAuthority) {
+                    brickList[i][j].isDead = true;
                     owner.score++;
                     owner.scoreFrames += owner.scoreFrames + 10;
 
@@ -796,8 +801,12 @@ void Game::UpdateBall(Player& owner, Ball& ball) {
                     testDestroy.Y = j;
 
                     packetManager.QueuePacket(&testDestroy, timestamp);
+                    backgroundColor = brickList[i][j].brickColor;
                 }
-                backgroundColor = brickList[i][j].brickColor;
+                else {
+                    brickList[i][j].preditive_timeout = timestamp + 500;
+                }
+                
             }
         }
     }
