@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "RoboCatPCH.h"
 #include <vector>
+#include <string>
 
 const float TIME_BETWEEN_PACKETS = 0.25f;
 
@@ -20,6 +21,8 @@ class NetworkManager
 		int mNetworkID; 
 		float mLastHello;
 		float mLastInputPacket;
+		float mDropPacketChance;
+		float mSimulatedLatency;
 		std::string mName;
 
 		int mGameObjectCount;
