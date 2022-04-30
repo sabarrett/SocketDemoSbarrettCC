@@ -381,11 +381,13 @@
     <ClInclude Include="Inc\UDPSocket.h" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
+    <ClCompile Include="Src\ChatUser.cpp" />
     <ClCompile Include="Src\SocketAddress.cpp" />
     <ClCompile Include="Src\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="Src\ChatUser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">

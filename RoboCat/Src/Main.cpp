@@ -5,8 +5,13 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include "ChatUser.h"
 
 #if _WIN32
+
+ChatUser* chatter = new ChatUser();
+std::thread tr1, tr2;
+bool run = true;
 
 
 int main(int argc, const char** argv)
@@ -22,32 +27,31 @@ int main(int argc, const char** argv)
 	__argv = argv;
 #endif
 
-	SocketUtil::StaticInit();
+	std::cout << "User 1 or User 2? Enter number: ";
+	std::string userNumber = "1";
+	std::getline(std::cin, userNumber);
+	while (userNumber != "1" && userNumber != "2")
+	{
+		std::cout << "Invalid entry. Please enter 1 or 2: ";
+		std::getline(std::cin, userNumber);
+	}
+	
+	chatter->startTcpThread(userNumber == "1");	
+	std::cout << "Enter \"!EXIT\" at any point to exit. Case sensitive.\n";
 
-	OutputWindow win;
-
-	std::thread t([&win]()
-				  {
-					  int msgNo = 1;
-					  while (true)
-					  {
-						  std::this_thread::sleep_for(std::chrono::milliseconds(250));
-						  std::string msgIn("~~~auto message~~~");
-						  std::stringstream ss(msgIn);
-						  ss << msgNo;
-						  win.Write(ss.str());
-						  msgNo++;
-					  }
-				  });
-
-	while (true)
+	while (run)
 	{
 		std::string input;
 		std::getline(std::cin, input);
-		win.WriteFromStdin(input);
+		
+		chatter->win.WriteFromStdin("[" + chatter->username + "]: " + input + "\n");
+		if (input == "!EXIT")
+			run = false;
+		else
+			chatter->send(input);
 	}
 
-	SocketUtil::CleanUp();
+	delete chatter;
 
 	return 0;
 }
