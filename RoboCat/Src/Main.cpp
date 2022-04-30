@@ -6,6 +6,7 @@
 #include <iostream>
 #include "stdlib.h"
 #include "Packet.h"
+#include <time.h>
 
 
 
@@ -51,7 +52,7 @@ struct Brick {
 };
 
 
-struct GameInit {
+struct Game {
     static const int BRICK_COLUMNS = 10;
     static const int BRICK_ROWS = 5;
 
@@ -70,6 +71,9 @@ struct GameInit {
     static const int NUM_PHYS_OBJ = 20;
     PhysObject* physicsObjects[NUM_PHYS_OBJ]; // id 0 & 1 are for players, the rest are balls
 
+    uint64_t timestamp_start;
+    uint64_t timestamp;
+
     void UpdateGame();
     void InitGame(bool isHost);
     void UpdatePlayer(Player& player);
@@ -78,7 +82,7 @@ struct GameInit {
     float RandomFloat(float min, float max);
 };
 
-GameInit gi;
+Game gi;
 
 
 
@@ -403,7 +407,7 @@ int main(int argc, const char** argv)
     packetManager.RegisterHandler<PacketMove>(HandleMove);
     packetManager.RegisterHandler<PacketPlayerInfo>(HandlePlayerInfo);
 
-    InitWindow(gi.screenWidth, gi.screenHeight, "thornton & max - assignment 3");
+    InitWindow(gi.screenWidth, gi.screenHeight, "thornton & max - assignment 4");
 
    
 
@@ -446,7 +450,7 @@ int main(int argc, const char** argv)
     playerInfo.type = PacketPlayerInfo::TYPE;
     playerInfo.nickname = nickname;
 
-    packetManager.SendPacket(masterSocket, address, &playerInfo);
+    packetManager.QueuePacket(&playerInfo, gi.timestamp);
 
     if (gi.player1.hasAuthority)
         gi.player1.nickname = nickname;
@@ -461,6 +465,7 @@ int main(int argc, const char** argv)
         bool connected = packetManager.HandleInput(masterSocket, address);
         if (!connected) break;
 
+        
         if (!gi.gameOver)
         {
             // Update
@@ -476,14 +481,21 @@ int main(int argc, const char** argv)
             Camera2D camera = { 0 };
             camera.offset = Vector2{0, 0 };
             camera.zoom = 1.0f;
-            camera.offset = Vector2Scale(gi.cameraOffset, 3);
+            //camera.offset = Vector2Scale(gi.cameraOffset, 3);
             BeginMode2D(camera);
             ClearBackground(gi.backgroundColor);
 
-          
+            gi.timestamp = clock() - gi.timestamp_start;
 
             DrawRectangle(10, 10, gi.screenWidth-20, gi.screenHeight-20, RAYWHITE);
+
+
+            char timestampBuf[20];
+            itoa(gi.timestamp, timestampBuf, 10);
+            DrawText(timestampBuf, 500, 25, 10, GRAY);
             //Draw Player
+
+
 
             DrawPlayer(gi.player1);
             DrawPlayer(gi.player2);
@@ -528,6 +540,7 @@ int main(int argc, const char** argv)
         EndDrawing();
         //----------------------------------------------------------------------------------
         shouldClose = WindowShouldClose();
+        packetManager.SendQueuedPackets(masterSocket, address, gi.timestamp);
     }
 
     while (!shouldClose) {
@@ -586,35 +599,53 @@ void DrawPlayer(Player player) {
     float bumpShrink = (float)player.bumpFrames;
 
     float offset = player.velocity.x;
-    rect.x += bumpShrink ;
+    rect.x += bumpShrink;
     rect.y += bumpShrink;
     rect.width -= bumpShrink;
     rect.height -= bumpShrink;
 
-    DrawRectangleRec(rect, player.playerColor);
+    //DrawRectangleRec(rect, player.playerColor);
+
+    Vector2 pointL = { rect.x - 10, rect.y + rect.height / 2 };
+    Vector2 pointR = { rect.x + 10 + rect.width, rect.y + rect.height / 2 };
+
+    float hheight = rect.height / 2;
+    float hwidth = rect.width / 2;
+
+    Vector2 frontPoints[6] = {
+        pointL,
+        { rect.x, rect.y + rect.height},
+        { rect.x, rect.y},
+        { rect.x + rect.width, rect.y + rect.height},
+        { rect.x + rect.width, rect.y},
+        pointR
+    };
+    DrawTriangleStrip(frontPoints, 6, player.playerColor);
+
     Vector2 btmL = { rect.x, rect.y + rect.height };
     Vector2 topR = { rect.x + rect.width, rect.y };
-    Vector2 points[6] = {
-        { btmL.x - 10 - offset, btmL.y - 10},
-        { btmL.x, btmL.y },
-        { btmL.x - 10 - offset, topR.y - 10},
-        { btmL.x, topR.y},
-        { topR.x - 10 - offset, topR.y - 10},
-        { topR.x, topR.y}
-
-        
-       
-       
+    Vector2 points[8] = {
+        { pointL.x - 4 - offset, pointL.y - 10},
+        pointL,
+        { rect.x - offset - 5, rect.y - 10},
+        { rect.x, rect.y},
+        { rect.x + rect.width - 10 - offset, rect.y - 10},
+        { rect.x + rect.width, rect.y},
+        { rect.x + rect.width - offset, rect.y},
+        pointR
     };
+
+    
     Color color = player.playerColor;
     //color.r -= 10;
     //color.g -= 10;
     //color.b -= 10;
 
-    DrawTriangleStrip(points, 6, BLACK);
+    DrawTriangleStrip(points, 8, BLACK);
+    DrawTriangleStrip(points + 2, 4, DARKGRAY);
 }
 
-void GameInit::InitGame(bool isHost)
+void Game::InitGame(bool isHost)
 {
     gameOver = false;
 
@@ -660,6 +691,8 @@ void GameInit::InitGame(bool isHost)
     ball2.active = true;
     ball2.hasAuthority = !isHost;
 
+
+    timestamp_start = clock();
     //Init Bricks
     for (int i = 0; i < BRICK_ROWS; i++)
     {
@@ -680,7 +713,7 @@ void GameInit::InitGame(bool isHost)
     physicsObjects[ball2.id] = &ball2;
 }
 
-float GameInit::RandomFloat(float min, float max)
+float Game::RandomFloat(float min, float max)
 {
     float t = max - min;
     float x = (float)rand() / (float)(RAND_MAX / 1.0f);
@@ -690,7 +723,7 @@ float GameInit::RandomFloat(float min, float max)
     return out;
 }
 
-void GameInit::UpdatePhysObjs() {
+void Game::UpdatePhysObjs() {
     for (int i = 0; i < NUM_PHYS_OBJ; i++) {
         PhysObject* obj = physicsObjects[i];
         if (obj)
@@ -698,7 +731,7 @@ void GameInit::UpdatePhysObjs() {
     }
 }
 
-void GameInit::UpdateBall(Player& owner, Ball& ball) {
+void Game::UpdateBall(Player& owner, Ball& ball) {
 
     Vector2 startVel = ball.velocity;
     //Brick Collision
@@ -721,7 +754,7 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
                     testDestroy.X = i;
                     testDestroy.Y = j;
 
-                    packetManager.SendPacket(masterSocket, address, &testDestroy);
+                    packetManager.QueuePacket(&testDestroy, timestamp);
                 }
                 backgroundColor = brickList[i][j].brickColor;
             }
@@ -790,7 +823,7 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
         movePacket.position = ball.position;
         movePacket.velocity = ball.velocity;
 
-        packetManager.SendPacket(masterSocket, address, &movePacket);
+        packetManager.QueuePacket(&movePacket, timestamp);
     }
 
     ball.impact = Vector2Scale(ball.impact, 0.95);
@@ -799,7 +832,7 @@ void GameInit::UpdateBall(Player& owner, Ball& ball) {
 }
 
 
-void GameInit::UpdatePlayer(Player& player) {
+void Game::UpdatePlayer(Player& player) {
     float startX = player.velocity.x;
 
     if (player.hasAuthority) {
@@ -827,7 +860,7 @@ void GameInit::UpdatePlayer(Player& player) {
             movePacket.position = player.position;
             movePacket.velocity = player.velocity;
 
-            packetManager.SendPacket(masterSocket, address, &movePacket);
+            packetManager.QueuePacket(&movePacket, timestamp);
         }
     }
 
@@ -849,7 +882,7 @@ void GameInit::UpdatePlayer(Player& player) {
     if (player.scoreFrames > 0) player.scoreFrames -= 1 + player.scoreFrames/100;
 }
 
-void GameInit::UpdateGame()
+void Game::UpdateGame()
 {
 
    

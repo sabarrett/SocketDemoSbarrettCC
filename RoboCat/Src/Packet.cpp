@@ -65,8 +65,8 @@ void PacketManager::SendPacket(Packet_PlayerInfo pkt) {
 bool PacketManager::HandleInput(UDPSocketPtr socket, SocketAddress& out_addr) {
 
 
-	char buffer[1024];
-	int byteCount = socket->ReceiveFrom(buffer, 1024, out_addr);
+	char buffer[2048];
+	int byteCount = socket->ReceiveFrom(buffer, 2048, out_addr);
 	if (byteCount < 0) {
 		return false;
 	}
@@ -76,16 +76,28 @@ bool PacketManager::HandleInput(UDPSocketPtr socket, SocketAddress& out_addr) {
 
 	std::vector<Packet*> packets;
 
+	char* itr = buffer;
+	for (int i = 0; i < byteCount; i++) {
+		printf("%hhi, ", *(itr++));
+	}
+	puts("");
+
 	InputMemoryBitStream readstream(buffer, byteCount * 8);
-	while (readstream.GetRemainingBitCount() > 7) {
+	printf("processing packets: ");
+	while (readstream.GetRemainingBitCount() > 32) {
 		unsigned int typeID;
 		readstream.Read(typeID);
+		printf("%u, ", typeID);
 
+		if (typeID - 1 > makers.size()) {
+			return true;
+		}
 		Packet* ptr = makers[typeID-1]();
 		ptr->type = (PacketType)typeID;
 		ptr->Read(readstream);
 		packets.push_back(ptr);
 	}
+	puts("");
 
 	for (Packet* packet : packets) {
 		TCPPacketHandler handler = handlers[((int)packet->type)-1];
@@ -104,11 +116,42 @@ void PacketManager::ProcessPacket(Packet* packet) {
 	delete packet;
 }
 
-void PacketManager::SendPacket(UDPSocketPtr socket, const SocketAddress& addr, Packet* packet) {
+void PacketManager::QueuePacket(Packet* packet, uint32_t current_timestamp) {
 	
-	OutputMemoryBitStream outstream;
+	uint32_t startSize = packetStream.GetByteLength();
 	unsigned int typeID = (unsigned int)packet->type;
-	outstream.Write(typeID);
-	packet->Write(outstream);
-	socket->SendTo(outstream.GetBufferPtr(), outstream.GetByteLength(), addr);
+	packetStream.Write(typeID);
+	packet->Write(packetStream);
+
+	uint32_t size = packetStream.GetByteLength() - startSize;
+
+	packetQueue.push({ size, current_timestamp });
+}
+
+void PacketManager::SendQueuedPackets(UDPSocketPtr socket, const SocketAddress& addr, uint32_t current_timestamp) {
+
+	uint32_t bytesToWrite = 0;
+	uint32_t packetCount = 0;
+	while (packetQueue.size() > 0) {
+		QueuedPacket packet = packetQueue.front();
+		if (packet.timestamp + 500> current_timestamp ) break;
+
+		bytesToWrite += packet.size;
+		packetQueue.pop();
+		packetCount++;
+
+		printf(" %u |", packet.size);
+	}
+	if (bytesToWrite == 0) return;
+
+	printf("%u: ", packetCount);
+	
+	const char* itr = packetStream.GetBufferPtr();
+	for (int i = 0; i < bytesToWrite; i++) {
+		printf("%hhi, ", *(itr++));
+	}
+	puts("");
+	int sent = socket->SendTo(packetStream.GetBufferPtr(), bytesToWrite, addr);
+	if (sent != bytesToWrite) puts("FAILED TO WRITE ALL BYTES");
+	packetStream.ShiftForward(bytesToWrite);
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "MemoryBitStream.h"
+#include <queue>
 
 enum class PacketType {
 	NONE,
@@ -54,11 +55,18 @@ struct Packet_PlayerInfo {
 };
 
 
+struct QueuedPacket {
+	uint32_t size;
+	uint32_t timestamp;
+};
+
 
 class PacketManager {
 	std::vector<TCPPacketMaker> makers;
 	std::vector<TCPPacketHandler> handlers;
 
+	std::queue<QueuedPacket> packetQueue;
+	OutputMemoryBitStream packetStream;
 public:
 	template <typename T>
 	void RegisterType() {
@@ -76,9 +84,11 @@ public:
 		handlers[i-1] = (TCPPacketHandler)handler;
 	}
 
+
+	void SendQueuedPackets(UDPSocketPtr socket, const SocketAddress& addr, uint32_t timestamp);
 	bool HandleInput(UDPSocketPtr socket, SocketAddress& out_addr);
 	void ProcessPacket(Packet* packet);
-	void SendPacket(UDPSocketPtr socket, const SocketAddress& addr, Packet* packet);
+	void QueuePacket(Packet* packet, uint32_t current_timestamp);
 
 
 	void HandlePacket_Destroy(InputMemoryBitStream& bitstream);
@@ -94,6 +104,7 @@ public:
 
 private:
 	void Send(TCPSocket* socket, OutputMemoryBitStream& stream);
+
 };
 
 

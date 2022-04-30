@@ -76,6 +76,8 @@ public:
 			Write( element );
 		}
 	}
+
+	void ShiftForward(uint32_t byteCount);
 	
 private:
 	void		ReallocBuffer( uint32_t inNewBitCapacity );

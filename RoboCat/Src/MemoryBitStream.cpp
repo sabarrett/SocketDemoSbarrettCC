@@ -89,6 +89,20 @@ void OutputMemoryBitStream::Write( const Quaternion& inQuat )
 	Write( inQuat.w < 0 );
 }
 
+void OutputMemoryBitStream::ShiftForward(uint32_t byteCount) {
+	if (byteCount >= GetByteLength()) {
+		memset(mBuffer, 0, (mBitCapacity >> 3));
+		mBitHead = 0;
+		return;
+	}
+	memmove(mBuffer, mBuffer + byteCount, GetByteLength()-byteCount);
+	
+	uint32_t oldBitHead = mBitHead;
+	uint32_t newBitHead = mBitHead - (byteCount << 3);
+	mBitHead = mBitHead > newBitHead ? newBitHead : 0; // protect from underflow
+
+	memset(mBuffer+GetByteLength(), 0, (mBitCapacity >> 3) - GetByteLength());
+}
 
 
 void OutputMemoryBitStream::ReallocBuffer( uint32_t inNewBitLength )
