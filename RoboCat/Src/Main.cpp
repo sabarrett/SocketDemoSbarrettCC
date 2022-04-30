@@ -337,6 +337,8 @@ UDPSocketPtr StartHost() {
         DrawText(msg, gi.screenWidth / 2.0f - textWidth / 2.0f, gi.screenHeight / 2.0f - 10, 20, GRAY);
      
         EndDrawing();
+
+        listening = !WindowShouldClose();
     }
 
     return nullptr;
@@ -409,7 +411,7 @@ int main(int argc, const char** argv)
     //--------------------------------------------------------------------------------------
 
     std::string nickname;
-    SocketAddress address;
+    SocketAddress address = SocketAddress(2130706433, 1234);
     StartupScreenAction action = StartupScreen(&address, nickname);
 
     if (nickname.size() == 0) {
