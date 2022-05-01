@@ -9,7 +9,7 @@
 
 OR
 
-- Just run the .exe with ```c``` and ```1``` to play without connected to the server
+- Just run the .exe with ```c``` and ```1``` to play alone without connecting to the server
 
 ## How to use
 
