@@ -7,39 +7,10 @@
 #include "./RoboCat/NetworkManager.h"
 #include "./RoboCat/InputSystem.h"
 #include "./RoboCat/InputTranslator.h"
+#include <time.h>
+#include <stdlib.h>
 
 #if _WIN32
-
-void UDPServer(UDPSocketPtr server)
-{
-	std::thread sendInput([&] {
-
-	});
-
-	std::thread update([&] {
-
-	});
-
-	sendInput.join();
-	update.join();
-}
-
-void UDPClient(UDPSocketPtr client)
-{
-	std::thread sendInput([&] {
-
-	});
-
-	std::thread update([&] {
-
-	});
-
-	sendInput.join();
-	update.join();
-}
-
-const int DISPLAY_WIDTH = 800;
-const int DISPLAY_HEIGHT = 600;
 
 int main(int argc, const char** argv)
 {
@@ -55,9 +26,11 @@ int main(int argc, const char** argv)
 #endif
 
 	SocketUtil::StaticInit();
+	srand(time(0));
+	int dropChance = rand() % 101;
 
 	//Assignment 2 code here
-	NetworkManager* mpNetManager = new NetworkManager();
+	NetworkManager* mpNetManager = new NetworkManager(dropChance);
 	InputSystem* mpInput = new InputSystem();
 	InputTranslator* mpTranslator = new InputTranslator(mpInput);
 

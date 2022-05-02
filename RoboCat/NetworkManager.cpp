@@ -8,6 +8,17 @@ NetworkManager::NetworkManager()
 	mpSocket = nullptr;
 }
 
+NetworkManager::NetworkManager(int dropChance)
+{
+	mpEventSystem = EventSystem::getInstance();
+
+	mpGame = nullptr;
+	mpSocket = nullptr;
+
+	mDropChance = dropChance;
+	srand(time(NULL));
+}
+
 NetworkManager::~NetworkManager()
 {
 }
@@ -171,6 +182,7 @@ void NetworkManager::renderObject()
 
 void NetworkManager::sendData(PacketTypes packet, int ID)
 {
+	bool needsConfirmPacket = false;
 	bool destroyed = false;
 	OutputMemoryBitStream MemStream;
 	MemStream.Write(packet);
@@ -179,6 +191,7 @@ void NetworkManager::sendData(PacketTypes packet, int ID)
 	{
 	case CREATE_OBJECT:
 	{
+		needsConfirmPacket = true;
 		//mvGameObjects[ID].first->getInstance()->handleEvent(Event(EventType::KEY_DOWN_EVENT));
 		GameEvent eventToFire(CREATE_UNIT_EVENT);
 		mpEventSystem->fireEvent(eventToFire);
@@ -192,6 +205,7 @@ void NetworkManager::sendData(PacketTypes packet, int ID)
 	}
 	case DESTROY_OBJECT:
 	{
+		needsConfirmPacket = true;
 		if (mvGameObjects.size() > 0)
 		{
 			std::vector<std::pair<Game*, int>>::iterator iter;
@@ -215,6 +229,11 @@ void NetworkManager::sendData(PacketTypes packet, int ID)
 		mCurrentID--;
 	}
 
+	if (needsConfirmPacket)
+	{
+		mvPacketResendQueue.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>
+			(MemStream.GetBufferPtr(), MemStream.GetBitLength()), mCurrentID));
+	}
 }
 
 void NetworkManager::receiveData()
@@ -222,58 +241,69 @@ void NetworkManager::receiveData()
 	char buffer[4096];
 	int32_t bytesReceived = (*mpSocket)->Receive(buffer, 4096);
 
+	int drop = rand() % 101;
+
+	
+
 	if (bytesReceived > 0)
 	{
 		InputMemoryBitStream MemStream = InputMemoryBitStream(buffer, 4096);
 		PacketTypes recievePacketType;
 		MemStream.Read(recievePacketType);
 
-		int networkID;
-		MemStream.Read(networkID);
-		if (mCurrentID < networkID)
+		if (drop > mDropChance)
 		{
-			mCurrentID = networkID;
-		}
-
-		switch (recievePacketType)
-		{
-		case CREATE_OBJECT:
-		{
-			mvGameObjects[networkID].first->getInstance()->handleEvent(Event(EventType::MOUSE_DOWN_EVENT));
-			break;
-		}
-			
-		case UPDATE_OBJECT:
-		{
-			if (mvGameObjects[networkID].first != nullptr)
+			int networkID;
+			MemStream.Read(networkID);
+			if (mCurrentID < networkID)
 			{
-				mvGameObjects[networkID].first->getInstance()->update();
+				mCurrentID = networkID;
+			}
+
+			switch (recievePacketType)
+			{
+			case CREATE_OBJECT:
+			{
+				mvGameObjects[networkID].first->getInstance()->handleEvent(Event(EventType::MOUSE_DOWN_EVENT));
 				break;
 			}
-			else
-			{
-				std::cout << "Nothing to update.\n";
-			}
 
-			break;
-		}
-
-		case DESTROY_OBJECT:
-		{
-			if (mvGameObjects.size() > 0)
+			case UPDATE_OBJECT:
 			{
-				std::vector<std::pair<Game*, int>>::iterator iter;
-				for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
+				if (mvGameObjects[networkID].first != nullptr)
 				{
-					mvGameObjects.erase(iter);
-					mCurrentID--;
+					mvGameObjects[networkID].first->getInstance()->update();
 					break;
 				}
+				else
+				{
+					std::cout << "Nothing to update.\n";
+				}
+
+				break;
 			}
-			break;
-		}
-		default:
-			break;
+
+			case DESTROY_OBJECT:
+			{
+				if (mvGameObjects.size() > 0)
+				{
+					std::vector<std::pair<Game*, int>>::iterator iter;
+					for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
+					{
+						mvGameObjects.erase(iter);
+						mCurrentID--;
+						break;
+					}
+				}
+				break;
+			}
+			default:
+				break;
+			}
+
+			int ID;
+			MemStream.Read(ID);
+			sendConfirmation(ID);
 		}
 	}
 
@@ -282,4 +312,29 @@ void NetworkManager::receiveData()
 		std::cout << "Connection terminated";
 		exit(0);
 	}
+}
+
+bool NetworkManager::waitForConfirmation(int ID)
+{
+	if (mvPacketResendQueue.size() > 0)
+	{
+		std::vector<std::pair<std::pair<const void*, size_t>, int>>::iterator iter;
+		for (iter = mvPacketResendQueue.begin(); iter != mvPacketResendQueue.end(); iter++)
+		{
+			if (iter->second == ID)
+			{
+				mvPacketResendQueue.erase(iter);
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+void NetworkManager::sendConfirmation(int ID)
+{
+	OutputMemoryBitStream* MemStream = new OutputMemoryBitStream();
+	MemStream->Write(CONFIRM_PACKET);
+	MemStream->Write(ID);
+	(*mpSocket)->Send(MemStream->GetBufferPtr(), MemStream->GetBitLength());
 }

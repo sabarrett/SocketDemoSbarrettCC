@@ -4,12 +4,15 @@
 #include "Game.h"
 #include "GameEvent.h"
 #include "EventSystem.h"
+#include <stdlib.h>
+#include <time.h>
 
 enum PacketTypes
 {
 	CREATE_OBJECT,
 	UPDATE_OBJECT,
-	DESTROY_OBJECT
+	DESTROY_OBJECT,
+	CONFIRM_PACKET
 };
 
 class NetworkManager : public Trackable
@@ -28,6 +31,7 @@ public:
 	}
 
 	NetworkManager();
+	NetworkManager(int dropChance);
 	~NetworkManager();
 
 	bool initServer(std::string serverPort);
@@ -40,6 +44,9 @@ public:
 	void sendData(PacketTypes packet, int ID);
 	void receiveData();
 
+	bool waitForConfirmation(int ID);
+	void sendConfirmation(int ID);
+
 private:
 
 	Game* mpGame;
@@ -48,5 +55,8 @@ private:
 	EventSystem* mpEventSystem;
 
 	std::vector<std::pair<Game*, int>> mvGameObjects;
+	std::vector<std::pair<std::pair<const void*, size_t>, int>> mvPacketResendQueue;
 	int mCurrentID;
+
+	int mDropChance;
 };
