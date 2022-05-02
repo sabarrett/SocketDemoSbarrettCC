@@ -358,13 +358,12 @@ void NetworkManager::recieve()
 
 			else
 			{
-				//int posX;
-				//int posY;
 				//int num;
 				int netID;
 				InMBStream.Read(netID);
 				GameObjects* obj;
-				int posX, posY;
+				float posX = 0;
+				float posY = 0;
 				std::vector<std::pair<GameObjects*, int>>::iterator iter;
 
 				switch (recievePacketType)
@@ -402,10 +401,10 @@ void NetworkManager::recieve()
 							case GameObjType::BOULDER:
 								//InMBStream.Read(obj);
 								InMBStream.Read(imgID);
-								//InMBStream.Read(posX);
-								//InMBStream.Read(posY);
-								posX = 100;
-								posY = 100;
+								InMBStream.Read(posX);
+								InMBStream.Read(posY);
+								//posX = 100;
+								//posY = 100;
 
 								GameObjects* newBoulder;
 								newBoulder = new Boulder(mpGraphicsLib, netID, imgID, posX, posY);
