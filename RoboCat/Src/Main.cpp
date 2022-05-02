@@ -71,13 +71,24 @@ bool init()
 
 void start()
 {
-	if (networkID == 1)
+	if (tempPlayerID == 1)
 	{
 		tempPlayerID = 1;
 		pNetworkManager->setServerRole(false);
-		playerServer = pNetworkManager->recieveInitFromServer(pGraphicsLib);
-		playerClient = pNetworkManager->recieveInitFromServer(pGraphicsLib);
+		//playerServer = pNetworkManager->recieveInitFromServer(pGraphicsLib);
+		//playerClient = pNetworkManager->recieveInitFromServer(pGraphicsLib);
 
+		playerServer = new PlayerController(0, pGraphicsLib);
+		playerServer->setPlayerID(0);
+		pNetworkManager->spawnObj(playerServer, 0);
+		//networkID++;
+
+		playerClient = new PlayerController(1, pGraphicsLib);
+		playerClient->setPlayerID(1);
+		pNetworkManager->spawnObj(playerClient, 1);
+		//networkID = 2;
+		pNetworkManager->setCurrentID(1);
+		pNetworkManager->mIsConnected = true;
 	}
 	else
 	{
@@ -86,21 +97,22 @@ void start()
 
 		playerServer = new PlayerController(0, pGraphicsLib);
 		playerServer->setPlayerID(0);
-		pNetworkManager->spawnObj(playerServer, networkID);
-		networkID++;
+		pNetworkManager->spawnObj(playerServer, 0);
+		//networkID++;
 
-		pNetworkManager->send(playerServer->getNetworkID(), TypePacket::PACKET_INIT);
+		//pNetworkManager->send(playerServer->getNetworkID(), TypePacket::PACKET_INIT);
 		//pNetworkManager->recieve();
 
 
 		playerClient = new PlayerController(1, pGraphicsLib);
-		tempPlayerID = 1;
 		playerClient->setPlayerID(1);
-		pNetworkManager->spawnObj(playerClient, networkID);
+		pNetworkManager->spawnObj(playerClient, 1);
 		//pNetworkManager->recieve();
-		networkID++;
-
-		pNetworkManager->send(playerClient->getNetworkID(), TypePacket::PACKET_INIT);
+		//networkID++;
+		//networkID = 2;
+		pNetworkManager->setCurrentID(1);
+		//pNetworkManager->send(playerClient->getNetworkID(), TypePacket::PACKET_INIT);
+		pNetworkManager->mIsConnected = true;
 	}
 
 	al_start_timer(timer);
@@ -198,7 +210,7 @@ int main(int argc, const char** argv)
 				std::cout << "connect successful.\n";
 
 			tempPlayerID = 0;
-			networkID = 0;
+			//networkID = 0;
 		}
 
 		else if (role == "n")
@@ -215,7 +227,7 @@ int main(int argc, const char** argv)
 				std::cout << "Client Connected\n";
 
 			tempPlayerID = 1;
-			networkID = 1;
+			//networkID = 1;
 		}
 
 		if (successConnect)

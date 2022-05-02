@@ -34,6 +34,7 @@ public:
 		return mpNetworkInstance;
 	};
 
+	bool mIsConnected;
 
 	NetworkManager();
 	~NetworkManager();
@@ -93,7 +94,6 @@ private:
 
 	int mClientPacketID = 0;
 
-	bool mIsConnected;
 	bool mIsServer;
 
 	GraphicsLibrary* pGraphicsLib;

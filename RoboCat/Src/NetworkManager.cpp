@@ -161,13 +161,13 @@ void NetworkManager::processPacket(KeyCode key, string img, int player)
 	{
 		float randPosX = rand() % (int)screenSizeX;
 		float randPosY = 10.0;
+		mServerNetworkID++;
 
 		GameObjects* newBubble;
 		newBubble = new Bubble(mpGraphicsLib, mServerNetworkID, img, randPosX, randPosY, player);
 
 		spawnObj(newBubble, mServerNetworkID);
 		send(mServerNetworkID, TypePacket::PACKET_CREATE);
-		mServerNetworkID++;
 		break;
 	}
 	case KeyCode::LEFT:
@@ -176,13 +176,13 @@ void NetworkManager::processPacket(KeyCode key, string img, int player)
 		float randPosY = rand() % (int)screenSizeY;
 		float randPosX = 10.0;
 		float randNum = rand() % 10;
+		mServerNetworkID++;
 
 		GameObjects* newBee;
 		newBee = new Bees(mpGraphicsLib, mServerNetworkID, img, randPosX, randPosY, randNum); //watch out for this
 
 		spawnObj(newBee, mServerNetworkID);
 		send(mServerNetworkID, TypePacket::PACKET_CREATE);
-		mServerNetworkID++;
 		break;
 	}
 	case KeyCode::RIGHT: //maybe someday will be more bees
@@ -197,13 +197,13 @@ void NetworkManager::processPacket(KeyCode key, string img, int player)
 	{
 		float randPosX = rand() % (int)screenSizeX;
 		float randPosY = rand() % (int)screenSizeY;
+		mServerNetworkID++;
 
 		GameObjects* newBoulder;
 		newBoulder = new Boulder(mpGraphicsLib, mServerNetworkID, img, randPosX, randPosY);
 
 		spawnObj(newBoulder, mServerNetworkID);
 		send(mServerNetworkID, TypePacket::PACKET_CREATE);
-		mServerNetworkID++;
 		break;
 	}
 	}
@@ -248,6 +248,7 @@ void NetworkManager::requestPacket(KeyCode key) //client ask
 		break;
 	}
 
+	mClientPacketID++;
 	OutMBStream.Write(type);
 	OutMBStream.Write(objType);
 	OutMBStream.Write(mClientPacketID);
@@ -255,7 +256,6 @@ void NetworkManager::requestPacket(KeyCode key) //client ask
 	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength());
 
 	mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mClientPacketID));
-	mClientPacketID++;
 }
 
 PlayerController* NetworkManager::recieveInitFromServer(/*PlayerController** playerServer = nullptr,*/ GraphicsLibrary* gLib)
@@ -288,11 +288,11 @@ void NetworkManager::recieve()
 	int32_t bytesRecieved = (*mpTCPSocket)->Receive(buffer, 1024);
 	KeyCode key;
 
-	int randDrop = 100;
-	if (mIsConnected)
-	{
-		randDrop = rand() % 101;
-	}
+	int randDrop = 0;
+	//if (mIsConnected)
+	//{
+	//	randDrop = rand() % 101;
+	//}
 	if (bytesRecieved > 0)
 	{
 		InputMemoryBitStream InMBStream = InputMemoryBitStream(buffer, 1024);
@@ -311,6 +311,7 @@ void NetworkManager::recieve()
 				switch (recievePacketType)
 				{
 				case TypePacket::PACKET_CREATE:
+					//mServerNetworkID++;
 					switch (recieveObjType)
 					{
 					case GameObjType::BUBBLE:
@@ -331,14 +332,13 @@ void NetworkManager::recieve()
 						processPacket(KeyCode::SPACE, imgID, 1);
 						break;
 
-					case GameObjType::PLAYER:
-						PlayerController* newPlayer;
-						newPlayer = new PlayerController(mServerNetworkID, mpGraphicsLib);
-						mGameObjVector.push_back(pair<GameObjects*, int>(newPlayer, mServerNetworkID));
+					//case GameObjType::PLAYER:
+					//	PlayerController* newPlayer;
+					//	newPlayer = new PlayerController(mServerNetworkID, mpGraphicsLib);
+					//	mGameObjVector.push_back(pair<GameObjects*, int>(newPlayer, mServerNetworkID));
 
-						newPlayer = nullptr;
-						mServerNetworkID++;
-						break;
+					//	newPlayer = nullptr;
+					//	break;
 					}
 					break;
 
@@ -402,8 +402,10 @@ void NetworkManager::recieve()
 							case GameObjType::BOULDER:
 								//InMBStream.Read(obj);
 								InMBStream.Read(imgID);
-								InMBStream.Read(posX);
-								InMBStream.Read(posY);
+								//InMBStream.Read(posX);
+								//InMBStream.Read(posY);
+								posX = 100;
+								posY = 100;
 
 								GameObjects* newBoulder;
 								newBoulder = new Boulder(mpGraphicsLib, netID, imgID, posX, posY);
@@ -411,13 +413,13 @@ void NetworkManager::recieve()
 								newBoulder = nullptr;
 								break;
 
-							case GameObjType::PLAYER:
-								PlayerController* newPlayer;
-								newPlayer = new PlayerController(netID, mpGraphicsLib);
+							//case GameObjType::PLAYER:
+							//	PlayerController* newPlayer;
+							//	newPlayer = new PlayerController(netID, mpGraphicsLib);
 
-								spawnObj(newPlayer, netID);
-								newPlayer = nullptr;
-								break;
+							//	spawnObj(newPlayer, netID);
+							//	newPlayer = nullptr;
+							//	break;
 						}
 						break;
 
@@ -488,6 +490,7 @@ void NetworkManager::send(int networkID, TypePacket type) //server mainly
 	{
 	case TypePacket::PACKET_CREATE:
 		needsConfirm = true;
+		//mServerNetworkID++;
 		//OutMBStream.Write(mGameObjVector[networkID]);
 		switch (mGameObjVector[networkID].first->getObjType())
 		{
@@ -507,13 +510,14 @@ void NetworkManager::send(int networkID, TypePacket type) //server mainly
 			case GameObjType::BOULDER:
 				OutMBStream.Write(mGameObjVector[networkID].first->getImageID());
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().first);
+				std::cout << mGameObjVector[networkID].first->getPosition().first << std::endl;
 				OutMBStream.Write(mGameObjVector[networkID].first->getPosition().second);
+				std::cout << mGameObjVector[networkID].first->getPosition().second << std::endl;
 				break;
 
 			default:
 				break;
 		}
-		mServerNetworkID++;
 		break;
 
 	case TypePacket::PACKET_UPDATE:
