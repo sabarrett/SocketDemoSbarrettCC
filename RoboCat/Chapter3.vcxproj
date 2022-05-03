@@ -92,6 +92,8 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <OutDir>Bin\$(Configuration)\</OutDir>
+    <IncludePath>..\SDL2-2.0.20\include;..\SDL2_image-2.0.5\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\SDL2-2.0.20\lib\x86;..\SDL2_image-2.0.5\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">
     <LinkIncremental>true</LinkIncremental>
@@ -132,7 +134,7 @@
       <PrecompiledHeaderFile>RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;d3d11.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies);Ws2_32.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LargeAddressAware>true</LargeAddressAware>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -370,10 +372,15 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\Bullet.h" />
     <ClInclude Include="Inc\ByteSwap.h" />
+    <ClInclude Include="Inc\Color.h" />
+    <ClInclude Include="Inc\Crosshair.h" />
+    <ClInclude Include="Inc\Globals.h" />
     <ClInclude Include="Inc\LinkingContext.h" />
     <ClInclude Include="Inc\MemoryBitStream.h" />
     <ClInclude Include="Inc\OutputWindow.h" />
+    <ClInclude Include="Inc\Player.h" />
     <ClInclude Include="Inc\RoboMath.h" />
     <ClInclude Include="Inc\SocketAddress.h" />
     <ClInclude Include="Inc\SocketAddressFactory.h" />
@@ -382,21 +389,29 @@
     <ClInclude Include="Inc\TCPSocket.h" />
     <ClInclude Include="Inc\RoboCatPCH.h" />
     <ClInclude Include="Inc\RoboCatShared.h" />
+    <ClInclude Include="Inc\Texture.h" />
     <ClInclude Include="Inc\UDPSocket.h" />
+    <ClCompile Include="Src\Bullet.cpp" />
+    <ClCompile Include="Src\Color.cpp" />
+    <ClCompile Include="Src\Crosshair.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\MemoryBitStream.cpp" />
     <ClCompile Include="Src\OutputWindow.cpp" />
+    <ClCompile Include="Src\Player.cpp" />
     <ClCompile Include="Src\SocketAddress.cpp" />
     <ClCompile Include="Src\SocketAddressFactory.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />
+    <ClCompile Include="Src\Source.cpp" />
     <ClCompile Include="Src\StringUtils.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClInclude Include="Inc\Vec2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\RoboCatPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RoboCatPCH.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Src\Texture.cpp" />
     <ClCompile Include="Src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>

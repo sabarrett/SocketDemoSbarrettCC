@@ -62,3 +62,19 @@ class GameObject;
 #include "TCPSocket.h"
 #include "SocketUtil.h"
 #include "OutputWindow.h"
+
+#include <SDL_image.h>
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <time.h>
+#include <thread>
+#include <iostream>
+
+#include "Color.h"
+#include "Crosshair.h"
+#include "Player.h"
+#include "Texture.h"
+#include "Bullet.h"
+
+extern SDL_Renderer* gRenderer;

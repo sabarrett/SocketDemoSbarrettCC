@@ -60,7 +60,7 @@ public:
 	}
 	
 	void 		Write( bool inData )								{ WriteBits( &inData, 1 ); }
-	
+ 
 	void		Write( const Vector3& inVector );	
 	void		Write( const Quaternion& inQuat );
 

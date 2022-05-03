@@ -1,0 +1,15 @@
+﻿  Player.cpp
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(11,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(12,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(13,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Player.cpp(33,14): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Player.cpp(34,14): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Player.cpp(63,45): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Player.cpp(63,32): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Source.cpp
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(11,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(12,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Color.h(13,7): warning C4244: '=': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\Assignment2\Source.cpp(27,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  Generating Code...
+  Assignment2.vcxproj -> C:\Users\Michael\Documents\Folders\Programming\C++\GPR Network Programming\SocketDemo\Assignment2\x64\Debug\Assignment2.exe
