@@ -1,3 +1,0 @@
-C:/Users/spyid/Documents/NetworkingAssignment/RedLib/out/build/x64-Debug/CMakeFiles/RedLib.dir
-C:/Users/spyid/Documents/NetworkingAssignment/RedLib/out/build/x64-Debug/CMakeFiles/edit_cache.dir
-C:/Users/spyid/Documents/NetworkingAssignment/RedLib/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
