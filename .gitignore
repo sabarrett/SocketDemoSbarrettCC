@@ -7,3 +7,5 @@
 
 Debug/
 packages/
+**/out/**
+SampleGame/out/

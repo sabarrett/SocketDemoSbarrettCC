@@ -2,6 +2,8 @@
 	#define WIN32_LEAN_AND_MEAN
 	#define NOMINMAX
 
+	#define NOUSER
+
 	#include "Windows.h"
 	#include "WinSock2.h"
 	#include "Ws2tcpip.h"
@@ -49,7 +51,7 @@ using std::unordered_set;
 class RoboCat;
 class GameObject;
 
-#include "RoboMath.h"
+//#include "RoboMath.h"
 
 #include "TransmissionData.h"
 #include "InFlightPacket.h"

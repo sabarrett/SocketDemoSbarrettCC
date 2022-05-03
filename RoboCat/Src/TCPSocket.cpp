@@ -44,7 +44,7 @@ int32_t	TCPSocket::Send( const void* inData, size_t inLen )
 	int bytesSentCount = send( mSocket, static_cast< const char* >( inData ), inLen, 0 );
 	if( bytesSentCount < 0 )
 	{
-		SocketUtil::ReportError( "TCPSocket::Send" );
+		//SocketUtil::ReportError( "TCPSocket::Send" );
 		return -SocketUtil::GetLastError();
 	}
 	return bytesSentCount;
@@ -55,7 +55,7 @@ int32_t	TCPSocket::Receive( void* inData, size_t inLen )
 	int bytesReceivedCount = recv( mSocket, static_cast< char* >( inData ), inLen, 0 );
 	if( bytesReceivedCount < 0 )
 	{
-		SocketUtil::ReportError( "TCPSocket::Receive" );
+		//SocketUtil::ReportError( "TCPSocket::Receive" );
 		return -SocketUtil::GetLastError();
 	}
 	return bytesReceivedCount;
