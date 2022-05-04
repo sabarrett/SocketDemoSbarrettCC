@@ -6,6 +6,7 @@
 #include "Sprite.h"
 #include "EventListener.h"
 
+
 /*
 Author: Wesley Elmer
 	Class : Game Architecture <250-71>
@@ -24,6 +25,7 @@ class GraphicsBuffer;
 class GraphicsBufferManager;
 class InputSystem;
 class InputTranslator;
+class NetworkManager;
 class Sprite;
 class System;
 class Unit;
@@ -92,5 +94,7 @@ private:
 	PerformanceTracker* mpPerformanceTracker;
 
 	static Game* gpGame;
+
+	NetworkManager* mpNetworkManager;
 };
 

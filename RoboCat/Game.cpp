@@ -1,3 +1,4 @@
+#include "NetworkManager.h"
 #include "Animation.h"
 #include "Event.h"
 #include "EventListener.h"
@@ -86,6 +87,8 @@ void Game::init()
 	mpWoodsSprite = new Sprite(mpWoodsBuffer, 0, 0, mpWoodsBuffer->getHeight(), mpWoodsBuffer->getWidth());
 
 	mpUnitManager = new UnitManager();
+
+	mpNetworkManager = new NetworkManager();
 
 	mAnimSpeed = 30;
 

@@ -19,11 +19,15 @@ GraphicsBuffer::GraphicsBuffer()
 
 GraphicsBuffer::GraphicsBuffer(string filename)
 {
-	mIsInited = true;
-	mpGraphicsBuffer = al_load_bitmap(filename.c_str());
-	assert(mpGraphicsBuffer);
-	mWidth = al_get_bitmap_width(mpGraphicsBuffer);
-	mHeight = al_get_bitmap_height(mpGraphicsBuffer);
+	if (mpGraphicsBuffer == nullptr)
+	{
+		mIsInited = true;
+		mpGraphicsBuffer = al_load_bitmap(filename.c_str());
+		assert(mpGraphicsBuffer);
+		mWidth = al_get_bitmap_width(mpGraphicsBuffer);
+		mHeight = al_get_bitmap_height(mpGraphicsBuffer);
+	}
+	
 }
 
 GraphicsBuffer::GraphicsBuffer(int height, int width)

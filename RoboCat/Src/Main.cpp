@@ -10,37 +10,6 @@
 
 #if _WIN32
 
-void UDPServer(UDPSocketPtr server)
-{
-	std::thread sendInput([&] {
-
-	});
-
-	std::thread update([&] {
-
-	});
-
-	sendInput.join();
-	update.join();
-}
-
-void UDPClient(UDPSocketPtr client)
-{
-	std::thread sendInput([&] {
-
-	});
-
-	std::thread update([&] {
-
-	});
-
-	sendInput.join();
-	update.join();
-}
-
-const int DISPLAY_WIDTH = 800;
-const int DISPLAY_HEIGHT = 600;
-
 int main(int argc, const char** argv)
 {
 	UNREFERENCED_PARAMETER(argc);
@@ -81,7 +50,7 @@ int main(int argc, const char** argv)
 		clientInited = mpNetManager->connect(clientIP, serverPort);
 		networkID = 1;
 	}
-	
+	/*
 	if (serverInited || clientInited)
 	{
 		while (serverInited || clientInited)
@@ -100,6 +69,7 @@ int main(int argc, const char** argv)
 			mpNetManager->receiveData();
 		}
 	}
+	*/
 
 	system("pause");
 

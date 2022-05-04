@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "GameEvent.h"
 #include "EventSystem.h"
+#include "Unit.h"
 
 enum PacketTypes
 {
@@ -33,11 +34,9 @@ public:
 	bool initServer(std::string serverPort);
 	bool connect(std::string clientIP, std::string clientPort);
 
-	void createObject(Game* obj, int objID);
-	void updateObject();
-	void renderObject();
+	void createObject(Unit* obj, int objID);
 
-	void sendData(PacketTypes packet, int ID);
+	void sendData(PacketTypes packet, int ID, Unit* obj = nullptr);
 	void receiveData();
 
 private:
@@ -47,6 +46,6 @@ private:
 	static NetworkManager* mpsNetworkInstance;
 	EventSystem* mpEventSystem;
 
-	std::vector<std::pair<Game*, int>> mvGameObjects;
+	std::vector<std::pair<Unit*, int>> mvGameObjects;
 	int mCurrentID;
 };
