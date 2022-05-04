@@ -243,7 +243,7 @@ void NetworkManager::receiveData()
 			{
 			case CREATE_OBJECT:
 			{
-				MemStream.Read(mvGameObjects[mCurrentID]);
+				//MemStream.Read(mvGameObjects[mCurrentID]);
 				break;
 			}
 
@@ -251,7 +251,7 @@ void NetworkManager::receiveData()
 			{
 				if (mvGameObjects[networkID].first != nullptr)
 				{
-					MemStream.Read(mvGameObjects[networkID]);
+					//MemStream.Read(mvGameObjects[networkID]);
 					break;
 				}
 				else
