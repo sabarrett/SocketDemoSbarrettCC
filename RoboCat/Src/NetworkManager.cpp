@@ -141,12 +141,14 @@ bool NetworkManager::waitForConfirmPacket(int ID)
 {
 	if (mPendingResendPackets.size() > 0)
 	{
-		std::vector<std::pair<std::pair<const void*, size_t>, int>>::iterator iter;
+		std::vector<std::pair<OutputMemoryBitStream*, int>>::iterator iter;
 		for(iter = mPendingResendPackets.begin(); iter != mPendingResendPackets.end(); iter++ )
 		{
-			if(iter->second == ID)
+			if (iter->second == ID)
+			{
 				mPendingResendPackets.erase(iter);
-			return true;
+				return true;
+			}
 		}
 
 		return false;
@@ -255,7 +257,7 @@ void NetworkManager::requestPacket(KeyCode key) //client ask
 
 	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength());
 
-	mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mClientPacketID));
+	//mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mClientPacketID));
 }
 
 PlayerController* NetworkManager::recieveInitFromServer(/*PlayerController** playerServer = nullptr,*/ GraphicsLibrary* gLib)
@@ -289,10 +291,10 @@ void NetworkManager::recieve()
 	KeyCode key;
 
 	int randDrop = 0;
-	//if (mIsConnected)
-	//{
-	//	randDrop = rand() % 101;
-	//}
+	if (mIsConnected)
+	{
+		randDrop = rand() % 101;
+	}
 	if (bytesRecieved > 0)
 	{
 		InputMemoryBitStream InMBStream = InputMemoryBitStream(buffer, 1024);
@@ -308,10 +310,10 @@ void NetworkManager::recieve()
 
 			if (mIsServer)
 			{
+				int confirmID;
 				switch (recievePacketType)
 				{
 				case TypePacket::PACKET_CREATE:
-					//mServerNetworkID++;
 					switch (recieveObjType)
 					{
 					case GameObjType::BUBBLE:
@@ -348,17 +350,21 @@ void NetworkManager::recieve()
 						send(mServerNetworkID, TypePacket::PACKET_DESTROY);
 					}
 					break;
+
+				case TypePacket::CONFIRM:
+					InMBStream.Read(confirmID);
+					waitForConfirmPacket(confirmID);
+					break;
 				}
 
 				int packetID;
 				InMBStream.Read(packetID);
-				createConfirmPacket(packetID);
+				//createConfirmPacket(packetID);
 
 			}
 
 			else
 			{
-				//int num;
 				int netID;
 				InMBStream.Read(netID);
 				GameObjects* obj;
@@ -372,7 +378,6 @@ void NetworkManager::recieve()
 						switch (recieveObjType)
 						{
 							case GameObjType::BUBBLE:
-								//InMBStream.Read(obj);
 								InMBStream.Read(imgID);
 								InMBStream.Read(posX);
 								InMBStream.Read(posY);
@@ -380,11 +385,11 @@ void NetworkManager::recieve()
 								GameObjects* newBubble;
 								newBubble = new Bubble(mpGraphicsLib, netID, imgID, posX, posY, 0);
 								spawnObj(newBubble, netID);
+								createConfirmPacket(netID);
 								newBubble = nullptr;
 								break;
 
 							case GameObjType::BEE:
-								//InMBStream.Read(obj);
 								int num;
 								InMBStream.Read(imgID);
 								InMBStream.Read(posX);
@@ -395,11 +400,11 @@ void NetworkManager::recieve()
 								newBee = new Bees(mpGraphicsLib, netID, imgID, posX, posY, num);
 								//newBee = new Bees(pGraphicsLib, netID, obj->getImageID(), obj->getPosition().first, obj->getPosition().second, obj->getNum());
 								spawnObj(newBee, netID);
+								createConfirmPacket(netID);
 								newBee = nullptr;
 								break;
 
 							case GameObjType::BOULDER:
-								//InMBStream.Read(obj);
 								InMBStream.Read(imgID);
 								InMBStream.Read(posX);
 								InMBStream.Read(posY);
@@ -409,6 +414,7 @@ void NetworkManager::recieve()
 								GameObjects* newBoulder;
 								newBoulder = new Boulder(mpGraphicsLib, netID, imgID, posX, posY);
 								spawnObj(newBoulder, netID);
+								createConfirmPacket(netID);
 								newBoulder = nullptr;
 								break;
 
@@ -461,7 +467,7 @@ void NetworkManager::recieve()
 					case TypePacket::CONFIRM:
 						int packetID;
 						InMBStream.Read(packetID);
-						createConfirmPacket(packetID);
+						//createConfirmPacket(packetID);
 
 					default:
 						break;
@@ -544,7 +550,10 @@ void NetworkManager::send(int networkID, TypePacket type) //server mainly
 	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength());
 
 	if (needsConfirm)
-		mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mServerNetworkID));
+	{
+		mPendingResendPackets.push_back(std::pair<OutputMemoryBitStream*, int>(&OutMBStream, mServerNetworkID));
+		//mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mServerNetworkID));
+	}
 }
 
 void NetworkManager::spawnObj(GameObjects* obj, int id)
@@ -567,7 +576,9 @@ void NetworkManager::update(float deltaTime, float time) //server
 	{
 		if (mTimeTillResend <= 0.0f)
 		{
-			(*mpTCPSocket)->Send(mPendingResendPackets.front().first.first, mPendingResendPackets.front().first.second); //ID?
+			(*mpTCPSocket)->Send(mPendingResendPackets.front().first, mPendingResendPackets.front().second);
+			//(*mpTCPSocket)->Send(mPendingResendPackets.front().first.first, mPendingResendPackets.front().first.second); //ID?
+			std::cout << mPendingResendPackets.front().second;
 			//(*mpTCPSocket)->Send(mPendingResendPackets.front().first, mPendingResendPackets.front().second); //ID?
 			mTimeTillResend = 1.0f;
 		}

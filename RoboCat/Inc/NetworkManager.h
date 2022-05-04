@@ -80,7 +80,8 @@ private:
 	float mPacketTimeStamp;
 
 	std::vector<std::pair<GameObjects*, int>> mGameObjVector;
-	std::vector<std::pair<std::pair<const void*, size_t>, int>> mPendingResendPackets;
+	//std::vector<std::pair<std::pair<const void*, size_t>, int>> mPendingResendPackets;
+	std::vector<std::pair<OutputMemoryBitStream*, int>> mPendingResendPackets;
 
 	Colour mP1Color, mP2Color;
 	std::string mBubbleImgID;
