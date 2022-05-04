@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN
 	#define NOMINMAX
@@ -48,6 +50,12 @@ using std::unordered_set;
 
 class RoboCat;
 class GameObject;
+
+#include "RoboMath.h"
+
+#include "LinkingContext.h"
+#include "ByteSwap.h"
+#include "MemoryBitStream.h"
 
 #include "StringUtils.h"
 #include "SocketAddress.h"
