@@ -133,15 +133,16 @@ void NetworkManager::createConfirmPacket(int ID)
 {
 	OutputMemoryBitStream* OutMBStream = new OutputMemoryBitStream();
 	OutMBStream->Write(CONFIRM);
+	OutMBStream->Write(GameObjType::INVALID);
 	OutMBStream->Write(ID);
-	(*mpTCPSocket)->Send(OutMBStream->GetBufferPtr(), OutMBStream->GetBitLength());
+	(*mpTCPSocket)->Send(OutMBStream->GetBufferPtr(), OutMBStream->GetByteLength());
 }
 
 bool NetworkManager::waitForConfirmPacket(int ID)
 {
 	if (mPendingResendPackets.size() > 0)
 	{
-		std::vector<std::pair<OutputMemoryBitStream*, int>>::iterator iter;
+		std::vector<std::pair<std::pair<const char*, size_t>, int>>::iterator iter;
 		for(iter = mPendingResendPackets.begin(); iter != mPendingResendPackets.end(); iter++ )
 		{
 			if (iter->second == ID)
@@ -255,7 +256,7 @@ void NetworkManager::requestPacket(KeyCode key) //client ask
 	OutMBStream.Write(objType);
 	OutMBStream.Write(mClientPacketID);
 
-	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength());
+	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetByteLength());
 
 	//mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mClientPacketID));
 }
@@ -547,12 +548,11 @@ void NetworkManager::send(int networkID, TypePacket type) //server mainly
 		break;
 	}
 
-	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength());
+	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetByteLength());
 
 	if (needsConfirm)
 	{
-		mPendingResendPackets.push_back(std::pair<OutputMemoryBitStream*, int>(&OutMBStream, mServerNetworkID));
-		//mPendingResendPackets.push_back(std::pair<std::pair<const void*, size_t>, int>(std::pair<const void*, size_t>(OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()), mServerNetworkID));
+		mPendingResendPackets.push_back(std::pair<std::pair<const char*, size_t>, int>(std::pair<const char*, int>(OutMBStream.GetBufferPtr(),OutMBStream.GetByteLength()),mServerNetworkID));
 	}
 }
 
@@ -576,9 +576,9 @@ void NetworkManager::update(float deltaTime, float time) //server
 	{
 		if (mTimeTillResend <= 0.0f)
 		{
-			(*mpTCPSocket)->Send(mPendingResendPackets.front().first, mPendingResendPackets.front().second);
+			//OutMBStream.GetBufferPtr(), OutMBStream.GetBitLength()
+			(*mpTCPSocket)->Send(mPendingResendPackets.front().first.first, mPendingResendPackets.front().first.second);
 			//(*mpTCPSocket)->Send(mPendingResendPackets.front().first.first, mPendingResendPackets.front().first.second); //ID?
-			std::cout << mPendingResendPackets.front().second;
 			//(*mpTCPSocket)->Send(mPendingResendPackets.front().first, mPendingResendPackets.front().second); //ID?
 			mTimeTillResend = 1.0f;
 		}

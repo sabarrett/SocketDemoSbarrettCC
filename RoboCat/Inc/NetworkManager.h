@@ -81,7 +81,7 @@ private:
 
 	std::vector<std::pair<GameObjects*, int>> mGameObjVector;
 	//std::vector<std::pair<std::pair<const void*, size_t>, int>> mPendingResendPackets;
-	std::vector<std::pair<OutputMemoryBitStream*, int>> mPendingResendPackets;
+	std::vector<std::pair<std::pair<const char*, size_t>, int>> mPendingResendPackets;
 
 	Colour mP1Color, mP2Color;
 	std::string mBubbleImgID;
