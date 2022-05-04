@@ -1,3 +1,4 @@
+#include "NetworkManager.h"
 #include "Animation.h"
 #include "Event.h"
 #include "EventListener.h"
@@ -87,6 +88,8 @@ void Game::init()
 
 	mpUnitManager = new UnitManager();
 
+	mpNetworkManager = new NetworkManager();
+
 	mAnimSpeed = 30;
 
 	mShouldExit = false;
@@ -170,6 +173,8 @@ void Game::handleEvent(const Event& event)
 		mpUnitManager->addUnits(mpTempUnit);
 
 		mIsSmurf = true;
+
+		mpNetworkManager->sendData(PacketTypes::CREATE_OBJECT, 0, mpTempUnit);
 		break;
 
 	case DESTROY_UNIT_EVENT:
@@ -182,6 +187,7 @@ void Game::handleEvent(const Event& event)
 				if (mpUnitManager->getPosY() < current->getLocY() + current->getSpriteHeight() && mpUnitManager->getPosY() > current->getLocY())
 				{
 					mpUnitManager->deleteUnits(i);
+					mpNetworkManager->sendData(PacketTypes::DESTROY_OBJECT, 0, current);
 					break;
 				}
 			}
@@ -242,6 +248,7 @@ void Game::handleEvent(const Event& event)
 void Game::update()
 {
 	mpUnitManager->updateUnits((1.0 / mFrameRate) * 1000);
+	mpNetworkManager->sendData(PacketTypes::UPDATE_OBJECT, 0);
 }
 
 void Game::render()

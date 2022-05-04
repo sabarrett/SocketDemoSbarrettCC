@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "GameEvent.h"
 #include "EventSystem.h"
+#include "Unit.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -37,11 +38,9 @@ public:
 	bool initServer(std::string serverPort);
 	bool connect(std::string clientIP, std::string clientPort);
 
-	void createObject(Game* obj, int objID);
-	void updateObject();
-	void renderObject();
+	void createObject(Unit* obj, int objID);
 
-	void sendData(PacketTypes packet, int ID);
+	void sendData(PacketTypes packet, int ID, Unit* obj = nullptr);
 	void receiveData();
 
 	bool waitForConfirmation(int ID);
@@ -54,7 +53,7 @@ private:
 	static NetworkManager* mpsNetworkInstance;
 	EventSystem* mpEventSystem;
 
-	std::vector<std::pair<Game*, int>> mvGameObjects;
+	std::vector<std::pair<Unit*, int>> mvGameObjects;
 	std::vector<std::pair<std::pair<const void*, size_t>, int>> mvPacketResendQueue;
 	int mCurrentID;
 

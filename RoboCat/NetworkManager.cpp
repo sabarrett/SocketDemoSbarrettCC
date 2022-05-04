@@ -157,30 +157,12 @@ bool NetworkManager::connect(std::string clientIP, std::string clientPort)
 	}
 }
 
-void NetworkManager::createObject(Game* obj, int objID)
+void NetworkManager::createObject(Unit* obj, int objID)
 {
-	mvGameObjects.push_back(pair<Game*, int>(obj, objID));
+	mvGameObjects.push_back(pair<Unit*, int>(obj, objID));
 }
 
-void NetworkManager::updateObject()
-{
-	std::vector<std::pair<Game*, int>>::iterator iter;
-	for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
-	{
-		iter->first->update();
-	}
-}
-
-void NetworkManager::renderObject()
-{
-	std::vector<std::pair<Game*, int>>::iterator iter;
-	for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
-	{
-		iter->first->render();
-	}
-}
-
-void NetworkManager::sendData(PacketTypes packet, int ID)
+void NetworkManager::sendData(PacketTypes packet, int ID, Unit* obj)
 {
 	bool needsConfirmPacket = false;
 	bool destroyed = false;
@@ -192,15 +174,12 @@ void NetworkManager::sendData(PacketTypes packet, int ID)
 	case CREATE_OBJECT:
 	{
 		needsConfirmPacket = true;
-		//mvGameObjects[ID].first->getInstance()->handleEvent(Event(EventType::KEY_DOWN_EVENT));
-		GameEvent eventToFire(CREATE_UNIT_EVENT);
-		mpEventSystem->fireEvent(eventToFire);
+		createObject(obj, ID);
 
 		break;
 	}
 	case UPDATE_OBJECT:
 	{
-		updateObject();
 		break;
 	}
 	case DESTROY_OBJECT:
@@ -208,7 +187,7 @@ void NetworkManager::sendData(PacketTypes packet, int ID)
 		needsConfirmPacket = true;
 		if (mvGameObjects.size() > 0)
 		{
-			std::vector<std::pair<Game*, int>>::iterator iter;
+			std::vector<std::pair<Unit*, int>>::iterator iter;
 			for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
 			{
 				mvGameObjects.erase(iter);
@@ -264,7 +243,7 @@ void NetworkManager::receiveData()
 			{
 			case CREATE_OBJECT:
 			{
-				mvGameObjects[networkID].first->getInstance()->handleEvent(Event(EventType::MOUSE_DOWN_EVENT));
+				MemStream.Read(mvGameObjects[mCurrentID]);
 				break;
 			}
 
@@ -272,7 +251,7 @@ void NetworkManager::receiveData()
 			{
 				if (mvGameObjects[networkID].first != nullptr)
 				{
-					mvGameObjects[networkID].first->getInstance()->update();
+					MemStream.Read(mvGameObjects[networkID]);
 					break;
 				}
 				else
@@ -287,7 +266,7 @@ void NetworkManager::receiveData()
 			{
 				if (mvGameObjects.size() > 0)
 				{
-					std::vector<std::pair<Game*, int>>::iterator iter;
+					std::vector<std::pair<Unit*, int>>::iterator iter;
 					for (iter = mvGameObjects.begin(); iter != mvGameObjects.end(); iter++)
 					{
 						mvGameObjects.erase(iter);

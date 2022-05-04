@@ -54,25 +54,6 @@ int main(int argc, const char** argv)
 		clientInited = mpNetManager->connect(clientIP, serverPort);
 		networkID = 1;
 	}
-	
-	if (serverInited || clientInited)
-	{
-		while (serverInited || clientInited)
-		{
-			if (mpInput->KEY_S)
-			{
-				mpNetManager->sendData(PacketTypes::CREATE_OBJECT, networkID);
-			}
-			else if (mpInput->KEY_D)
-			{
-				mpNetManager->sendData(PacketTypes::DESTROY_OBJECT, networkID);
-			}
-
-			mpNetManager->sendData(PacketTypes::UPDATE_OBJECT, networkID);
-			mpNetManager->renderObject();
-			mpNetManager->receiveData();
-		}
-	}
 
 	system("pause");
 
