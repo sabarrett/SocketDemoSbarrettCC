@@ -21,6 +21,13 @@ enum TypePacket
 
 class NetworkManager
 {
+	struct pendingPacket {
+		const char* data;
+		size_t dataSize;
+		int id;
+		GameObjType objType;
+	};
+
 public:
 	static NetworkManager* GetInstance()
 	{
@@ -47,7 +54,7 @@ public:
 	void send(int networkID, TypePacket packetType);
 	void recieve();
 	
-	PlayerController* recieveInitFromServer(/*PlayerController** playerServer, */GraphicsLibrary* gLib);
+	PlayerController* recieveInitFromServer(GraphicsLibrary* gLib);
 
 	void updateObj();
 	void renderObj();
@@ -80,8 +87,7 @@ private:
 	float mPacketTimeStamp;
 
 	std::vector<std::pair<GameObjects*, int>> mGameObjVector;
-	//std::vector<std::pair<std::pair<const void*, size_t>, int>> mPendingResendPackets;
-	std::vector<std::pair<std::pair<const char*, size_t>, int>> mPendingResendPackets;
+	std::vector<pendingPacket> mPendingResendPackets;
 
 	Colour mP1Color, mP2Color;
 	std::string mBubbleImgID;

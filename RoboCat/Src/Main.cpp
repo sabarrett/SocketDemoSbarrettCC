@@ -40,7 +40,7 @@ float FPS = 60.0;
 Colour blue(0, 0, 255); //P1
 Colour red(255, 0, 0); //P2
 int networkID = 0;
-int dropOdds = 20;
+int notDropOdds = 80;
 
 int tempPlayerID;
 
@@ -75,18 +75,15 @@ void start()
 	{
 		tempPlayerID = 1;
 		pNetworkManager->setServerRole(false);
-		//playerServer = pNetworkManager->recieveInitFromServer(pGraphicsLib);
-		//playerClient = pNetworkManager->recieveInitFromServer(pGraphicsLib);
 
 		playerServer = new PlayerController(0, pGraphicsLib);
 		playerServer->setPlayerID(0);
 		pNetworkManager->spawnObj(playerServer, 0);
-		//networkID++;
 
 		playerClient = new PlayerController(1, pGraphicsLib);
 		playerClient->setPlayerID(1);
 		pNetworkManager->spawnObj(playerClient, 1);
-		//networkID = 2;
+
 		pNetworkManager->setCurrentID(1);
 		pNetworkManager->mIsConnected = true;
 	}
@@ -98,20 +95,12 @@ void start()
 		playerServer = new PlayerController(0, pGraphicsLib);
 		playerServer->setPlayerID(0);
 		pNetworkManager->spawnObj(playerServer, 0);
-		//networkID++;
-
-		//pNetworkManager->send(playerServer->getNetworkID(), TypePacket::PACKET_INIT);
-		//pNetworkManager->recieve();
-
 
 		playerClient = new PlayerController(1, pGraphicsLib);
 		playerClient->setPlayerID(1);
 		pNetworkManager->spawnObj(playerClient, 1);
-		//pNetworkManager->recieve();
-		//networkID++;
-		//networkID = 2;
 		pNetworkManager->setCurrentID(1);
-		//pNetworkManager->send(playerClient->getNetworkID(), TypePacket::PACKET_INIT);
+
 		pNetworkManager->mIsConnected = true;
 	}
 
@@ -194,7 +183,7 @@ int main(int argc, const char** argv)
 	if (init())
 	{
 		pNetworkManager = pNetworkManager->GetInstance();
-		pNetworkManager->init(pGraphicsLib, blue, red, dropOdds);
+		pNetworkManager->init(pGraphicsLib, blue, red, notDropOdds);
 
 		std::string role;
 		std::cout << "Are you the host? 'y' or 'n'\n";
@@ -210,7 +199,6 @@ int main(int argc, const char** argv)
 				std::cout << "connect successful.\n";
 
 			tempPlayerID = 0;
-			//networkID = 0;
 		}
 
 		else if (role == "n")
@@ -227,13 +215,11 @@ int main(int argc, const char** argv)
 				std::cout << "Client Connected\n";
 
 			tempPlayerID = 1;
-			//networkID = 1;
 		}
 
 		if (successConnect)
 		{
 			start();
-			//networkID = 2; //don't overwrite players
 
 			while (isRunning)
 			{
