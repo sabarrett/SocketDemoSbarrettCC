@@ -1,0 +1,8 @@
+HELLO
+hi
+BYE
+good-bye
+WELCOME
+welcome
+GOODDAY
+good day
