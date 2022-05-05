@@ -26,7 +26,7 @@ class NetworkManager
 		size_t dataSize;
 		int id;
 		GameObjType objType;
-	};
+	}pendingData, pendingData_copy;
 
 public:
 	static NetworkManager* GetInstance()
@@ -39,7 +39,7 @@ public:
 
 		mpNetworkInstance = new NetworkManager;
 		return mpNetworkInstance;
-	};
+	}
 
 	bool mIsConnected;
 

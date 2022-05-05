@@ -142,6 +142,7 @@ bool NetworkManager::waitForConfirmPacket(int ID)
 {
 	if (mPendingResendPackets.size() > 0)
 	{
+		int index = 0;
 		std::vector<pendingPacket>::iterator iter;
 		for(iter = mPendingResendPackets.begin(); iter != mPendingResendPackets.end(); iter++ )
 		{
@@ -150,6 +151,7 @@ bool NetworkManager::waitForConfirmPacket(int ID)
 				mPendingResendPackets.erase(iter);
 				return true;
 			}
+			index++;
 		}
 
 		return false;
@@ -523,16 +525,17 @@ void NetworkManager::send(int networkID, TypePacket type)
 		break;
 	}
 
+	pendingData.data = OutMBStream.GetBufferPtr();
 	(*mpTCPSocket)->Send(OutMBStream.GetBufferPtr(), OutMBStream.GetByteLength());
 
 	if (needsConfirm)
 	{
-		pendingPacket newPacket;
-		newPacket.data = OutMBStream.GetBufferPtr();//make a new buffer for data and copy from optMB to buffer, then when done with packet remember to delete buffer
-		newPacket.dataSize = OutMBStream.GetByteLength();
-		newPacket.id = mServerNetworkID;
-		newPacket.objType = mGameObjVector[networkID].first->getObjType();
-		mPendingResendPackets.push_back(newPacket);
+		//make a new buffer for data and copy from optMB to buffer, then when done with packet remember to delete buffer
+		pendingData.dataSize = sizeof(pendingData_copy.data);
+		pendingData.id = mServerNetworkID;
+		pendingData.objType = mGameObjVector[networkID].first->getObjType();
+		memcpy(&pendingData_copy, &pendingData, sizeof(pendingData));
+		mPendingResendPackets.push_back(pendingData_copy);
 	}
 }
 

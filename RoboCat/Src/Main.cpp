@@ -121,33 +121,39 @@ void update()
 	KeyCode keyCode = pInput->getKeyboardInput(InputMode::KeyPressed);
 
 	string imgID;
+	bool pressed = false;
 
 	switch (keyCode)
 	{
 		case KeyCode::B:
 			imgID = BUBBLE_IMG_IDENTIFIER;
+			pressed = true;
 			break;
 
 		case KeyCode::LEFT:
 			imgID = BEE_IMG_IDENTIFIER;
+			pressed = true;
 			break;
 
 		case KeyCode::RIGHT:
 			imgID = "";
+			pressed = true;
 			break;
 
 		case KeyCode::SPACE:
 			imgID = BOULDER_IMG_IDENTIFIER;
+			pressed = true;
 			break;
 
 		case KeyCode::ESC:
 			isRunning = false;
+			pressed = true;
 			break;
 	}
 
-	if(pNetworkManager->getServerRole())
+	if(pNetworkManager->getServerRole() && pressed)
 		pNetworkManager->processPacket(keyCode, imgID, pNetworkManager->getServerRole());
-	else
+	if (!pNetworkManager->getServerRole() && pressed)
 		pNetworkManager->requestPacket(keyCode);
 
 	pNetworkManager->updateObj();
