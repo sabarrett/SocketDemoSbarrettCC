@@ -22,20 +22,35 @@ PlayerUser::PlayerUser()
 	playerName = "";
 }
 
-PlayerUser::PlayerUser(int _pnum)
+PlayerUser::PlayerUser(int _pnum, std::string username)
 {
 	sendSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 	recvSocket = SocketUtil::CreateTCPSocket(SocketAddressFamily::INET);
 
 	playerNumber = _pnum;
-	playerName = _pnum == 0 ? "Server" : "Player" + std::to_string(playerNumber);
+	playerName = username;
+	//playerName = _pnum == 0 ? "Server" : "Player" + std::to_string(playerNumber);
 	//std::cout << playerName << " client "<< " Subsystems Initialized!\n";
 }
 
 PlayerUser::~PlayerUser()
 {
 	closeSockets();
-	
+	chatThread.detach();
+}
+
+void PlayerUser::startTcpThread(bool isServer)
+{
+	CLIENT_SEND_PORT = std::to_string(rand() % 1000 + 8999);
+	CLIENT_RECV_PORT = std::to_string(rand() % 1000 + 8999);
+	if (isServer)
+	{
+		chatThread = std::thread([this] { initTcpServer(CLIENT_RECV_PORT); });
+	}
+	else
+	{
+		chatThread = std::thread([this] { initTcpClient(CLIENT_SEND_PORT, CLIENT_RECV_PORT); });
+	}
 }
 
 void PlayerUser::initTcpClient(std::string sendPort, std::string recvPort)
@@ -105,19 +120,19 @@ void PlayerUser::initTcpClient(std::string sendPort, std::string recvPort)
 			}
 
 			std::string receivedMsg(buffer, bytesReceived);
-			LOG("Received message: %s", receivedMsg.c_str());
+			//LOG("Received message: %s", receivedMsg.c_str());
 			if (receivedMsg[0] == '$') // SEND MESSAGE
 			{
-				decodeMessageString(receivedMsg.erase(0, 1)); // display message
+				decodeMessageString(receivedMsg); // display message
 			}
-			else if (receivedMsg[0] == '!') // CHANGE USERNAME
+			else if (receivedMsg[0] == '~') // CHANGE USERNAME
 			{
 				playerName = receivedMsg.erase(0, 1);
 			}
 		}
 		});
 
-	std::cout << "Press enter to exit at any time!\n";
+	//std::cout << "Press enter to exit at any time!\n";
 	std::cin.get();
 	quit = true;
 //	recvConnSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
@@ -203,20 +218,20 @@ void PlayerUser::initTcpServer(std::string listenPort)
 			LOG("Received message from %s: %s", incomingAddress.ToString().c_str(), receivedMsg.c_str());
 			if (receivedMsg[0] == '$') // SEND MESSAGE
 			{
-				decodeMessageString(receivedMsg.erase(0, 1)); // display message
+				decodeMessageString(receivedMsg); // display message
 			}
-			else if (receivedMsg[0] == '!') // CHANGE USERNAME
+			else if (receivedMsg[0] == '~') // CHANGE USERNAME
 			{
 				playerName = receivedMsg.erase(0, 1);
 			}
 		}
 		});
 
-	std::cout << "Press enter to exit at any time!\n";
+	//std::cout << "Press enter to exit at any time!\n";
 	std::cin.get();
 	quit = true;
 //	recvConnSocket->~TCPSocket(); // Forcibly close socket (shouldn't call destructors like this -- make a new function for it!
-	std::cout << "HERE!";
+	//std::cout << "HERE!";
 	receiveThread.join();
 }
 
@@ -242,7 +257,7 @@ void PlayerUser::decodeMessageString(std::string _messageString)
 		_messageString = _messageString.erase(0, 1);
 	splitMessageString = split(_messageString, SEPERATOR_TOKEN);
 
-	std::string str = "< " + splitMessageString[0] + " >	" + splitMessageString[1];
+	std::string str = "< " + splitMessageString[0] + " >:" + splitMessageString[1] + "\n";
 
 	std::cout << str;
 }
