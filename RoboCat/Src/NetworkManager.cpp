@@ -528,7 +528,7 @@ void NetworkManager::send(int networkID, TypePacket type)
 	if (needsConfirm)
 	{
 		pendingPacket newPacket;
-		newPacket.data = OutMBStream.GetBufferPtr();
+		newPacket.data = OutMBStream.GetBufferPtr();//make a new buffer for data and copy from optMB to buffer, then when done with packet remember to delete buffer
 		newPacket.dataSize = OutMBStream.GetByteLength();
 		newPacket.id = mServerNetworkID;
 		newPacket.objType = mGameObjVector[networkID].first->getObjType();
